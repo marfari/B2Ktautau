@@ -9,6 +9,14 @@ void analytic_constraint(){
   // Known parameters
   double PVx, PVy, PVz, DV1x, DV1y, DV1z, DV2x, DV2y, DV2z, Ek, Pkx, Pky, Pkz, Epi_11, Epi_12, Epi_13, Epi_21, Epi_22, Epi_23, Ppix_11, Ppix_12, Ppix_13, Ppix_21, Ppix_22, Ppix_23, Ppiy_11, Ppiy_12, Ppiy_13, Ppiy_21, Ppiy_22, Ppiy_23, Ppiz_11, Ppiz_12, Ppiz_13, Ppiz_21, Ppiz_22, Ppiz_23, B0_M, MCorr, m3pi1_tree, m3pi2_tree;
 
+  double BVX, BVY, BVZ, PBX, PBY, PBZ, mtau1, mtau2;
+
+  t->SetBranchAddress("Bp_0_PX",&PBX);
+  t->SetBranchAddress("Bp_0_PY",&PBY);
+  t->SetBranchAddress("Bp_0_PZ",&PBZ);
+  t->SetBranchAddress("Bp_0_vtxX",&BVX);
+  t->SetBranchAddress("Bp_0_vtxY",&BVY);
+  t->SetBranchAddress("Bp_0_vtxZ",&BVZ);
   t->SetBranchAddress("Bp_0_origX",&PVx);
   t->SetBranchAddress("Bp_0_origY",&PVy);
   t->SetBranchAddress("Bp_0_origZ",&PVz);
@@ -50,19 +58,21 @@ void analytic_constraint(){
   t->SetBranchAddress("MCorr",&MCorr);
   t->SetBranchAddress("pip_0_pim_0_pip_1_M",&m3pi1_tree);
   t->SetBranchAddress("pip_2_pim_1_pim_2_M",&m3pi2_tree);
+  t->SetBranchAddress("taup_0_M_TRUE",&mtau1);
+  t->SetBranchAddress("taum_0_M_TRUE",&mtau2);
 
   // Unknown parameters  
-  TH1D* h_BVz = new TH1D("BVz", "BVz", 100, -30, 30);
-  TH1D* h_BVz1 = new TH1D("BVz1", "BVz1", 100, -30, 30);
-  TH1D* h_BVz2 = new TH1D("BVz2", "BVz2", 100, -30, 30);
-  TH1D* h_Etau1 = new TH1D("Etau1", "Etau1", 100, 0, 500);
+  TH1D* h_BVz = new TH1D("BVz", "BVz", 100, -1, 1);
+  TH1D* h_BVz1 = new TH1D("BVz1", "BVz1", 100, -1, 1);
+  TH1D* h_BVz2 = new TH1D("BVz2", "BVz2", 100, -1, 1);
+  TH1D* h_Etau1 = new TH1D("Etau1", "Etau1", 100, 0, 150);
   TH1D* h_Ptaux1 = new TH1D("Ptaux1", "Ptaux1", 100, -2, 2);
   TH1D* h_Ptauy1 = new TH1D("Ptauy1", "Ptauy1", 100, -2, 2);
-  TH1D* h_Ptauz1 = new TH1D("Ptauz1", "Ptauz1", 100, 0, 500);
-  TH1D* h_Etau2 = new TH1D("Etau2", "Etau2", 100, 0, 500);
+  TH1D* h_Ptauz1 = new TH1D("Ptauz1", "Ptauz1", 100, 0, 150);
+  TH1D* h_Etau2 = new TH1D("Etau2", "Etau2", 100, 0, 150);
   TH1D* h_Ptaux2 = new TH1D("Ptaux2", "Ptaux2", 100, -2, 2);
   TH1D* h_Ptauy2 = new TH1D("Ptauy2", "Ptauy2", 100, -2, 2);
-  TH1D* h_Ptauz2 = new TH1D("Ptauz2", "Ptauz2", 100, 0, 500);
+  TH1D* h_Ptauz2 = new TH1D("Ptauz2", "Ptauz2", 100, 0, 150);
   TH1D* h_Enu1 = new TH1D("Enu1", "Enu1", 100, 0, 200);
   TH1D* h_Pnux1 = new TH1D("Pnux1", "Pnux1", 100, -10, 10);
   TH1D* h_Pnuy1 = new TH1D("Pnuy1", "Pnuy1", 100, -10, 10);
@@ -71,7 +81,7 @@ void analytic_constraint(){
   TH1D* h_Pnux2 = new TH1D("Pnux2", "Pnux2", 100, -10, 10);
   TH1D* h_Pnuy2 = new TH1D("Pnuy2", "Pnuy2", 100, -10, 10);
   TH1D* h_Pnuz2 = new TH1D("Pnuz2", "Pnuz2", 100, -200, 5);
-  TH1D* h_Eb = new TH1D("Eb", "Eb", 100, 0, 5500);
+  TH1D* h_Eb = new TH1D("Eb", "Eb", 100, 0, 300);
   TH1D* h_Pbx = new TH1D("Pbx", "Pbx", 100, -2, 2);
   TH1D* h_Pby = new TH1D("Pby", "Pby", 100, -2, 2);
   TH1D* h_Pbz = new TH1D("Pbz", "Pbz", 100, 0, 1500);
@@ -79,8 +89,8 @@ void analytic_constraint(){
   TH1D* h_BP_M = new TH1D("B0_M", "B0_M", 100, 2, 8);
   TH1D* h_MCorr = new TH1D("MCorr", "MCorr", 100, 2, 8);
   TH1D* h_Mb = new TH1D("Mb", "Mb", 100, 2, 8);
-  TH1D* h_Mb1 = new TH1D("Mb1", "Mb1", 100, 2, 8);
-  TH1D* h_Pb = new TH1D("Pb", "Pb", 100, 0, 5500);
+  TH1D* h_Mb1 = new TH1D("Mb1", "Mb1", 100, 2, 20);
+  TH1D* h_Pb = new TH1D("Pb", "Pb", 100, 0, 300);
  
   TH1D* h_m3pi1 = new TH1D("m3pi1", "m3pi1", 100, 0, 2);
   TH1D* h_m3pi2 = new TH1D("m3pi2", "m3pi2", 100, 0, 2);
@@ -91,13 +101,29 @@ void analytic_constraint(){
   TH1D* h_Mtau2 = new TH1D("Mtau2", "Mtau2", 100, 1.5, 2.);
   TH1D* h_Mk = new TH1D("Mk", "Mk", 100, 0, 1.);
 
-  double mtau = 1.77686; // in GeV
+  TH1D* h_Btau = new TH1D("Btau", "Btau", 100, 0, 6.);
+  TH1D* h_Btau1 = new TH1D("Btau1", "Btau1", 100, 0, 6.);
+  TH1D* h_BD = new TH1D("BD", "BD", 100, 0, 10);
+
+  //double mtau = 1.77686; // in GeV
 
   for(int evt = 0; evt < t->GetEntries(); evt++){
     t->GetEntry(evt);
 
     h_m3pi1_tree->Fill(m3pi1_tree);
     h_m3pi2_tree->Fill(m3pi2_tree);
+
+    // B+ lifetime
+    double Dx = BVX - PVx;
+    double Dy = BVY - PVy;
+    double Dz = BVZ - PVz;
+    double D = sqrt(pow(Dx,2) + pow(Dy,2) + pow(Dz,2));
+    double P = sqrt(pow(PBX,2) + pow(PBY,2) + pow(PBZ,2));
+    double T = (5.279/P)*D;
+
+    h_Btau->Fill(T);
+    h_BD->Fill(D);
+    // [t] = ps -> [d] = 0.1975/6.59 cm = (1/6.59)*pow(10,13) GeV^-1
 
     // Change reference frame (z-axis along K momentum) + move PV to (1,0,0) 
 
@@ -110,51 +136,51 @@ void analytic_constraint(){
     h_MCorr->Fill(MCorr);
     h_BP_M->Fill(B0_M);
 
-    double PVxp = (Pky*PVx - Pkx*PVy)/Pk2d;
-    double PVyp = (Pkz*(Pkx*PVx + Pky*PVy) - pow(Pk2d,2)*PVz)/(Pk2d*Pk);
+    double PVxp = -(Pky/Pk2d)*PVx + (Pkx/Pk2d)*PVy;
+    double PVyp = -((Pkz*Pkx)/(Pk*Pk2d))*PVx - ((Pky*Pkz)/(Pk*Pk2d))*PVy + (Pk2d/Pk)*PVz;
     double PVzp = (Pkx*PVx + Pky*PVy + Pkz*PVz)/Pk;
-    double DV1xp = (Pky*DV1x - Pkx*DV1y)/Pk2d;
-    double DV1yp = (Pkz*(Pkx*DV1x + Pky*DV1y) - pow(Pk2d,2)*DV1z)/(Pk2d*Pk);
+    double DV1xp = -(Pky/Pk2d)*DV1x + (Pkx/Pk2d)*DV1y;
+    double DV1yp = -((Pkz*Pkx)/(Pk*Pk2d))*DV1x - ((Pky*Pkz)/(Pk*Pk2d))*DV1y + (Pk2d/Pk)*DV1z;
     double DV1zp = (Pkx*DV1x + Pky*DV1y + Pkz*DV1z)/Pk; 
-    double DV2xp = (Pky*DV2x - Pkx*DV2y)/Pk2d;
-    double DV2yp = (Pkz*(Pkx*DV2x + Pky*DV2y) - pow(Pk2d,2)*DV2z)/(Pk2d*Pk);
+    double DV2xp = -(Pky/Pk2d)*DV2x + (Pkx/Pk2d)*DV2y;
+    double DV2yp = -((Pkz*Pkx)/(Pk*Pk2d))*DV2x - ((Pky*Pkz)/(Pk*Pk2d))*DV2y + (Pk2d/Pk)*DV2z;
     double DV2zp = (Pkx*DV2x + Pky*DV2y + Pkz*DV2z)/Pk;
-    double Ppixp_11 = (Pky*Ppix_11 - Pkx*Ppiy_11)/Pk2d;
-    double Ppiyp_11 = (Pkz*(Pkx*Ppix_11 + Pky*Ppiy_11) - pow(Pk2d,2)*Ppiz_11)/(Pk2d*Pk);
+    double Ppixp_11 = -(Pky/Pk2d)*Ppix_11 + (Pkx/Pk2d)*Ppiy_11;
+    double Ppiyp_11 = -((Pkz*Pkx)/(Pk*Pk2d))*Ppix_11 - ((Pky*Pkz)/(Pk*Pk2d))*Ppiy_11 + (Pk2d/Pk)*Ppiz_11;
     double Ppizp_11 = (Pkx*Ppix_11 + Pky*Ppiy_11 + Pkz*Ppiz_11)/Pk;
-    double Ppixp_12 = (Pky*Ppix_12 - Pkx*Ppiy_12)/Pk2d;
-    double Ppiyp_12 = (Pkz*(Pkx*Ppix_12 + Pky*Ppiy_12) - pow(Pk2d,2)*Ppiz_12)/(Pk2d*Pk);
+    double Ppixp_12 = -(Pky/Pk2d)*Ppix_12 + (Pkx/Pk2d)*Ppiy_12;
+    double Ppiyp_12 = -((Pkz*Pkx)/(Pk*Pk2d))*Ppix_12 - ((Pky*Pkz)/(Pk*Pk2d))*Ppiy_12 + (Pk2d/Pk)*Ppiz_12;
     double Ppizp_12 = (Pkx*Ppix_12 + Pky*Ppiy_12 + Pkz*Ppiz_12)/Pk;
-    double Ppixp_13 = (Pky*Ppix_13 - Pkx*Ppiy_13)/Pk2d;
-    double Ppiyp_13 = (Pkz*(Pkx*Ppix_13 + Pky*Ppiy_13) - pow(Pk2d,2)*Ppiz_13)/(Pk2d*Pk);
+    double Ppixp_13 = -(Pky/Pk2d)*Ppix_13 + (Pkx/Pk2d)*Ppiy_13;
+    double Ppiyp_13 = -((Pkz*Pkx)/(Pk*Pk2d))*Ppix_13 - ((Pky*Pkz)/(Pk*Pk2d))*Ppiy_13 + (Pk2d/Pk)*Ppiz_13;
     double Ppizp_13 = (Pkx*Ppix_13 + Pky*Ppiy_13 + Pkz*Ppiz_13)/Pk;
-    double Ppixp_21 = (Pky*Ppix_21 - Pkx*Ppiy_21)/Pk2d;
-    double Ppiyp_21 = (Pkz*(Pkx*Ppix_21 + Pky*Ppiy_21) - pow(Pk2d,2)*Ppiz_21)/(Pk2d*Pk);
+    double Ppixp_21 = -(Pky/Pk2d)*Ppix_21 + (Pkx/Pk2d)*Ppiy_21;
+    double Ppiyp_21 = -((Pkz*Pkx)/(Pk*Pk2d))*Ppix_21 - ((Pky*Pkz)/(Pk*Pk2d))*Ppiy_21 + (Pk2d/Pk)*Ppiz_21;
     double Ppizp_21 = (Pkx*Ppix_21 + Pky*Ppiy_21 + Pkz*Ppiz_21)/Pk;
-    double Ppixp_22 = (Pky*Ppix_22 - Pkx*Ppiy_22)/Pk2d;
-    double Ppiyp_22 = (Pkz*(Pkx*Ppix_22 + Pky*Ppiy_22) - pow(Pk2d,2)*Ppiz_22)/(Pk2d*Pk);
+    double Ppixp_22 = -(Pky/Pk2d)*Ppix_22 + (Pkx/Pk2d)*Ppiy_22;
+    double Ppiyp_22 = -((Pkz*Pkx)/(Pk*Pk2d))*Ppix_22 - ((Pky*Pkz)/(Pk*Pk2d))*Ppiy_22 + (Pk2d/Pk)*Ppiz_22;
     double Ppizp_22 = (Pkx*Ppix_22 + Pky*Ppiy_22 + Pkz*Ppiz_22)/Pk;
-    double Ppixp_23 = (Pky*Ppix_23 - Pkx*Ppiy_23)/Pk2d;
-    double Ppiyp_23 = (Pkz*(Pkx*Ppix_23 + Pky*Ppiy_23) - pow(Pk2d,2)*Ppiz_23)/(Pk2d*Pk);
+    double Ppixp_23 = -(Pky/Pk2d)*Ppix_23 + (Pkx/Pk2d)*Ppiy_23;
+    double Ppiyp_23 = -((Pkz*Pkx)/(Pk*Pk2d))*Ppix_23 - ((Pky*Pkz)/(Pk*Pk2d))*Ppiy_23 + (Pk2d/Pk)*Ppiz_23;
     double Ppizp_23 = (Pkx*Ppix_23 + Pky*Ppiy_23 + Pkz*Ppiz_23)/Pk;
-    double Pkxp = (Pky*Pkx - Pkx*Pky)/Pk2d;
-    double Pkyp = (Pkz*(Pkx*Pkx + Pky*Pky) - pow(Pk2d,2)*Pkz)/(Pk2d*Pk);
+    double Pkxp = -(Pky/Pk2d)*Pkx + (Pkx/Pk2d)*Pky;
+    double Pkyp = -((Pkz*Pkx)/(Pk*Pk2d))*Pkx - ((Pky*Pkz)/(Pk*Pk2d))*Pky + (Pk2d/Pk)*Pkz;
     double Pkzp = (Pkx*Pkx + Pky*Pky + Pkz*Pkz)/Pk;
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Convert mm into GeV-1
+    // Convert distances to GeV-1
 
-    PVxp *= 5.068*pow(10,12);
-    PVyp *= 5.068*pow(10,12);
-    PVzp *= 5.068*pow(10,12);
+    PVxp *= (1/6.59)*pow(10,13);
+    PVyp *= (1/6.59)*pow(10,13);
+    PVzp *= (1/6.59)*pow(10,13);
 
-    DV1xp *= 5.068*pow(10,12);
-    DV1yp *= 5.068*pow(10,12);
-    DV1zp *= 5.068*pow(10,12);
+    DV1xp *= (1/6.59)*pow(10,13);
+    DV1yp *= (1/6.59)*pow(10,13);
+    DV1zp *= (1/6.59)*pow(10,13);
 
-    DV2xp *= 5.068*pow(10,12);
-    DV2yp *= 5.068*pow(10,12);
-    DV2zp *= 5.068*pow(10,12);
+    DV2xp *= (1/6.59)*pow(10,13);
+    DV2yp *= (1/6.59)*pow(10,13);
+    DV2zp *= (1/6.59)*pow(10,13);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -179,43 +205,45 @@ void analytic_constraint(){
     double a1 = DV1yp/DV1xp;
     double a2 = DV2yp/DV2xp;
 
-    double d = (a1*PVxp - PVyp)/(-a2*PVxp + PVyp);
-    double e = (DV2zp - DV1zp)*d/DV2xp;
-    double f = DV1xp*d/DV2xp;
-    double b1 = ( (d+1)*(PVzp - DV1zp) - PVxp*e )/( -(d+1)*DV1xp + (f+1)*PVxp );
-    double c1 = ( -PVxp*Pk )/( -(d+1)*PVxp + (f+1)*PVxp );
-    double g = e + f*b1;
-    double h = f*c1;
+    double b = (a1*PVxp - PVyp)/(PVyp - a2*PVxp);
+    double c1 = b*(DV2zp - DV1zp)/DV2xp;
+    double c2 = b*DV1xp/DV2xp;
+    double d1 = ( (DV1zp - PVzp)*(1+b) + PVxp*c1 )/( DV1xp*(1+b) - PVxp*(1+c2) );
+    double d2 = (PVxp*Pk)/( DV1xp*(1+b) - PVxp*(1+c2) );
+    double e1 = c1 + c2*d1;
+    double e2 = c2*d2;
 
-    cout << "PVx = " << PVx << endl;
-    cout << "PVy = " << PVy << endl;
-    cout << "PVz = " << PVz << endl;
-    cout << "d = " << d << endl;
+    double f1 = p3pi1x + a1*p3pi1y + d1*p3pi1z;
+    double f2 = d2*p3pi1z;
+    double j1 = b*p3pi2x + a2*b*p3pi2y + e1*p3pi2z;
+    double j2 = e2*p3pi2z;
 
-    double r = pow( (p3pi1x + a1*p3pi1y + b1*p3pi1z)/E3pi1,2 ) - (1 + pow(a1,2) + pow(b1,2));
-    double j = (pow(mtau,2) + pow(m3pi1,2) + 2*c1*p3pi1z)*(p3pi1x + a1*p3pi1y + b1*p3pi1z)/pow(E3pi1,2) -2*b1*c1;
-    double k = pow( (pow(mtau,2) + pow(m3pi1,2) + 2*c1*p3pi1z)/(2*E3pi1) ,2) - pow(mtau,2) - pow(c1,2);
+    double g = 1 + pow(a1,2) + pow(d1,2) - pow(f1,2)/pow(E3pi1,2);
+    double h = 2*d1*d2 - ( pow(mtau1,2) + pow(m3pi1,2) )*(f1/pow(E3pi1,2)) - (2*f1*f2)/pow(E3pi1,2);
+    double i = pow(mtau1,2) + pow(d2,2) - pow( pow(mtau1,2) + pow(m3pi1,2) ,2)/(4*pow(E3pi1,2)) - ( pow(mtau1,2) + pow(m3pi1,2) )*(f2/pow(E3pi1,2)) - pow(f2,2)/pow(E3pi1,2);
 
-    double l = pow( (d*p3pi2x + a2*d*p3pi2y + g*p3pi2z)/E3pi2 ,2) - (pow(d,2) + pow(a2,2)*pow(d,2) + pow(g,2));
-    double s = (pow(mtau,2) + pow(m3pi2,2) + 2*h*p3pi2z)*(d*p3pi2x + a2*d*p3pi2y + g*p3pi2z)/pow(E3pi2,2) - 2*g*h;
-    double n = pow( (pow(mtau,2) + pow(m3pi2,2) + 2*h*p3pi2z)/(2*E3pi2) ,2) - pow(mtau,2) - pow(h,2);
+    double m = pow(b,2)*(1 + pow(a2,2)) + pow(e1,2) - pow(j1,2)/pow(E3pi2,2);
+    double n = 2*e1*e2 - ( pow(mtau2,2) + pow(m3pi2,2) )*(j1/pow(E3pi2,2)) - (2*j1*j2)/pow(E3pi2,2);
+    double o = pow(mtau2,2) + pow(e2,2) - pow( pow(mtau2,2) + pow(m3pi2,2) ,2)/(4*pow(E3pi2,2)) - ( pow(mtau2,2) + pow(m3pi2,2) )*(j2/pow(E3pi2,2)) - pow(j2,2)/pow(E3pi2,2);
 
-    double Ptaux1 = (r*n - l*k)/(l*j - r*s);
+    double Ptaux1 = (i*m - o*g)/(g*n - h*m);
     double Ptauy1 = a1*Ptaux1;
-    double Ptauz1 = b1*Ptaux1 + c1;
+    double Ptauz1 = d1*Ptaux1 + d2;
     double Ptau1 = sqrt(pow(Ptaux1,2) + pow(Ptauy1,2) + pow(Ptauz1,2));
-    double Etau1 = sqrt(pow(mtau,2) + pow(Ptau1,2));
+    double Etau1 = sqrt(pow(mtau1,2) + pow(Ptau1,2));
 
     h_Ptaux1->Fill(Ptaux1);
     h_Ptauy1->Fill(Ptauy1);
     h_Ptauz1->Fill(Ptauz1);
     h_Etau1->Fill(Etau1);
 
-    double Ptaux2 = d*Ptaux1;
-    double Ptauy2 = a2*d*Ptaux1;
-    double Ptauz2 = g*Ptaux1 + h;
+    double Ptaux2 = b*Ptaux1;
+    double Ptauy2 = a2*b*Ptaux1;
+    double Ptauz2 = e1*Ptaux1 + e2;
+    //cout << "Ptauz2 1 = " << e1*Ptaux1 + e2 << endl; // (same ok)
+    //cout << "Ptauz2 2 = " << c1*Ptaux1 + c2*Ptauz1 << endl; // (same ok)
     double Ptau2 = sqrt(pow(Ptaux2,2) + pow(Ptauy2,2) + pow(Ptauz2,2)); 
-    double Etau2 = sqrt(pow(mtau,2) + pow(Ptau2,2));
+    double Etau2 = sqrt(pow(mtau2,2) + pow(Ptau2,2));
 
     h_Ptaux2->Fill(Ptaux2);
     h_Ptauy2->Fill(Ptauy2);
@@ -248,6 +276,7 @@ void analytic_constraint(){
     double Pb = sqrt(pow(Pbx,2) + pow(Pby,2) + pow(Pbz,2));
     double Eb = Etau1 + Etau2 + Ek;
     double Mb = sqrt(pow(Eb,2) - pow(Pb,2));
+    cout << Mb << endl;
 
     h_Pbx->Fill(Pbx);
     h_Pby->Fill(Pby);
@@ -257,16 +286,30 @@ void analytic_constraint(){
     h_Mb->Fill(Mb);
     h_Mb1->Fill(Mb);
 
-    double BVz = (DV1zp/Ptauz1 - DV1yp/Ptaux1)*Ptauz1;
-    double BVz1 = (DV2zp/Ptauz2 - DV2xp/Ptaux2)*Ptauz2;
-    double BVz2 = PVzp - (Ptauz1 + Ptauz2 + Pk)*PVxp/(Ptaux1 + Ptaux2);
-    double BVz_mm = BVz/(5.068*pow(10,12));
-    double BVz1_mm = BVz1/(5.068*pow(10,12));
-    double BVz2_mm = BVz2/(5.068*pow(10,12));
+    double BVz = DV1zp - DV1xp*(Ptauz1/Ptaux1);
+    double BVz1 = DV2zp - DV2xp*(Ptauz2/Ptaux2);
+    double BVz2 = PVzp - PVxp*((Ptauz1 + Ptauz2 + Pk)/(Ptaux1 + Ptaux2));
+
+    // convert to mm
+    double BVz_mm = BVz*0.1975*pow(10,-12);
+    double BVz1_mm = BVz1*0.1975*pow(10,-12);
+    double BVz2_mm = BVz2*0.1975*pow(10,-12);
+
+    //cout << "BVz 1 = " << BVz_mm << endl; // (same ok)
+    //cout << "BVz 2 = " << BVz1_mm << endl; // (same ok)
+    //cout << "BVz 3 = " << BVz2_mm << endl; // (same ok)
 
     h_BVz->Fill(BVz_mm);
     h_BVz1->Fill(BVz1_mm);
     h_BVz2->Fill(BVz2_mm);
+
+    // Analitically reconstructed lifetime
+    double Dxp = -PVxp*0.1975*pow(10,-12);
+    double Dyp = -PVyp*0.1975*pow(10,-12);
+    double Dzp = (BVz2 - PVzp)*0.1975*pow(10,-12);
+    double Dp = sqrt(pow(Dxp,2) + pow(Dyp,2) + pow(Dzp,2));
+    double Tp = (Mb/Pb)*Dp;
+    h_Btau1->Fill(Tp);
 
   }
 
@@ -293,7 +336,7 @@ void analytic_constraint(){
   b1.SaveAs("./Plots/m3pi2.pdf");
 
   TCanvas b2;
-  //b2.SetLogy();
+  b2.SetLogy();
   b2.cd();
   h_Pb->GetXaxis()->SetTitle("P_{B} [GeV]");
   h_Pb->GetYaxis()->SetTitle( TString::Format("Events / (%g)",(h_Pb->GetXaxis()->GetXmax() - h_Pb->GetXaxis()->GetXmin())/h_Pb->GetNbinsX()) );
@@ -362,7 +405,7 @@ void analytic_constraint(){
   c3.SaveAs("./Plots/Ptau1y.pdf");
   
   TCanvas c4;
-  //c4.SetLogy();
+  c4.SetLogy();
   c4.cd();
   h_Ptauz1->GetXaxis()->SetTitle("Pz_{#tau1} [GeV]");
   h_Ptauz1->GetYaxis()->SetTitle( TString::Format("Events / (%g)",(h_Ptauz1->GetXaxis()->GetXmax() - h_Ptauz1->GetXaxis()->GetXmin())/h_Ptauz1->GetNbinsX()) );
@@ -371,7 +414,7 @@ void analytic_constraint(){
   c4.SaveAs("./Plots/Ptau1z.pdf");
 
   TCanvas c5;
-  //c5.SetLogy();
+  c5.SetLogy();
   c5.cd();
   h_Etau1->GetXaxis()->SetTitle("E_{#tau1} [GeV]");
   h_Etau1->GetYaxis()->SetTitle( TString::Format("Events / (%g)",(h_Etau1->GetXaxis()->GetXmax() - h_Etau1->GetXaxis()->GetXmin())/h_Etau1->GetNbinsX()) );
@@ -396,7 +439,7 @@ void analytic_constraint(){
   c7.SaveAs("./Plots/Ptau2y.pdf");
 
   TCanvas c8;
-  //c8.SetLogy();
+  c8.SetLogy();
   c8.cd();
   h_Ptauz2->GetXaxis()->SetTitle("Pz_{#tau2} [GeV]");
   h_Ptauz2->GetYaxis()->SetTitle( TString::Format("Events / (%g)",(h_Ptauz2->GetXaxis()->GetXmax() - h_Ptauz2->GetXaxis()->GetXmin())/h_Ptauz2->GetNbinsX()) );
@@ -405,7 +448,7 @@ void analytic_constraint(){
   c8.SaveAs("./Plots/Ptau2z.pdf");
 
   TCanvas c9;
-  //c9.SetLogy();
+  c9.SetLogy();
   c9.cd();
   h_Etau2->GetXaxis()->SetTitle("E_{#tau2} [GeV]");
   h_Etau2->GetYaxis()->SetTitle( TString::Format("Events / (%g)",(h_Etau2->GetXaxis()->GetXmax() - h_Etau2->GetXaxis()->GetXmin())/h_Etau2->GetNbinsX()) );
@@ -510,11 +553,31 @@ void analytic_constraint(){
   c20.SaveAs("./Plots/Pbz.pdf");
 
   TCanvas c21;
-  //c21.SetLogy();
+  c21.SetLogy();
   c21.cd();
   h_Eb->GetXaxis()->SetTitle("E_{B} [GeV]");
   h_Eb->GetYaxis()->SetTitle( TString::Format("Events / (%g)",(h_Eb->GetXaxis()->GetXmax() - h_Eb->GetXaxis()->GetXmin())/h_Eb->GetNbinsX()) );
   h_Eb->Draw();
   c21.SaveAs("./Plots/Eb.gif");
   c21.SaveAs("./Plots/Eb.pdf");
+
+  TCanvas d;
+  d.cd();
+  h_Btau->SetFillColorAlpha(kRed, 0.35);
+  h_Btau1->SetFillColorAlpha(kGreen, 0.35);
+  h_Btau->GetXaxis()->SetTitle("#tau_{B} [ps]");
+  h_Btau->GetYaxis()->SetTitle( TString::Format("Events / (%g)",(h_Btau->GetXaxis()->GetXmax() - h_Btau->GetXaxis()->GetXmin())/h_Btau->GetNbinsX()) );
+  h_Btau->Draw();
+  h_Btau1->Draw("same");
+  d.SaveAs("./Plots/Tb.gif");
+  d.SaveAs("./Plots/Tb.pdf");
+
+  TCanvas d1;
+  d1.cd();
+  h_BD->GetXaxis()->SetTitle("D_{B} [mm]");
+  h_BD->GetYaxis()->SetTitle( TString::Format("Events / (%g)",(h_BD->GetXaxis()->GetXmax() - h_BD->GetXaxis()->GetXmin())/h_BD->GetNbinsX()) );
+  h_BD->Draw();
+  d1.SaveAs("./Plots/Db.gif");
+  d1.SaveAs("./Plots/Db.pdf");
+
 }
