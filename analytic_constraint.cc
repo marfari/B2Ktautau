@@ -107,7 +107,7 @@ void analytic_constraint(){
     h_m3pi1_tree->Fill(m3pi1_tree);
     h_m3pi2_tree->Fill(m3pi2_tree);
 
-    // Change reference frame (z-axis along K momentum) + move PV to (1,0,0) 
+    // Change reference frame (z-axis along K momentum)
 
     double Pk = sqrt(pow(Pkx,2) + pow(Pky,2) + pow(Pkz,2));
     double Pk2d = sqrt(pow(Pkx,2) + pow(Pky,2));
