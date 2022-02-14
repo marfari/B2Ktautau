@@ -5,6 +5,7 @@
 #include <RooRealVar.h>
 #include <RooExponential.h>
 #include <RooAbsPdf.h>
+#include <iomanip>
 
 using namespace RooStats;
 using namespace RooFit;
@@ -19,80 +20,80 @@ void analytic_constraint(){
   t->SetBranchAddress("Bp_0_origX",&PVx);
   t->SetBranchAddress("Bp_0_origY",&PVy);
   t->SetBranchAddress("Bp_0_origZ",&PVz);
-  t->SetBranchAddress("taup_0_vtxX",&DV1x);
-  t->SetBranchAddress("taup_0_vtxY",&DV1y);
-  t->SetBranchAddress("taup_0_vtxZ",&DV1z);
-  t->SetBranchAddress("taum_0_vtxX",&DV2x);
-  t->SetBranchAddress("taum_0_vtxY",&DV2y);
-  t->SetBranchAddress("taum_0_vtxZ",&DV2z);
-  t->SetBranchAddress("Kp_0_E",&Ek);
-  t->SetBranchAddress("Kp_0_PX",&Pkx);
-  t->SetBranchAddress("Kp_0_PY",&Pky);
-  t->SetBranchAddress("Kp_0_PZ",&Pkz);
-  t->SetBranchAddress("pip_0_E",&Epi_11);
-  t->SetBranchAddress("pip_0_PX",&Ppix_11);
-  t->SetBranchAddress("pip_0_PY",&Ppiy_11);
-  t->SetBranchAddress("pip_0_PZ",&Ppiz_11);
-  t->SetBranchAddress("pim_0_E",&Epi_12);
-  t->SetBranchAddress("pim_0_PX",&Ppix_12);
-  t->SetBranchAddress("pim_0_PY",&Ppiy_12);
-  t->SetBranchAddress("pim_0_PZ",&Ppiz_12);
-  t->SetBranchAddress("pip_1_E",&Epi_13);
-  t->SetBranchAddress("pip_1_PX",&Ppix_13);
-  t->SetBranchAddress("pip_1_PY",&Ppiy_13);
-  t->SetBranchAddress("pip_1_PZ",&Ppiz_13);
-  t->SetBranchAddress("pip_2_E",&Epi_21);
-  t->SetBranchAddress("pip_2_PX",&Ppix_21);
-  t->SetBranchAddress("pip_2_PY",&Ppiy_21);
-  t->SetBranchAddress("pip_2_PZ",&Ppiz_21);
-  t->SetBranchAddress("pim_1_E",&Epi_22);
-  t->SetBranchAddress("pim_1_PX",&Ppix_22);
-  t->SetBranchAddress("pim_1_PY",&Ppiy_22);
-  t->SetBranchAddress("pim_1_PZ",&Ppiz_22);
-  t->SetBranchAddress("pim_2_E",&Epi_23);
-  t->SetBranchAddress("pim_2_PX",&Ppix_23);
-  t->SetBranchAddress("pim_2_PY",&Ppiy_23);
-  t->SetBranchAddress("pim_2_PZ",&Ppiz_23);
+  t->SetBranchAddress("taup_0_vtxX_TRUE",&DV1x);
+  t->SetBranchAddress("taup_0_vtxY_TRUE",&DV1y);
+  t->SetBranchAddress("taup_0_vtxZ_TRUE",&DV1z);
+  t->SetBranchAddress("taum_0_vtxX_TRUE",&DV2x);
+  t->SetBranchAddress("taum_0_vtxY_TRUE",&DV2y);
+  t->SetBranchAddress("taum_0_vtxZ_TRUE",&DV2z);
+  t->SetBranchAddress("Kp_0_E_TRUE",&Ek);
+  t->SetBranchAddress("Kp_0_PX_TRUE",&Pkx);
+  t->SetBranchAddress("Kp_0_PY_TRUE",&Pky);
+  t->SetBranchAddress("Kp_0_PZ_TRUE",&Pkz);
+  t->SetBranchAddress("pip_0_E_TRUE",&Epi_11);
+  t->SetBranchAddress("pip_0_PX_TRUE",&Ppix_11);
+  t->SetBranchAddress("pip_0_PY_TRUE",&Ppiy_11);
+  t->SetBranchAddress("pip_0_PZ_TRUE",&Ppiz_11);
+  t->SetBranchAddress("pim_0_E_TRUE",&Epi_12);
+  t->SetBranchAddress("pim_0_PX_TRUE",&Ppix_12);
+  t->SetBranchAddress("pim_0_PY_TRUE",&Ppiy_12);
+  t->SetBranchAddress("pim_0_PZ_TRUE",&Ppiz_12);
+  t->SetBranchAddress("pip_1_E_TRUE",&Epi_13);
+  t->SetBranchAddress("pip_1_PX_TRUE",&Ppix_13);
+  t->SetBranchAddress("pip_1_PY_TRUE",&Ppiy_13);
+  t->SetBranchAddress("pip_1_PZ_TRUE",&Ppiz_13);
+  t->SetBranchAddress("pip_2_E_TRUE",&Epi_21);
+  t->SetBranchAddress("pip_2_PX_TRUE",&Ppix_21);
+  t->SetBranchAddress("pip_2_PY_TRUE",&Ppiy_21);
+  t->SetBranchAddress("pip_2_PZ_TRUE",&Ppiz_21);
+  t->SetBranchAddress("pim_1_E_TRUE",&Epi_22);
+  t->SetBranchAddress("pim_1_PX_TRUE",&Ppix_22);
+  t->SetBranchAddress("pim_1_PY_TRUE",&Ppiy_22);
+  t->SetBranchAddress("pim_1_PZ_TRUE",&Ppiz_22);
+  t->SetBranchAddress("pim_2_E_TRUE",&Epi_23);
+  t->SetBranchAddress("pim_2_PX_TRUE",&Ppix_23);
+  t->SetBranchAddress("pim_2_PY_TRUE",&Ppiy_23);
+  t->SetBranchAddress("pim_2_PZ_TRUE",&Ppiz_23);
   t->SetBranchAddress("Bp_0_M",&B0_M);
   t->SetBranchAddress("MCorr",&MCorr);
-  t->SetBranchAddress("pip_0_pim_0_pip_1_M",&m3pi1_tree);
-  t->SetBranchAddress("pip_2_pim_1_pim_2_M",&m3pi2_tree);
+  t->SetBranchAddress("pip_0_pim_0_pip_1_M_TRUE",&m3pi1_tree);
+  t->SetBranchAddress("pip_2_pim_1_pim_2_M_TRUE",&m3pi2_tree);
 
   // Unknown parameters  
-  TH1D* h_BVx = new TH1D("BVx", "BVx", 100, -5, 5);
-  TH1D* h_BVy = new TH1D("BVy", "BVy", 100, -5, 5);
-  TH1D* h_BVz = new TH1D("BVz", "BVz", 100, -5, 5);
-  TH1D* h_BVz1 = new TH1D("BVz1", "BVz1", 100, -5, 5);
-  TH1D* h_BVz2 = new TH1D("BVz2", "BVz2", 100, -5, 5);
-  TH1D* h_Etau1 = new TH1D("Etau1", "Etau1", 100, 0, 150);
+  TH1D* h_BVx = new TH1D("BVx", "BVx", 100, -2, 2);
+  TH1D* h_BVy = new TH1D("BVy", "BVy", 100, -2, 2);
+  TH1D* h_BVz = new TH1D("BVz", "BVz", 100, -2, 2);
+  TH1D* h_BVz1 = new TH1D("BVz1", "BVz1", 100, -2, 2);
+  TH1D* h_BVz2 = new TH1D("BVz2", "BVz2", 100, -2, 2);
+  TH1D* h_Etau1 = new TH1D("Etau1", "Etau1", 100, 0, 50);
   TH1D* h_Ptaux1 = new TH1D("Ptaux1", "Ptaux1", 100, -5, 5);
   TH1D* h_Ptauy1 = new TH1D("Ptauy1", "Ptauy1", 100, -5, 5);
   TH1D* h_Ptauz1 = new TH1D("Ptauz1", "Ptauz1", 100, 0, 50);
-  TH1D* h_Etau2 = new TH1D("Etau2", "Etau2", 100, 0, 150);
+  TH1D* h_Etau2 = new TH1D("Etau2", "Etau2", 100, 0, 50);
   TH1D* h_Ptaux2 = new TH1D("Ptaux2", "Ptaux2", 100, -5, 5);
   TH1D* h_Ptauy2 = new TH1D("Ptauy2", "Ptauy2", 100, -5, 5);
   TH1D* h_Ptauz2 = new TH1D("Ptauz2", "Ptauz2", 100, 0, 50);
-  TH1D* h_Enu1 = new TH1D("Enu1", "Enu1", 100, 0, 200);
-  TH1D* h_Pnu1 = new TH1D("Pnu1", "Pnu1", 100, 0, 200);
-  TH1D* h_Pnux1 = new TH1D("Pnux1", "Pnux1", 100, -10, 10);
-  TH1D* h_Pnuy1 = new TH1D("Pnuy1", "Pnuy1", 100, -10, 10);
-  TH1D* h_Pnuz1 = new TH1D("Pnuz1", "Pnuz1", 100, -150, 50);
-  TH1D* h_Enu2 = new TH1D("Enu2", "Enu2", 100, 0, 500);
-  TH1D* h_Pnu2 = new TH1D("Pnu2", "Pnu2", 100, 0, 500);
-  TH1D* h_Pnux2 = new TH1D("Pnux2", "Pnux2", 100, -10, 10);
-  TH1D* h_Pnuy2 = new TH1D("Pnuy2", "Pnuy2", 100, -10, 10);
-  TH1D* h_Pnuz2 = new TH1D("Pnuz2", "Pnuz2", 100, -150, 50);
-  TH1D* h_Eb = new TH1D("Eb", "Eb", 100, 0, 300);
-  TH1D* h_Pbx = new TH1D("Pbx", "Pbx", 100, -5, 5);
-  TH1D* h_Pby = new TH1D("Pby", "Pby", 100, -5, 5);
-  TH1D* h_Pbz = new TH1D("Pbz", "Pbz", 100, 0, 150);
+  TH1D* h_Enu1 = new TH1D("Enu1", "Enu1", 100, 0, 20);
+  TH1D* h_Pnu1 = new TH1D("Pnu1", "Pnu1", 100, 0, 20);
+  TH1D* h_Pnux1 = new TH1D("Pnux1", "Pnux1", 100, -5, 5);
+  TH1D* h_Pnuy1 = new TH1D("Pnuy1", "Pnuy1", 100, -5, 5);
+  TH1D* h_Pnuz1 = new TH1D("Pnuz1", "Pnuz1", 100, 0, 20);
+  TH1D* h_Enu2 = new TH1D("Enu2", "Enu2", 100, 0, 20);
+  TH1D* h_Pnu2 = new TH1D("Pnu2", "Pnu2", 100, 0, 20);
+  TH1D* h_Pnux2 = new TH1D("Pnux2", "Pnux2", 100, -5, 5);
+  TH1D* h_Pnuy2 = new TH1D("Pnuy2", "Pnuy2", 100, -5, 5);
+  TH1D* h_Pnuz2 = new TH1D("Pnuz2", "Pnuz2", 100, 0, 20);
+  TH1D* h_Eb = new TH1D("Eb", "Eb", 100, 0, 100);
+  TH1D* h_Pbx = new TH1D("Pbx", "Pbx", 100, -6, 6);
+  TH1D* h_Pby = new TH1D("Pby", "Pby", 100, -6, 6);
+  TH1D* h_Pbz = new TH1D("Pbz", "Pbz", 100, 0, 100);
 
   TH1D* h_BP_M = new TH1D("B0_M", "B0_M", 100, 2, 8);
   TH1D* h_MCorr = new TH1D("MCorr", "MCorr", 100, 2, 8);
   TH1D* h_Mb = new TH1D("Mb", "Mb", 100, 2, 8);
   TH1D* h_Mb1 = new TH1D("Mb1", "Mb1", 100, 2, 8);
-  TH1D* h_Pb = new TH1D("Pb", "Pb", 100, 0, 300);
-  TH1D* h_Tb = new TH1D("Tb", "Tb", 100, 0, 12); 
+  TH1D* h_Pb = new TH1D("Pb", "Pb", 100, 0, 100);
+  TH1D* h_Tb = new TH1D("Tb", "Tb", 100, 0, 0.3); 
 
   TH1D* h_m3pi1 = new TH1D("m3pi1", "m3pi1", 100, 0, 2);
   TH1D* h_m3pi2 = new TH1D("m3pi2", "m3pi2", 100, 0, 2);
@@ -202,7 +203,7 @@ void analytic_constraint(){
 
     //double Ptaux1 = (i*m - o*g)/(g*n - h*m);
     double Ptaux1 = 0;
-    double r = 0.5;
+    double r = 0.1;
     if( (abs(g) < r) && (abs(h) > r) && (abs(o - (i*(h*n - i*m))/pow(h,2)) < r) ){
       Ptaux1 = -i/h;
     }
@@ -365,7 +366,7 @@ void analytic_constraint(){
   b1.SaveAs("./Plots/m3pi2.pdf");
 
   TCanvas b2;
-  b2.SetLogy();
+  //b2.SetLogy();
   b2.cd();
   h_Pb->GetXaxis()->SetTitle("P_{B} [GeV]");
   h_Pb->GetYaxis()->SetTitle( TString::Format("Events / (%g)",(h_Pb->GetXaxis()->GetXmax() - h_Pb->GetXaxis()->GetXmin())/h_Pb->GetNbinsX()) );
@@ -380,20 +381,26 @@ void analytic_constraint(){
 
   TCanvas c;
   c.cd();
+  gStyle->SetOptStat(0);
   h_BP_M->SetTitle("");
   h_MCorr->SetTitle("");
   h_Mb->SetTitle("");
+  h_Mb->Scale(1/h_Mb->Integral());
+  h_BP_M->Scale(1/h_BP_M->Integral());
+  h_MCorr->Scale(1/h_MCorr->Integral());
   h_BP_M->SetFillColorAlpha(kRed, 0.35);
   h_MCorr->SetFillColorAlpha(kGreen, 0.35);
   h_Mb->SetFillColorAlpha(kBlue, 0.35);
   h_MCorr->GetXaxis()->SetTitle("M_{B} [GeV]");
-  h_MCorr->GetYaxis()->SetTitle( TString::Format("Events / (%g)",(h_MCorr->GetXaxis()->GetXmax() - h_MCorr->GetXaxis()->GetXmin())/h_MCorr->GetNbinsX()) );
-  h_MCorr->Draw();
-  h_BP_M->Draw("same");
-  h_Mb->Draw("same");
+  h_MCorr->GetYaxis()->SetTitle( "Normalized entries" );
+  h_MCorr->GetYaxis()->SetRangeUser(0,0.1);
+  h_MCorr->Draw("HIST");
+  h_BP_M->Draw("HIST same");
+  h_Mb->Draw("HISTsame");
   leg->Draw("same");
   c.SaveAs("./Plots/B_mass.gif");
   c.SaveAs("./Plots/B_mass.pdf");
+  gStyle->SetOptStat(1);
 
   TCanvas c0;
   c0.cd();
@@ -459,7 +466,7 @@ void analytic_constraint(){
   c4.SaveAs("./Plots/Ptau1z.pdf");
 
   TCanvas c5;
-  c5.SetLogy();
+  //c5.SetLogy();
   c5.cd();
   h_Etau1->GetXaxis()->SetTitle("E_{#tau1} [GeV]");
   h_Etau1->GetYaxis()->SetTitle( TString::Format("Events / (%g)",(h_Etau1->GetXaxis()->GetXmax() - h_Etau1->GetXaxis()->GetXmin())/h_Etau1->GetNbinsX()) );
@@ -493,7 +500,7 @@ void analytic_constraint(){
   c8.SaveAs("./Plots/Ptau2z.pdf");
 
   TCanvas c9;
-  c9.SetLogy();
+  //c9.SetLogy();
   c9.cd();
   h_Etau2->GetXaxis()->SetTitle("E_{#tau2} [GeV]");
   h_Etau2->GetYaxis()->SetTitle( TString::Format("Events / (%g)",(h_Etau2->GetXaxis()->GetXmax() - h_Etau2->GetXaxis()->GetXmin())/h_Etau2->GetNbinsX()) );
@@ -604,7 +611,7 @@ void analytic_constraint(){
   c20.SaveAs("./Plots/Pbz.pdf");
 
   TCanvas c21;
-  c21.SetLogy();
+  //c21.SetLogy();
   c21.cd();
   h_Eb->GetXaxis()->SetTitle("E_{B} [GeV]");
   h_Eb->GetYaxis()->SetTitle( TString::Format("Events / (%g)",(h_Eb->GetXaxis()->GetXmax() - h_Eb->GetXaxis()->GetXmin())/h_Eb->GetNbinsX()) );
