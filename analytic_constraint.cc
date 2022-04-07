@@ -1,25 +1,29 @@
 #include <TH1.h>
 #include <TH1D.h>
 #include <TMath.h>
-#include "RooFit.h"
-#include <RooRealVar.h>
-#include <RooExponential.h>
 #include <RooAbsPdf.h>
 #include <iomanip>
 
-using namespace RooStats;
-using namespace RooFit;
+using namespace std;
+
+std::vector<double> rotate(double x, double y, double z, double theta, double phi);
+std::vector<double> translate(double x, double y, double z, double Px, double Py, double Pz);
+std::vector<double> rotate_inverse(double xp, double yp, double zp, double theta, double phi);
+std::vector<double> translate_inverse(double x, double y, double z, double Px, double Py, double Pz);
 
 void analytic_constraint(){
 
   TFile* f = new TFile("./RapidSim/B2Ktautau_tree.root");
   TTree* t = (TTree*)f->Get("DecayTree");
 
-  double PVx, PVy, PVz, DV1x, DV1y, DV1z, DV2x, DV2y, DV2z, Ek, Pkx, Pky, Pkz, Epi_11, Epi_12, Epi_13, Epi_21, Epi_22, Epi_23, Ppix_11, Ppix_12, Ppix_13, Ppix_21, Ppix_22, Ppix_23, Ppiy_11, Ppiy_12, Ppiy_13, Ppiy_21, Ppiy_22, Ppiy_23, Ppiz_11, Ppiz_12, Ppiz_13, Ppiz_21, Ppiz_22, Ppiz_23, B0_M, MCorr, m3pi1_tree, m3pi2_tree;
+  double PVx, PVy, PVz, DV1x, DV1y, DV1z, DV2x, DV2y, DV2z, Ek, Pkx, Pky, Pkz, Epi_11, Epi_12, Epi_13, Epi_21, Epi_22, Epi_23, Ppix_11, Ppix_12, Ppix_13, Ppix_21, Ppix_22, Ppix_23, Ppiy_11, Ppiy_12, Ppiy_13, Ppiy_21, Ppiy_22, Ppiy_23, Ppiz_11, Ppiz_12, Ppiz_13, Ppiz_21, Ppiz_22, Ppiz_23, B0_M, MCorr, m3pi1_tree, m3pi2_tree, BVgenX, BVgenY, BVgenZ;
 
-  t->SetBranchAddress("Bp_0_origX",&PVx);
-  t->SetBranchAddress("Bp_0_origY",&PVy);
-  t->SetBranchAddress("Bp_0_origZ",&PVz);
+  t->SetBranchAddress("Bp_0_origX_TRUE",&PVx);
+  t->SetBranchAddress("Bp_0_origY_TRUE",&PVy);
+  t->SetBranchAddress("Bp_0_origZ_TRUE",&PVz);
+  t->SetBranchAddress("Bp_0_vtxX_TRUE",&BVgenX);
+  t->SetBranchAddress("Bp_0_vtxY_TRUE",&BVgenY);
+  t->SetBranchAddress("Bp_0_vtxZ_TRUE",&BVgenZ);
   t->SetBranchAddress("taup_0_vtxX_TRUE",&DV1x);
   t->SetBranchAddress("taup_0_vtxY_TRUE",&DV1y);
   t->SetBranchAddress("taup_0_vtxZ_TRUE",&DV1z);
@@ -137,47 +141,60 @@ void analytic_constraint(){
 
     h_m3pi1_tree->Fill(m3pi1_tree);
     h_m3pi2_tree->Fill(m3pi2_tree);
-
-    // Change reference frame (z-axis along K momentum)
-
-    double Pk = sqrt(pow(Pkx,2) + pow(Pky,2) + pow(Pkz,2));
-    double Pk2d = sqrt(pow(Pkx,2) + pow(Pky,2));
-
     h_MCorr->Fill(MCorr);
     h_BP_M->Fill(B0_M);
 
-    double PVxp = -(Pky/Pk2d)*PVx + (Pkx/Pk2d)*PVy;
-    double PVyp = -((Pkz*Pkx)/(Pk*Pk2d))*PVx - ((Pky*Pkz)/(Pk*Pk2d))*PVy + (Pk2d/Pk)*PVz;
-    double PVzp = (Pkx*PVx + Pky*PVy + Pkz*PVz)/Pk;
-    double DV1xp = -(Pky/Pk2d)*DV1x + (Pkx/Pk2d)*DV1y;
-    double DV1yp = -((Pkz*Pkx)/(Pk*Pk2d))*DV1x - ((Pky*Pkz)/(Pk*Pk2d))*DV1y + (Pk2d/Pk)*DV1z;
-    double DV1zp = (Pkx*DV1x + Pky*DV1y + Pkz*DV1z)/Pk; 
-    double DV2xp = -(Pky/Pk2d)*DV2x + (Pkx/Pk2d)*DV2y;
-    double DV2yp = -((Pkz*Pkx)/(Pk*Pk2d))*DV2x - ((Pky*Pkz)/(Pk*Pk2d))*DV2y + (Pk2d/Pk)*DV2z;
-    double DV2zp = (Pkx*DV2x + Pky*DV2y + Pkz*DV2z)/Pk;
-    double Ppixp_11 = -(Pky/Pk2d)*Ppix_11 + (Pkx/Pk2d)*Ppiy_11;
-    double Ppiyp_11 = -((Pkz*Pkx)/(Pk*Pk2d))*Ppix_11 - ((Pky*Pkz)/(Pk*Pk2d))*Ppiy_11 + (Pk2d/Pk)*Ppiz_11;
-    double Ppizp_11 = (Pkx*Ppix_11 + Pky*Ppiy_11 + Pkz*Ppiz_11)/Pk;
-    double Ppixp_12 = -(Pky/Pk2d)*Ppix_12 + (Pkx/Pk2d)*Ppiy_12;
-    double Ppiyp_12 = -((Pkz*Pkx)/(Pk*Pk2d))*Ppix_12 - ((Pky*Pkz)/(Pk*Pk2d))*Ppiy_12 + (Pk2d/Pk)*Ppiz_12;
-    double Ppizp_12 = (Pkx*Ppix_12 + Pky*Ppiy_12 + Pkz*Ppiz_12)/Pk;
-    double Ppixp_13 = -(Pky/Pk2d)*Ppix_13 + (Pkx/Pk2d)*Ppiy_13;
-    double Ppiyp_13 = -((Pkz*Pkx)/(Pk*Pk2d))*Ppix_13 - ((Pky*Pkz)/(Pk*Pk2d))*Ppiy_13 + (Pk2d/Pk)*Ppiz_13;
-    double Ppizp_13 = (Pkx*Ppix_13 + Pky*Ppiy_13 + Pkz*Ppiz_13)/Pk;
-    double Ppixp_21 = -(Pky/Pk2d)*Ppix_21 + (Pkx/Pk2d)*Ppiy_21;
-    double Ppiyp_21 = -((Pkz*Pkx)/(Pk*Pk2d))*Ppix_21 - ((Pky*Pkz)/(Pk*Pk2d))*Ppiy_21 + (Pk2d/Pk)*Ppiz_21;
-    double Ppizp_21 = (Pkx*Ppix_21 + Pky*Ppiy_21 + Pkz*Ppiz_21)/Pk;
-    double Ppixp_22 = -(Pky/Pk2d)*Ppix_22 + (Pkx/Pk2d)*Ppiy_22;
-    double Ppiyp_22 = -((Pkz*Pkx)/(Pk*Pk2d))*Ppix_22 - ((Pky*Pkz)/(Pk*Pk2d))*Ppiy_22 + (Pk2d/Pk)*Ppiz_22;
-    double Ppizp_22 = (Pkx*Ppix_22 + Pky*Ppiy_22 + Pkz*Ppiz_22)/Pk;
-    double Ppixp_23 = -(Pky/Pk2d)*Ppix_23 + (Pkx/Pk2d)*Ppiy_23;
-    double Ppiyp_23 = -((Pkz*Pkx)/(Pk*Pk2d))*Ppix_23 - ((Pky*Pkz)/(Pk*Pk2d))*Ppiy_23 + (Pk2d/Pk)*Ppiz_23;
-    double Ppizp_23 = (Pkx*Ppix_23 + Pky*Ppiy_23 + Pkz*Ppiz_23)/Pk;
-    double Pkxp = -(Pky/Pk2d)*Pkx + (Pkx/Pk2d)*Pky;
-    double Pkyp = -((Pkz*Pkx)/(Pk*Pk2d))*Pkx - ((Pky*Pkz)/(Pk*Pk2d))*Pky + (Pk2d/Pk)*Pkz;
-    double Pkzp = (Pkx*Pkx + Pky*Pky + Pkz*Pkz)/Pk;
+    // Change reference frame (z-axis in K+ trajectory)
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    double Pk = sqrt(pow(Pkx,2) + pow(Pky,2) + pow(Pkz,2));
+    double Pk2d = sqrt(pow(Pkx,2) + pow(Pky,2));
+    double theta = atan(Pky/Pkx);
+    double phi = atan(Pk2d/Pkz);
+
+    std::vector<double> PV_trans = translate(PVx, PVy, PVz, BVgenX, BVgenY, BVgenZ);
+    std::vector<double> PV = rotate(PV_trans[0], PV_trans[1], PV_trans[2], theta, phi);
+    std::vector<double> DV1_trans = translate(DV1x, DV1y, DV1z, BVgenX, BVgenY, BVgenZ);
+    std::vector<double> DV1 = rotate(DV1_trans[0], DV1_trans[1], DV1_trans[2], theta, phi);
+    std::vector<double> DV2_trans = translate(DV2x, DV2y, DV2z, BVgenX, BVgenY, BVgenZ);
+    std::vector<double> DV2 = rotate(DV2_trans[0], DV2_trans[1], DV2_trans[2], theta, phi);
+
+    std::vector<double> Ppi_11 = rotate(Ppix_11, Ppiy_11, Ppiz_11, theta, phi);
+    std::vector<double> Ppi_12 = rotate(Ppix_12, Ppiy_12, Ppiz_12, theta, phi);
+    std::vector<double> Ppi_13 = rotate(Ppix_13, Ppiy_13, Ppiz_13, theta, phi);
+    std::vector<double> Ppi_21 = rotate(Ppix_21, Ppiy_21, Ppiz_21, theta, phi);
+    std::vector<double> Ppi_22 = rotate(Ppix_22, Ppiy_22, Ppiz_22, theta, phi);
+    std::vector<double> Ppi_23 = rotate(Ppix_23, Ppiy_23, Ppiz_23, theta, phi);
+
+    double PVxp = PV[0];
+    double PVyp = PV[1];
+    double PVzp = PV[2];
+    double DV1xp = DV1[0];
+    double DV1yp = DV1[1];
+    double DV1zp = DV1[2];
+    double DV2xp = DV2[0];
+    double DV2yp = DV2[1];
+    double DV2zp = DV2[2];
+    double Ppixp_11 = Ppi_11[0];
+    double Ppiyp_11 = Ppi_11[1];
+    double Ppizp_11 = Ppi_11[2];
+    double Ppixp_12 = Ppi_12[0];
+    double Ppiyp_12 = Ppi_12[1];
+    double Ppizp_12 = Ppi_12[2];
+    double Ppixp_13 = Ppi_13[0];
+    double Ppiyp_13 = Ppi_13[1];
+    double Ppizp_13 = Ppi_13[2];
+    double Ppixp_21 = Ppi_21[0];
+    double Ppiyp_21 = Ppi_21[1];
+    double Ppizp_21 = Ppi_21[2];
+    double Ppixp_22 = Ppi_22[0];
+    double Ppiyp_22 = Ppi_22[1];
+    double Ppizp_22 = Ppi_22[2];
+    double Ppixp_23 = Ppi_23[0];
+    double Ppiyp_23 = Ppi_23[1];
+    double Ppizp_23 = Ppi_23[2];
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     // Convert distances to GeV-1 (not really necessary because only ratios of distances appear)
     // Distances in RapidSim are in cm
    
@@ -262,9 +279,8 @@ void analytic_constraint(){
     h_2d->Fill(y1,y2);
 
     total += 1;
-
     double Ptaux1 = 0;
-    double r = 0.005;
+    double r = 0.001;
 
     double x1p = (-h + sqrt(pow(h,2) - 4*g*i))/(2*g);
     double x1m = (-h - sqrt(pow(h,2) - 4*g*i))/(2*g);
@@ -279,120 +295,137 @@ void analytic_constraint(){
 
     passed += 1;
 
-    //cout << m*pow(Ptaux1,2) + n*Ptaux1 + o << endl;
+    
+    //cout << g*pow(Ptaux1,2) + h*Ptaux1 + i << endl;
 
+    //double Ptaux1 = (g*o - i*m)/(h*m - g*n);
     double Ptauy1 = a1*Ptaux1;
     double Ptauz1 = d1*Ptaux1 + d2;
-    double Ptau1 = sqrt(pow(Ptaux1,2) + pow(Ptauy1,2) + pow(Ptauz1,2));
-    double Etau1 = sqrt(pow(mtau,2) + pow(Ptau1,2));
 
     double Ptaux2 = b*Ptaux1;
     double Ptauy2 = a2*b*Ptaux1;
     double Ptauz2 = e1*Ptaux1 + e2;
     //cout << "Ptauz2 1 = " << e1*Ptaux1 + e2 << endl; // (same ok)
     //cout << "Ptauz2 2 = " << c1*Ptaux1 + c2*Ptauz1 << endl; // (same ok)
-    double Ptau2 = sqrt(pow(Ptaux2,2) + pow(Ptauy2,2) + pow(Ptauz2,2)); 
-    double Etau2 = sqrt(pow(mtau,2) + pow(Ptau2,2));
 
     double Pnux1 = Ptaux1 - p3pi1x;
     double Pnuy1 = Ptauy1 - p3pi1y;
     double Pnuz1 = Ptauz1 - p3pi1z;
-    double Pnu1 = sqrt(pow(Pnux1,2) + pow(Pnuy1,2) + pow(Pnuz1,2));
-    double Enu1 = Etau1 - E3pi1;
-
-    //cout << "Enu1 = " << Enu1 << endl;
-    //cout << "Pnu1 = " << Pnu1 << endl;
-
-    h_Etau_E3pi1->Fill(Etau1 - E3pi1);
 
     double Pnux2 = Ptaux2 - p3pi2x;
     double Pnuy2 = Ptauy2 - p3pi2y;
     double Pnuz2 = Ptauz2 - p3pi2z;
-    double Pnu2 = sqrt(pow(Pnux2,2) + pow(Pnuy2,2) + pow(Pnuz2,2));
-    double Enu2 = Etau2 - E3pi2;
-
-    //cout << "Enu2 = " << Enu2 << endl;
-    //cout << "Pnu2 = " << Pnu2 << endl;
-
-    h_Etau_E3pi2->Fill(Etau2 - E3pi2);   
 
     double Pbx = Ptaux1 + Ptaux2;
     double Pby = Ptauy1 + Ptauy2;
     double Pbz = Ptauz1 + Ptauz2 + Pk;
-    double Pb = sqrt(pow(Pbx,2) + pow(Pby,2) + pow(Pbz,2));
-    double Eb = Etau1 + Etau2 + Ek;
-    double Mb = sqrt( pow(Eb,2) - pow(Pb,2) );
 
     double BVz = DV1zp - DV1xp*(Ptauz1/Ptaux1);
     double BVz1 = DV2zp - DV2xp*(Ptauz2/Ptaux2);
     double BVz2 = PVzp - PVxp*((Ptauz1 + Ptauz2 + Pk)/(Ptaux1 + Ptaux2));
 
-    // convert to cm
-    double BVz_cm = BVz*0.1975*pow(10,-13);
-    double BVz1_cm = BVz1*0.1975*pow(10,-13);
-    double BVz2_cm = BVz2*0.1975*pow(10,-13);
- 
-    // Make transformation back to LHCb reference frame
-    Ptaux1 = -(Pky/Pk2d)*Ptaux1 - ((Pkx*Pkz)/(Pk*Pk2d))*Ptauy1 + (Pkx/Pk)*Ptauz1;
-    Ptauy1 = (Pkx/Pk2d)*Ptaux1 - ((Pky*Pkz)/(Pk*Pk2d))*Ptauy1 + (Pky/Pk)*Ptauz1;
-    Ptauz1 = (Pk2d/Pk)*Ptauy1 + (Pkz/Pk)*Ptauz1;
-    Ptaux2 = -(Pky/Pk2d)*Ptaux2 - ((Pkx*Pkz)/(Pk*Pk2d))*Ptauy2 + (Pkx/Pk)*Ptauz2;
-    Ptauy2 = (Pkx/Pk2d)*Ptaux2 - ((Pky*Pkz)/(Pk*Pk2d))*Ptauy2 + (Pky/Pk)*Ptauz2;
-    Ptauz2 = (Pk2d/Pk)*Ptauy2 + (Pkz/Pk)*Ptauz2;
-    Pnux1 = -(Pky/Pk2d)*Pnux1 - ((Pkx*Pkz)/(Pk*Pk2d))*Pnuy1 + (Pkx/Pk)*Pnuz1;
-    Pnuy1 = (Pkx/Pk2d)*Pnux1 - ((Pky*Pkz)/(Pk*Pk2d))*Pnuy1 + (Pky/Pk)*Pnuz1;
-    Pnuz1 = (Pk2d/Pk)*Pnuy1 + (Pkz/Pk)*Pnuz1;
-    Pnux2 = -(Pky/Pk2d)*Pnux2 - ((Pkx*Pkz)/(Pk*Pk2d))*Pnuy2 + (Pkx/Pk)*Pnuz2;
-    Pnuy2 = (Pkx/Pk2d)*Pnux2 - ((Pky*Pkz)/(Pk*Pk2d))*Pnuy2 + (Pky/Pk)*Pnuz2;
-    Pnuz2 = (Pk2d/Pk)*Pnuy2 + (Pkz/Pk)*Pnuz2;
-    Pbx = -(Pky/Pk2d)*Pbx - ((Pkx*Pkz)/(Pk*Pk2d))*Pby + (Pkx/Pk)*Pbz;
-    Pby = (Pkx/Pk2d)*Pbx - ((Pky*Pkz)/(Pk*Pk2d))*Pby + (Pky/Pk)*Pbz;
-    Pbz = (Pk2d/Pk)*Pby + (Pkz/Pk)*Pbz;
-    double BVx = (Pkx/Pk)*BVz;
-    double BVy = (Pky/Pk)*BVz;
-    double BVx_cm = (Pkx/Pk)*BVz_cm;
-    double BVy_cm = (Pky/Pk)*BVz_cm;
-    BVz_cm = (Pkz/Pk)*BVz_cm;
-    BVz1_cm = (Pkz/Pk)*BVz1_cm;
-    BVz2_cm = (Pkz/Pk)*BVz2_cm;
+    // Make reference frame transformation back to LHCb 
 
-    double Dx = BVx - PVx;
-    double Dy = BVy - PVy;
+    std::vector<double> PTAU1 = rotate_inverse(Ptaux1, Ptauy1, Ptauz1, theta, phi);
+    std::vector<double> PTAU2 = rotate_inverse(Ptaux2, Ptauy2, Ptauz2, theta, phi);
+    std::vector<double> PNU1 = rotate_inverse(Pnux1, Pnuy1, Pnuz1, theta, phi);
+    std::vector<double> PNU2 = rotate_inverse(Pnux2, Pnuy2, Pnuz2, theta, phi);
+    std::vector<double> PB = rotate_inverse(Pbx, Pby, Pbz, theta, phi);
+
+    std::vector<double> BV_rot = rotate_inverse(0, 0, BVz, theta, phi);
+    std::vector<double> BV = translate_inverse(BV_rot[0], BV_rot[1], BV_rot[2], BVgenX, BVgenY, BVgenZ);
+    std::vector<double> BV_rot1 = rotate_inverse(0, 0, BVz1, theta, phi);
+    std::vector<double> BV1 = translate_inverse(BV_rot1[0], BV_rot1[1], BV_rot1[2], BVgenX, BVgenY, BVgenZ);
+    std::vector<double> BV_rot2 = rotate_inverse(0, 0, BVz2, theta, phi);
+    std::vector<double> BV2 = translate_inverse(BV_rot2[0], BV_rot2[1], BV_rot2[2], BVgenX, BVgenY, BVgenZ);
+
+    double PtauX1 = PTAU1[0];
+    double PtauY1 = PTAU1[1];
+    double PtauZ1 = PTAU1[2];
+    double PtauX2 = PTAU2[0];
+    double PtauY2 = PTAU2[1];
+    double PtauZ2 = PTAU2[2];
+    double PnuX1 = PNU1[0];
+    double PnuY1 = PNU1[1];
+    double PnuZ1 = PNU1[2];
+    double PnuX2 = PNU2[0];
+    double PnuY2 = PNU2[1];
+    double PnuZ2 = PNU2[2];
+    double PbX = PB[0];
+    double PbY = PB[1];
+    double PbZ = PB[2];
+    double BVX = BV[0];
+    double BVY = BV[1];
+    double BVZ = BV[2];
+    double BVX1 = BV1[0];
+    double BVY1 = BV1[1];
+    double BVZ1 = BV1[2];
+    double BVX2 = BV2[0];
+    double BVY2 = BV2[1];
+    double BVZ2 = BV2[2];
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // convert to cm
+    double BVX_cm = BVX*0.1975*pow(10,-13);
+    double BVY_cm = BVY*0.1975*pow(10,-13);
+    double BVZ_cm = BVZ*0.1975*pow(10,-13);
+    double BVZ1_cm = BVZ1*0.1975*pow(10,-13);
+    double BVZ2_cm = BVZ2*0.1975*pow(10,-13);
+
+    // Scalars
+    double Ptau1 = sqrt(pow(PtauX1,2) + pow(PtauY1,2) + pow(PtauZ1,2));
+    double Ptau2 = sqrt(pow(PtauX2,2) + pow(PtauY2,2) + pow(PtauZ2,2));
+    double Pnu1 = sqrt(pow(PnuX1,2) + pow(PnuY1,2) + pow(PnuZ1,2));
+    double Pnu2 = sqrt(pow(PnuX2,2) + pow(PnuY2,2) + pow(PnuZ2,2));
+    double Pb = sqrt(pow(PbX,2) + pow(PbY,2) + pow(PbZ,2));
+
+    double Etau1 = sqrt(pow(mtau,2) + pow(Ptau1,2));
+    double Etau2 = sqrt(pow(mtau,2) + pow(Ptau2,2));
+    double Enu1 = Etau1 - E3pi1;
+    double Enu2 = Etau2 - E3pi2;
+    double Eb = Etau1 + Etau2 + Ek;
+    double Mb = sqrt(pow(Eb,2) - pow(Pb,2));
+
+    // B+ lifetime
+    double Dx = BVX - PVx;
+    double Dy = BVY - PVy;
     double Dz = BVz - PVz;
     double D = sqrt( pow(Dx,2) + pow(Dy,2) + pow(Dz,2) ); // in GeV^-1
     double Tb = (Mb/Pb)*D*6.59*pow(10,-13); // in ps
 
-    h_Ptaux1->Fill(Ptaux1);
-    h_Ptauy1->Fill(Ptauy1);
-    h_Ptauz1->Fill(Ptauz1);
+    h_Ptaux1->Fill(PtauX1);
+    h_Ptauy1->Fill(PtauY1);
+    h_Ptauz1->Fill(PtauZ1);
     h_Etau1->Fill(Etau1);
-    h_Ptaux2->Fill(Ptaux2);
-    h_Ptauy2->Fill(Ptauy2);
-    h_Ptauz2->Fill(Ptauz2);
+    h_Ptaux2->Fill(PtauX2);
+    h_Ptauy2->Fill(PtauY2);
+    h_Ptauz2->Fill(PtauZ2);
     h_Etau2->Fill(Etau2);
-    h_Pnux1->Fill(Pnux1);
-    h_Pnuy1->Fill(Pnuy1);
-    h_Pnuz1->Fill(Pnuz1);
+    h_Pnux1->Fill(PnuX1);
+    h_Pnuy1->Fill(PnuY1);
+    h_Pnuz1->Fill(PnuZ1);
     h_Enu1->Fill(Enu1);
     h_Pnu1->Fill(Pnu1);
-    h_Pnux2->Fill(Pnux2);
-    h_Pnuy2->Fill(Pnuy2);
-    h_Pnuz2->Fill(Pnuz2);
+    h_Pnux2->Fill(PnuX2);
+    h_Pnuy2->Fill(PnuY2);
+    h_Pnuz2->Fill(PnuZ2);
     h_Enu2->Fill(Enu2);
     h_Pnu2->Fill(Pnu2);
-    h_Pbx->Fill(Pbx);
-    h_Pby->Fill(Pby);
-    h_Pbz->Fill(Pbz);
+    h_Pbx->Fill(PbX);
+    h_Pby->Fill(PbY);
+    h_Pbz->Fill(PbZ);
     h_Pb->Fill(Pb);
     h_Eb->Fill(Eb);
     h_Mb->Fill(Mb);
     h_Mb1->Fill(Mb);
-    h_BVx->Fill(10*BVx_cm);
-    h_BVy->Fill(10*BVy_cm);
-    h_BVz->Fill(10*BVz_cm);
-    h_BVz1->Fill(10*BVz1_cm);
-    h_BVz2->Fill(10*BVz2_cm);
+    h_BVx->Fill(10*BVX_cm);
+    h_BVy->Fill(10*BVY_cm);
+    h_BVz->Fill(10*BVZ_cm);
+    h_BVz1->Fill(10*BVZ1_cm);
+    h_BVz2->Fill(10*BVZ2_cm);
     h_Tb->Fill(Tb);
+
   }
 
   cout << (passed/total)*100 << " % of events passed" << endl;
@@ -895,4 +928,73 @@ void analytic_constraint(){
   a.SaveAs("./Plots/Tb.gif");
   a.SaveAs("./Plots/Tb.pdf");
 
+  return;
+ 
 }
+
+
+std::vector<double> rotate(double x, double y, double z, double theta, double phi){
+
+  std::vector<double> rotated;
+
+  double xp = cos(phi)*cos(theta)*x + cos(phi)*sin(theta)*y + sin(phi)*z;   
+  double yp = -sin(theta)*x + cos(theta)*y;
+  double zp = sin(phi)*cos(theta)*x + sin(phi)*sin(theta)*y - cos(phi)*z;
+
+  rotated.push_back(xp);
+  rotated.push_back(yp);
+  rotated.push_back(zp);
+
+  return rotated;
+
+}
+
+std::vector<double> translate(double x, double y, double z, double Px, double Py, double Pz){
+
+  std::vector<double> translated;
+
+  double xp = x - Px;    
+  double yp = y - Py;
+  double zp = z - Pz;
+
+  translated.push_back(xp);
+  translated.push_back(yp);
+  translated.push_back(zp);
+
+  return translated;
+
+}
+
+std::vector<double> translate_inverse(double xp, double yp, double zp, double Px, double Py, double Pz){
+
+  std::vector<double> translated;
+
+  double x = xp + Px;
+  double y = yp + Py;
+  double z = zp + Pz;
+
+  translated.push_back(x);
+  translated.push_back(y);
+  translated.push_back(z);
+
+  return translated;
+
+}
+
+std::vector<double> rotate_inverse(double xp, double yp, double zp, double theta, double phi){
+
+  std::vector<double> rotated;
+
+  double x = cos(phi)*cos(theta)*xp - sin(theta)*yp + sin(phi)*cos(theta)*zp;
+  double y = cos(phi)*sin(theta)*xp + cos(theta)*yp + sin(phi)*sin(theta)*zp;
+  double z = sin(phi)*xp - cos(phi)*zp;
+
+  rotated.push_back(x);
+  rotated.push_back(y);
+  rotated.push_back(z);
+
+  return rotated;
+
+}
+
+
