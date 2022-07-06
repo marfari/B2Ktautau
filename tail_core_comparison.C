@@ -23,8 +23,9 @@ void tail_core_comparison(){
                              "taup_pip0_PE", "taup_pip0_PT", "taup_pip0_PX", "taup_pip0_PY", "taup_pip0_PZ",
                              "taup_pip1_PE", "taup_pip1_PT", "taup_pip1_PX", "taup_pip1_PY", "taup_pip1_PZ",
                              "taum_pip0_PE", "taum_pip0_PT", "taum_pip0_PX", "taum_pip0_PY", "taum_pip0_PZ",
-                             "taum_ENDVERTEX_CHI2", "taum_ENDVERTEX_X", "taum_ENDVERTEX_Y", "taum_ENDVERTEX_Z", "taum_ENDVERTEX_XERR", "taum_ENDVERTEX_YERR", "taum_ENDVERTEX_ZERR", "taum_DIRA_ORIVX", "taum_DIRA_OWNPV", "taum_FDCHI2_ORIVX", "taum_FDCHI2_OWNPV", "taum_FD_ORIVX", "taum_FD_OWNPV", "taum_IPCHI2_OWNPV", "taum_IP_OWNPV", "taum_M", "taum_PE", "taum_PT", "taum_PX", "taum_PY", "taum_PZ",
-                             "taup_ENDVERTEX_CHI2", "taup_ENDVERTEX_X", "taup_ENDVERTEX_Y", "taup_ENDVERTEX_Z", "taup_ENDVERTEX_XERR", "taup_ENDVERTEX_YERR", "taup_ENDVERTEX_ZERR", "taup_DIRA_ORIVX", "taup_DIRA_OWNPV", "taup_FDCHI2_ORIVX", "taup_FDCHI2_OWNPV", "taup_FD_ORIVX", "taup_FD_OWNPV", "taup_IPCHI2_OWNPV", "taup_IP_OWNPV", "taup_M", "taup_PE", "taup_PT", "taup_PX", "taup_PY", "taup_PZ"};
+                             "taum_ENDVERTEX_CHI2", "taum_ENDVERTEX_X", "taum_ENDVERTEX_Y", "taum_ENDVERTEX_Z", "taum_ENDVERTEX_XERR", "taum_ENDVERTEX_YERR", "taum_ENDVERTEX_ZERR", "taum_DIRA_ORIVX", "taum_DIRA_OWNPV", "taum_FDCHI2_ORIVX", "taum_FDCHI2_OWNPV", "taum_FD_ORIVX", "taum_FD_OWNPV", "taum_IPCHI2_OWNPV", "taum_IP_OWNPV", " Bp_ConsBp_tauminus_0_M", "taum_PE", "taum_PT", "taum_PX", "taum_PY", "taum_PZ",
+                             "taup_ENDVERTEX_CHI2", "taup_ENDVERTEX_X", "taup_ENDVERTEX_Y", "taup_ENDVERTEX_Z", "taup_ENDVERTEX_XERR", "taup_ENDVERTEX_YERR", "taup_ENDVERTEX_ZERR", "taup_DIRA_ORIVX", "taup_DIRA_OWNPV", "taup_FDCHI2_ORIVX", "taup_FDCHI2_OWNPV", "taup_FD_ORIVX", "taup_FD_OWNPV", "taup_IPCHI2_OWNPV", "taup_IP_OWNPV", " Bp_ConsBp_tauminus_M", "taup_PE", "taup_PT", "taup_PX", "taup_PY", "taup_PZ",
+                             "Bp_ConsBp_chi2", "Bp_ConsBp_nIter", "Bp_ConsBp_nPV"};
 
       TString x_labels[] = {"BV #chi^{2}", "BVx (mm)", "BVy (mm)", "BVz (mm)", "BVxerr (mm)", "BVyerr (mm)", "BVzerr (mm)", "B^{+} DIRA to PV (rad)", "B^{+} FD to PV #chi^{2}", "B^{+} FD to PV (mm)", "B^{+} IP to PV #chi^{2}", "B^{+} IP to PV (mm)", "PV #chi^{2}", "PVx (mm)", "PVy (mm)", "PVz (mm)", "PVxerr (mm)", "PVyerr (mm)", "PVzerr (mm)", "m_{B^{+}}^{DTF} (MeV)", "B^{+} m (MeV)", "B^{+} E (MeV)", "B^{+} p_{T} (MeV)", "B^{+} p_{x} (MeV)", "B^{+} p_{y} (MeV)", "B^{+} p_{z} (MeV)",
                             "K^{+} E (MeV)", "K^{+} p_{T} (MeV)", "K^{+} p_{x} (MeV)", "K^{+} p_{y} (MeV)", "K^{+} p_{z} (MeV)",
@@ -35,7 +36,8 @@ void tail_core_comparison(){
                             "#tau^{+} #pi^{+}_{2} E (MeV)", "#tau^{+} #pi^{+}_{2} p_{T} (MeV)", "#tau^{+} #pi^{+}_{2} p_{x} (MeV)", "#tau^{+} #pi^{+}_{2} p_{y} (MeV)", "#tau^{+} #pi^{+}_{2} p_{z} (MeV)", 
                             "#tau^{-} #pi^{+} E (MeV)", "#tau^{-} #pi^{+} p_{T} (MeV)", "#tau^{-} #pi^{+} p_{x} (MeV)", "#tau^{-} #pi^{+} p_{y} (MeV)", "#tau^{-} #pi^{+} p_{z} (MeV)", 
                             "#tau^{-} DV #chi^{2}", "#tau^{-} DVx (mm)", "#tau^{-} DVy (mm)", "#tau^{-} DVz (mm)", "#tau^{-} DVxerr (mm)", "#tau^{-} DVyerr (mm)", "#tau^{-} DVzerr (mm)", "#tau^{-} DIRA to BV (rad)", "#tau^{-} DIRA to PV (rad)", "#tau^{-} FD to BV #chi^{2}", "#tau^{-} FD to PV #chi^{2}", "#tau^{-} FD to BV (mm)", "#tau^{-} FD to PV (mm)", "#tau^{-} IP to PV #chi^{2}", "#tau^{-} IP to PV (mm)", "#tau^{-} m (MeV)", "#tau^{-} E (MeV)", "#tau^{-} p_{T} (MeV)", "#tau^{-} p_{x} (MeV)", "#tau^{-} p_{y} (MeV)", "#tau^{-} p_{z} (MeV)",
-                            "#tau^{+} DV #chi^{2}", "#tau^{+} DVx (mm)", "#tau^{+} DVy (mm)", "#tau^{+} DVz (mm)", "#tau^{+} DVxerr (mm)", "#tau^{+} DVyerr (mm)", "#tau^{+} DVzerr (mm)", "#tau^{+} DIRA to BV (rad)", "#tau^{+} DIRA to PV (rad)", "#tau^{+} FD to BV #chi^{2}", "#tau^{+} FD to PV #chi^{2}", "#tau^{+} FD to BV (mm)", "#tau^{+} FD to PV (mm)", "#tau^{+} IP to PV #chi^{2}", "#tau^{+} IP to PV (mm)", "#tau^{+} m (MeV)", "#tau^{+} E (MeV)", "#tau^{+} p_{T} (MeV)", "#tau^{+} p_{x} (MeV)", "#tau^{+} p_{y} (MeV)", "#tau^{+} p_{z} (MeV)"};
+                            "#tau^{+} DV #chi^{2}", "#tau^{+} DVx (mm)", "#tau^{+} DVy (mm)", "#tau^{+} DVz (mm)", "#tau^{+} DVxerr (mm)", "#tau^{+} DVyerr (mm)", "#tau^{+} DVzerr (mm)", "#tau^{+} DIRA to BV (rad)", "#tau^{+} DIRA to PV (rad)", "#tau^{+} FD to BV #chi^{2}", "#tau^{+} FD to PV #chi^{2}", "#tau^{+} FD to BV (mm)", "#tau^{+} FD to PV (mm)", "#tau^{+} IP to PV #chi^{2}", "#tau^{+} IP to PV (mm)", "#tau^{+} m (MeV)", "#tau^{+} E (MeV)", "#tau^{+} p_{T} (MeV)", "#tau^{+} p_{x} (MeV)", "#tau^{+} p_{y} (MeV)", "#tau^{+} p_{z} (MeV)",
+                            "DTF #chi^{2}", "Number of DTF iterations", "Number of DTF PVs"};
 
       std::vector<TH1D*> histos_core;
       std::vector<TH1D*> histos_tail;
@@ -228,7 +230,7 @@ void set_up_workspace_variables(RooWorkspace& w){
       float taum_IPCHI2_OWNPV_min, taum_IPCHI2_OWNPV_max;
       float taum_IP_OWNPV_min, taum_IP_OWNPV_max;
 
-      float taum_M_min, taum_M_max;
+      float  Bp_ConsBp_tauminus_0_M_min,  Bp_ConsBp_tauminus_0_M_max;
       float taum_PE_min, taum_PE_max;
       float taum_PT_min, taum_PT_max;
       float taum_PX_min, taum_PX_max;
@@ -252,12 +254,16 @@ void set_up_workspace_variables(RooWorkspace& w){
       float taup_IPCHI2_OWNPV_min, taup_IPCHI2_OWNPV_max;
       float taup_IP_OWNPV_min, taup_IP_OWNPV_max;
 
-      float taup_M_min, taup_M_max;
+      float  Bp_ConsBp_tauminus_M_min,  Bp_ConsBp_tauminus_M_max;
       float taup_PE_min, taup_PE_max;
       float taup_PT_min, taup_PT_max;
       float taup_PX_min, taup_PX_max;
       float taup_PY_min, taup_PY_max;
       float taup_PZ_min, taup_PZ_max;
+
+      float Bp_ConsBp_chi2_min, Bp_ConsBp_chi2_max;
+      float Bp_ConsBp_nIter_min, Bp_ConsBp_nIter_max;
+      float Bp_ConsBp_nPV_min, Bp_ConsBp_nPV_max;
 
       // B+ decay vertex
       Bp_ENDVERTEX_CHI2_min = 0.;
@@ -482,13 +488,13 @@ void set_up_workspace_variables(RooWorkspace& w){
       taum_DIRA_OWNPV_max = 1.;
 
       taum_FDCHI2_ORIVX_min = 0.;
-      taum_FDCHI2_ORIVX_max = 4000;
+      taum_FDCHI2_ORIVX_max = 200;
 
       taum_FDCHI2_OWNPV_min = 0.;
-      taum_FDCHI2_OWNPV_max = 60000;
+      taum_FDCHI2_OWNPV_max = 200;
 
       taum_FD_ORIVX_min = 0.;
-      taum_FD_ORIVX_max = 50.;
+      taum_FD_ORIVX_max = 25.;
 
       taum_FD_OWNPV_min = 0.;
       taum_FD_OWNPV_max = 200.;
@@ -500,8 +506,8 @@ void set_up_workspace_variables(RooWorkspace& w){
       taum_IP_OWNPV_max = 5.;
 
       // tau- kineamtics
-      taum_M_min = 400.;
-      taum_M_max = 1800.;
+      Bp_ConsBp_tauminus_0_M_min = 1000.;
+      Bp_ConsBp_tauminus_0_M_max = 2500.;
 
       taum_PE_min = 0.;
       taum_PE_max = 250000;
@@ -548,13 +554,13 @@ void set_up_workspace_variables(RooWorkspace& w){
       taup_DIRA_OWNPV_max = 1.;
 
       taup_FDCHI2_ORIVX_min = 0.;
-      taup_FDCHI2_ORIVX_max = 4000;
+      taup_FDCHI2_ORIVX_max = 200;
 
       taup_FDCHI2_OWNPV_min = 0.;
-      taup_FDCHI2_OWNPV_max = 60000;
+      taup_FDCHI2_OWNPV_max = 200;
 
       taup_FD_ORIVX_min = 0.;
-      taup_FD_ORIVX_max = 60;
+      taup_FD_ORIVX_max = 25;
 
       taup_FD_OWNPV_min = 0.;
       taup_FD_OWNPV_max = 200;
@@ -566,8 +572,8 @@ void set_up_workspace_variables(RooWorkspace& w){
       taup_IP_OWNPV_max = 3.;
 
       // tau+ kinematics
-      taup_M_min = 400;
-      taup_M_max = 1800;
+       Bp_ConsBp_tauminus_M_min = 1000;
+       Bp_ConsBp_tauminus_M_max = 2500;
 
       taup_PE_min = 0.;
       taup_PE_max = 200000;
@@ -583,6 +589,16 @@ void set_up_workspace_variables(RooWorkspace& w){
 
       taup_PZ_min = 0.;
       taup_PZ_max = 200000;  
+
+      // DTF
+      Bp_ConsBp_chi2_min = 0.;
+      Bp_ConsBp_chi2_max = 60.;
+
+      Bp_ConsBp_nIter_min = 0.;
+      Bp_ConsBp_nIter_max = 50.;
+
+      Bp_ConsBp_nPV_min = 0.5;
+      Bp_ConsBp_nPV_max = 2.5;
 
       // B+ decay vertex
       RooRealVar Bp_ENDVERTEX_CHI2("Bp_ENDVERTEX_CHI2", "Bp_ENDVERTEX_CHI2", Bp_ENDVERTEX_CHI2_min, Bp_ENDVERTEX_CHI2_max);
@@ -685,7 +701,7 @@ void set_up_workspace_variables(RooWorkspace& w){
       RooRealVar taup_IP_OWNPV("taup_IP_OWNPV", "taup_IP_OWNPV", taup_IP_OWNPV_min, taup_IP_OWNPV_max, "mm");
 
       // tau+ kinematics
-      RooRealVar taup_M("taup_M", "taup_M", taup_M_min, taup_M_max, "MeV");
+      RooRealVar  Bp_ConsBp_tauminus_M(" Bp_ConsBp_tauminus_M", " Bp_ConsBp_tauminus_M",  Bp_ConsBp_tauminus_M_min,  Bp_ConsBp_tauminus_M_max, "MeV");
       RooRealVar taup_PE("taup_PE", "taup_PE", taup_PE_min, taup_PE_max, "MeV");
       RooRealVar taup_PT("taup_PT", "taup_PT", taup_PT_min, taup_PT_max, "MeV");
       RooRealVar taup_PX("taup_PX", "taup_PX", taup_PX_min, taup_PX_max, "MeV");
@@ -712,12 +728,17 @@ void set_up_workspace_variables(RooWorkspace& w){
       RooRealVar taum_IP_OWNPV("taum_IP_OWNPV", "taum_IP_OWNPV", taum_IP_OWNPV_min, taum_IP_OWNPV_max, "mm");
 
       // tau- kinematics
-      RooRealVar taum_M("taum_M", "taum_M", taum_M_min, taum_M_max, "MeV");
+      RooRealVar Bp_ConsBp_tauminus_0_M(" Bp_ConsBp_tauminus_0_M", " Bp_ConsBp_tauminus_0_M",  Bp_ConsBp_tauminus_0_M_min,  Bp_ConsBp_tauminus_0_M_max, "MeV");
       RooRealVar taum_PE("taum_PE", "taum_PE", taum_PE_min, taum_PE_max, "MeV");
       RooRealVar taum_PT("taum_PT", "taum_PT", taum_PT_min, taum_PT_max, "MeV");
       RooRealVar taum_PX("taum_PX", "taum_PX", taum_PX_min, taum_PX_max, "MeV");
       RooRealVar taum_PY("taum_PY", "taum_PY", taum_PY_min, taum_PY_max, "MeV");
       RooRealVar taum_PZ("taum_PZ", "taum_PZ", taum_PZ_min, taum_PZ_max, "MeV");
+
+      // DTF
+      RooRealVar Bp_ConsBp_chi2("Bp_ConsBp_chi2", "Bp_ConsBp_chi2", Bp_ConsBp_chi2_min, Bp_ConsBp_chi2_max);
+      RooRealVar Bp_ConsBp_nIter("Bp_ConsBp_nIter", "Bp_ConsBp_nIter", Bp_ConsBp_nIter_min, Bp_ConsBp_nIter_max);
+      RooRealVar Bp_ConsBp_nPV("Bp_ConsBp_nPV", "Bp_ConsBp_nPV", Bp_ConsBp_nPV_min, Bp_ConsBp_nPV_max);
 
       // B+ decay vertex
       w.import(Bp_ENDVERTEX_CHI2);
@@ -820,7 +841,7 @@ void set_up_workspace_variables(RooWorkspace& w){
       w.import(taum_IP_OWNPV);
 
       // tau- kinematics
-      w.import(taum_M);
+      w.import( Bp_ConsBp_tauminus_0_M);
       w.import(taum_PE);
       w.import(taum_PT);
       w.import(taum_PX);
@@ -847,12 +868,17 @@ void set_up_workspace_variables(RooWorkspace& w){
       w.import(taup_IP_OWNPV);
 
       // tau+ kinematics
-      w.import(taup_M);
+      w.import( Bp_ConsBp_tauminus_M);
       w.import(taup_PE);
       w.import(taup_PT);
       w.import(taup_PX);
       w.import(taup_PY);
       w.import(taup_PZ);
+
+      // DTF
+      w.import(Bp_ConsBp_chi2);
+      w.import(Bp_ConsBp_nIter);
+      w.import(Bp_ConsBp_nPV);
 
       return 0;
 }

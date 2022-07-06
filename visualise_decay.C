@@ -5,15 +5,19 @@ using namespace std;
 
 ROOT::Math::XYZVector makeTransformation_vec(ROOT::Math::XYZVector p_K, ROOT::Math::XYZPoint refPoint, ROOT::Math::XYZVector theVector, bool invFlag);
 ROOT::Math::XYZPoint makeTransformation_point(ROOT::Math::XYZVector p_K, ROOT::Math::XYZPoint refPoint,  ROOT::Math::XYZPoint thePoint, bool invFlag);
-void plot(ROOT::Math::XYZPoint PV_t, ROOT::Math::XYZPoint KV_t, ROOT::Math::XYZPoint BV_t, ROOT::Math::XYZPoint DV1_t, ROOT::Math::XYZPoint DV2_t, ROOT::Math::XYZPoint DV1err, ROOT::Math::XYZPoint DV2err, ROOT::Math::XYZVector Xerr1_t, ROOT::Math::XYZVector Xerr2_t, ROOT::Math::XYZVector Yerr1_t, ROOT::Math::XYZVector Yerr2_t, ROOT::Math::XYZVector Pb_t, ROOT::Math::XYZVector Pnu1_t, ROOT::Math::XYZVector P3pi11_t, ROOT::Math::XYZVector P3pi12_t, ROOT::Math::XYZVector P3pi13_t, ROOT::Math::XYZVector Pnu2_t, ROOT::Math::XYZVector P3pi21_t, ROOT::Math::XYZVector P3pi22_t, ROOT::Math::XYZVector P3pi23_t, TString name, TFile* fout, int i);
+void plot(ROOT::Math::XYZPoint PV_t, ROOT::Math::XYZPoint KV_t, ROOT::Math::XYZPoint BV_t, ROOT::Math::XYZPoint BV_true_t, ROOT::Math::XYZPoint DV1_t, ROOT::Math::XYZPoint DV2_t, ROOT::Math::XYZPoint DV1err, ROOT::Math::XYZPoint DV2err, ROOT::Math::XYZVector Xerr1_t, ROOT::Math::XYZVector Xerr2_t, ROOT::Math::XYZVector Yerr1_t, ROOT::Math::XYZVector Yerr2_t, ROOT::Math::XYZVector Pb_t, ROOT::Math::XYZVector Pnu1_t, ROOT::Math::XYZVector P3pi11_t, ROOT::Math::XYZVector P3pi12_t, ROOT::Math::XYZVector P3pi13_t, ROOT::Math::XYZVector Pnu2_t, ROOT::Math::XYZVector P3pi21_t, ROOT::Math::XYZVector P3pi22_t, ROOT::Math::XYZVector P3pi23_t, TString name, TFile* fout, int i);
 void plot_comparison(TH1D* histo_core, TH1D* histo_tail, TString name, TString unit, int n_bins);
+
+bool DTF_neutrino = false;
 
 void visualise_decay(){
 
     TFile* fin = new TFile("/panfs/felician/B2Ktautau/ROOT_Sim/2016/mc_2016.root");
     TTree* t = (TTree*)fin->Get("ntuple/DecayTree");
 
-    TFile* fout = new TFile("Mass_resolution_visualisation/MC_2016_kinematics.root","recreate");
+    TFile* fout;
+    if(DTF_neutrino){fout = new TFile("Mass_resolution_visualisation/MC_2016_kinematics_nuDTF.root","recreate");}
+    else{fout = new TFile("Mass_resolution_visualisation/MC_2016_kinematics_nuTRUE.root","recreate");}
     
     double n_bins = 100;
     TH1D* h_pass_core = new TH1D("h_pass_core", "h_pass_core", n_bins, 0., 15);
@@ -54,6 +58,8 @@ void visualise_decay(){
     Double_t taup_FD_BV_chi2, taup_FD_BV, taum_FD_BV_chi2, taum_FD_BV, taup_DIRA_BV, taup_IP_PV_chi2, taup_IP_PV;
     Float_t status, Pnu1x, Pnu1y, Pnu1z, Pnu2x, Pnu2y, Pnu2z;
     Int_t Kp_TRUEID, taup_pip0_TRUEID, taup_pim0_TRUEID, taup_pip1_TRUEID, taum_pim0_TRUEID, taum_pip0_TRUEID, taum_pim1_TRUEID, taup_TRUEID, taum_TRUEID, Bp_TRUEID;
+    Double_t BVx_true, BVy_true, BVz_true;
+    Double_t taup_pip0_TRUEPX, taup_pim0_TRUEPX, taup_pip1_TRUEPX, taum_pim0_TRUEPX, taum_pip0_TRUEPX, taum_pim1_TRUEPX, taup_TRUEPX, taum_TRUEPX, taup_pip0_TRUEPY, taup_pim0_TRUEPY, taup_pip1_TRUEPY, taum_pim0_TRUEPY, taum_pip0_TRUEPY, taum_pim1_TRUEPY, taup_TRUEPY, taum_TRUEPY, taup_pip0_TRUEPZ, taup_pim0_TRUEPZ, taup_pip1_TRUEPZ, taum_pim0_TRUEPZ, taum_pip0_TRUEPZ, taum_pim1_TRUEPZ, taup_TRUEPZ, taum_TRUEPZ;
 
     t->SetBranchAddress("taup_FDCHI2_ORIVX",&taup_FD_BV_chi2);
     t->SetBranchAddress("taup_FD_ORIVX",&taup_FD_BV);
@@ -74,6 +80,9 @@ void visualise_decay(){
     t->SetBranchAddress("taum_pip0_TRUEID", &taum_pip0_TRUEID);
     t->SetBranchAddress("taum_pim1_TRUEID", &taum_pim1_TRUEID);
     t->SetBranchAddress("Bp_ConsBp_status",&status);
+    t->SetBranchAddress("Bp_TRUEENDVERTEX_X",&BVx_true);
+    t->SetBranchAddress("Bp_TRUEENDVERTEX_Y",&BVy_true);
+    t->SetBranchAddress("Bp_TRUEENDVERTEX_Z",&BVz_true);
 
     t->SetBranchAddress("refPoint_X",&KVx);
     t->SetBranchAddress("refPoint_Y",&KVy);
@@ -82,12 +91,24 @@ void visualise_decay(){
     t->SetBranchAddress("Bp_ENDVERTEX_Y",&BVy);
     t->SetBranchAddress("Bp_ENDVERTEX_Z",&BVz);
 
-    t->SetBranchAddress("Bp_ConsBp_tauminus_nu_tau_PX",&Pnu1x);
-    t->SetBranchAddress("Bp_ConsBp_tauminus_nu_tau_PY",&Pnu1y);
-    t->SetBranchAddress("Bp_ConsBp_tauminus_nu_tau_PZ",&Pnu1z);
-    t->SetBranchAddress("Bp_ConsBp_tauminus_0_nu_tau_PX",&Pnu2x);
-    t->SetBranchAddress("Bp_ConsBp_tauminus_0_nu_tau_PY",&Pnu2y);
-    t->SetBranchAddress("Bp_ConsBp_tauminus_0_nu_tau_PZ",&Pnu2z);
+    if(DTF_neutrino){
+      t->SetBranchAddress("Bp_ConsBp_tauminus_nu_tau_PX",&Pnu1x);
+      t->SetBranchAddress("Bp_ConsBp_tauminus_nu_tau_PY",&Pnu1y);
+      t->SetBranchAddress("Bp_ConsBp_tauminus_nu_tau_PZ",&Pnu1z);
+      t->SetBranchAddress("Bp_ConsBp_tauminus_0_nu_tau_PX",&Pnu2x);
+      t->SetBranchAddress("Bp_ConsBp_tauminus_0_nu_tau_PY",&Pnu2y);
+      t->SetBranchAddress("Bp_ConsBp_tauminus_0_nu_tau_PZ",&Pnu2z);
+    }
+    else{
+      t->SetBranchAddress("taup_TRUEP_Z", &taup_TRUEPZ);
+      t->SetBranchAddress("taum_TRUEP_Z", &taum_TRUEPZ);
+      t->SetBranchAddress("taup_pip0_TRUEP_Z", &taup_pip0_TRUEPZ);
+      t->SetBranchAddress("taup_pim0_TRUEP_Z", &taup_pim0_TRUEPZ);
+      t->SetBranchAddress("taup_pip1_TRUEP_Z", &taup_pip1_TRUEPZ);
+      t->SetBranchAddress("taum_pim0_TRUEP_Z", &taum_pim0_TRUEPZ);
+      t->SetBranchAddress("taum_pip0_TRUEP_Z", &taum_pip0_TRUEPZ);
+      t->SetBranchAddress("taum_pim1_TRUEP_Z", &taum_pim1_TRUEPZ);  
+    }
 
     t->SetBranchAddress("Kp_PX",&Pkx);
     t->SetBranchAddress("Kp_PY",&Pky);
@@ -143,9 +164,19 @@ void visualise_decay(){
     for(int i = 0; i < t->GetEntries(); i++){
       t->GetEntry(i);
 
+      if(!(DTF_neutrino)){
+        Pnu1x = taup_TRUEPX - (taup_pip0_TRUEPX + taup_pim0_TRUEPX + taup_pip1_TRUEPX);
+        Pnu2x = taum_TRUEPX - (taum_pim0_TRUEPX + taum_pip0_TRUEPX + taum_pim1_TRUEPX);
+        Pnu1y = taup_TRUEPY - (taup_pip0_TRUEPY + taup_pim0_TRUEPY + taup_pip1_TRUEPY);
+        Pnu2y = taum_TRUEPY - (taum_pim0_TRUEPY + taum_pip0_TRUEPY + taum_pim1_TRUEPY);    
+        Pnu1z = taup_TRUEPZ - (taup_pip0_TRUEPZ + taup_pim0_TRUEPZ + taup_pip1_TRUEPZ);
+        Pnu2z = taum_TRUEPZ - (taum_pim0_TRUEPZ + taum_pip0_TRUEPZ + taum_pim1_TRUEPZ);
+      }
+
       // Initialise points and vectors
       ROOT::Math::XYZPoint KV(KVx,KVy,KVz);
       ROOT::Math::XYZPoint BV(BVx, BVy, BVz);
+      ROOT::Math::XYZPoint BV_true(BVx_true, BVy_true, BVz_true);
       ROOT::Math::XYZPoint PV(PVx,PVy,PVz);
       ROOT::Math::XYZPoint DV1(DV1x,DV1y,DV1z);
       ROOT::Math::XYZPoint DV2(DV2x,DV2y,DV2z);
@@ -168,6 +199,7 @@ void visualise_decay(){
       // Transform x and y coordinates to plane perpendicular to K+ trajectory (z-axis points along K+ trajectory)
       ROOT::Math::XYZPoint KV_t = makeTransformation_point(Pk, KV, KV, false);
       ROOT::Math::XYZPoint BV_t = makeTransformation_point(Pk, KV, BV, false);
+      ROOT::Math::XYZPoint BV_true_t = makeTransformation_point(Pk, KV, BV_true, false);
       ROOT::Math::XYZPoint PV_t = makeTransformation_point(Pk, KV, PV, false);
       ROOT::Math::XYZPoint DV1_t = makeTransformation_point(Pk, KV, DV1, false);
       ROOT::Math::XYZPoint DV2_t = makeTransformation_point(Pk, KV, DV2, false);
@@ -208,8 +240,10 @@ void visualise_decay(){
         tau_distance = sqrt(pow(DV1.x() - DV2.x(),2) + pow(DV1.y() - DV2.y(),2) + pow(DV1.z() - DV2.z(),2));
 
         if(status == 0){ // pass DTF
+
           if( abs(Bmass - mpeak) < 300 ){ // core
-            plot(PV_t, KV_t, BV_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "pass_core", fout, i);
+            plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "pass_core", fout, i);
+            
             h_pass_core->Fill(A);
             h_DV1_core->Fill(IP1);
             h_DV2_core->Fill(IP2);
@@ -226,7 +260,8 @@ void visualise_decay(){
 
           }
           else if(Bmass > 6500.){ // tails
-            plot(PV_t, KV_t, BV_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "pass_tail", fout, i);
+            plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "pass_tail", fout, i);
+            
             h_pass_tail->Fill(A);
             h_DV1_tail->Fill(IP1);
             h_DV2_tail->Fill(IP2);
@@ -244,7 +279,8 @@ void visualise_decay(){
           }
         }
         else{ // fail DTF
-          plot(PV_t, KV_t, BV_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "fail", fout, i);
+          plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "fail", fout, i);
+          
           h_fail->Fill(A);
           h_DV1_fail->Fill(IP1);
           h_DV2_fail->Fill(IP2);
@@ -430,7 +466,7 @@ void plot_comparison(TH1D* histo_core, TH1D* histo_tail, TString name, TString u
 
 }
 
-void plot(ROOT::Math::XYZPoint PV_t, ROOT::Math::XYZPoint KV_t, ROOT::Math::XYZPoint BV_t, ROOT::Math::XYZPoint DV1_t, ROOT::Math::XYZPoint DV2_t, ROOT::Math::XYZPoint DV1err, ROOT::Math::XYZPoint DV2err,  ROOT::Math::XYZVector Xerr1_t, ROOT::Math::XYZVector Xerr2_t, ROOT::Math::XYZVector Yerr1_t, ROOT::Math::XYZVector Yerr2_t, ROOT::Math::XYZVector Pb_t, ROOT::Math::XYZVector Pnu1_t, ROOT::Math::XYZVector P3pi11_t, ROOT::Math::XYZVector P3pi12_t, ROOT::Math::XYZVector P3pi13_t, ROOT::Math::XYZVector Pnu2_t, ROOT::Math::XYZVector P3pi21_t, ROOT::Math::XYZVector P3pi22_t, ROOT::Math::XYZVector P3pi23_t, TString name, TFile* fout, int i){
+void plot(ROOT::Math::XYZPoint PV_t, ROOT::Math::XYZPoint KV_t, ROOT::Math::XYZPoint BV_t, ROOT::Math::XYZPoint BV_true_t, ROOT::Math::XYZPoint DV1_t, ROOT::Math::XYZPoint DV2_t, ROOT::Math::XYZPoint DV1err, ROOT::Math::XYZPoint DV2err,  ROOT::Math::XYZVector Xerr1_t, ROOT::Math::XYZVector Xerr2_t, ROOT::Math::XYZVector Yerr1_t, ROOT::Math::XYZVector Yerr2_t, ROOT::Math::XYZVector Pb_t, ROOT::Math::XYZVector Pnu1_t, ROOT::Math::XYZVector P3pi11_t, ROOT::Math::XYZVector P3pi12_t, ROOT::Math::XYZVector P3pi13_t, ROOT::Math::XYZVector Pnu2_t, ROOT::Math::XYZVector P3pi21_t, ROOT::Math::XYZVector P3pi22_t, ROOT::Math::XYZVector P3pi23_t, TString name, TFile* fout, int i){
 
         double r1x = 0.5*sqrt(pow(Xerr1_t.x(),2) + pow(Xerr1_t.y(),2) + pow(Xerr1_t.z(),2));
         double r2x = 0.5*sqrt(pow(Xerr2_t.x(),2) + pow(Xerr2_t.y(),2) + pow(Xerr2_t.z(),2));
@@ -451,15 +487,6 @@ void plot(ROOT::Math::XYZPoint PV_t, ROOT::Math::XYZPoint KV_t, ROOT::Math::XYZP
         e2->SetLineWidth(2);
         e1->SetFillColorAlpha(kBlue,0.5);
         e2->SetFillColorAlpha(kRed,0.5);
-
-        // double MagNu1 = sqrt(pow(Pnu1_t.x(),2) + pow(Pnu1_t.y(),2))*5;
-        // double MagNu2 = sqrt(pow(Pnu2_t.x(),2) + pow(Pnu2_t.y(),2))*5;
-        // double Mag11 = sqrt(pow(P3pi11_t.x(),2) + pow(P3pi11_t.y(),2))*5;
-        // double Mag12 = sqrt(pow(P3pi12_t.x(),2) + pow(P3pi12_t.y(),2))*5;
-        // double Mag13 = sqrt(pow(P3pi13_t.x(),2) + pow(P3pi13_t.y(),2))*5;
-        // double Mag21 = sqrt(pow(P3pi21_t.x(),2) + pow(P3pi21_t.y(),2))*5;
-        // double Mag22 = sqrt(pow(P3pi22_t.x(),2) + pow(P3pi22_t.y(),2))*5;
-        // double Mag23 = sqrt(pow(P3pi23_t.x(),2) + pow(P3pi23_t.y(),2))*5;
 
         double r = 0.0001;
         double Pb_lineX[2] = {0., Pb_t.x()*r};
@@ -590,19 +617,23 @@ void plot(ROOT::Math::XYZPoint PV_t, ROOT::Math::XYZPoint KV_t, ROOT::Math::XYZP
         TGraph* DV2z_point = new TGraph();
         TGraph* PVz_point = new TGraph();
         TGraph* BVz_point = new TGraph();
+        TGraph* BVz_true_point = new TGraph();
         DV1z_point->SetPoint(0, DV1_t.z(), 0.);
         DV2z_point->SetPoint(0, DV2_t.z(), 0.);
         PVz_point->SetPoint(0, PV_t.z(), 0.);
         BVz_point->SetPoint(0, BV_t.z(), 0.);
+        BVz_true_point->SetPoint(0, BV_true_t.z(), 0.);
 
         DV1z_point->SetMarkerColor(kBlue);
         DV2z_point->SetMarkerColor(kRed);
         PVz_point->SetMarkerColor(kBlack);
         BVz_point->SetMarkerColor(kGray);
+        BVz_true_point->SetMarkerColor(kGray+2);
         DV1z_point->SetMarkerStyle(8);
         DV2z_point->SetMarkerStyle(8);
         PVz_point->SetMarkerStyle(8);
         BVz_point->SetMarkerStyle(8);
+        BVz_true_point->SetMarkerStyle(8);
 
         TGraph* DV1err_line = new TGraph(2, DV1err_lineZ, zero2);
         TGraph* DV2err_line = new TGraph(2, DV2err_lineZ, zero2);
@@ -619,6 +650,7 @@ void plot(ROOT::Math::XYZPoint PV_t, ROOT::Math::XYZPoint KV_t, ROOT::Math::XYZP
         mg1->Add(DV2z_point,"AP");
         mg1->Add(PVz_point,"AP");
         mg1->Add(BVz_point,"AP");
+        mg1->Add(BVz_true_point,"AP");
         mg1->Add(DV1err_line,"L");
         mg1->Add(DV2err_line,"L");
 
