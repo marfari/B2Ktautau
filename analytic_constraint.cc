@@ -11,7 +11,7 @@ std::vector<double> translate(double x, double y, double z, double Px, double Py
 std::vector<double> rotate_inverse(double xp, double yp, double zp, double Pkx, double Pky, double Pkz);
 std::vector<double> translate_inverse(double x, double y, double z, double Px, double Py, double Pz);
 
-#define smear 0
+#define smear 1
 
 void analytic_constraint(){
 
@@ -197,8 +197,8 @@ void analytic_constraint(){
   TH1D* h_Pby_gen = new TH1D("Pby_gen", "Pby_gen", 100, -6, 6);
   TH1D* h_Pbz_gen = new TH1D("Pbz_gen", "Pbz_gen", 100, 0, 100);
 
-  TH1D* h_BP_M = new TH1D("B0_M", "B0_M", 100, 4, 8);
-  TH1D* h_MCorr = new TH1D("MCorr", "MCorr", 100, 4, 8);
+  TH1D* h_BP_M = new TH1D("B0_M", "B0_M", 100, 2, 8);
+  TH1D* h_MCorr = new TH1D("MCorr", "MCorr", 100, 2, 8);
   TH1D* h_Mb = new TH1D("Mb", "Mb", 100, 4, 8);
   TH1D* h_Mb1 = new TH1D("Mb1", "Mb1", 100, 4, 8);
   TH1D* h_Mb2 = new TH1D("Mb2", "Mb2", 100, 4, 8);
