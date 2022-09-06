@@ -128,15 +128,15 @@ StatusCode TupleToolDecayTreeFitter::fill( const LHCb::Particle* mother, const L
     if ( msgLevel( MSG::DEBUG ) ) debug() << "PVs: " << originVtx.size() << endmsg;
     for ( const auto& v : originVtx ) {
       if ( msgLevel( MSG::DEBUG ) ) debug() << "Creating DecayTreeFitter on " << tree.head() << " " << v << endmsg;
-      DecayTreeFitter::Fitter fitter( *( tree.head() ), *v, stateprovider );
+      DecayTreeFitter::Fitter Fitter( *( tree.head() ), *v, stateprovider );
       if ( msgLevel( MSG::DEBUG ) ) debug() << "Created DecayTreeFitter" << endmsg;
-      if ( !fit( fitter, tree.head(), v, prefix, tMap ) ) return StatusCode::FAILURE;
+      if ( !fit( Fitter, tree.head(), v, prefix, tMap ) ) return StatusCode::FAILURE;
     }
   } else {
     if ( msgLevel( MSG::DEBUG ) ) debug() << "Do not constrain the origin vertex" << endmsg;
-    // Get the fitter
-    DecayTreeFitter::Fitter fitter( *( tree.head() ), stateprovider );
-    if ( !fit( fitter, tree.head(), 0, prefix, tMap ) ) return StatusCode::FAILURE;
+    // Get the Fitter
+    DecayTreeFitter::Fitter Fitter( *( tree.head() ), stateprovider );
+    if ( !fit( Fitter, tree.head(), 0, prefix, tMap ) ) return StatusCode::FAILURE;
   }
 
   return fillTuple( tMap, tuple, prefix ); // the actual filling
@@ -144,28 +144,28 @@ StatusCode TupleToolDecayTreeFitter::fill( const LHCb::Particle* mother, const L
 //=============================================================================
 // do filling for a given vertex
 //=============================================================================
-StatusCode TupleToolDecayTreeFitter::fit( DecayTreeFitter::Fitter& fitter, const LHCb::Particle* P,
+StatusCode TupleToolDecayTreeFitter::fit( DecayTreeFitter::Fitter& Fitter, const LHCb::Particle* P,
                                           const LHCb::VertexBase* pv, const std::string& prefix,
                                           TupleMap& tMap ) const {
   if ( msgLevel( MSG::VERBOSE ) ) verbose() << "fit " << P << " " << pv << " " << prefix << endmsg;
   bool test = true;
   // add mass contraints
   if ( !m_massConstraintsPids.empty() ) {
-    for ( const auto& C : m_massConstraintsPids ) { fitter.setMassConstraint( C ); }
+    for ( const auto& C : m_massConstraintsPids ) { Fitter.setMassConstraint( C ); }
   }
   // fit
   if ( msgLevel( MSG::VERBOSE ) ) verbose() << "calling Fit" << endmsg;
-  fitter.fit();
+  Fitter.fit();
   if ( msgLevel( MSG::VERBOSE ) ) verbose() << "called Fit" << endmsg;
   // fill the fit result
-  fillDecay( fitter, prefix, tMap ).ignore( /* AUTOMATICALLY ADDED FOR gaudi/Gaudi!763 */ );
-  fillMomentum( fitter, P, prefix, tMap ).ignore( /* AUTOMATICALLY ADDED FOR gaudi/Gaudi!763 */ );
+  fillDecay( Fitter, prefix, tMap ).ignore( /* AUTOMATICALLY ADDED FOR gaudi/Gaudi!763 */ );
+  fillMomentum( Fitter, P, prefix, tMap ).ignore( /* AUTOMATICALLY ADDED FOR gaudi/Gaudi!763 */ );
   if ( m_constrainToOriginVertex ) {
     test &= fillPV( pv, prefix, tMap );
-    test &= fillLT( fitter, P, prefix, tMap );
+    test &= fillLT( Fitter, P, prefix, tMap );
   }
-  if ( isVerbose() ) { test &= fillDaughters( fitter, P, prefix, tMap ); }
-  if ( m_updateDaughters ) { test &= fillStableDaughters( fitter, P, prefix, tMap ); }
+  if ( isVerbose() ) { test &= fillDaughters( Fitter, P, prefix, tMap ); }
+  if ( m_updateDaughters ) { test &= fillStableDaughters( Fitter, P, prefix, tMap ); }
 
   return StatusCode( test );
 }
@@ -188,22 +188,22 @@ StatusCode TupleToolDecayTreeFitter::fillPV( const LHCb::VertexBase* pv, const s
 //=============================================================================
 // Fill standard stuff
 //=============================================================================
-StatusCode TupleToolDecayTreeFitter::fillDecay( const DecayTreeFitter::Fitter& fitter, const std::string& prefix,
+StatusCode TupleToolDecayTreeFitter::fillDecay( const DecayTreeFitter::Fitter& Fitter, const std::string& prefix,
                                                 TupleMap& tMap ) const {
   bool test = true;
   if ( msgLevel( MSG::VERBOSE ) ) verbose() << "FillDecay " << prefix << endmsg;
 
-  test &= insert( prefix + "_status", fitter.status(), tMap );
-  test &= insert( prefix + "_nDOF", fitter.nDof(), tMap );
-  test &= insert( prefix + "_chi2", fitter.chiSquare(), tMap );
-  test &= insert( prefix + "_nIter", fitter.nIter(), tMap );
+  test &= insert( prefix + "_status", Fitter.status(), tMap );
+  test &= insert( prefix + "_nDOF", Fitter.nDof(), tMap );
+  test &= insert( prefix + "_chi2", Fitter.chiSquare(), tMap );
+  test &= insert( prefix + "_nIter", Fitter.nIter(), tMap );
 
   return StatusCode( test );
 }
 //=============================================================================
 // Fill momentum and mass information
 //=============================================================================
-StatusCode TupleToolDecayTreeFitter::fillMomentum( const DecayTreeFitter::Fitter& fitter, const Particle* P,
+StatusCode TupleToolDecayTreeFitter::fillMomentum( const DecayTreeFitter::Fitter& Fitter, const Particle* P,
                                                    const std::string& prefix, TupleMap& tMap ) const {
   bool test = true;
 
@@ -211,7 +211,7 @@ StatusCode TupleToolDecayTreeFitter::fillMomentum( const DecayTreeFitter::Fitter
 
   if ( msgLevel( MSG::VERBOSE ) ) verbose() << "FillMomentum " << prefix << endmsg;
   // Get the fit parameters
-  const auto  params   = fitter.fitParams( P );
+  const auto  params   = Fitter.fitParams( P );
   const auto& momentum = params->momentum();
 
   test &= insert( prefix + "_M", momentum.m().value(), tMap );
@@ -224,14 +224,14 @@ StatusCode TupleToolDecayTreeFitter::fillMomentum( const DecayTreeFitter::Fitter
 //=============================================================================
 // Fill lifetime information
 //=============================================================================
-StatusCode TupleToolDecayTreeFitter::fillLT( const DecayTreeFitter::Fitter& fitter, const Particle* P,
+StatusCode TupleToolDecayTreeFitter::fillLT( const DecayTreeFitter::Fitter& Fitter, const Particle* P,
                                              const std::string& prefix, TupleMap& tMap ) const {
   bool test = true;
 
   if ( isVetoed( P->particleID().pid() ) ) { return StatusCode( test ); }
 
   if ( msgLevel( MSG::VERBOSE ) ) verbose() << "FillLT " << prefix << endmsg;
-  const auto  tParams     = fitter.fitParams( P );
+  const auto  tParams     = Fitter.fitParams( P );
   const auto& decayLength = tParams->decayLength();
   const auto& ctau        = tParams->ctau();
   test &= insert( prefix + "_ctau", ctau.value(), tMap );
@@ -244,7 +244,7 @@ StatusCode TupleToolDecayTreeFitter::fillLT( const DecayTreeFitter::Fitter& fitt
 //=============================================================================
 // Fill lifetime information for non stable daughters
 //=============================================================================
-StatusCode TupleToolDecayTreeFitter::fillDaughters( const DecayTreeFitter::Fitter& fitter, const LHCb::Particle* P,
+StatusCode TupleToolDecayTreeFitter::fillDaughters( const DecayTreeFitter::Fitter& Fitter, const LHCb::Particle* P,
                                                     const std::string& prefix, TupleMap& tMap ) const {
   bool test = true;
 
@@ -271,10 +271,10 @@ StatusCode TupleToolDecayTreeFitter::fillDaughters( const DecayTreeFitter::Fitte
       Info( "Renaming duplicate to " + name, StatusCode::SUCCESS, 1 )
           .ignore( /* AUTOMATICALLY ADDED FOR gaudi/Gaudi!763 */ );
     usedNames.insert( name );
-    test &= fillMomentum( fitter, particle, name, tMap );
-    test &= fillLT( fitter, particle, name, tMap );
+    test &= fillMomentum( Fitter, particle, name, tMap );
+    test &= fillLT( Fitter, particle, name, tMap );
     if ( m_useFullTreeInName ) {
-      fillDaughters( fitter, particle, name, tMap ).ignore( /* AUTOMATICALLY ADDED FOR gaudi/Gaudi!763 */ );
+      fillDaughters( Fitter, particle, name, tMap ).ignore( /* AUTOMATICALLY ADDED FOR gaudi/Gaudi!763 */ );
     }
   }
   return StatusCode( test );
@@ -282,7 +282,7 @@ StatusCode TupleToolDecayTreeFitter::fillDaughters( const DecayTreeFitter::Fitte
 //=============================================================================
 // Fill lifetime information for stable daughters
 //=============================================================================
-StatusCode TupleToolDecayTreeFitter::fillStableDaughters( const DecayTreeFitter::Fitter& fitter,
+StatusCode TupleToolDecayTreeFitter::fillStableDaughters( const DecayTreeFitter::Fitter& Fitter,
                                                           const LHCb::Particle* P, const std::string& prefix,
                                                           TupleMap& tMap ) const {
   bool test = true;
@@ -310,7 +310,7 @@ StatusCode TupleToolDecayTreeFitter::fillStableDaughters( const DecayTreeFitter:
         Info( "Renaming duplicate to " + name, StatusCode::SUCCESS, 1 )
             .ignore( /* AUTOMATICALLY ADDED FOR gaudi/Gaudi!763 */ );
       usedNames.insert( name );
-      test &= fillStableDaughters( fitter, particle, name, tMap );
+      test &= fillStableDaughters( Fitter, particle, name, tMap );
     } else {
       // const int pid = particle->particleID().pid();
       const auto pid     = abs( particle->particleID().pid() );
@@ -327,7 +327,7 @@ StatusCode TupleToolDecayTreeFitter::fillStableDaughters( const DecayTreeFitter:
         Info( "Renaming duplicate to " + name, StatusCode::SUCCESS, 1 )
             .ignore( /* AUTOMATICALLY ADDED FOR gaudi/Gaudi!763 */ );
       usedNames.insert( name );
-      test &= fillTracksMomentum( fitter, particle, name, tMap );
+      test &= fillTracksMomentum( Fitter, particle, name, tMap );
     }
   }
   return StatusCode( test );
@@ -336,7 +336,7 @@ StatusCode TupleToolDecayTreeFitter::fillStableDaughters( const DecayTreeFitter:
 //=============================================================================
 // Fill updated tracks momentum
 //=============================================================================
-StatusCode TupleToolDecayTreeFitter::fillTracksMomentum( const DecayTreeFitter::Fitter& fitter, const Particle* P,
+StatusCode TupleToolDecayTreeFitter::fillTracksMomentum( const DecayTreeFitter::Fitter& Fitter, const Particle* P,
                                                          const std::string& prefix, TupleMap& tMap ) const {
   bool test = true;
 
@@ -345,7 +345,7 @@ StatusCode TupleToolDecayTreeFitter::fillTracksMomentum( const DecayTreeFitter::
   if ( msgLevel( MSG::VERBOSE ) ) verbose() << "FillTracksMomentum " << prefix << endmsg;
 
   // Get the fit parameters
-  const auto  params   = fitter.fitParams( P );
+  const auto  params   = Fitter.fitParams( P );
   const auto& momentum = params->momentum();
 
   test &= insert( prefix + "_ID", P->particleID().pid(), tMap );

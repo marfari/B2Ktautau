@@ -160,34 +160,34 @@ public:
 
 private:
   ///  Fill inforation for a given origin vertex
-  StatusCode fit( DecayTreeFitter::Fitter& fitter, const LHCb::Particle* P, const LHCb::VertexBase* pv,
+  StatusCode fit( DecayTreeFitter::Fitter& Fitter, const LHCb::Particle* P, const LHCb::VertexBase* pv,
                   const std::string& prefix, TupleMap& tMap ) const;
 
   ///  Fill lifetime information
   ///  Fill fit inforation for top decay
-  StatusCode fillDecay( const DecayTreeFitter::Fitter& fitter, const std::string& prefix, TupleMap& tMap ) const;
+  StatusCode fillDecay( const DecayTreeFitter::Fitter& Fitter, const std::string& prefix, TupleMap& tMap ) const;
 
   ///  Fill lifetime information
-  StatusCode fillLT( const DecayTreeFitter::Fitter& fitter, const LHCb::Particle* P, const std::string& prefix,
+  StatusCode fillLT( const DecayTreeFitter::Fitter& Fitter, const LHCb::Particle* P, const std::string& prefix,
                      TupleMap& tMap ) const;
 
   ///  Fill momentum and mass information
-  StatusCode fillMomentum( const DecayTreeFitter::Fitter& fitter, const LHCb::Particle* P, const std::string& prefix,
+  StatusCode fillMomentum( const DecayTreeFitter::Fitter& Fitter, const LHCb::Particle* P, const std::string& prefix,
                            TupleMap& tMap ) const;
 
   ///  Fill PV information
   StatusCode fillPV( const LHCb::VertexBase* pv, const std::string& prefix, TupleMap& tMap ) const;
 
   ///  Fill lifetime information for non stable daughters
-  StatusCode fillDaughters( const DecayTreeFitter::Fitter& fitter, const LHCb::Particle* P, const std::string& prefix,
+  StatusCode fillDaughters( const DecayTreeFitter::Fitter& Fitter, const LHCb::Particle* P, const std::string& prefix,
                             TupleMap& tMap ) const;
 
   ///  Fill lifetime information for non stable daughters
-  StatusCode fillStableDaughters( const DecayTreeFitter::Fitter& fitter, const LHCb::Particle* P,
+  StatusCode fillStableDaughters( const DecayTreeFitter::Fitter& Fitter, const LHCb::Particle* P,
                                   const std::string& prefix, TupleMap& tMap ) const;
 
   ///  Fill updated tracks momentum
-  StatusCode fillTracksMomentum( const DecayTreeFitter::Fitter& fitter, const LHCb::Particle* P,
+  StatusCode fillTracksMomentum( const DecayTreeFitter::Fitter& Fitter, const LHCb::Particle* P,
                                  const std::string& prefix, TupleMap& tMap ) const;
 
   /// actual filling of tuple
