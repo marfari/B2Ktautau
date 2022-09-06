@@ -3,11 +3,12 @@ year = '2016'
 pol = 'MagUp'
 
 j = Job(name='B2DDK 2016 MagUp')
+#myApp = prepareGaudiExec('DaVinci','v46r4',myPath='.')
 myApp = GaudiExec()
-myApp.directory = "./DaVinciDev"
+myApp.directory = "./DaVinciDev_v46r4"
 j.application = myApp
-j.application.options = ['ntuple_options.py']
-j.application.platform = 'x86_64-centos7-gcc9-opt'
+j.application.options = ['ntuple_options_BDDK.py']
+j.application.platform = 'x86_64_v2-centos7-gcc11-opt'
 
 if not isMC:
     if((year == '2011') and (pol == 'MagDown')):
@@ -36,7 +37,7 @@ if not isMC:
         bkPath = '/LHCb/Collision18/Beam6500GeV-VeloClosed-MagUp/Real Data/Reco18/Stripping34/90000000/BHADRON.MDST' 
 data  = BKQuery(bkPath, dqflag=['OK']).getDataset()
 
-j.inputdata = data[0:1]
+j.inputdata = data[0:20]
 j.backend = Dirac()
 j.splitter = SplitByFiles(filesPerJob=5)
 

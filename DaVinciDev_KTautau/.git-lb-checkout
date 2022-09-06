@@ -1,0 +1,12 @@
+[lb-checkout "Analysis.Phys/DecayTreeTuple"]
+	base = 33cc28ed7acb3bb65130a42a2fbaf4ec680a40c9
+	imported = f30eeb0f86871fb75bbe2fd617adc342bfb3ec38
+[lb-checkout "Phys.Phys/DecayTreeFitter"]
+	base = 138285b0b4320be86d0eadd29b3b23399f02f22e
+	imported = 82ebbecc0f86d9c52d8aa78e89add7b24b603a76
+[lb-checkout "OnlineExtra.Online/WebGLDisplay/WebGLDisplaySys"]
+	base = d356cc473789878d079c6607368b34e7410276f5
+	imported = 4cb0f86c484df2d3fb56b2f03b20f99e49e98d91
+[lb-checkout "OnlineExtra.Online/WebGLDisplay/JsonConverter"]
+	base = 1a1e1891e091ae109ebd6f2e18eccdea7f946b23
+	imported = 4cb0f86c484df2d3fb56b2f03b20f99e49e98d91

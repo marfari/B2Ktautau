@@ -1,8 +1,8 @@
 isMC = False
-year = '2011'
-pol = 'MagUp'
+year = '2018'
+pol = 'MagDown'
 
-j = Job(name='2011 MagUp Data')
+j = Job(name='2018 MagDown Data')
 myApp = GaudiExec()
 myApp.directory = "./DaVinciDev"
 j.application = myApp
