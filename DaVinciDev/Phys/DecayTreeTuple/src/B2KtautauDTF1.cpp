@@ -47,7 +47,7 @@ B2KtautauDTF1::B2KtautauDTF1( const std::string& type,
                    "Use an improved branch naming scheme that includes a full history of the "
                    "parents and grand-parents for each particle. Makes it easier to identify "
                    "cases where the same particle type appears at different levels in the decay tree." );
-  //declareProperty( "initStrategy", m_strategy = 0, "Fit initialization strategy. 0 = based tau decay vertex. 1 = based on 3pi direction. 2 = based on tau decay vertices, but using Marseille solution for tau momentum");
+  declareProperty( "initStrategy", m_strategy = 0, "Fit initialization strategy. 0 = based tau decay vertex. 1 = based on 3pi direction. 2 = based on tau decay vertices, but using Marseille solution for tau momentum");
   //declareProperty( "kmuIDs", m_v_ids = {100313, -100313, 100323, -100323, 32224, -32224 }, "List of IDs that hold kmu pairs. First ID used to name DTF branches");
   //      std::vector<int> m_v_ids = { 100313, -100313, 100323, -100323, 32224, -32224 };
   declareProperty( "maxNumberOfIterations", m_maxNiter = 1000, "Maximum number of iterations during fitting." );
@@ -226,8 +226,15 @@ StatusCode B2KtautauDTF1::fill( const LHCb::Particle* mother, const LHCb::Partic
   Gaudi::XYZVector p_K_perp = p_K - (p_K.Dot(bDir))*bDir;
 
   //Get tau flight directions
-  Gaudi::XYZVector tau_dir1(DV1.X() - BV.X(), DV1.Y() - BV.Y(), DV1.Z() - BV.Z());
-  Gaudi::XYZVector tau_dir2(DV2.X() - BV.X(), DV2.Y() - BV.Y(), DV2.Z() - BV.Z());
+  Gaudi::XYZVector tau_dir1, tau_dir2;
+  if(m_strategy == 0){
+    tau_dir1.SetXYZ(DV1.X() - BV.X(), DV1.Y() - BV.Y(), DV1.Z() - BV.Z());
+    tau_dir2.SetXYZ(DV2.X() - BV.X(), DV2.Y() - BV.Y(), DV2.Z() - BV.Z());
+  }
+  else{
+    tau_dir1.SetXYZ( p_3pi1.X(), p_3pi1.Y(), p_3pi1.Z() );
+    tau_dir2.SetXYZ( p_3pi2.X(), p_3pi2.Y(), p_3pi2.Z() );
+  }
 
   tau_dir1 = tau_dir1.Unit();
   tau_dir2 = tau_dir2.Unit();
