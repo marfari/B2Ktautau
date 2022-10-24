@@ -479,14 +479,17 @@ StatusCode B2KtautauDTF1::fit(DecayTreeFitter::Fitter& fitter, const LHCb::Parti
   // }
   if (msgLevel(MSG::VERBOSE)) verbose() << "called Fit" << endmsg ;
 
+  /*//Commenting out now for running on data, trying to save space
   //fill chi2 for each fitter iteration
-  fillChi2Iter(fitter, chisq_iters, prefix, tuple); //made by AV
+  
+  fillChi2Iter(fitter, chisq_iters, prefix, tuple); //made by AV 
 
   //fill decay vertices after each fitter iteration
   fillVtxIter(fitter, prefix, tuple, BV, 
               DV1, DV2, B_M, p_taup_nu, p_taum_nu,
               p_taup, p_taum); //made by AV
 
+  */
   // fill the fit result
   fillDecay(fitter,prefix,tMap );
   fillMomentum(fitter,P,prefix,tMap );

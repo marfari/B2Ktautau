@@ -6,7 +6,7 @@ using namespace std;
 
 std::ofstream file;
 
-bool make_fit = false;
+bool make_fit = true;
 bool myInit = false;
 
 void mass_resolution(){
@@ -24,101 +24,107 @@ void mass_resolution(){
 
     Double_t Bmass_visible, taup_FD, taum_FD, taup_FD_chi2, taum_FD_chi2, taup_IP_chi2, taum_IP_chi2;
     Float_t status, Bmass, Bmass_err, Enu1, Pnu1x, Pnu1y, Pnu1z, Enu2, Pnu2x, Pnu2y, Pnu2z, DTF_EB, DTF_PBx, DTF_PBy, DTF_PBz;
-    Int_t Kp_TRUEID, taup_pip0_TRUEID, taup_pim0_TRUEID, taup_pip1_TRUEID, taum_pim0_TRUEID, taum_pip0_TRUEID, taum_pim1_TRUEID, taup_TRUEID, taum_TRUEID, Bp_TRUEID;
+    Int_t Kp_TRUEID, taup_pi1_TRUEID, taup_pi3_TRUEID, taup_pi2_TRUEID, taum_pi1_TRUEID, taum_pi3_TRUEID, taum_pi2_TRUEID, taup_TRUEID, taum_TRUEID, Bp_TRUEID;
     Double_t DV1x, DV1y, DV1z, DV2x, DV2y, DV2z, BVx, BVy, BVz, PVx, PVy, PVz, KVx, KVy, KVz;
-    Double_t taup_pip0_TRUEPE, taup_pim0_TRUEPE, taup_pip1_TRUEPE, taum_pim0_TRUEPE, taum_pip0_TRUEPE, taum_pim1_TRUEPE, taup_TRUEPE, taum_TRUEPE;
-    Double_t taup_pip0_TRUEPX, taup_pim0_TRUEPX, taup_pip1_TRUEPX, taum_pim0_TRUEPX, taum_pip0_TRUEPX, taum_pim1_TRUEPX, taup_TRUEPX, taum_TRUEPX;
-    Double_t taup_pip0_TRUEPY, taup_pim0_TRUEPY, taup_pip1_TRUEPY, taum_pim0_TRUEPY, taum_pip0_TRUEPY, taum_pim1_TRUEPY, taup_TRUEPY, taum_TRUEPY;
-    Double_t taup_pip0_TRUEPZ, taup_pim0_TRUEPZ, taup_pip1_TRUEPZ, taum_pim0_TRUEPZ, taum_pip0_TRUEPZ, taum_pim1_TRUEPZ, taup_TRUEPZ, taum_TRUEPZ;
+    Double_t taup_pi1_TRUEPE, taup_pi3_TRUEPE, taup_pi2_TRUEPE, taum_pi1_TRUEPE, taum_pi3_TRUEPE, taum_pi2_TRUEPE, taup_TRUEPE, taum_TRUEPE;
+    Double_t taup_pi1_TRUEPX, taup_pi3_TRUEPX, taup_pi2_TRUEPX, taum_pi1_TRUEPX, taum_pi3_TRUEPX, taum_pi2_TRUEPX, taup_TRUEPX, taum_TRUEPX;
+    Double_t taup_pi1_TRUEPY, taup_pi3_TRUEPY, taup_pi2_TRUEPY, taum_pi1_TRUEPY, taum_pi3_TRUEPY, taum_pi2_TRUEPY, taup_TRUEPY, taum_TRUEPY;
+    Double_t taup_pi1_TRUEPZ, taup_pi3_TRUEPZ, taup_pi2_TRUEPZ, taum_pi1_TRUEPZ, taum_pi3_TRUEPZ, taum_pi2_TRUEPZ, taup_TRUEPZ, taum_TRUEPZ;
     Float_t taum_DTF_M, taup_DTF_M, taum_DTF_Merr, taup_DTF_Merr, DTF_chi2, DTF_nIter;
+    Float_t taup_DTF_PE, taup_DTF_PX, taup_DTF_PY, taup_DTF_PZ, taum_DTF_PE, taum_DTF_PX, taum_DTF_PY, taum_DTF_PZ;
     Double_t Kp_PT, taup_PT, taum_PT, Pkx, Pky, Pkz;
     Float_t M_kstar, status_kstar, Enu1_s, Pnu1x_s, Pnu1y_s, Pnu1z_s, Enu2_s, Pnu2x_s, Pnu2y_s, Pnu2z_s;
-    Double_t taup_pip0_TRUEPE_s, taup_pim0_TRUEPE_s, taup_pip1_TRUEPE_s, taum_pim0_TRUEPE_s, taum_pip0_TRUEPE_s, taum_pim1_TRUEPE_s, taup_TRUEPE_s, taum_TRUEPE_s;
-    Double_t taup_pip0_TRUEPX_s, taup_pim0_TRUEPX_s, taup_pip1_TRUEPX_s, taum_pim0_TRUEPX_s, taum_pip0_TRUEPX_s, taum_pim1_TRUEPX_s, taup_TRUEPX_s, taum_TRUEPX_s;
-    Double_t taup_pip0_TRUEPY_s, taup_pim0_TRUEPY_s, taup_pip1_TRUEPY_s, taum_pim0_TRUEPY_s, taum_pip0_TRUEPY_s, taum_pim1_TRUEPY_s, taup_TRUEPY_s, taum_TRUEPY_s;
-    Double_t taup_pip0_TRUEPZ_s, taup_pim0_TRUEPZ_s, taup_pip1_TRUEPZ_s, taum_pim0_TRUEPZ_s, taum_pip0_TRUEPZ_s, taum_pim1_TRUEPZ_s, taup_TRUEPZ_s, taum_TRUEPZ_s;
+    Double_t taup_pi1_TRUEPE_s, taup_pi3_TRUEPE_s, taup_pi2_TRUEPE_s, taum_pi1_TRUEPE_s, taum_pi3_TRUEPE_s, taum_pi2_TRUEPE_s, taup_TRUEPE_s, taum_TRUEPE_s;
+    Double_t taup_pi1_TRUEPX_s, taup_pi3_TRUEPX_s, taup_pi2_TRUEPX_s, taum_pi1_TRUEPX_s, taum_pi3_TRUEPX_s, taum_pi2_TRUEPX_s, taup_TRUEPX_s, taum_TRUEPX_s;
+    Double_t taup_pi1_TRUEPY_s, taup_pi3_TRUEPY_s, taup_pi2_TRUEPY_s, taum_pi1_TRUEPY_s, taum_pi3_TRUEPY_s, taum_pi2_TRUEPY_s, taup_TRUEPY_s, taum_TRUEPY_s;
+    Double_t taup_pi1_TRUEPZ_s, taup_pi3_TRUEPZ_s, taup_pi2_TRUEPZ_s, taum_pi1_TRUEPZ_s, taum_pi3_TRUEPZ_s, taum_pi2_TRUEPZ_s, taup_TRUEPZ_s, taum_TRUEPZ_s;
 
+    // True quantities
     t->SetBranchAddress("taup_TRUEP_E", &taup_TRUEPE);
     t->SetBranchAddress("taum_TRUEP_E", &taum_TRUEPE);
-    t->SetBranchAddress("taup_pip0_TRUEP_E", &taup_pip0_TRUEPE);
-    t->SetBranchAddress("taup_pim0_TRUEP_E", &taup_pim0_TRUEPE);
-    t->SetBranchAddress("taup_pip1_TRUEP_E", &taup_pip1_TRUEPE);
-    t->SetBranchAddress("taum_pim0_TRUEP_E", &taum_pim0_TRUEPE);
-    t->SetBranchAddress("taum_pip0_TRUEP_E", &taum_pip0_TRUEPE);
-    t->SetBranchAddress("taum_pim1_TRUEP_E", &taum_pim1_TRUEPE); 
+    t->SetBranchAddress("taup_pi1_TRUEP_E", &taup_pi1_TRUEPE);
+    t->SetBranchAddress("taup_pi3_TRUEP_E", &taup_pi3_TRUEPE);
+    t->SetBranchAddress("taup_pi2_TRUEP_E", &taup_pi2_TRUEPE);
+    t->SetBranchAddress("taum_pi1_TRUEP_E", &taum_pi1_TRUEPE);
+    t->SetBranchAddress("taum_pi3_TRUEP_E", &taum_pi3_TRUEPE);
+    t->SetBranchAddress("taum_pi2_TRUEP_E", &taum_pi2_TRUEPE); 
 
     t->SetBranchAddress("taup_TRUEP_X", &taup_TRUEPX);
     t->SetBranchAddress("taum_TRUEP_X", &taum_TRUEPX);
-    t->SetBranchAddress("taup_pip0_TRUEP_X", &taup_pip0_TRUEPX);
-    t->SetBranchAddress("taup_pim0_TRUEP_X", &taup_pim0_TRUEPX);
-    t->SetBranchAddress("taup_pip1_TRUEP_X", &taup_pip1_TRUEPX);
-    t->SetBranchAddress("taum_pim0_TRUEP_X", &taum_pim0_TRUEPX);
-    t->SetBranchAddress("taum_pip0_TRUEP_X", &taum_pip0_TRUEPX);
-    t->SetBranchAddress("taum_pim1_TRUEP_X", &taum_pim1_TRUEPX); 
+    t->SetBranchAddress("taup_pi1_TRUEP_X", &taup_pi1_TRUEPX);
+    t->SetBranchAddress("taup_pi3_TRUEP_X", &taup_pi3_TRUEPX);
+    t->SetBranchAddress("taup_pi2_TRUEP_X", &taup_pi2_TRUEPX);
+    t->SetBranchAddress("taum_pi1_TRUEP_X", &taum_pi1_TRUEPX);
+    t->SetBranchAddress("taum_pi3_TRUEP_X", &taum_pi3_TRUEPX);
+    t->SetBranchAddress("taum_pi2_TRUEP_X", &taum_pi2_TRUEPX); 
 
     t->SetBranchAddress("taup_TRUEP_Y", &taup_TRUEPY);
     t->SetBranchAddress("taum_TRUEP_Y", &taum_TRUEPY);
-    t->SetBranchAddress("taup_pip0_TRUEP_Y", &taup_pip0_TRUEPY);
-    t->SetBranchAddress("taup_pim0_TRUEP_Y", &taup_pim0_TRUEPY);
-    t->SetBranchAddress("taup_pip1_TRUEP_Y", &taup_pip1_TRUEPY);
-    t->SetBranchAddress("taum_pim0_TRUEP_Y", &taum_pim0_TRUEPY);
-    t->SetBranchAddress("taum_pip0_TRUEP_Y", &taum_pip0_TRUEPY);
-    t->SetBranchAddress("taum_pim1_TRUEP_Y", &taum_pim1_TRUEPY); 
+    t->SetBranchAddress("taup_pi1_TRUEP_Y", &taup_pi1_TRUEPY);
+    t->SetBranchAddress("taup_pi3_TRUEP_Y", &taup_pi3_TRUEPY);
+    t->SetBranchAddress("taup_pi2_TRUEP_Y", &taup_pi2_TRUEPY);
+    t->SetBranchAddress("taum_pi1_TRUEP_Y", &taum_pi1_TRUEPY);
+    t->SetBranchAddress("taum_pi3_TRUEP_Y", &taum_pi3_TRUEPY);
+    t->SetBranchAddress("taum_pi2_TRUEP_Y", &taum_pi2_TRUEPY); 
 
     t->SetBranchAddress("taup_TRUEP_Z", &taup_TRUEPZ);
     t->SetBranchAddress("taum_TRUEP_Z", &taum_TRUEPZ);
-    t->SetBranchAddress("taup_pip0_TRUEP_Z", &taup_pip0_TRUEPZ);
-    t->SetBranchAddress("taup_pim0_TRUEP_Z", &taup_pim0_TRUEPZ);
-    t->SetBranchAddress("taup_pip1_TRUEP_Z", &taup_pip1_TRUEPZ);
-    t->SetBranchAddress("taum_pim0_TRUEP_Z", &taum_pim0_TRUEPZ);
-    t->SetBranchAddress("taum_pip0_TRUEP_Z", &taum_pip0_TRUEPZ);
-    t->SetBranchAddress("taum_pim1_TRUEP_Z", &taum_pim1_TRUEPZ);    
+    t->SetBranchAddress("taup_pi1_TRUEP_Z", &taup_pi1_TRUEPZ);
+    t->SetBranchAddress("taup_pi3_TRUEP_Z", &taup_pi3_TRUEPZ);
+    t->SetBranchAddress("taup_pi2_TRUEP_Z", &taup_pi2_TRUEPZ);
+    t->SetBranchAddress("taum_pi1_TRUEP_Z", &taum_pi1_TRUEPZ);
+    t->SetBranchAddress("taum_pi3_TRUEP_Z", &taum_pi3_TRUEPZ);
+    t->SetBranchAddress("taum_pi2_TRUEP_Z", &taum_pi2_TRUEPZ);    
 
-    t->SetBranchAddress("Bp_ConsBp_M",&Bmass);
+    // 
+    t->SetBranchAddress("Bp_ConsBp_0_M",&Bmass);
     t->SetBranchAddress("Bp_M",&Bmass_visible);
-    t->SetBranchAddress("Bp_ConsBp_MERR",&Bmass_err);
+    t->SetBranchAddress("Bp_ConsBp_0_MERR",&Bmass_err);
     t->SetBranchAddress("taup_FD_ORIVX",&taup_FD);
     t->SetBranchAddress("taum_FD_ORIVX",&taum_FD); 
     t->SetBranchAddress("taup_FDCHI2_ORIVX",&taup_FD_chi2);
     t->SetBranchAddress("taum_FDCHI2_ORIVX",&taum_FD_chi2);
     t->SetBranchAddress("taup_IPCHI2_OWNPV",&taup_IP_chi2);
     t->SetBranchAddress("taum_IPCHI2_OWNPV",&taum_IP_chi2);
+    t->SetBranchAddress("Bp_ConsBp_0_chi2",&DTF_chi2);
+    t->SetBranchAddress("Bp_ConsBp_0_nIter",&DTF_nIter);
 
     // B+ kinematics
-    t->SetBranchAddress("Bp_ConsBp_PE",&DTF_EB);
-    t->SetBranchAddress("Bp_ConsBp_PX",&DTF_PBx);
-    t->SetBranchAddress("Bp_ConsBp_PY",&DTF_PBy);
-    t->SetBranchAddress("Bp_ConsBp_PZ",&DTF_PBz);
+    t->SetBranchAddress("Bp_ConsBp_0_PE",&DTF_EB);
+    t->SetBranchAddress("Bp_ConsBp_0_PX",&DTF_PBx);
+    t->SetBranchAddress("Bp_ConsBp_0_PY",&DTF_PBy);
+    t->SetBranchAddress("Bp_ConsBp_0_PZ",&DTF_PBz);
 
     // DTF neutrino kinematics
-    t->SetBranchAddress("Bp_ConsBp_tauminus_nu_tau_PE",&Enu1);
-    t->SetBranchAddress("Bp_ConsBp_tauminus_nu_tau_PX",&Pnu1x);
-    t->SetBranchAddress("Bp_ConsBp_tauminus_nu_tau_PY",&Pnu1y);
-    t->SetBranchAddress("Bp_ConsBp_tauminus_nu_tau_PZ",&Pnu1z);
-    t->SetBranchAddress("Bp_ConsBp_tauminus_0_nu_tau_PE",&Enu2);
-    t->SetBranchAddress("Bp_ConsBp_tauminus_0_nu_tau_PX",&Pnu2x);
-    t->SetBranchAddress("Bp_ConsBp_tauminus_0_nu_tau_PY",&Pnu2y);
-    t->SetBranchAddress("Bp_ConsBp_tauminus_0_nu_tau_PZ",&Pnu2z);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_nu_tau_PE",&Enu1);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_nu_tau_PX",&Pnu1x);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_nu_tau_PY",&Pnu1y);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_nu_tau_PZ",&Pnu1z);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_nu_tau_PE",&Enu2);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_nu_tau_PX",&Pnu2x);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_nu_tau_PY",&Pnu2y);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_nu_tau_PZ",&Pnu2z);
 
+    // Truth-match cut quantities
     t->SetBranchAddress("Kp_TRUEID", &Kp_TRUEID);
     t->SetBranchAddress("Bp_TRUEID", &Bp_TRUEID);
     t->SetBranchAddress("taup_TRUEID", &taup_TRUEID);
     t->SetBranchAddress("taum_TRUEID", &taum_TRUEID);
-    t->SetBranchAddress("taup_pip0_TRUEID", &taup_pip0_TRUEID);
-    t->SetBranchAddress("taup_pim0_TRUEID", &taup_pim0_TRUEID);
-    t->SetBranchAddress("taup_pip1_TRUEID", &taup_pip1_TRUEID);
-    t->SetBranchAddress("taum_pim0_TRUEID", &taum_pim0_TRUEID);
-    t->SetBranchAddress("taum_pip0_TRUEID", &taum_pip0_TRUEID);
-    t->SetBranchAddress("taum_pim1_TRUEID", &taum_pim1_TRUEID);
-    t->SetBranchAddress("Bp_ConsBp_status",&status);
+    t->SetBranchAddress("taup_pi1_TRUEID", &taup_pi1_TRUEID);
+    t->SetBranchAddress("taup_pi3_TRUEID", &taup_pi3_TRUEID);
+    t->SetBranchAddress("taup_pi2_TRUEID", &taup_pi2_TRUEID);
+    t->SetBranchAddress("taum_pi1_TRUEID", &taum_pi1_TRUEID);
+    t->SetBranchAddress("taum_pi3_TRUEID", &taum_pi3_TRUEID);
+    t->SetBranchAddress("taum_pi2_TRUEID", &taum_pi2_TRUEID);
+    t->SetBranchAddress("Bp_ConsBp_0_status",&status);
 
+    // Decay verticies + reference point
     t->SetBranchAddress("taup_ENDVERTEX_X",&DV1x);
     t->SetBranchAddress("taup_ENDVERTEX_Y",&DV1y);
     t->SetBranchAddress("taup_ENDVERTEX_Z",&DV1z);
     t->SetBranchAddress("taum_ENDVERTEX_X",&DV2x);
     t->SetBranchAddress("taum_ENDVERTEX_Y",&DV2y);
     t->SetBranchAddress("taum_ENDVERTEX_Z",&DV2z);
-
     t->SetBranchAddress("Bp_ENDVERTEX_X",&BVx);
     t->SetBranchAddress("Bp_ENDVERTEX_Y",&BVy);
     t->SetBranchAddress("Bp_ENDVERTEX_Z",&BVz);
@@ -129,21 +135,29 @@ void mass_resolution(){
     t->SetBranchAddress("refPoint_Y",&KVy);
     t->SetBranchAddress("refPoint_Z",&KVz);
 
+    // K+ kinematics
     t->SetBranchAddress("Kp_PX",&Pkx);
     t->SetBranchAddress("Kp_PY",&Pky);
     t->SetBranchAddress("Kp_PZ",&Pkz);
-
-    t->SetBranchAddress("Bp_ConsBp_tauminus_M",&taup_DTF_M);
-    t->SetBranchAddress("Bp_ConsBp_tauminus_0_M",&taum_DTF_M);
-    t->SetBranchAddress("Bp_ConsBp_tauminus_MERR",&taup_DTF_Merr);
-    t->SetBranchAddress("Bp_ConsBp_tauminus_0_MERR",&taum_DTF_Merr);
-    t->SetBranchAddress("Bp_ConsBp_chi2",&DTF_chi2);
-    t->SetBranchAddress("Bp_ConsBp_nIter",&DTF_nIter);
-
     t->SetBranchAddress("Kp_PT",&Kp_PT);
+
+    // tau+ kinematics
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_M",&taup_DTF_M);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_M",&taum_DTF_M);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_MERR",&taup_DTF_Merr);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_MERR",&taum_DTF_Merr);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_PE",&taup_DTF_PE);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_PX",&taup_DTF_PX);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_PY",&taup_DTF_PY);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_PZ",&taup_DTF_PZ);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_PE",&taum_DTF_PE);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_PX",&taum_DTF_PX);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_PY",&taum_DTF_PY);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_PZ",&taum_DTF_PZ);
     t->SetBranchAddress("taup_PT",&taup_PT);
     t->SetBranchAddress("taum_PT",&taum_PT);
 
+    // K* quantities
     t_kstar->SetBranchAddress("B0_kttdtf0_M",&M_kstar);
     t_kstar->SetBranchAddress("B0_kttdtf0_status",&status_kstar);
 
@@ -165,31 +179,31 @@ void mass_resolution(){
     t_kstar->SetBranchAddress("Taum_TRUEP_Y",&taum_TRUEPY_s);
     t_kstar->SetBranchAddress("Taum_TRUEP_Z",&taum_TRUEPZ_s);
 
-    t_kstar->SetBranchAddress("Taup_pi1_TRUEP_E",&taup_pip0_TRUEPE_s);
-    t_kstar->SetBranchAddress("Taup_pi1_TRUEP_X",&taup_pip0_TRUEPX_s);
-    t_kstar->SetBranchAddress("Taup_pi1_TRUEP_Y",&taup_pip0_TRUEPY_s);
-    t_kstar->SetBranchAddress("Taup_pi1_TRUEP_Z",&taup_pip0_TRUEPZ_s);
-    t_kstar->SetBranchAddress("Taup_pi2_TRUEP_E",&taup_pim0_TRUEPE_s);
-    t_kstar->SetBranchAddress("Taup_pi2_TRUEP_X",&taup_pim0_TRUEPX_s);
-    t_kstar->SetBranchAddress("Taup_pi2_TRUEP_Y",&taup_pim0_TRUEPY_s);
-    t_kstar->SetBranchAddress("Taup_pi2_TRUEP_Z",&taup_pim0_TRUEPZ_s);
-    t_kstar->SetBranchAddress("Taup_pi3_TRUEP_E",&taup_pip1_TRUEPE_s);
-    t_kstar->SetBranchAddress("Taup_pi3_TRUEP_X",&taup_pip1_TRUEPX_s);
-    t_kstar->SetBranchAddress("Taup_pi3_TRUEP_Y",&taup_pip1_TRUEPY_s);
-    t_kstar->SetBranchAddress("Taup_pi3_TRUEP_Z",&taup_pip1_TRUEPZ_s);
+    t_kstar->SetBranchAddress("Taup_pi1_TRUEP_E",&taup_pi1_TRUEPE_s);
+    t_kstar->SetBranchAddress("Taup_pi1_TRUEP_X",&taup_pi1_TRUEPX_s);
+    t_kstar->SetBranchAddress("Taup_pi1_TRUEP_Y",&taup_pi1_TRUEPY_s);
+    t_kstar->SetBranchAddress("Taup_pi1_TRUEP_Z",&taup_pi1_TRUEPZ_s);
+    t_kstar->SetBranchAddress("Taup_pi2_TRUEP_E",&taup_pi3_TRUEPE_s);
+    t_kstar->SetBranchAddress("Taup_pi2_TRUEP_X",&taup_pi3_TRUEPX_s);
+    t_kstar->SetBranchAddress("Taup_pi2_TRUEP_Y",&taup_pi3_TRUEPY_s);
+    t_kstar->SetBranchAddress("Taup_pi2_TRUEP_Z",&taup_pi3_TRUEPZ_s);
+    t_kstar->SetBranchAddress("Taup_pi3_TRUEP_E",&taup_pi2_TRUEPE_s);
+    t_kstar->SetBranchAddress("Taup_pi3_TRUEP_X",&taup_pi2_TRUEPX_s);
+    t_kstar->SetBranchAddress("Taup_pi3_TRUEP_Y",&taup_pi2_TRUEPY_s);
+    t_kstar->SetBranchAddress("Taup_pi3_TRUEP_Z",&taup_pi2_TRUEPZ_s);
 
-    t_kstar->SetBranchAddress("Taum_pi1_TRUEP_E",&taum_pim0_TRUEPE_s);
-    t_kstar->SetBranchAddress("Taum_pi1_TRUEP_X",&taum_pim0_TRUEPX_s);
-    t_kstar->SetBranchAddress("Taum_pi1_TRUEP_Y",&taum_pim0_TRUEPY_s);
-    t_kstar->SetBranchAddress("Taum_pi1_TRUEP_Z",&taum_pim0_TRUEPZ_s);
-    t_kstar->SetBranchAddress("Taum_pi2_TRUEP_E",&taum_pip0_TRUEPE_s);
-    t_kstar->SetBranchAddress("Taum_pi2_TRUEP_X",&taum_pip0_TRUEPX_s);
-    t_kstar->SetBranchAddress("Taum_pi2_TRUEP_Y",&taum_pip0_TRUEPY_s);
-    t_kstar->SetBranchAddress("Taum_pi2_TRUEP_Z",&taum_pip0_TRUEPZ_s);
-    t_kstar->SetBranchAddress("Taum_pi3_TRUEP_E",&taum_pim1_TRUEPE_s);
-    t_kstar->SetBranchAddress("Taum_pi3_TRUEP_X",&taum_pim1_TRUEPX_s);
-    t_kstar->SetBranchAddress("Taum_pi3_TRUEP_Y",&taum_pim1_TRUEPY_s);
-    t_kstar->SetBranchAddress("Taum_pi3_TRUEP_Z",&taum_pim1_TRUEPZ_s);
+    t_kstar->SetBranchAddress("Taum_pi1_TRUEP_E",&taum_pi1_TRUEPE_s);
+    t_kstar->SetBranchAddress("Taum_pi1_TRUEP_X",&taum_pi1_TRUEPX_s);
+    t_kstar->SetBranchAddress("Taum_pi1_TRUEP_Y",&taum_pi1_TRUEPY_s);
+    t_kstar->SetBranchAddress("Taum_pi1_TRUEP_Z",&taum_pi1_TRUEPZ_s);
+    t_kstar->SetBranchAddress("Taum_pi2_TRUEP_E",&taum_pi3_TRUEPE_s);
+    t_kstar->SetBranchAddress("Taum_pi2_TRUEP_X",&taum_pi3_TRUEPX_s);
+    t_kstar->SetBranchAddress("Taum_pi2_TRUEP_Y",&taum_pi3_TRUEPY_s);
+    t_kstar->SetBranchAddress("Taum_pi2_TRUEP_Z",&taum_pi3_TRUEPZ_s);
+    t_kstar->SetBranchAddress("Taum_pi3_TRUEP_E",&taum_pi2_TRUEPE_s);
+    t_kstar->SetBranchAddress("Taum_pi3_TRUEP_X",&taum_pi2_TRUEPX_s);
+    t_kstar->SetBranchAddress("Taum_pi3_TRUEP_Y",&taum_pi2_TRUEPY_s);
+    t_kstar->SetBranchAddress("Taum_pi3_TRUEP_Z",&taum_pi2_TRUEPZ_s);
 
     TH1D* h_nutau_E = new TH1D("h_nutau_E", "h_nutau_E", 80, -120000., 120000);
     TH1D* h_antinutau_E = new TH1D("h_antinutau_E", "h_antinutau_E", 80, -120000., 120000);
@@ -249,10 +263,18 @@ void mass_resolution(){
     TH2D* h_DTF_taup_Bmass_M = new TH2D("h_DTF_taup_Bmass_M", "h_DTF_taup_Bmass_M", 80, 4000, 8000, 80, -1000, 3000);
     TH2D* h_DTF_taum_Bmass_M = new TH2D("h_DTF_taum_Bmass_M", "h_DTF_taum_Bmass_M", 80, 4000, 8000, 80, -1000, 3000);
 
-    TH1D* h_DTF_pass_mass = new TH1D("h_DTF_pass_mass", "h_DTF_pass_mass", 80, 2000, 8000);
-    TH1D* h_DTF_fail_mass = new TH1D("h_DTF_fail_mass", "h_DTF_fail_mass", 80, 2000, 8000);
+    TH1D* h_DTF_pass_mass = new TH1D("h_DTF_pass_mass", "h_DTF_pass_mass", 80, -10000, 10000);
+    TH1D* h_DTF_fail_mass = new TH1D("h_DTF_fail_mass", "h_DTF_fail_mass", 80, -10000, 10000);
     TH1D* h_visible_mass = new TH1D("h_visible_mass", "h_visible_mass", 80, 2000, 8000);
 
+    TH1D* h_IP1_core = new TH1D("h_IP1_core", "h_IP1_core", 100, 0, 2);
+    TH1D* h_IP1_tail = new TH1D("h_IP1_tail", "h_IP1_tail", 100, 0, 2);
+
+    TH1D* h_D_core = new TH1D("h_D_core", "h_D_core", 100, 0, 3);
+    TH1D* h_D_tail = new TH1D("h_D_tail", "h_D_tail", 100, 0, 3);
+
+    TH2D* h_q2 = new TH2D("h_q2", "h_q2", 100, 2000, 16000, 100, 4500, 6000);
+    TH1D* h_mtautau = new TH1D("h_mtautau", "h_mtautau", 100, 2000, 16000);
 
     double P1;
     double P2;
@@ -324,14 +346,14 @@ void mass_resolution(){
         P2 = sqrt(pow(Pnu2x,2) + pow(Pnu2y,2) + pow(Pnu2z,2));
 
         // DTF vs TRUE nu momentum
-        nutau_TRUEPE = taum_TRUEPE - (taum_pim0_TRUEPE + taum_pip0_TRUEPE + taum_pim1_TRUEPE);
-        antinutau_TRUEPE = taup_TRUEPE - (taup_pip0_TRUEPE + taup_pim0_TRUEPE + taup_pip1_TRUEPE);
-        nutau_TRUEPX = taum_TRUEPX - (taum_pim0_TRUEPX + taum_pip0_TRUEPX + taum_pim1_TRUEPX);
-        antinutau_TRUEPX = taup_TRUEPX - (taup_pip0_TRUEPX + taup_pim0_TRUEPX + taup_pip1_TRUEPX);
-        nutau_TRUEPY = taum_TRUEPY - (taum_pim0_TRUEPY + taum_pip0_TRUEPY + taum_pim1_TRUEPY);
-        antinutau_TRUEPY = taup_TRUEPY - (taup_pip0_TRUEPY + taup_pim0_TRUEPY + taup_pip1_TRUEPY);
-        nutau_TRUEPZ = taum_TRUEPZ - (taum_pim0_TRUEPZ + taum_pip0_TRUEPZ + taum_pim1_TRUEPZ);
-        antinutau_TRUEPZ = taup_TRUEPZ - (taup_pip0_TRUEPZ + taup_pim0_TRUEPZ + taup_pip1_TRUEPZ);
+        nutau_TRUEPE = taum_TRUEPE - (taum_pi1_TRUEPE + taum_pi3_TRUEPE + taum_pi2_TRUEPE);
+        antinutau_TRUEPE = taup_TRUEPE - (taup_pi1_TRUEPE + taup_pi3_TRUEPE + taup_pi2_TRUEPE);
+        nutau_TRUEPX = taum_TRUEPX - (taum_pi1_TRUEPX + taum_pi3_TRUEPX + taum_pi2_TRUEPX);
+        antinutau_TRUEPX = taup_TRUEPX - (taup_pi1_TRUEPX + taup_pi3_TRUEPX + taup_pi2_TRUEPX);
+        nutau_TRUEPY = taum_TRUEPY - (taum_pi1_TRUEPY + taum_pi3_TRUEPY + taum_pi2_TRUEPY);
+        antinutau_TRUEPY = taup_TRUEPY - (taup_pi1_TRUEPY + taup_pi3_TRUEPY + taup_pi2_TRUEPY);
+        nutau_TRUEPZ = taum_TRUEPZ - (taum_pi1_TRUEPZ + taum_pi3_TRUEPZ + taum_pi2_TRUEPZ);
+        antinutau_TRUEPZ = taup_TRUEPZ - (taup_pi1_TRUEPZ + taup_pi3_TRUEPZ + taup_pi2_TRUEPZ);
 
         // New Bmass (with all DTF kinematics except for neutrino Pz, which is the TRUE value)
         DTF_PBx -= (Pnu1x + Pnu2x);
@@ -349,9 +371,16 @@ void mass_resolution(){
 
         double Bmass_new = sqrt(pow(DTF_EB,2) - pow(DTF_PBx,2) - pow(DTF_PBy,2) - pow(DTF_PBz,2));
 
-        if( (abs(Kp_TRUEID) == 321 && abs(taup_pip0_TRUEID) == 211 && abs(taup_pim0_TRUEID) == 211 && abs(taup_pip1_TRUEID) == 211 && abs(taum_pim0_TRUEID) == 211 && abs(taum_pip0_TRUEID) == 211 && abs(taum_pim1_TRUEID) == 211) && (abs(taup_TRUEID) == 15 && abs(taum_TRUEID) == 15) && (abs(Bp_TRUEID) == 521)){
+        // tau tau invariant mass
+        ROOT::Math::PxPyPzEVector Ptau1(taup_DTF_PX, taup_DTF_PY, taup_DTF_PZ, taup_DTF_PE);
+        ROOT::Math::PxPyPzEVector Ptau2(taum_DTF_PX, taum_DTF_PY, taum_DTF_PZ, taum_DTF_PE);
+        ROOT::Math::PxPyPzEVector Ptautau = Ptau1 + Ptau2;
+
+        if( (abs(Kp_TRUEID) == 321 && abs(taup_pi1_TRUEID) == 211 && abs(taup_pi3_TRUEID) == 211 && abs(taup_pi2_TRUEID) == 211 && abs(taum_pi1_TRUEID) == 211 && abs(taum_pi3_TRUEID) == 211 && abs(taum_pi2_TRUEID) == 211) && (abs(taup_TRUEID) == 15 && abs(taum_TRUEID) == 15) && (abs(Bp_TRUEID) == 521)){
 
             h_visible_mass->Fill(Bmass_visible);
+            h_mtautau->Fill(Ptautau.M());
+            h_q2->Fill(Bmass,Ptautau.M());
 
             if(status == 0){
                 h_mass->Fill(Bmass);
@@ -396,6 +425,10 @@ void mass_resolution(){
                     h_taup_FD_nuPz_core->Fill(taup_FD, Pnu1z);
                     h_taum_FD_nuPz_core->Fill(taum_FD, Pnu2z);
 
+                    h_IP1_core->Fill(IP1);
+
+                    h_D_core->Fill(Dxy);
+
                 }
                 if(Bmass > 6500){
                     h_nutau_z_tail->Fill(Pnu2z - nutau_TRUEPZ);
@@ -406,18 +439,21 @@ void mass_resolution(){
                     h_taup_FD_nuPz_tail->Fill(taup_FD, Pnu1z);
                     h_taum_FD_nuPz_tail->Fill(taum_FD, Pnu2z);
 
+                    h_IP1_tail->Fill(IP1);
+
+                    h_D_tail->Fill(Dxy);
                 }
 
                 if((Bmass > 4000) && (Bmass < 8000)){
                     data1->add(mass);
 
                     if(A > 1.){data2->add(mass);}
-                    if((IP1 > 0.4) && (IP2 > 0.4)){data3->add(mass);}
+                    if((IP1 > 0.2) && (IP2 > 0.2)){data3->add(mass);}
                     if( ((taup_DTF_M > 1750) && (taup_DTF_M < 1800)) && ((taum_DTF_M > 1750) && (taum_DTF_M < 1800)) ){
                         data4->add(mass);
                         h_mass_2ndbest_cut->Fill(Bmass);
                     }
-                    if(((P1 < 5000) && (P2 < 5000))){
+                    if(((P1 < 50000) && (P2 < 50000))){
                         data5->add(mass);
                         h_mass_best_cut->Fill(Bmass);
                     }
@@ -461,14 +497,14 @@ void mass_resolution(){
         t_kstar->GetEntry(i);
 
         // DTF vs TRUE nu momentum
-        nutau_TRUEPE_s = taum_TRUEPE_s - (taum_pim0_TRUEPE_s + taum_pip0_TRUEPE_s + taum_pim1_TRUEPE_s);
-        antinutau_TRUEPE_s = taup_TRUEPE_s - (taup_pip0_TRUEPE_s + taup_pim0_TRUEPE_s + taup_pip1_TRUEPE_s);
-        nutau_TRUEPX_s = taum_TRUEPX_s - (taum_pim0_TRUEPX_s + taum_pip0_TRUEPX_s + taum_pim1_TRUEPX_s);
-        antinutau_TRUEPX_s = taup_TRUEPX_s - (taup_pip0_TRUEPX_s + taup_pim0_TRUEPX_s + taup_pip1_TRUEPX_s);
-        nutau_TRUEPY_s = taum_TRUEPY_s - (taum_pim0_TRUEPY_s + taum_pip0_TRUEPY_s + taum_pim1_TRUEPY_s);
-        antinutau_TRUEPY_s = taup_TRUEPY_s - (taup_pip0_TRUEPY_s + taup_pim0_TRUEPY_s + taup_pip1_TRUEPY_s);
-        nutau_TRUEPZ_s = taum_TRUEPZ_s - (taum_pim0_TRUEPZ_s + taum_pip0_TRUEPZ_s + taum_pim1_TRUEPZ_s);
-        antinutau_TRUEPZ_s = taup_TRUEPZ_s - (taup_pip0_TRUEPZ_s + taup_pim0_TRUEPZ_s + taup_pip1_TRUEPZ_s);
+        nutau_TRUEPE_s = taum_TRUEPE_s - (taum_pi1_TRUEPE_s + taum_pi3_TRUEPE_s + taum_pi2_TRUEPE_s);
+        antinutau_TRUEPE_s = taup_TRUEPE_s - (taup_pi1_TRUEPE_s + taup_pi3_TRUEPE_s + taup_pi2_TRUEPE_s);
+        nutau_TRUEPX_s = taum_TRUEPX_s - (taum_pi1_TRUEPX_s + taum_pi3_TRUEPX_s + taum_pi2_TRUEPX_s);
+        antinutau_TRUEPX_s = taup_TRUEPX_s - (taup_pi1_TRUEPX_s + taup_pi3_TRUEPX_s + taup_pi2_TRUEPX_s);
+        nutau_TRUEPY_s = taum_TRUEPY_s - (taum_pi1_TRUEPY_s + taum_pi3_TRUEPY_s + taum_pi2_TRUEPY_s);
+        antinutau_TRUEPY_s = taup_TRUEPY_s - (taup_pi1_TRUEPY_s + taup_pi3_TRUEPY_s + taup_pi2_TRUEPY_s);
+        nutau_TRUEPZ_s = taum_TRUEPZ_s - (taum_pi1_TRUEPZ_s + taum_pi3_TRUEPZ_s + taum_pi2_TRUEPZ_s);
+        antinutau_TRUEPZ_s = taup_TRUEPZ_s - (taup_pi1_TRUEPZ_s + taup_pi3_TRUEPZ_s + taup_pi2_TRUEPZ_s);
 
         if(status_kstar == 0){
 
@@ -497,7 +533,7 @@ void mass_resolution(){
         RooRealVar* sigma2 = fit(data2, mass, "Area of PV-DV1-DV2 triangle > 1 mm^{2}", "Bmass_cut2", folder_name);
         RooRealVar* sigma3 = fit(data3, mass, "IP_{#tau} > 0.2 mm", "Bmass_cut3", folder_name);
         RooRealVar* sigma4 = fit(data4, mass, "DTF #tau mass #in [1750,1800] MeV", "Bmass_cut4", folder_name);
-        RooRealVar* sigma5 = fit(data5, mass, "DTF P_{#nu} < 5000 MeV", "Bmass_cut5", folder_name);
+        RooRealVar* sigma5 = fit(data5, mass, "DTF P_{#nu} < 50000 MeV", "Bmass_cut5", folder_name);
         RooRealVar* sigma6 = fit(data6, mass, "#tau FD to BV > 1 mm", "Bmass_cut6", folder_name);
         RooRealVar* sigma7 = fit(data7, mass, "#tau FD to BV #chi^{2} > 4", "Bmass_cut7", folder_name);
         RooRealVar* sigma7_1 = fit(data7_1, mass, "#tau FD to BV #chi^{2} > 9", "Bmass_cut7_1", folder_name);
@@ -519,7 +555,7 @@ void mass_resolution(){
             cout << "Output file not opened!";
 
         file << "\\begin{table}" << std::endl;
-        file << Form("\\caption{Resolution and efficiency of $B^{+}$ mass distribution for different cuts. Initial mass resolution is %.2lf $\\pm$ %.2lf MeV.}", sigma1->getVal(), sigma1->getError()) << std::endl;
+        file << Form("\\caption{Resolution and efficiency of $B^{+}$ mass distribution for different cuts. Initial mass resolution is %.0lf $\\pm$ %.0lf MeV.}", sigma1->getVal(), sigma1->getError()) << std::endl;
         file << "\\centering" << std::endl;
         file << "\\begin{tabular}{|c|c|c|}" << std::endl;
         file << "\\hline" << std::endl; 
@@ -542,26 +578,113 @@ void mass_resolution(){
         double n14 = data14->sumEntries();
 
         file << "Cut & " <<  "Resolution (MeV) & " << "Efficiency (\\%)" << "\\\\ \\hline" << std::endl;   
-        file << "Area of PV-DV1-DV2 triangle $> 1\\,$mm$^2$ & " <<  Form("%.2lf $\\pm$ %.2lf & ", sigma2->getVal(), sigma2->getError()) << Form("%.2lf ", (n2/n1)*100.) << "\\\\" << std::endl;    
-        file << "$IP_{\\tau^{\\pm}} > 0.2$\\,mm & " <<  Form("%.2lf $\\pm$ %.2lf & ",  sigma3->getVal(), sigma3->getError()) << Form("%.2lf ", (n3/n1)*100.) << "\\\\" << std::endl;    
-        file << "DTF $\\tau^{\\pm}$ mass $\\in [1750,1800]$\\,MeV & " <<  Form("%.2lf $\\pm$ %.2lf & ",  sigma4->getVal(), sigma4->getError()) << Form("%.2lf ", (n4/n1)*100.) << "\\\\" << std::endl;    
-        file << "DTF $P_{\\nu} < 5000$\\,MeV & " <<  Form("%.2lf $\\pm$ %.2lf & ",  sigma5->getVal(), sigma5->getError()) << Form("%.2lf ", (n5/n1)*100.) << "\\\\" << std::endl;    
-        file << "$\\tau^{\\pm}$ FD to BV$ > 1$\\,mm & " <<  Form("%.2lf $\\pm$ %.2lf & ",  sigma6->getVal(), sigma6->getError()) << Form("%.2lf ", (n6/n1)*100.) << "\\\\" << std::endl;    
-        file << "$\\tau^{\\pm}$ FD to BV $\\chi^2 > 4$ & " <<  Form("%.2lf $\\pm$ %.2lf & ",  sigma7->getVal(), sigma7->getError()) << Form("%.2lf ", (n7/n1)*100.) << "\\\\" << std::endl;    
-        file << "$\\tau^{\\pm}$ FD to BV $\\chi^2 > 9$ & " <<  Form("%.2lf $\\pm$ %.2lf & ",  sigma7_1->getVal(), sigma7_1->getError()) << Form("%.2lf ", (n7_1/n1)*100.) << "\\\\" << std::endl;    
-        file << "DTF $\\chi^2 < 15$ & " <<  Form("%.2lf $\\pm$ %.2lf & ",  sigma8->getVal(), sigma8->getError()) << Form("%.2lf ", (n8/n1)*100.) << "\\\\" << std::endl;    
-        file << "Number of DTF iterations $< 5$ & " <<  Form("%.2lf $\\pm$ %.2lf & ",  sigma9->getVal(), sigma9->getError()) << Form("%.2lf ", (n9/n1)*100.) << "\\\\" << std::endl;    
-        file << "$\\tau$ z separation $> 1.5$\\,mm & " <<  Form("%.2lf $\\pm$ %.2lf & ",  sigma10->getVal(), sigma10->getError()) << Form("%.2lf ", (n10/n1)*100.) << "\\\\" << std::endl;    
-        file << "$\\tau$ xy separation $> 0.15$\\,mm & " <<  Form("%.2lf $\\pm$ %.2lf & ",  sigma10_1->getVal(), sigma10_1->getError()) << Form("%.2lf ", (n10_1/n1)*100.) << "\\\\" << std::endl;    
-        file << "$K^{+} p_{T} > 2000$\\,MeV & " <<  Form("%.2lf $\\pm$ %.2lf & ",  sigma11->getVal(), sigma11->getError()) << Form("%.2lf ", (n11/n1)*100.) << "\\\\" << std::endl;    
-        file << "$\\tau^{\\pm} p_{T} > 3000$\\,MeV & " <<  Form("%.2lf $\\pm$ %.2lf & ",  sigma12->getVal(), sigma12->getError()) << Form("%.2lf ", (n12/n1)*100.) << "\\\\" << std::endl;  
-        file << "$\\tau^{\\pm}$ DVz $>$ (BVz-0.2\\,mm) & " <<  Form("%.2lf $\\pm$ %.2lf & ",  sigma13->getVal(), sigma13->getError()) << Form("%.2lf ", (n13/n1)*100.) << "\\\\" << std::endl;  
-        file << "$abs(\\theta) > 0.45 ^{\\circ}$ & " <<  Form("%.2lf $\\pm$ %.2lf & ",  sigma14->getVal(), sigma14->getError()) << Form("%.2lf ", (n14/n1)*100.) << "\\\\ \\hline" << std::endl; 
+        file << "Area of PV-DV1-DV2 triangle $> 1\\,$mm$^2$ & " <<  Form("%.0lf $\\pm$ %.0lf & ", sigma2->getVal(), sigma2->getError()) << Form("%.0lf ", (n2/n1)*100.) << "\\\\" << std::endl;    
+        file << "$IP_{\\tau^{\\pm}} > 0.2$\\,mm & " <<  Form("%.0lf $\\pm$ %.0lf & ",  sigma3->getVal(), sigma3->getError()) << Form("%.0lf ", (n3/n1)*100.) << "\\\\" << std::endl;    
+        file << "DTF $\\tau^{\\pm}$ mass $\\in [1750,1800]$\\,MeV & " <<  Form("%.0lf $\\pm$ %.0lf & ",  sigma4->getVal(), sigma4->getError()) << Form("%.0lf ", (n4/n1)*100.) << "\\\\" << std::endl;    
+        file << "DTF $P_{\\nu} < 5000$\\,MeV & " <<  Form("%.0lf $\\pm$ %.0lf & ",  sigma5->getVal(), sigma5->getError()) << Form("%.0lf ", (n5/n1)*100.) << "\\\\" << std::endl;    
+        file << "$\\tau^{\\pm}$ FD to BV$ > 1$\\,mm & " <<  Form("%.0lf $\\pm$ %.0lf & ",  sigma6->getVal(), sigma6->getError()) << Form("%.0lf ", (n6/n1)*100.) << "\\\\" << std::endl;    
+        file << "$\\tau^{\\pm}$ FD to BV $\\chi^2 > 4$ & " <<  Form("%.0lf $\\pm$ %.0lf & ",  sigma7->getVal(), sigma7->getError()) << Form("%.0lf ", (n7/n1)*100.) << "\\\\" << std::endl;    
+        file << "$\\tau^{\\pm}$ FD to BV $\\chi^2 > 9$ & " <<  Form("%.0lf $\\pm$ %.0lf & ",  sigma7_1->getVal(), sigma7_1->getError()) << Form("%.0lf ", (n7_1/n1)*100.) << "\\\\" << std::endl;    
+        file << "DTF $\\chi^2 < 15$ & " <<  Form("%.0lf $\\pm$ %.0lf & ",  sigma8->getVal(), sigma8->getError()) << Form("%.0lf ", (n8/n1)*100.) << "\\\\" << std::endl;    
+        file << "Number of DTF iterations $< 5$ & " <<  Form("%.0lf $\\pm$ %.0lf & ",  sigma9->getVal(), sigma9->getError()) << Form("%.0lf ", (n9/n1)*100.) << "\\\\" << std::endl;    
+        file << "$\\tau$ z separation $> 1.5$\\,mm & " <<  Form("%.0lf $\\pm$ %.0lf & ",  sigma10->getVal(), sigma10->getError()) << Form("%.0lf ", (n10/n1)*100.) << "\\\\" << std::endl;    
+        file << "$\\tau$ xy separation $> 0.15$\\,mm & " <<  Form("%.0lf $\\pm$ %.0lf & ",  sigma10_1->getVal(), sigma10_1->getError()) << Form("%.0lf ", (n10_1/n1)*100.) << "\\\\" << std::endl;    
+        file << "$K^{+} p_{T} > 2000$\\,MeV & " <<  Form("%.0lf $\\pm$ %.0lf & ",  sigma11->getVal(), sigma11->getError()) << Form("%.0lf ", (n11/n1)*100.) << "\\\\" << std::endl;    
+        file << "$\\tau^{\\pm} p_{T} > 3000$\\,MeV & " <<  Form("%.0lf $\\pm$ %.0lf & ",  sigma12->getVal(), sigma12->getError()) << Form("%.0lf ", (n12/n1)*100.) << "\\\\" << std::endl;  
+        file << "$\\tau^{\\pm}$ DVz $>$ (BVz-0.2\\,mm) & " <<  Form("%.0lf $\\pm$ %.0lf & ",  sigma13->getVal(), sigma13->getError()) << Form("%.0lf ", (n13/n1)*100.) << "\\\\" << std::endl;  
+        file << "$abs(\\theta) > 0.45 ^{\\circ}$ & " <<  Form("%.0lf $\\pm$ %.0lf & ",  sigma14->getVal(), sigma14->getError()) << Form("%.0lf ", (n14/n1)*100.) << "\\\\ \\hline" << std::endl; 
 
         file << "\\end{tabular}" << std::endl;
         file << "\\end{table}" << std::endl;
         file.close();
     }   
+
+    TCanvas c24;
+    c24.cd();
+    h_q2->GetYaxis()->SetTitle("m(K^{+} #tau^{+} #tau^{-}) [MeV]");
+    h_q2->GetXaxis()->SetTitle("m(#tau #tau)^{2} [MeV^{2}]");
+    h_q2->Draw("COL");
+    c24.SaveAs(folder_name+"q2.gif");
+    c24.SaveAs(folder_name+"q2.pdf");
+
+    TCanvas c25;
+    c25.cd();
+    h_mtautau->GetYaxis()->SetTitle( TString::Format("Events / (%g MeV)",(h_mtautau->GetXaxis()->GetXmax() - h_mtautau->GetXaxis()->GetXmin())/h_mtautau->GetNbinsX()) );
+    h_mtautau->GetXaxis()->SetTitle("m(#tau #tau) [MeV]");
+    h_mtautau->Draw();
+    TLine *line = new TLine(3686.09, 0., 3686.09, 300.);
+    line->Draw("same");
+    c25.SaveAs(folder_name+"mtautau.gif");
+    c25.SaveAs(folder_name+"mtautau.pdf");
+
+    TCanvas x;
+    x.cd();
+    gStyle->SetOptStat(0);
+    h_IP1_core->GetXaxis()->SetTitle("IP (mm)");
+    h_IP1_core->GetYaxis()->SetTitle( TString::Format("Events / (%g MeV)",(h_IP1_core->GetXaxis()->GetXmax() - h_IP1_core->GetXaxis()->GetXmin())/h_IP1_core->GetNbinsX()) );
+    h_IP1_core->SetTitle(" ");
+    h_IP1_tail->GetXaxis()->SetTitle("IP (mm)");
+    h_IP1_tail->GetYaxis()->SetTitle( TString::Format("Events / (%g MeV)",(h_IP1_tail->GetXaxis()->GetXmax() - h_IP1_tail->GetXaxis()->GetXmin())/h_IP1_tail->GetNbinsX()) );
+    h_IP1_tail->SetTitle(" ");
+
+    h_IP1_core->Scale(1/h_IP1_core->Integral());
+    h_IP1_tail->Scale(1/h_IP1_tail->Integral());
+    h_IP1_tail->GetYaxis()->SetRangeUser(0.1*h_IP1_tail->GetMinimum(),1.1*h_IP1_tail->GetMaximum());  
+
+    if((h_IP1_tail->GetMaximum() > h_IP1_core->GetMaximum())){
+            h_IP1_core->GetYaxis()->SetRangeUser(0.1*h_IP1_tail->GetMinimum(), 1.1*h_IP1_tail->GetMaximum());}
+    else if((h_IP1_core->GetMaximum() > h_IP1_tail->GetMaximum())){
+            h_IP1_core->GetYaxis()->SetRangeUser(0.1*h_IP1_core->GetMinimum(), 1.1*h_IP1_core->GetMaximum());}
+
+    h_IP1_core->SetLineColor(kBlue);
+    h_IP1_core->SetFillColorAlpha(kBlue,0.25);
+    h_IP1_tail->SetLineColor(kRed);
+    h_IP1_tail->SetFillColorAlpha(kRed,0.25);
+    h_IP1_core->Draw("HIST");
+    h_IP1_tail->Draw("HIST same");
+
+    TLegend* xleg = new TLegend(0.65, 0.65, 0.85, 0.85);
+    xleg->SetBorderSize(0);
+    xleg->AddEntry(h_IP1_core, "Core", "f");
+    xleg->AddEntry(h_IP1_tail, "Tail", "f");
+    xleg->SetTextSize(0.03);
+    xleg->Draw("same");
+    x.SaveAs(folder_name+"IP1.gif");
+    x.SaveAs(folder_name+"IP1.pdf");
+
+    TCanvas x1;
+    x1.cd();
+    h_D_core->GetXaxis()->SetTitle("Dxy (mm)");
+    h_D_core->GetYaxis()->SetTitle( TString::Format("Events / (%g MeV)",(h_D_core->GetXaxis()->GetXmax() - h_D_core->GetXaxis()->GetXmin())/h_D_core->GetNbinsX()) );
+    h_D_core->SetTitle(" ");
+    h_D_tail->GetXaxis()->SetTitle("Dxy (mm)");
+    h_D_tail->GetYaxis()->SetTitle( TString::Format("Events / (%g MeV)",(h_D_tail->GetXaxis()->GetXmax() - h_D_tail->GetXaxis()->GetXmin())/h_D_tail->GetNbinsX()) );
+    h_D_tail->SetTitle(" ");
+
+    h_D_core->Scale(1/h_D_core->Integral());
+    h_D_tail->Scale(1/h_D_tail->Integral());
+    h_D_tail->GetYaxis()->SetRangeUser(0.1*h_D_tail->GetMinimum(),1.1*h_D_tail->GetMaximum());  
+
+    if((h_D_tail->GetMaximum() > h_D_core->GetMaximum())){
+            h_D_core->GetYaxis()->SetRangeUser(0.1*h_D_tail->GetMinimum(), 1.1*h_D_tail->GetMaximum());}
+    else if((h_D_core->GetMaximum() > h_D_tail->GetMaximum())){
+            h_D_core->GetYaxis()->SetRangeUser(0.1*h_D_core->GetMinimum(), 1.1*h_D_core->GetMaximum());}
+
+    h_D_core->SetLineColor(kBlue);
+    h_D_core->SetFillColorAlpha(kBlue,0.25);
+    h_D_tail->SetLineColor(kRed);
+    h_D_tail->SetFillColorAlpha(kRed,0.25);
+    h_D_core->Draw("HIST");
+    h_D_tail->Draw("HIST same");
+
+    TLegend* xleg1 = new TLegend(0.65, 0.65, 0.85, 0.85);
+    xleg1->SetBorderSize(0);
+    xleg1->AddEntry(h_D_core, "Core", "f");
+    xleg1->AddEntry(h_D_tail, "Tail", "f");
+    xleg1->SetTextSize(0.03);
+    xleg1->Draw("same");
+    x1.SaveAs(folder_name+"D.gif");
+    x1.SaveAs(folder_name+"D.pdf");
 
     TCanvas c;
     c.cd();
@@ -724,11 +847,8 @@ void mass_resolution(){
     h_nutau_z_core->SetTitle(" ");
     h_nutau_z_core->SetLineColor(kBlue);
     h_nutau_z_tail->SetLineColor(kRed);
-    //normalization
-    h_nutau_z_core->Scale(1/h_nutau_z_core->Integral());
-    h_nutau_z_tail->Scale(1/h_nutau_z_tail->Integral());    
-    h_nutau_z_core->Draw("HIST");
-    h_nutau_z_tail->Draw("HIST same");
+    h_nutau_z_core->DrawNormalized("HIST");
+    h_nutau_z_tail->DrawNormalized("HIST same");
     TLegend* leg1;
     leg1 = new TLegend(0.7, 0.8, 0.85, 0.85);
     leg1->SetBorderSize(0);
@@ -746,11 +866,8 @@ void mass_resolution(){
     h_antinutau_z_core->SetTitle(" ");
     h_antinutau_z_core->SetLineColor(kBlue);
     h_antinutau_z_tail->SetLineColor(kRed);
-    //normalization
-    h_antinutau_z_core->Scale(1/h_antinutau_z_core->Integral());
-    h_antinutau_z_tail->Scale(1/h_antinutau_z_tail->Integral());
-    h_antinutau_z_core->Draw("HIST");
-    h_antinutau_z_tail->Draw("HIST same");
+    h_antinutau_z_core->DrawNormalized("HIST");
+    h_antinutau_z_tail->DrawNormalized("HIST same");
     TLegend* leg2;
     leg2 = new TLegend(0.7, 0.8, 0.85, 0.85);
     leg2->SetBorderSize(0);
@@ -861,34 +978,43 @@ void mass_resolution(){
     TCanvas b;
     b.cd();
     h_visible_mass->SetLineColor(kRed);
+    h_visible_mass->SetFillColorAlpha(kRed,0.5);
+    h_visible_mass->SetTitle(" ");
     h_DTF_pass_mass->SetLineColor(kBlue);
+    h_DTF_pass_mass->SetFillColorAlpha(kBlue,0.5);
+    h_DTF_pass_mass->SetTitle(" ");
     h_DTF_pass_mass->GetXaxis()->SetTitle("m_{B^{+}} (MeV)");
     h_DTF_pass_mass->GetYaxis()->SetTitle( TString::Format("Events / (%g MeV)",(h_DTF_pass_mass->GetXaxis()->GetXmax() - h_DTF_pass_mass->GetXaxis()->GetXmin())/h_DTF_pass_mass->GetNbinsX()) );
     h_DTF_pass_mass->DrawNormalized();
     h_visible_mass->DrawNormalized("same");
     TLegend* l;
-    l = new TLegend(0.7, 0.6, 0.85, 0.85);
+    l = new TLegend(0.65, 0.65, 0.9, 0.85);
     l->SetBorderSize(0);
-    l->AddEntry(h_visible_mass, "Visible", "lp");
-    l->AddEntry(h_DTF_pass_mass, "DTF (pass)", "lp");
+    l->AddEntry(h_visible_mass, Form("Visible : #bar{m} = %.0lf #pm %.0lf MeV", h_visible_mass->GetMean(), h_visible_mass->GetStdDev()), "f");
+    l->AddEntry(h_DTF_pass_mass, Form("DTF : #bar{m} = %.0lf #pm %.0lf MeV", h_DTF_pass_mass->GetMean(), h_DTF_pass_mass->GetStdDev()), "f");
     l->Draw("same");
+    TLine *bline = new TLine(Bmass, 0., Bmass, 0.082);
+    bline->SetLineColor(kBlack);
+    bline->SetLineWidth(2);
+    //bline->Draw("same");
     b.SaveAs(folder_name+"Bmass_visible_DTF.gif");
     b.SaveAs(folder_name+"Bmass_visible_DTF.pdf");
 
     TCanvas b1;
     b1.cd();
     h_DTF_fail_mass->SetLineColor(kRed);
+    h_DTF_fail_mass->SetFillColorAlpha(kRed,0.25);
     h_DTF_pass_mass->SetLineColor(kBlue);
+    h_DTF_pass_mass->SetFillColorAlpha(kBlue,0.25);
     h_DTF_pass_mass->GetXaxis()->SetTitle("m_{B^{+}} (MeV)");
     h_DTF_pass_mass->GetYaxis()->SetTitle( TString::Format("Events / (%g MeV)",(h_DTF_pass_mass->GetXaxis()->GetXmax() - h_DTF_pass_mass->GetXaxis()->GetXmin())/h_DTF_pass_mass->GetNbinsX()) );
-    h_DTF_pass_mass->GetXaxis()->SetRangeUser(4000, 8000);
     h_DTF_pass_mass->DrawNormalized();
     h_DTF_fail_mass->DrawNormalized("same");
     TLegend* l1;
-    l1 = new TLegend(0.6, 0.6, 0.85, 0.85);
+    l1 = new TLegend(0.3, 0.6, 0.55, 0.85);
     l1->SetBorderSize(0);
-    l1->AddEntry(h_DTF_pass_mass, Form("DTF (pass) : %.0lf events", h_DTF_pass_mass->GetEntries()), "lp");
-    l1->AddEntry(h_DTF_fail_mass, Form("DTF (fail) : %.0lf events", h_DTF_fail_mass->GetEntries()), "lp");
+    l1->AddEntry(h_DTF_pass_mass, Form("DTF (pass) : %.0lf events", h_DTF_pass_mass->GetEntries()), "f");
+    l1->AddEntry(h_DTF_fail_mass, Form("DTF (fail) : %.0lf events", h_DTF_fail_mass->GetEntries()), "f");
     l1->Draw("same");
     b1.SaveAs(folder_name+"Bmass_DTF_pass_fail.gif");
     b1.SaveAs(folder_name+"Bmass_DTF_pass_fail.pdf");
@@ -1073,7 +1199,6 @@ void mass_resolution(){
     h_DTF_taum_Bmass_M->Draw("COL");
     c23.SaveAs(folder_name+"DTF_taum_Bmass_M.gif");
     c23.SaveAs(folder_name+"DTF_taum_Bmass_M.pdf");
-
 }
 
 RooRealVar* fit(RooDataSet* data, RooRealVar mass, TString cut, TString name, TString folder_name){

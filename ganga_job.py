@@ -1,8 +1,8 @@
 isMC = False
 year = '2016'
-pol = 'MagUp'
+pol = 'MagDown'
 
-j = Job(name='2016 MagUp Data')
+j = Job(name='2016 MagDown Data')
 myApp = GaudiExec()
 myApp.directory = "DaVinciDev"
 j.application = myApp
@@ -36,15 +36,15 @@ if not isMC:
         bkPath = '/LHCb/Collision18/Beam6500GeV-VeloClosed-MagUp/Real Data/Reco18/Stripping34r0p1/90000000/BHADRON.MDST' 
 data  = BKQuery(bkPath, dqflag=['OK']).getDataset()
 
-j.inputdata = data[0:1]
+j.inputdata = data
 j.backend = Dirac()
-j.splitter = SplitByFiles(filesPerJob=5)
+j.splitter = SplitByFiles(filesPerJob=20)
 
 if isMC:
     j.outputfiles = [LocalFile('DVntuple_MC_'+year+'_'+pol+'.root')] # change, put in grid DiracFile
 else:
     #j.outputfiles = [LocalFile('DVntuple_data_'+year+'_'+pol+'.root')]
-    j.outputfiles = [DiracFile('DVntuple_MC_'+year+'_'+pol+'.root')]
+    j.outputfiles = [DiracFile('*.root'),LocalFile('stdout')]
 
 j.submit()
 
