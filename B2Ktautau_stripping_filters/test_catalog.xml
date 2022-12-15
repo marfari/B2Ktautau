@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!-- Edited By POOL -->
+<!DOCTYPE POOLFILECATALOG SYSTEM "InMemory">
+<POOLFILECATALOG>
+  <File ID="0499C314-307A-ED11-B32B-003048F167E0">
+    <physical>
+      <pfn filetype="ROOT" name="RD.B2KTauTau.Strip.dst"/>
+    </physical>
+    <logical/>
+  </File>
+
+</POOLFILECATALOG>

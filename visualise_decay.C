@@ -8,8 +8,11 @@ ROOT::Math::XYZPoint makeTransformation_point(ROOT::Math::XYZVector p_K, ROOT::M
 void plot(ROOT::Math::XYZPoint PV_t, ROOT::Math::XYZPoint KV_t, ROOT::Math::XYZPoint BV_t, ROOT::Math::XYZPoint BV_true_t, ROOT::Math::XYZPoint DV1_t, ROOT::Math::XYZPoint DV2_t, ROOT::Math::XYZPoint DV1err, ROOT::Math::XYZPoint DV2err, ROOT::Math::XYZVector Xerr1_t, ROOT::Math::XYZVector Xerr2_t, ROOT::Math::XYZVector Yerr1_t, ROOT::Math::XYZVector Yerr2_t, ROOT::Math::XYZVector Pb_t, ROOT::Math::XYZVector Pnu1_t, ROOT::Math::XYZVector P3pi11_t, ROOT::Math::XYZVector P3pi12_t, ROOT::Math::XYZVector P3pi13_t, ROOT::Math::XYZVector Pnu2_t, ROOT::Math::XYZVector P3pi21_t, ROOT::Math::XYZVector P3pi22_t, ROOT::Math::XYZVector P3pi23_t, TString name, TFile* fout, int i, float DTF_chi2);
 void plot_comparison(TH1D* histo_core, TH1D* histo_tail, TString name, TString unit, int n_bins);
 
-bool DTF_neutrino = false;
+bool DTF_neutrino = true;
 bool all_true = false;
+bool isMC = false;
+
+#define year 8
 
 // DTF_neutrino = false, all_true = false -> nuTRUE
 // DTF_neutrino = true, all_true = false -> nuDTF
@@ -19,13 +22,21 @@ void visualise_decay(){
     if(all_true){DTF_neutrino = false;}
     if(DTF_neutrino){all_true = false;}
 
-    TFile* fin = new TFile("/panfs/felician/B2Ktautau/ROOT_Sim/2016/mc_2016.root");
-    TTree* t = (TTree*)fin->Get("ntuple/DecayTree");
+    TFileCollection* fc = new TFileCollection("RS_data", "RS_data", Form("data_201%i_MagUp.txt",year),1);
+    fc->AddFromFile(Form("data_201%i_MagDown.txt", year),1);
+
+    TChain* t = new TChain("ntuple/DecayTree");
+    if(isMC){t->Add(Form("/panfs/felician/B2Ktautau/ROOT_Sim/201%i/mc_201%i_truth_matched.root",year,year));}
+    else{t->AddFileInfoList((TCollection*)fc->GetList());}
+
+    TString name;
+    if(isMC){name = "MC";}
+    else{name = "DATA";}
 
     TFile* fout;
-    if(DTF_neutrino){fout = new TFile("Mass_resolution_visualisation/MC_2016_kinematics_nuDTF.root","recreate");}
-    else if(all_true){fout = new TFile("Mass_resolution_visualisation/MC_2016_kinematics_allTRUE.root","recreate");}
-    else{fout = new TFile("Mass_resolution_visualisation/MC_2016_kinematics_nuTRUE.root","recreate");}
+    if(DTF_neutrino){fout = new TFile("Mass_resolution_visualisation/"+name+Form("_201%i_kinematics_nuDTF.root",year),"recreate");}
+    else if(all_true){fout = new TFile("Mass_resolution_visualisation/"+name+Form("_201%i_kinematics_allTRUE.root",year),"recreate");}
+    else{fout = new TFile("Mass_resolution_visualisation/"+name+Form("_201%i_kinematics_nuTRUE.root",year),"recreate");}
     
     double n_bins = 100;
     TH1D* h_pass_core = new TH1D("h_pass_core", "h_pass_core", n_bins, 0., 15);
@@ -66,11 +77,17 @@ void visualise_decay(){
     Double_t DV1x, DV1y, DV1z, DV2x, DV2y, DV2z, DV2xerr, DV1xerr, DV1yerr, DV1zerr, DV2yerr, DV2zerr;
     Double_t taup_FD_BV_chi2, taup_FD_BV, taum_FD_BV_chi2, taum_FD_BV, taup_DIRA_BV, taup_IP_PV_chi2, taup_IP_PV;
     Float_t status, Pnu1x, Pnu1y, Pnu1z, Pnu2x, Pnu2y, Pnu2z;
-    Int_t Kp_TRUEID, taup_pip0_TRUEID, taup_pim0_TRUEID, taup_pip1_TRUEID, taum_pim0_TRUEID, taum_pip0_TRUEID, taum_pim1_TRUEID, taup_TRUEID, taum_TRUEID, Bp_TRUEID;
+    Int_t Kp_TRUEID, taup_pi1_TRUEID, taup_pi2_TRUEID, taup_pi3_TRUEID, taum_pi1_TRUEID, taum_pi2_TRUEID, taum_pi3_TRUEID, taup_TRUEID, taum_TRUEID, Bp_TRUEID;
     Double_t BVx_true, BVy_true, BVz_true;
     Double_t taup_TRUEPX, taum_TRUEPX, taup_TRUEPY, taum_TRUEPY, taup_TRUEPZ, taum_TRUEPZ;
-    Float_t DTF_chi2, DTF_ndf, DTF_taup_M, DTF_taum_M;
+    Float_t DTF_chi2, DTF_ndf, DTF_taup_M, DTF_taum_M, DTF_Bmass_err;
+    Float_t taup_decayLenght, taum_decayLength, Bp_decayLength;
 
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_decayLength", &taum_decayLength);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_decayLength", &taup_decayLenght);
+    t->SetBranchAddress("Bp_ConsBp_0_decayLength", &Bp_decayLength);
+
+    t->SetBranchAddress("Bp_ConsBp_0_MERR", &DTF_Bmass_err);
     t->SetBranchAddress("taup_FDCHI2_ORIVX",&taup_FD_BV_chi2);
     t->SetBranchAddress("taup_FD_ORIVX",&taup_FD_BV);
     t->SetBranchAddress("taum_FDCHI2_ORIVX",&taum_FD_BV_chi2);
@@ -79,73 +96,65 @@ void visualise_decay(){
     t->SetBranchAddress("taup_IPCHI2_OWNPV",&taup_IP_PV_chi2);
     t->SetBranchAddress("taup_IP_OWNPV",&taup_IP_PV_chi2);
 
-    t->SetBranchAddress("Kp_TRUEID", &Kp_TRUEID);
-    t->SetBranchAddress("Bp_TRUEID", &Bp_TRUEID);
-    t->SetBranchAddress("taup_TRUEID", &taup_TRUEID);
-    t->SetBranchAddress("taum_TRUEID", &taum_TRUEID);
-    t->SetBranchAddress("taup_pip0_TRUEID", &taup_pip0_TRUEID);
-    t->SetBranchAddress("taup_pim0_TRUEID", &taup_pim0_TRUEID);
-    t->SetBranchAddress("taup_pip1_TRUEID", &taup_pip1_TRUEID);
-    t->SetBranchAddress("taum_pim0_TRUEID", &taum_pim0_TRUEID);
-    t->SetBranchAddress("taum_pip0_TRUEID", &taum_pip0_TRUEID);
-    t->SetBranchAddress("taum_pim1_TRUEID", &taum_pim1_TRUEID);
-    t->SetBranchAddress("Bp_ConsBp_status",&status);
+    t->SetBranchAddress("Bp_ConsBp_0_status",&status);
 
     t->SetBranchAddress("Bp_ENDVERTEX_X",&BVx);
     t->SetBranchAddress("Bp_ENDVERTEX_Y",&BVy);
     t->SetBranchAddress("Bp_ENDVERTEX_Z",&BVz);
-    t->SetBranchAddress("Bp_TRUEENDVERTEX_X",&BVx_true);
-    t->SetBranchAddress("Bp_TRUEENDVERTEX_Y",&BVy_true);
-    t->SetBranchAddress("Bp_TRUEENDVERTEX_Z",&BVz_true);
+    if(isMC){
+      t->SetBranchAddress("Bp_TRUEENDVERTEX_X",&BVx_true);
+      t->SetBranchAddress("Bp_TRUEENDVERTEX_Y",&BVy_true);
+      t->SetBranchAddress("Bp_TRUEENDVERTEX_Z",&BVz_true);
+    }
 
     t->SetBranchAddress("refPoint_X",&KVx);
     t->SetBranchAddress("refPoint_Y",&KVy);
     t->SetBranchAddress("refPoint_Z",&KVz);
 
-    t->SetBranchAddress("Bp_ConsBp_tauminus_M",&DTF_taup_M);
-    t->SetBranchAddress("Bp_ConsBp_tauminus_0_M",&DTF_taum_M);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_M",&DTF_taup_M);
+    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_M",&DTF_taum_M);
 
     if(DTF_neutrino){
-      t->SetBranchAddress("Bp_ConsBp_tauminus_nu_tau_PX",&Pnu1x);
-      t->SetBranchAddress("Bp_ConsBp_tauminus_nu_tau_PY",&Pnu1y);
-      t->SetBranchAddress("Bp_ConsBp_tauminus_nu_tau_PZ",&Pnu1z);
-      t->SetBranchAddress("Bp_ConsBp_tauminus_0_nu_tau_PX",&Pnu2x);
-      t->SetBranchAddress("Bp_ConsBp_tauminus_0_nu_tau_PY",&Pnu2y);
-      t->SetBranchAddress("Bp_ConsBp_tauminus_0_nu_tau_PZ",&Pnu2z);
+      t->SetBranchAddress("Bp_ConsBp_0_tauminus_nu_tau_PX",&Pnu1x);
+      t->SetBranchAddress("Bp_ConsBp_0_tauminus_nu_tau_PY",&Pnu1y);
+      t->SetBranchAddress("Bp_ConsBp_0_tauminus_nu_tau_PZ",&Pnu1z);
+      t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_nu_tau_PX",&Pnu2x);
+      t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_nu_tau_PY",&Pnu2y);
+      t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_nu_tau_PZ",&Pnu2z);
     }
     else{
       t->SetBranchAddress("taup_TRUEP_X", &taup_TRUEPX);
       t->SetBranchAddress("taum_TRUEP_X", &taum_TRUEPX);
-      t->SetBranchAddress("taup_pip0_TRUEP_X",&P3pi11x);
-      t->SetBranchAddress("taup_pim0_TRUEP_X",&P3pi12x);
-      t->SetBranchAddress("taup_pip1_TRUEP_X",&P3pi13x);
-      t->SetBranchAddress("taum_pim0_TRUEP_X",&P3pi21x);
-      t->SetBranchAddress("taum_pip0_TRUEP_X",&P3pi22x);
-      t->SetBranchAddress("taum_pim1_TRUEP_X",&P3pi23x);
+      t->SetBranchAddress("taup_pi1_TRUEP_X",&P3pi11x);
+      t->SetBranchAddress("taup_pi2_TRUEP_X",&P3pi12x);
+      t->SetBranchAddress("taup_pi3_TRUEP_X",&P3pi13x);
+      t->SetBranchAddress("taum_pi1_TRUEP_X",&P3pi21x);
+      t->SetBranchAddress("taum_pi2_TRUEP_X",&P3pi22x);
+      t->SetBranchAddress("taum_pi3_TRUEP_X",&P3pi23x);
 
 
       t->SetBranchAddress("taup_TRUEP_Y", &taup_TRUEPY);
       t->SetBranchAddress("taum_TRUEP_Y", &taum_TRUEPY);
-      t->SetBranchAddress("taup_pip0_TRUEP_Y",&P3pi11y);
-      t->SetBranchAddress("taup_pim0_TRUEP_Y",&P3pi12y);
-      t->SetBranchAddress("taup_pip1_TRUEP_Y",&P3pi13y);
-      t->SetBranchAddress("taum_pim0_TRUEP_Y",&P3pi21y);
-      t->SetBranchAddress("taum_pip0_TRUEP_Y",&P3pi22y);
-      t->SetBranchAddress("taum_pim1_TRUEP_Y",&P3pi23y);
+      t->SetBranchAddress("taup_pi1_TRUEP_Y",&P3pi11y);
+      t->SetBranchAddress("taup_pi2_TRUEP_Y",&P3pi12y);
+      t->SetBranchAddress("taup_pi3_TRUEP_Y",&P3pi13y);
+      t->SetBranchAddress("taum_pi1_TRUEP_Y",&P3pi21y);
+      t->SetBranchAddress("taum_pi2_TRUEP_Y",&P3pi22y);
+      t->SetBranchAddress("taum_pi3_TRUEP_Y",&P3pi23y);
 
       t->SetBranchAddress("taup_TRUEP_Z", &taup_TRUEPZ);
       t->SetBranchAddress("taum_TRUEP_Z", &taum_TRUEPZ);
-      t->SetBranchAddress("taup_pip0_TRUEP_Z",&P3pi11z);
-      t->SetBranchAddress("taup_pim0_TRUEP_Z",&P3pi12z);
-      t->SetBranchAddress("taup_pip1_TRUEP_Z",&P3pi13z);
-      t->SetBranchAddress("taum_pim0_TRUEP_Z",&P3pi21z);
-      t->SetBranchAddress("taum_pip0_TRUEP_Z",&P3pi22z);
-      t->SetBranchAddress("taum_pim1_TRUEP_Z",&P3pi23z);  
+      t->SetBranchAddress("taup_pi1_TRUEP_Z",&P3pi11z);
+      t->SetBranchAddress("taup_pi2_TRUEP_Z",&P3pi12z);
+      t->SetBranchAddress("taup_pi3_TRUEP_Z",&P3pi13z);
+      t->SetBranchAddress("taum_pi1_TRUEP_Z",&P3pi21z);
+      t->SetBranchAddress("taum_pi2_TRUEP_Z",&P3pi22z);
+      t->SetBranchAddress("taum_pi3_TRUEP_Z",&P3pi23z);  
     }
 
-    t->SetBranchAddress("Bp_ConsBp_M",&Bmass);
-    t->SetBranchAddress("Bp_ConsBp_chi2",&DTF_chi2);
-    t->SetBranchAddress("Bp_ConsBp_nDOF",&DTF_ndf);
+    t->SetBranchAddress("Bp_ConsBp_0_M",&Bmass);
+    t->SetBranchAddress("Bp_ConsBp_0_chi2",&DTF_chi2);
+    t->SetBranchAddress("Bp_ConsBp_0_nDOF",&DTF_ndf);
 
     if(all_true){
       t->SetBranchAddress("Bp_TRUEORIGINVERTEX_X",&PVx);
@@ -178,29 +187,29 @@ void visualise_decay(){
       t->SetBranchAddress("Bp_OWNPV_Y",&PVy);
       t->SetBranchAddress("Bp_OWNPV_Z",&PVz);
 
-      t->SetBranchAddress("taup_pip0_PX",&P3pi11x);
-      t->SetBranchAddress("taup_pim0_PX",&P3pi12x);
-      t->SetBranchAddress("taup_pip1_PX",&P3pi13x);
+      t->SetBranchAddress("taup_pi1_PX",&P3pi11x);
+      t->SetBranchAddress("taup_pi2_PX",&P3pi12x);
+      t->SetBranchAddress("taup_pi3_PX",&P3pi13x);
 
-      t->SetBranchAddress("taup_pip0_PY",&P3pi11y);
-      t->SetBranchAddress("taup_pim0_PY",&P3pi12y);
-      t->SetBranchAddress("taup_pip1_PY",&P3pi13y);
+      t->SetBranchAddress("taup_pi1_PY",&P3pi11y);
+      t->SetBranchAddress("taup_pi2_PY",&P3pi12y);
+      t->SetBranchAddress("taup_pi3_PY",&P3pi13y);
 
-      t->SetBranchAddress("taup_pip0_PZ",&P3pi11z);
-      t->SetBranchAddress("taup_pim0_PZ",&P3pi12z);
-      t->SetBranchAddress("taup_pip1_PZ",&P3pi13z);
+      t->SetBranchAddress("taup_pi1_PZ",&P3pi11z);
+      t->SetBranchAddress("taup_pi2_PZ",&P3pi12z);
+      t->SetBranchAddress("taup_pi3_PZ",&P3pi13z);
 
-      t->SetBranchAddress("taum_pim0_PX",&P3pi21x);
-      t->SetBranchAddress("taum_pip0_PX",&P3pi22x);
-      t->SetBranchAddress("taum_pim1_PX",&P3pi23x);
+      t->SetBranchAddress("taum_pi1_PX",&P3pi21x);
+      t->SetBranchAddress("taum_pi2_PX",&P3pi22x);
+      t->SetBranchAddress("taum_pi3_PX",&P3pi23x);
 
-      t->SetBranchAddress("taum_pim0_PY",&P3pi21y);
-      t->SetBranchAddress("taum_pip0_PY",&P3pi22y);
-      t->SetBranchAddress("taum_pim1_PY",&P3pi23y);
+      t->SetBranchAddress("taum_pi1_PY",&P3pi21y);
+      t->SetBranchAddress("taum_pi2_PY",&P3pi22y);
+      t->SetBranchAddress("taum_pi3_PY",&P3pi23y);
 
-      t->SetBranchAddress("taum_pim0_PZ",&P3pi21z);
-      t->SetBranchAddress("taum_pip0_PZ",&P3pi22z);
-      t->SetBranchAddress("taum_pim1_PZ",&P3pi23z);
+      t->SetBranchAddress("taum_pi1_PZ",&P3pi21z);
+      t->SetBranchAddress("taum_pi2_PZ",&P3pi22z);
+      t->SetBranchAddress("taum_pi3_PZ",&P3pi23z);
 
       t->SetBranchAddress("taup_ENDVERTEX_X",&DV1x);
       t->SetBranchAddress("taup_ENDVERTEX_Y",&DV1y);
@@ -226,7 +235,7 @@ void visualise_decay(){
 
     double mpeak = 5279; // from TTree 
 
-    for(int i = 0; i < t->GetEntries(); i++){
+    for(int i = 0; i < 10000; i++){
       t->GetEntry(i);
 
       if(!(DTF_neutrino)){
@@ -301,63 +310,63 @@ void visualise_decay(){
       double tau_distance;
       float DTF_norm_chi2 = DTF_chi2/DTF_ndf;
 
-      if( (abs(Kp_TRUEID) == 321 && abs(taup_pip0_TRUEID) == 211 && abs(taup_pim0_TRUEID) == 211 && abs(taup_pip1_TRUEID) == 211 && abs(taum_pim0_TRUEID) == 211 && abs(taum_pip0_TRUEID) == 211 && abs(taum_pim1_TRUEID) == 211) && (abs(taup_TRUEID) == 15 && abs(taum_TRUEID) == 15) && (abs(Bp_TRUEID) == 521)){ // truth match
+      tau_distance = sqrt(pow(DV1.x() - DV2.x(),2) + pow(DV1.y() - DV2.y(),2) + pow(DV1.z() - DV2.z(),2));
 
-        tau_distance = sqrt(pow(DV1.x() - DV2.x(),2) + pow(DV1.y() - DV2.y(),2) + pow(DV1.z() - DV2.z(),2));
+      if(status == 0){ // pass DTF
 
-        if(status == 0){ // pass DTF
+        if((DTF_taup_M != 1776.86)){plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "pass_taup_no_PDG", fout, i, DTF_norm_chi2);}
+        if((DTF_taum_M != 1776.86)){plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "pass_taum_no_PDG", fout, i, DTF_norm_chi2);}
 
-          if((DTF_taup_M != 1776.86)){plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "pass_taup_no_PDG", fout, i, DTF_norm_chi2);}
-          if((DTF_taum_M != 1776.86)){plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "pass_taum_no_PDG", fout, i, DTF_norm_chi2);}
-
-          if( abs(Bmass - mpeak) < 300 ){ // core
-            plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "pass_core", fout, i, DTF_norm_chi2);
-            
-            h_pass_core->Fill(A);
-            h_DV1_core->Fill(IP1);
-            h_DV2_core->Fill(IP2);
-            h_PV_core->Fill(IP3);
-
-            h_taup_FDCHI2_BV_core->Fill(taup_FD_BV_chi2);
-            h_taup_FD_BV_core->Fill(taup_FD_BV);
-            h_taum_FDCHI2_BV_core->Fill(taum_FD_BV_chi2);
-            h_taum_FD_BV_core->Fill(taum_FD_BV);
-            h_taup_sep_core->Fill(tau_distance);
-            h_taup_DIRA_BV_core->Fill(taup_DIRA_BV);
-            h_nutau_P_core->Fill(sqrt(pow(Pnu1x,2) + pow(Pnu1y,2) + pow(Pnu1z,2)));
-            h_nutau0_P_core->Fill(sqrt(pow(Pnu2x,2) + pow(Pnu2y,2) + pow(Pnu2z,2)));
-
-          }
-          else if(Bmass > 6500.){ // tails
-            plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "pass_tail", fout, i, DTF_norm_chi2);
-            
-            h_pass_tail->Fill(A);
-            h_DV1_tail->Fill(IP1);
-            h_DV2_tail->Fill(IP2);
-            h_PV_tail->Fill(IP3);
-
-            h_taup_FDCHI2_BV_tail->Fill(taup_FD_BV_chi2);
-            h_taup_FD_BV_tail->Fill(taup_FD_BV);
-            h_taum_FDCHI2_BV_tail->Fill(taum_FD_BV_chi2);
-            h_taum_FD_BV_tail->Fill(taum_FD_BV);
-            h_taup_sep_tail->Fill(tau_distance);
-            h_taup_DIRA_BV_tail->Fill(taup_DIRA_BV);
-            h_nutau_P_tail->Fill(sqrt(pow(Pnu1x,2) + pow(Pnu1y,2) + pow(Pnu1z,2)));
-            h_nutau0_P_tail->Fill(sqrt(pow(Pnu2x,2) + pow(Pnu2y,2) + pow(Pnu2z,2)));
-
-          }
-        }
-        else{ // fail DTF
-          plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "fail", fout, i, DTF_norm_chi2);
+        if( abs(Bmass - mpeak) < 300 ){ // core
+          plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "pass_core", fout, i, DTF_norm_chi2);
           
-          h_fail->Fill(A);
-          h_DV1_fail->Fill(IP1);
-          h_DV2_fail->Fill(IP2);
-          h_PV_fail->Fill(IP3);
-          
+          h_pass_core->Fill(A);
+          h_DV1_core->Fill(IP1);
+          h_DV2_core->Fill(IP2);
+          h_PV_core->Fill(IP3);
+
+          h_taup_FDCHI2_BV_core->Fill(taup_FD_BV_chi2);
+          h_taup_FD_BV_core->Fill(taup_FD_BV);
+          h_taum_FDCHI2_BV_core->Fill(taum_FD_BV_chi2);
+          h_taum_FD_BV_core->Fill(taum_FD_BV);
+          h_taup_sep_core->Fill(tau_distance);
+          h_taup_DIRA_BV_core->Fill(taup_DIRA_BV);
+          h_nutau_P_core->Fill(sqrt(pow(Pnu1x,2) + pow(Pnu1y,2) + pow(Pnu1z,2)));
+          h_nutau0_P_core->Fill(sqrt(pow(Pnu2x,2) + pow(Pnu2y,2) + pow(Pnu2z,2)));
+
         }
-    }
-  }
+        else if(Bmass > 6500.){ // tails
+          plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "pass_tail", fout, i, DTF_norm_chi2);
+          
+          h_pass_tail->Fill(A);
+          h_DV1_tail->Fill(IP1);
+          h_DV2_tail->Fill(IP2);
+          h_PV_tail->Fill(IP3);
+
+          h_taup_FDCHI2_BV_tail->Fill(taup_FD_BV_chi2);
+          h_taup_FD_BV_tail->Fill(taup_FD_BV);
+          h_taum_FDCHI2_BV_tail->Fill(taum_FD_BV_chi2);
+          h_taum_FD_BV_tail->Fill(taum_FD_BV);
+          h_taup_sep_tail->Fill(tau_distance);
+          h_taup_DIRA_BV_tail->Fill(taup_DIRA_BV);
+          h_nutau_P_tail->Fill(sqrt(pow(Pnu1x,2) + pow(Pnu1y,2) + pow(Pnu1z,2)));
+          h_nutau0_P_tail->Fill(sqrt(pow(Pnu2x,2) + pow(Pnu2y,2) + pow(Pnu2z,2)));
+
+        }
+        else if(abs(BVy) < 0.5){
+          plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "BVy_05", fout, i, DTF_norm_chi2);
+        }
+
+      }
+      else{ // fail DTF
+        plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "fail", fout, i, DTF_norm_chi2);
+        
+        h_fail->Fill(A);
+        h_DV1_fail->Fill(IP1);
+        h_DV2_fail->Fill(IP2);
+        h_PV_fail->Fill(IP3);
+      }
+    }      
 
   plot_comparison(h_taup_FDCHI2_BV_core, h_taup_FDCHI2_BV_tail, "taup FD to BV chi2", " ", n_bins);
   plot_comparison(h_taup_FD_BV_core, h_taup_FDCHI2_BV_tail, "taup FD to BV", "(mm)", n_bins);
@@ -719,7 +728,7 @@ void plot(ROOT::Math::XYZPoint PV_t, ROOT::Math::XYZPoint KV_t, ROOT::Math::XYZP
         mg1->Add(DV2z_point,"AP");
         mg1->Add(PVz_point,"AP");
         mg1->Add(BVz_point,"AP");
-        mg1->Add(BVz_true_point,"AP");
+        if(isMC){mg1->Add(BVz_true_point,"AP");}
         mg1->Add(DV1err_line,"L");
         mg1->Add(DV2err_line,"L");
 

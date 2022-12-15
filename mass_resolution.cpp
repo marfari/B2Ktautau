@@ -7,7 +7,7 @@ using namespace std;
 std::ofstream file;
 
 bool make_fit = true;
-bool myInit = false;
+bool myInit = true;
 
 void mass_resolution(){
 
@@ -24,99 +24,99 @@ void mass_resolution(){
 
     Double_t Bmass_visible, taup_FD, taum_FD, taup_FD_chi2, taum_FD_chi2, taup_IP_chi2, taum_IP_chi2;
     Float_t status, Bmass, Bmass_err, Enu1, Pnu1x, Pnu1y, Pnu1z, Enu2, Pnu2x, Pnu2y, Pnu2z, DTF_EB, DTF_PBx, DTF_PBy, DTF_PBz;
-    Int_t Kp_TRUEID, taup_pi1_TRUEID, taup_pi3_TRUEID, taup_pi2_TRUEID, taum_pi1_TRUEID, taum_pi3_TRUEID, taum_pi2_TRUEID, taup_TRUEID, taum_TRUEID, Bp_TRUEID;
+    Int_t Kp_TRUEID, taup_pip0_TRUEID, taup_pip1_TRUEID, taup_pim0_TRUEID, taum_pim0_TRUEID, taum_pim1_TRUEID, taum_pip0_TRUEID, taup_TRUEID, taum_TRUEID, Bp_TRUEID;
     Double_t DV1x, DV1y, DV1z, DV2x, DV2y, DV2z, BVx, BVy, BVz, PVx, PVy, PVz, KVx, KVy, KVz;
-    Double_t taup_pi1_TRUEPE, taup_pi3_TRUEPE, taup_pi2_TRUEPE, taum_pi1_TRUEPE, taum_pi3_TRUEPE, taum_pi2_TRUEPE, taup_TRUEPE, taum_TRUEPE;
-    Double_t taup_pi1_TRUEPX, taup_pi3_TRUEPX, taup_pi2_TRUEPX, taum_pi1_TRUEPX, taum_pi3_TRUEPX, taum_pi2_TRUEPX, taup_TRUEPX, taum_TRUEPX;
-    Double_t taup_pi1_TRUEPY, taup_pi3_TRUEPY, taup_pi2_TRUEPY, taum_pi1_TRUEPY, taum_pi3_TRUEPY, taum_pi2_TRUEPY, taup_TRUEPY, taum_TRUEPY;
-    Double_t taup_pi1_TRUEPZ, taup_pi3_TRUEPZ, taup_pi2_TRUEPZ, taum_pi1_TRUEPZ, taum_pi3_TRUEPZ, taum_pi2_TRUEPZ, taup_TRUEPZ, taum_TRUEPZ;
+    Double_t taup_pip0_TRUEPE, taup_pip1_TRUEPE, taup_pim0_TRUEPE, taum_pim0_TRUEPE, taum_pim1_TRUEPE, taum_pip0_TRUEPE, taup_TRUEPE, taum_TRUEPE;
+    Double_t taup_pip0_TRUEPX, taup_pip1_TRUEPX, taup_pim0_TRUEPX, taum_pim0_TRUEPX, taum_pim1_TRUEPX, taum_pip0_TRUEPX, taup_TRUEPX, taum_TRUEPX;
+    Double_t taup_pip0_TRUEPY, taup_pip1_TRUEPY, taup_pim0_TRUEPY, taum_pim0_TRUEPY, taum_pim1_TRUEPY, taum_pip0_TRUEPY, taup_TRUEPY, taum_TRUEPY;
+    Double_t taup_pip0_TRUEPZ, taup_pip1_TRUEPZ, taup_pim0_TRUEPZ, taum_pim0_TRUEPZ, taum_pim1_TRUEPZ, taum_pip0_TRUEPZ, taup_TRUEPZ, taum_TRUEPZ;
     Float_t taum_DTF_M, taup_DTF_M, taum_DTF_Merr, taup_DTF_Merr, DTF_chi2, DTF_nIter;
     Float_t taup_DTF_PE, taup_DTF_PX, taup_DTF_PY, taup_DTF_PZ, taum_DTF_PE, taum_DTF_PX, taum_DTF_PY, taum_DTF_PZ;
     Double_t Kp_PT, taup_PT, taum_PT, Pkx, Pky, Pkz;
     Float_t M_kstar, status_kstar, Enu1_s, Pnu1x_s, Pnu1y_s, Pnu1z_s, Enu2_s, Pnu2x_s, Pnu2y_s, Pnu2z_s;
-    Double_t taup_pi1_TRUEPE_s, taup_pi3_TRUEPE_s, taup_pi2_TRUEPE_s, taum_pi1_TRUEPE_s, taum_pi3_TRUEPE_s, taum_pi2_TRUEPE_s, taup_TRUEPE_s, taum_TRUEPE_s;
-    Double_t taup_pi1_TRUEPX_s, taup_pi3_TRUEPX_s, taup_pi2_TRUEPX_s, taum_pi1_TRUEPX_s, taum_pi3_TRUEPX_s, taum_pi2_TRUEPX_s, taup_TRUEPX_s, taum_TRUEPX_s;
-    Double_t taup_pi1_TRUEPY_s, taup_pi3_TRUEPY_s, taup_pi2_TRUEPY_s, taum_pi1_TRUEPY_s, taum_pi3_TRUEPY_s, taum_pi2_TRUEPY_s, taup_TRUEPY_s, taum_TRUEPY_s;
-    Double_t taup_pi1_TRUEPZ_s, taup_pi3_TRUEPZ_s, taup_pi2_TRUEPZ_s, taum_pi1_TRUEPZ_s, taum_pi3_TRUEPZ_s, taum_pi2_TRUEPZ_s, taup_TRUEPZ_s, taum_TRUEPZ_s;
+    Double_t taup_pip0_TRUEPE_s, taup_pip1_TRUEPE_s, taup_pim0_TRUEPE_s, taum_pim0_TRUEPE_s, taum_pim1_TRUEPE_s, taum_pip0_TRUEPE_s, taup_TRUEPE_s, taum_TRUEPE_s;
+    Double_t taup_pip0_TRUEPX_s, taup_pip1_TRUEPX_s, taup_pim0_TRUEPX_s, taum_pim0_TRUEPX_s, taum_pim1_TRUEPX_s, taum_pip0_TRUEPX_s, taup_TRUEPX_s, taum_TRUEPX_s;
+    Double_t taup_pip0_TRUEPY_s, taup_pip1_TRUEPY_s, taup_pim0_TRUEPY_s, taum_pim0_TRUEPY_s, taum_pim1_TRUEPY_s, taum_pip0_TRUEPY_s, taup_TRUEPY_s, taum_TRUEPY_s;
+    Double_t taup_pip0_TRUEPZ_s, taup_pip1_TRUEPZ_s, taup_pim0_TRUEPZ_s, taum_pim0_TRUEPZ_s, taum_pim1_TRUEPZ_s, taum_pip0_TRUEPZ_s, taup_TRUEPZ_s, taum_TRUEPZ_s;
 
     // True quantities
     t->SetBranchAddress("taup_TRUEP_E", &taup_TRUEPE);
     t->SetBranchAddress("taum_TRUEP_E", &taum_TRUEPE);
-    t->SetBranchAddress("taup_pi1_TRUEP_E", &taup_pi1_TRUEPE);
-    t->SetBranchAddress("taup_pi3_TRUEP_E", &taup_pi3_TRUEPE);
-    t->SetBranchAddress("taup_pi2_TRUEP_E", &taup_pi2_TRUEPE);
-    t->SetBranchAddress("taum_pi1_TRUEP_E", &taum_pi1_TRUEPE);
-    t->SetBranchAddress("taum_pi3_TRUEP_E", &taum_pi3_TRUEPE);
-    t->SetBranchAddress("taum_pi2_TRUEP_E", &taum_pi2_TRUEPE); 
+    t->SetBranchAddress("taup_pip0_TRUEP_E", &taup_pip0_TRUEPE);
+    t->SetBranchAddress("taup_pip1_TRUEP_E", &taup_pip1_TRUEPE);
+    t->SetBranchAddress("taup_pim0_TRUEP_E", &taup_pim0_TRUEPE);
+    t->SetBranchAddress("taum_pim0_TRUEP_E", &taum_pim0_TRUEPE);
+    t->SetBranchAddress("taum_pim1_TRUEP_E", &taum_pim1_TRUEPE);
+    t->SetBranchAddress("taum_pip0_TRUEP_E", &taum_pip0_TRUEPE); 
 
     t->SetBranchAddress("taup_TRUEP_X", &taup_TRUEPX);
     t->SetBranchAddress("taum_TRUEP_X", &taum_TRUEPX);
-    t->SetBranchAddress("taup_pi1_TRUEP_X", &taup_pi1_TRUEPX);
-    t->SetBranchAddress("taup_pi3_TRUEP_X", &taup_pi3_TRUEPX);
-    t->SetBranchAddress("taup_pi2_TRUEP_X", &taup_pi2_TRUEPX);
-    t->SetBranchAddress("taum_pi1_TRUEP_X", &taum_pi1_TRUEPX);
-    t->SetBranchAddress("taum_pi3_TRUEP_X", &taum_pi3_TRUEPX);
-    t->SetBranchAddress("taum_pi2_TRUEP_X", &taum_pi2_TRUEPX); 
+    t->SetBranchAddress("taup_pip0_TRUEP_X", &taup_pip0_TRUEPX);
+    t->SetBranchAddress("taup_pip1_TRUEP_X", &taup_pip1_TRUEPX);
+    t->SetBranchAddress("taup_pim0_TRUEP_X", &taup_pim0_TRUEPX);
+    t->SetBranchAddress("taum_pim0_TRUEP_X", &taum_pim0_TRUEPX);
+    t->SetBranchAddress("taum_pim1_TRUEP_X", &taum_pim1_TRUEPX);
+    t->SetBranchAddress("taum_pip0_TRUEP_X", &taum_pip0_TRUEPX); 
 
     t->SetBranchAddress("taup_TRUEP_Y", &taup_TRUEPY);
     t->SetBranchAddress("taum_TRUEP_Y", &taum_TRUEPY);
-    t->SetBranchAddress("taup_pi1_TRUEP_Y", &taup_pi1_TRUEPY);
-    t->SetBranchAddress("taup_pi3_TRUEP_Y", &taup_pi3_TRUEPY);
-    t->SetBranchAddress("taup_pi2_TRUEP_Y", &taup_pi2_TRUEPY);
-    t->SetBranchAddress("taum_pi1_TRUEP_Y", &taum_pi1_TRUEPY);
-    t->SetBranchAddress("taum_pi3_TRUEP_Y", &taum_pi3_TRUEPY);
-    t->SetBranchAddress("taum_pi2_TRUEP_Y", &taum_pi2_TRUEPY); 
+    t->SetBranchAddress("taup_pip0_TRUEP_Y", &taup_pip0_TRUEPY);
+    t->SetBranchAddress("taup_pip1_TRUEP_Y", &taup_pip1_TRUEPY);
+    t->SetBranchAddress("taup_pim0_TRUEP_Y", &taup_pim0_TRUEPY);
+    t->SetBranchAddress("taum_pim0_TRUEP_Y", &taum_pim0_TRUEPY);
+    t->SetBranchAddress("taum_pim1_TRUEP_Y", &taum_pim1_TRUEPY);
+    t->SetBranchAddress("taum_pip0_TRUEP_Y", &taum_pip0_TRUEPY); 
 
     t->SetBranchAddress("taup_TRUEP_Z", &taup_TRUEPZ);
     t->SetBranchAddress("taum_TRUEP_Z", &taum_TRUEPZ);
-    t->SetBranchAddress("taup_pi1_TRUEP_Z", &taup_pi1_TRUEPZ);
-    t->SetBranchAddress("taup_pi3_TRUEP_Z", &taup_pi3_TRUEPZ);
-    t->SetBranchAddress("taup_pi2_TRUEP_Z", &taup_pi2_TRUEPZ);
-    t->SetBranchAddress("taum_pi1_TRUEP_Z", &taum_pi1_TRUEPZ);
-    t->SetBranchAddress("taum_pi3_TRUEP_Z", &taum_pi3_TRUEPZ);
-    t->SetBranchAddress("taum_pi2_TRUEP_Z", &taum_pi2_TRUEPZ);    
+    t->SetBranchAddress("taup_pip0_TRUEP_Z", &taup_pip0_TRUEPZ);
+    t->SetBranchAddress("taup_pip1_TRUEP_Z", &taup_pip1_TRUEPZ);
+    t->SetBranchAddress("taup_pim0_TRUEP_Z", &taup_pim0_TRUEPZ);
+    t->SetBranchAddress("taum_pim0_TRUEP_Z", &taum_pim0_TRUEPZ);
+    t->SetBranchAddress("taum_pim1_TRUEP_Z", &taum_pim1_TRUEPZ);
+    t->SetBranchAddress("taum_pip0_TRUEP_Z", &taum_pip0_TRUEPZ);    
 
     // 
-    t->SetBranchAddress("Bp_ConsBp_0_M",&Bmass);
+    t->SetBranchAddress("Bp_ConsBp_M",&Bmass);
     t->SetBranchAddress("Bp_M",&Bmass_visible);
-    t->SetBranchAddress("Bp_ConsBp_0_MERR",&Bmass_err);
+    t->SetBranchAddress("Bp_ConsBp_MERR",&Bmass_err);
     t->SetBranchAddress("taup_FD_ORIVX",&taup_FD);
     t->SetBranchAddress("taum_FD_ORIVX",&taum_FD); 
     t->SetBranchAddress("taup_FDCHI2_ORIVX",&taup_FD_chi2);
     t->SetBranchAddress("taum_FDCHI2_ORIVX",&taum_FD_chi2);
     t->SetBranchAddress("taup_IPCHI2_OWNPV",&taup_IP_chi2);
     t->SetBranchAddress("taum_IPCHI2_OWNPV",&taum_IP_chi2);
-    t->SetBranchAddress("Bp_ConsBp_0_chi2",&DTF_chi2);
-    t->SetBranchAddress("Bp_ConsBp_0_nIter",&DTF_nIter);
+    t->SetBranchAddress("Bp_ConsBp_chi2",&DTF_chi2);
+    t->SetBranchAddress("Bp_ConsBp_nIter",&DTF_nIter);
 
     // B+ kinematics
-    t->SetBranchAddress("Bp_ConsBp_0_PE",&DTF_EB);
-    t->SetBranchAddress("Bp_ConsBp_0_PX",&DTF_PBx);
-    t->SetBranchAddress("Bp_ConsBp_0_PY",&DTF_PBy);
-    t->SetBranchAddress("Bp_ConsBp_0_PZ",&DTF_PBz);
+    t->SetBranchAddress("Bp_ConsBp_PE",&DTF_EB);
+    t->SetBranchAddress("Bp_ConsBp_PX",&DTF_PBx);
+    t->SetBranchAddress("Bp_ConsBp_PY",&DTF_PBy);
+    t->SetBranchAddress("Bp_ConsBp_PZ",&DTF_PBz);
 
     // DTF neutrino kinematics
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_nu_tau_PE",&Enu1);
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_nu_tau_PX",&Pnu1x);
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_nu_tau_PY",&Pnu1y);
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_nu_tau_PZ",&Pnu1z);
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_nu_tau_PE",&Enu2);
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_nu_tau_PX",&Pnu2x);
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_nu_tau_PY",&Pnu2y);
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_nu_tau_PZ",&Pnu2z);
+    t->SetBranchAddress("Bp_ConsBp_tauminus_nu_tau_PE",&Enu1);
+    t->SetBranchAddress("Bp_ConsBp_tauminus_nu_tau_PX",&Pnu1x);
+    t->SetBranchAddress("Bp_ConsBp_tauminus_nu_tau_PY",&Pnu1y);
+    t->SetBranchAddress("Bp_ConsBp_tauminus_nu_tau_PZ",&Pnu1z);
+    t->SetBranchAddress("Bp_ConsBp_tauminus_0_nu_tau_PE",&Enu2);
+    t->SetBranchAddress("Bp_ConsBp_tauminus_0_nu_tau_PX",&Pnu2x);
+    t->SetBranchAddress("Bp_ConsBp_tauminus_0_nu_tau_PY",&Pnu2y);
+    t->SetBranchAddress("Bp_ConsBp_tauminus_0_nu_tau_PZ",&Pnu2z);
 
     // Truth-match cut quantities
     t->SetBranchAddress("Kp_TRUEID", &Kp_TRUEID);
     t->SetBranchAddress("Bp_TRUEID", &Bp_TRUEID);
     t->SetBranchAddress("taup_TRUEID", &taup_TRUEID);
     t->SetBranchAddress("taum_TRUEID", &taum_TRUEID);
-    t->SetBranchAddress("taup_pi1_TRUEID", &taup_pi1_TRUEID);
-    t->SetBranchAddress("taup_pi3_TRUEID", &taup_pi3_TRUEID);
-    t->SetBranchAddress("taup_pi2_TRUEID", &taup_pi2_TRUEID);
-    t->SetBranchAddress("taum_pi1_TRUEID", &taum_pi1_TRUEID);
-    t->SetBranchAddress("taum_pi3_TRUEID", &taum_pi3_TRUEID);
-    t->SetBranchAddress("taum_pi2_TRUEID", &taum_pi2_TRUEID);
-    t->SetBranchAddress("Bp_ConsBp_0_status",&status);
+    t->SetBranchAddress("taup_pip0_TRUEID", &taup_pip0_TRUEID);
+    t->SetBranchAddress("taup_pip1_TRUEID", &taup_pip1_TRUEID);
+    t->SetBranchAddress("taup_pim0_TRUEID", &taup_pim0_TRUEID);
+    t->SetBranchAddress("taum_pim0_TRUEID", &taum_pim0_TRUEID);
+    t->SetBranchAddress("taum_pim1_TRUEID", &taum_pim1_TRUEID);
+    t->SetBranchAddress("taum_pip0_TRUEID", &taum_pip0_TRUEID);
+    t->SetBranchAddress("Bp_ConsBp_status",&status);
 
     // Decay verticies + reference point
     t->SetBranchAddress("taup_ENDVERTEX_X",&DV1x);
@@ -142,18 +142,18 @@ void mass_resolution(){
     t->SetBranchAddress("Kp_PT",&Kp_PT);
 
     // tau+ kinematics
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_M",&taup_DTF_M);
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_M",&taum_DTF_M);
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_MERR",&taup_DTF_Merr);
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_MERR",&taum_DTF_Merr);
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_PE",&taup_DTF_PE);
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_PX",&taup_DTF_PX);
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_PY",&taup_DTF_PY);
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_PZ",&taup_DTF_PZ);
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_PE",&taum_DTF_PE);
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_PX",&taum_DTF_PX);
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_PY",&taum_DTF_PY);
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_PZ",&taum_DTF_PZ);
+    t->SetBranchAddress("Bp_ConsBp_tauminus_M",&taup_DTF_M);
+    t->SetBranchAddress("Bp_ConsBp_tauminus_0_M",&taum_DTF_M);
+    t->SetBranchAddress("Bp_ConsBp_tauminus_MERR",&taup_DTF_Merr);
+    t->SetBranchAddress("Bp_ConsBp_tauminus_0_MERR",&taum_DTF_Merr);
+    t->SetBranchAddress("Bp_ConsBp_tauminus_PE",&taup_DTF_PE);
+    t->SetBranchAddress("Bp_ConsBp_tauminus_PX",&taup_DTF_PX);
+    t->SetBranchAddress("Bp_ConsBp_tauminus_PY",&taup_DTF_PY);
+    t->SetBranchAddress("Bp_ConsBp_tauminus_PZ",&taup_DTF_PZ);
+    t->SetBranchAddress("Bp_ConsBp_tauminus_0_PE",&taum_DTF_PE);
+    t->SetBranchAddress("Bp_ConsBp_tauminus_0_PX",&taum_DTF_PX);
+    t->SetBranchAddress("Bp_ConsBp_tauminus_0_PY",&taum_DTF_PY);
+    t->SetBranchAddress("Bp_ConsBp_tauminus_0_PZ",&taum_DTF_PZ);
     t->SetBranchAddress("taup_PT",&taup_PT);
     t->SetBranchAddress("taum_PT",&taum_PT);
 
@@ -179,31 +179,31 @@ void mass_resolution(){
     t_kstar->SetBranchAddress("Taum_TRUEP_Y",&taum_TRUEPY_s);
     t_kstar->SetBranchAddress("Taum_TRUEP_Z",&taum_TRUEPZ_s);
 
-    t_kstar->SetBranchAddress("Taup_pi1_TRUEP_E",&taup_pi1_TRUEPE_s);
-    t_kstar->SetBranchAddress("Taup_pi1_TRUEP_X",&taup_pi1_TRUEPX_s);
-    t_kstar->SetBranchAddress("Taup_pi1_TRUEP_Y",&taup_pi1_TRUEPY_s);
-    t_kstar->SetBranchAddress("Taup_pi1_TRUEP_Z",&taup_pi1_TRUEPZ_s);
-    t_kstar->SetBranchAddress("Taup_pi2_TRUEP_E",&taup_pi3_TRUEPE_s);
-    t_kstar->SetBranchAddress("Taup_pi2_TRUEP_X",&taup_pi3_TRUEPX_s);
-    t_kstar->SetBranchAddress("Taup_pi2_TRUEP_Y",&taup_pi3_TRUEPY_s);
-    t_kstar->SetBranchAddress("Taup_pi2_TRUEP_Z",&taup_pi3_TRUEPZ_s);
-    t_kstar->SetBranchAddress("Taup_pi3_TRUEP_E",&taup_pi2_TRUEPE_s);
-    t_kstar->SetBranchAddress("Taup_pi3_TRUEP_X",&taup_pi2_TRUEPX_s);
-    t_kstar->SetBranchAddress("Taup_pi3_TRUEP_Y",&taup_pi2_TRUEPY_s);
-    t_kstar->SetBranchAddress("Taup_pi3_TRUEP_Z",&taup_pi2_TRUEPZ_s);
+    t_kstar->SetBranchAddress("taup_pip0_TRUEP_E",&taup_pip0_TRUEPE_s);
+    t_kstar->SetBranchAddress("taup_pip0_TRUEP_X",&taup_pip0_TRUEPX_s);
+    t_kstar->SetBranchAddress("taup_pip0_TRUEP_Y",&taup_pip0_TRUEPY_s);
+    t_kstar->SetBranchAddress("taup_pip0_TRUEP_Z",&taup_pip0_TRUEPZ_s);
+    t_kstar->SetBranchAddress("taup_pim0_TRUEP_E",&taup_pip1_TRUEPE_s);
+    t_kstar->SetBranchAddress("taup_pim0_TRUEP_X",&taup_pip1_TRUEPX_s);
+    t_kstar->SetBranchAddress("taup_pim0_TRUEP_Y",&taup_pip1_TRUEPY_s);
+    t_kstar->SetBranchAddress("taup_pim0_TRUEP_Z",&taup_pip1_TRUEPZ_s);
+    t_kstar->SetBranchAddress("taup_pip1_TRUEP_E",&taup_pim0_TRUEPE_s);
+    t_kstar->SetBranchAddress("taup_pip1_TRUEP_X",&taup_pim0_TRUEPX_s);
+    t_kstar->SetBranchAddress("taup_pip1_TRUEP_Y",&taup_pim0_TRUEPY_s);
+    t_kstar->SetBranchAddress("taup_pip1_TRUEP_Z",&taup_pim0_TRUEPZ_s);
 
-    t_kstar->SetBranchAddress("Taum_pi1_TRUEP_E",&taum_pi1_TRUEPE_s);
-    t_kstar->SetBranchAddress("Taum_pi1_TRUEP_X",&taum_pi1_TRUEPX_s);
-    t_kstar->SetBranchAddress("Taum_pi1_TRUEP_Y",&taum_pi1_TRUEPY_s);
-    t_kstar->SetBranchAddress("Taum_pi1_TRUEP_Z",&taum_pi1_TRUEPZ_s);
-    t_kstar->SetBranchAddress("Taum_pi2_TRUEP_E",&taum_pi3_TRUEPE_s);
-    t_kstar->SetBranchAddress("Taum_pi2_TRUEP_X",&taum_pi3_TRUEPX_s);
-    t_kstar->SetBranchAddress("Taum_pi2_TRUEP_Y",&taum_pi3_TRUEPY_s);
-    t_kstar->SetBranchAddress("Taum_pi2_TRUEP_Z",&taum_pi3_TRUEPZ_s);
-    t_kstar->SetBranchAddress("Taum_pi3_TRUEP_E",&taum_pi2_TRUEPE_s);
-    t_kstar->SetBranchAddress("Taum_pi3_TRUEP_X",&taum_pi2_TRUEPX_s);
-    t_kstar->SetBranchAddress("Taum_pi3_TRUEP_Y",&taum_pi2_TRUEPY_s);
-    t_kstar->SetBranchAddress("Taum_pi3_TRUEP_Z",&taum_pi2_TRUEPZ_s);
+    t_kstar->SetBranchAddress("taum_pim0_TRUEP_E",&taum_pim0_TRUEPE_s);
+    t_kstar->SetBranchAddress("taum_pim0_TRUEP_X",&taum_pim0_TRUEPX_s);
+    t_kstar->SetBranchAddress("taum_pim0_TRUEP_Y",&taum_pim0_TRUEPY_s);
+    t_kstar->SetBranchAddress("taum_pim0_TRUEP_Z",&taum_pim0_TRUEPZ_s);
+    t_kstar->SetBranchAddress("taum_pip0_TRUEP_E",&taum_pim1_TRUEPE_s);
+    t_kstar->SetBranchAddress("taum_pip0_TRUEP_X",&taum_pim1_TRUEPX_s);
+    t_kstar->SetBranchAddress("taum_pip0_TRUEP_Y",&taum_pim1_TRUEPY_s);
+    t_kstar->SetBranchAddress("taum_pip0_TRUEP_Z",&taum_pim1_TRUEPZ_s);
+    t_kstar->SetBranchAddress("taum_pim1_TRUEP_E",&taum_pip0_TRUEPE_s);
+    t_kstar->SetBranchAddress("taum_pim1_TRUEP_X",&taum_pip0_TRUEPX_s);
+    t_kstar->SetBranchAddress("taum_pim1_TRUEP_Y",&taum_pip0_TRUEPY_s);
+    t_kstar->SetBranchAddress("taum_pim1_TRUEP_Z",&taum_pip0_TRUEPZ_s);
 
     TH1D* h_nutau_E = new TH1D("h_nutau_E", "h_nutau_E", 80, -120000., 120000);
     TH1D* h_antinutau_E = new TH1D("h_antinutau_E", "h_antinutau_E", 80, -120000., 120000);
@@ -346,14 +346,14 @@ void mass_resolution(){
         P2 = sqrt(pow(Pnu2x,2) + pow(Pnu2y,2) + pow(Pnu2z,2));
 
         // DTF vs TRUE nu momentum
-        nutau_TRUEPE = taum_TRUEPE - (taum_pi1_TRUEPE + taum_pi3_TRUEPE + taum_pi2_TRUEPE);
-        antinutau_TRUEPE = taup_TRUEPE - (taup_pi1_TRUEPE + taup_pi3_TRUEPE + taup_pi2_TRUEPE);
-        nutau_TRUEPX = taum_TRUEPX - (taum_pi1_TRUEPX + taum_pi3_TRUEPX + taum_pi2_TRUEPX);
-        antinutau_TRUEPX = taup_TRUEPX - (taup_pi1_TRUEPX + taup_pi3_TRUEPX + taup_pi2_TRUEPX);
-        nutau_TRUEPY = taum_TRUEPY - (taum_pi1_TRUEPY + taum_pi3_TRUEPY + taum_pi2_TRUEPY);
-        antinutau_TRUEPY = taup_TRUEPY - (taup_pi1_TRUEPY + taup_pi3_TRUEPY + taup_pi2_TRUEPY);
-        nutau_TRUEPZ = taum_TRUEPZ - (taum_pi1_TRUEPZ + taum_pi3_TRUEPZ + taum_pi2_TRUEPZ);
-        antinutau_TRUEPZ = taup_TRUEPZ - (taup_pi1_TRUEPZ + taup_pi3_TRUEPZ + taup_pi2_TRUEPZ);
+        nutau_TRUEPE = taum_TRUEPE - (taum_pim0_TRUEPE + taum_pim1_TRUEPE + taum_pip0_TRUEPE);
+        antinutau_TRUEPE = taup_TRUEPE - (taup_pip0_TRUEPE + taup_pip1_TRUEPE + taup_pim0_TRUEPE);
+        nutau_TRUEPX = taum_TRUEPX - (taum_pim0_TRUEPX + taum_pim1_TRUEPX + taum_pip0_TRUEPX);
+        antinutau_TRUEPX = taup_TRUEPX - (taup_pip0_TRUEPX + taup_pip1_TRUEPX + taup_pim0_TRUEPX);
+        nutau_TRUEPY = taum_TRUEPY - (taum_pim0_TRUEPY + taum_pim1_TRUEPY + taum_pip0_TRUEPY);
+        antinutau_TRUEPY = taup_TRUEPY - (taup_pip0_TRUEPY + taup_pip1_TRUEPY + taup_pim0_TRUEPY);
+        nutau_TRUEPZ = taum_TRUEPZ - (taum_pim0_TRUEPZ + taum_pim1_TRUEPZ + taum_pip0_TRUEPZ);
+        antinutau_TRUEPZ = taup_TRUEPZ - (taup_pip0_TRUEPZ + taup_pip1_TRUEPZ + taup_pim0_TRUEPZ);
 
         // New Bmass (with all DTF kinematics except for neutrino Pz, which is the TRUE value)
         DTF_PBx -= (Pnu1x + Pnu2x);
@@ -376,7 +376,7 @@ void mass_resolution(){
         ROOT::Math::PxPyPzEVector Ptau2(taum_DTF_PX, taum_DTF_PY, taum_DTF_PZ, taum_DTF_PE);
         ROOT::Math::PxPyPzEVector Ptautau = Ptau1 + Ptau2;
 
-        if( (abs(Kp_TRUEID) == 321 && abs(taup_pi1_TRUEID) == 211 && abs(taup_pi3_TRUEID) == 211 && abs(taup_pi2_TRUEID) == 211 && abs(taum_pi1_TRUEID) == 211 && abs(taum_pi3_TRUEID) == 211 && abs(taum_pi2_TRUEID) == 211) && (abs(taup_TRUEID) == 15 && abs(taum_TRUEID) == 15) && (abs(Bp_TRUEID) == 521)){
+        if( (abs(Kp_TRUEID) == 321 && abs(taup_pip0_TRUEID) == 211 && abs(taup_pip1_TRUEID) == 211 && abs(taup_pim0_TRUEID) == 211 && abs(taum_pim0_TRUEID) == 211 && abs(taum_pim1_TRUEID) == 211 && abs(taum_pip0_TRUEID) == 211) && (abs(taup_TRUEID) == 15 && abs(taum_TRUEID) == 15) && (abs(Bp_TRUEID) == 521)){
 
             h_visible_mass->Fill(Bmass_visible);
             h_mtautau->Fill(Ptautau.M());
@@ -497,14 +497,14 @@ void mass_resolution(){
         t_kstar->GetEntry(i);
 
         // DTF vs TRUE nu momentum
-        nutau_TRUEPE_s = taum_TRUEPE_s - (taum_pi1_TRUEPE_s + taum_pi3_TRUEPE_s + taum_pi2_TRUEPE_s);
-        antinutau_TRUEPE_s = taup_TRUEPE_s - (taup_pi1_TRUEPE_s + taup_pi3_TRUEPE_s + taup_pi2_TRUEPE_s);
-        nutau_TRUEPX_s = taum_TRUEPX_s - (taum_pi1_TRUEPX_s + taum_pi3_TRUEPX_s + taum_pi2_TRUEPX_s);
-        antinutau_TRUEPX_s = taup_TRUEPX_s - (taup_pi1_TRUEPX_s + taup_pi3_TRUEPX_s + taup_pi2_TRUEPX_s);
-        nutau_TRUEPY_s = taum_TRUEPY_s - (taum_pi1_TRUEPY_s + taum_pi3_TRUEPY_s + taum_pi2_TRUEPY_s);
-        antinutau_TRUEPY_s = taup_TRUEPY_s - (taup_pi1_TRUEPY_s + taup_pi3_TRUEPY_s + taup_pi2_TRUEPY_s);
-        nutau_TRUEPZ_s = taum_TRUEPZ_s - (taum_pi1_TRUEPZ_s + taum_pi3_TRUEPZ_s + taum_pi2_TRUEPZ_s);
-        antinutau_TRUEPZ_s = taup_TRUEPZ_s - (taup_pi1_TRUEPZ_s + taup_pi3_TRUEPZ_s + taup_pi2_TRUEPZ_s);
+        nutau_TRUEPE_s = taum_TRUEPE_s - (taum_pim0_TRUEPE_s + taum_pim1_TRUEPE_s + taum_pip0_TRUEPE_s);
+        antinutau_TRUEPE_s = taup_TRUEPE_s - (taup_pip0_TRUEPE_s + taup_pip1_TRUEPE_s + taup_pim0_TRUEPE_s);
+        nutau_TRUEPX_s = taum_TRUEPX_s - (taum_pim0_TRUEPX_s + taum_pim1_TRUEPX_s + taum_pip0_TRUEPX_s);
+        antinutau_TRUEPX_s = taup_TRUEPX_s - (taup_pip0_TRUEPX_s + taup_pip1_TRUEPX_s + taup_pim0_TRUEPX_s);
+        nutau_TRUEPY_s = taum_TRUEPY_s - (taum_pim0_TRUEPY_s + taum_pim1_TRUEPY_s + taum_pip0_TRUEPY_s);
+        antinutau_TRUEPY_s = taup_TRUEPY_s - (taup_pip0_TRUEPY_s + taup_pip1_TRUEPY_s + taup_pim0_TRUEPY_s);
+        nutau_TRUEPZ_s = taum_TRUEPZ_s - (taum_pim0_TRUEPZ_s + taum_pim1_TRUEPZ_s + taum_pip0_TRUEPZ_s);
+        antinutau_TRUEPZ_s = taup_TRUEPZ_s - (taup_pip0_TRUEPZ_s + taup_pip1_TRUEPZ_s + taup_pim0_TRUEPZ_s);
 
         if(status_kstar == 0){
 
@@ -982,17 +982,17 @@ void mass_resolution(){
     h_visible_mass->SetTitle(" ");
     h_DTF_pass_mass->SetLineColor(kBlue);
     h_DTF_pass_mass->SetFillColorAlpha(kBlue,0.5);
-    h_DTF_pass_mass->SetTitle(" ");
-    h_DTF_pass_mass->GetXaxis()->SetTitle("m_{B^{+}} (MeV)");
-    h_DTF_pass_mass->GetYaxis()->SetTitle( TString::Format("Events / (%g MeV)",(h_DTF_pass_mass->GetXaxis()->GetXmax() - h_DTF_pass_mass->GetXaxis()->GetXmin())/h_DTF_pass_mass->GetNbinsX()) );
-    h_DTF_pass_mass->DrawNormalized();
-    h_visible_mass->DrawNormalized("same");
+    h_visible_mass->SetTitle(" ");
+    h_visible_mass->GetXaxis()->SetTitle("m_{B^{+}} (MeV)");
+    h_visible_mass->GetYaxis()->SetTitle( TString::Format("Events / (%g MeV)",(h_DTF_pass_mass->GetXaxis()->GetXmax() - h_DTF_pass_mass->GetXaxis()->GetXmin())/h_DTF_pass_mass->GetNbinsX()) );
+    h_visible_mass->DrawNormalized();
+    //h_visible_mass->DrawNormalized("same");
     TLegend* l;
     l = new TLegend(0.65, 0.65, 0.9, 0.85);
     l->SetBorderSize(0);
     l->AddEntry(h_visible_mass, Form("Visible : #bar{m} = %.0lf #pm %.0lf MeV", h_visible_mass->GetMean(), h_visible_mass->GetStdDev()), "f");
     l->AddEntry(h_DTF_pass_mass, Form("DTF : #bar{m} = %.0lf #pm %.0lf MeV", h_DTF_pass_mass->GetMean(), h_DTF_pass_mass->GetStdDev()), "f");
-    l->Draw("same");
+    //l->Draw("same");
     TLine *bline = new TLine(Bmass, 0., Bmass, 0.082);
     bline->SetLineColor(kBlack);
     bline->SetLineWidth(2);

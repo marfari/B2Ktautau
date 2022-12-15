@@ -1,8 +1,8 @@
 isMC = False
-year = '2016'
-pol = 'MagDown'
+year = '2018'
+pol = 'MagUp'
 
-j = Job(name='2016 MagDown Data')
+j = Job(name='2018 MyInit MagUp Data')
 myApp = GaudiExec()
 myApp.directory = "DaVinciDev"
 j.application = myApp
@@ -36,7 +36,7 @@ if not isMC:
         bkPath = '/LHCb/Collision18/Beam6500GeV-VeloClosed-MagUp/Real Data/Reco18/Stripping34r0p1/90000000/BHADRON.MDST' 
 data  = BKQuery(bkPath, dqflag=['OK']).getDataset()
 
-j.inputdata = data
+j.inputdata = data[0:60]
 j.backend = Dirac()
 j.splitter = SplitByFiles(filesPerJob=20)
 
