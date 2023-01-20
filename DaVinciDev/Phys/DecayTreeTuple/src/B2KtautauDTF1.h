@@ -173,13 +173,14 @@ public:
 
 private:
 
-  ///  Fill inforation for a given origin vertex
+  ///  Fill information for a given origin vertex
   StatusCode fit(DecayTreeFitter::Fitter& fitter,
                  const LHCb::Particle* P,
                  const LHCb::VertexBase* pv,
                  const std::string& prefix,
                  TupleMap& tMap,
-                 Tuples::Tuple& tuple) const;
+                 Tuples::Tuple& tuple,
+                 bool fillIfFailed) const;
   
   //Added by AV
   StatusCode fillVtxIter(const DecayTreeFitter::Fitter& fitter,

@@ -578,7 +578,7 @@ StatusCode B2KtautauDTF::fill( const LHCb::Particle* mother, const LHCb::Particl
 
   TupleMap tMap ; // the temporary data map
   DecayTreeFitter::Fitter fitter(*treeHead, *originVtx[0], stateprovider ) ;
-  if (!fit(fitter, treeHead, originVtx[0], prefix, tMap, tuple)) return StatusCode::FAILURE ;
+  if (!fit(fitter, treeHead, originVtx[0], prefix, tMap, tuple, true)) return StatusCode::FAILURE ;
 
   // if(discCase == 4 && fitter.status()!= 0)
   // {
@@ -672,7 +672,8 @@ StatusCode B2KtautauDTF::fill( const LHCb::Particle* mother, const LHCb::Particl
 //=============================================================================
 StatusCode B2KtautauDTF::fit(DecayTreeFitter::Fitter& fitter, const LHCb::Particle* P,
                                     const LHCb::VertexBase* pv, const std::string& prefix,
-                                    TupleMap& tMap, Tuples::Tuple& tuple) const
+                                    TupleMap& tMap, Tuples::Tuple& tuple, 
+                                    bool fillIfFailedn) const
 {
   if (msgLevel(MSG::VERBOSE)) verbose() << "fit " << P << " " << pv << " " << prefix << endmsg ;
   bool test = true ;
@@ -702,7 +703,7 @@ StatusCode B2KtautauDTF::fit(DecayTreeFitter::Fitter& fitter, const LHCb::Partic
   fitter.fit(m_maxNiter, 0.01, m_maxndiverging, m_dChisqQuit, chisq_iters, 
              BV, DV1, DV2, P, B_M,
              p_taup_nu, p_taum_nu,
-             p_taup, p_taum);
+             p_taup, p_taum, true);
 
   // if( (p_taup[0].z()/abs(p_taup[0].z())) * ((DV1[0].z() - BV[0].z())/abs(DV1[0].z() - BV[0].z())) < 0 )
   // {

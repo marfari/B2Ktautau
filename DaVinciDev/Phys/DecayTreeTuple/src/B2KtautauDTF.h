@@ -179,7 +179,8 @@ private:
                  const LHCb::VertexBase* pv,
                  const std::string& prefix,
                  TupleMap& tMap,
-                 Tuples::Tuple& tuple) const;
+                 Tuples::Tuple& tuple,
+                 bool fillIfFailed) const;
   
   //Added by AV
   StatusCode fillVtxIter(const DecayTreeFitter::Fitter& fitter,
