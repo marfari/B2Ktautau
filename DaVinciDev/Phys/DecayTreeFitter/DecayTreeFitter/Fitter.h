@@ -89,7 +89,8 @@ namespace DecayTreeFitter {
               std::vector<float>& chisq_iters, std::vector<Gaudi::XYZPoint>& BV, std::vector<Gaudi::XYZPoint>& DV1, std::vector<Gaudi::XYZPoint>& DV2,
               const LHCb::Particle* P, std::vector<float> B_M,
               std::vector<Gaudi::XYZVector>& p_taup_nu, std::vector<Gaudi::XYZVector>& p_taum_nu,
-              std::vector<Gaudi::XYZVector>& p_taup, std::vector<Gaudi::XYZVector>& p_taum);
+              std::vector<Gaudi::XYZVector>& p_taup, std::vector<Gaudi::XYZVector>& p_taum,
+              bool fillArrays);
     
     /// Fit just one step
     void fitOneStep(); 

@@ -145,13 +145,14 @@ namespace DecayTreeFitter {
     fit(nitermax, reldChisqConv, maxndiverging, dChisqQuit, chisq_iters,
         BV, DV1, DV2, P, B_M,
         p_taup_nu, p_taum_nu,
-        p_taup, p_taum);
+        p_taup, p_taum, false);
   }
   void Fitter::fit( int nitermax, double reldChisqConv, int maxndiverging, double dChisqQuit, std::vector<float>& chisq_iters,
                     std::vector<Gaudi::XYZPoint>& BV, std::vector<Gaudi::XYZPoint>& DV1, std::vector<Gaudi::XYZPoint>& DV2,
                     const LHCb::Particle* P, std::vector<float> B_M,
                     std::vector<Gaudi::XYZVector>& p_taup_nu, std::vector<Gaudi::XYZVector>& p_taum_nu,
-                    std::vector<Gaudi::XYZVector>& p_taup, std::vector<Gaudi::XYZVector>& p_taum) 
+                    std::vector<Gaudi::XYZVector>& p_taup, std::vector<Gaudi::XYZVector>& p_taum,
+                    bool fillArrays) 
   {
     m_map.clear();
 
@@ -160,33 +161,6 @@ namespace DecayTreeFitter {
     int posindex = pb->posIndex() - 2;
     //const int maxndiverging = 3;
     // const double dChisqQuit = nDof() ; // if chi2 increases by more than this --> fit failed
-    //Get Kaon
-    const LHCb::Particle * Kplus = LHCb::DecayTree::findFirstInTree( P, LHCb::ParticleID(321) );
-    if ( Kplus == 0 ) 
-    {
-      Kplus = LHCb::DecayTree::findFirstInTree( P, LHCb::ParticleID(-321) );
-    }
-    //Get taus
-    LHCb::Particle::ConstVector tauList;
-    //If Kaon is K+, then we want Taup to have ID = -15, Taum to be +15
-    //Otherwise, Taup should be the +15 and Taum should be -15
-
-    if((Kplus->particleID()).pid() == 321)
-    {
-      LHCb::DecayTree::findInTree( P, LHCb::ParticleID(-15), tauList);
-      LHCb::DecayTree::findInTree( P, LHCb::ParticleID(15), tauList);
-    }
-    else if((Kplus->particleID()).pid() == -321)
-    {
-      LHCb::DecayTree::findInTree( P, LHCb::ParticleID(15), tauList);
-      LHCb::DecayTree::findInTree( P, LHCb::ParticleID(-15), tauList);
-    }
-
-    const ParticleBase* pb_Taup = m_decaychain->locate( *(tauList[0]) );
-    const ParticleBase* pb_Taum = m_decaychain->locate( *(tauList[1]) );
-
-    int posindex_Taup = pb_Taup->posIndex() - 1; 
-    int posindex_Taum = pb_Taum->posIndex() - 2;
 
     // initialize
     m_chiSquare = -1;
@@ -197,28 +171,60 @@ namespace DecayTreeFitter {
 
     // std::cout<<"After initialization printing params "<<std::endl;
     // m_fitparams->print();
+    int posindex_Taup = 0;
+    int posindex_Taum = 0;
+    if(fillArrays)
+    {
+      //Get Kaon
+      const LHCb::Particle * Kplus = LHCb::DecayTree::findFirstInTree( P, LHCb::ParticleID(321) );
+      if ( Kplus == 0 ) 
+      {
+        Kplus = LHCb::DecayTree::findFirstInTree( P, LHCb::ParticleID(-321) );
+      }
+      //Get taus
+      LHCb::Particle::ConstVector tauList;
+      //If Kaon is K+, then we want Taup to have ID = -15, Taum to be +15
+      //Otherwise, Taup should be the +15 and Taum should be -15
 
-    //NB: The numbering in the fitparams array starts from 1
-    BV.push_back(Gaudi::XYZPoint( m_fitparams->par()(posindex+1), m_fitparams->par()(posindex+2), m_fitparams->par()(posindex+3) ));
-    DV1.push_back(Gaudi::XYZPoint( m_fitparams->par()(posindex_Taup+1), m_fitparams->par()(posindex_Taup+2), m_fitparams->par()(posindex_Taup+3) ));
-    DV2.push_back(Gaudi::XYZPoint( m_fitparams->par()(posindex_Taum+1), m_fitparams->par()(posindex_Taum+2), m_fitparams->par()(posindex_Taum+3) ));
-    p_taup_nu.push_back(Gaudi::XYZVector(m_fitparams->par()(12+1), m_fitparams->par()(13+1), m_fitparams->par()(14+1)));
-    p_taum_nu.push_back(Gaudi::XYZVector(m_fitparams->par()(32+1), m_fitparams->par()(33+1), m_fitparams->par()(34+1)));
-    p_taup.push_back(Gaudi::XYZVector(m_fitparams->par()(19+1), m_fitparams->par()(20+1), m_fitparams->par()(21+1)));
-    p_taum.push_back(Gaudi::XYZVector(m_fitparams->par()(39+1), m_fitparams->par()(40+1), m_fitparams->par()(41+1)));
-    // std::cout<<"Pushing back Taup_nu: "<<m_fitparams->par()(12+1)<<" "<<m_fitparams->par()(13+1)<<" "<<m_fitparams->par()(14+1)<<std::endl;
-    // std::cout<<"Pushing back Taup_ENDVTX: "<<m_fitparams->par()(15+1)<<" "<<m_fitparams->par()(16+1)<<" "<<m_fitparams->par()(17+1)<<std::endl;
-    // std::cout<<"Pushing back Taum_nu: "<<m_fitparams->par()(32+1)<<" "<<m_fitparams->par()(33+1)<<" "<<m_fitparams->par()(34+1)<<std::endl;
-    // std::cout<<"Pushing back Taum_ENDVTX: "<<m_fitparams->par()(35+1)<<" "<<m_fitparams->par()(36+1)<<" "<<m_fitparams->par()(37+1)<<std::endl;
-    //B_M.push_back(fitParams(*pb).momentum().m().value());
-    // BV_X.push_back(m_fitparams->par()(posindex+1));
-    // BV_Y.push_back(m_fitparams->par()(posindex+2));
-    // BV_Z.push_back(m_fitparams->par()(posindex+3));
-    //std::cout<<"After initialization pushing back BV_X = "<<BV_X.back()<<" BV_Y = "<<BV_Y.back()<<" BV_Z = "<<BV_Z.back()<<std::endl;
+      if((Kplus->particleID()).pid() == 321)
+      {
+        LHCb::DecayTree::findInTree( P, LHCb::ParticleID(-15), tauList);
+        LHCb::DecayTree::findInTree( P, LHCb::ParticleID(15), tauList);
+      }
+      else if((Kplus->particleID()).pid() == -321)
+      {
+        LHCb::DecayTree::findInTree( P, LHCb::ParticleID(15), tauList);
+        LHCb::DecayTree::findInTree( P, LHCb::ParticleID(-15), tauList);
+      }
 
-    //m_fitparams->chiSquare() here is 0
-    chisq_iters.push_back(m_fitparams->chiSquare()); //Pushing back anyway to have a same length array as the vertices
-    // std::cout<<"After initialization Pushing back "<<m_fitparams->chiSquare()<<std::endl;
+      const ParticleBase* pb_Taup = m_decaychain->locate( *(tauList[0]) );
+      const ParticleBase* pb_Taum = m_decaychain->locate( *(tauList[1]) );
+
+      posindex_Taup = pb_Taup->posIndex() - 1; 
+      posindex_Taum = pb_Taum->posIndex() - 2;
+      //NB: The numbering in the fitparams array starts from 1
+      BV.push_back(Gaudi::XYZPoint( m_fitparams->par()(posindex+1), m_fitparams->par()(posindex+2), m_fitparams->par()(posindex+3) ));
+      DV1.push_back(Gaudi::XYZPoint( m_fitparams->par()(posindex_Taup+1), m_fitparams->par()(posindex_Taup+2), m_fitparams->par()(posindex_Taup+3) ));
+      DV2.push_back(Gaudi::XYZPoint( m_fitparams->par()(posindex_Taum+1), m_fitparams->par()(posindex_Taum+2), m_fitparams->par()(posindex_Taum+3) ));
+      p_taup_nu.push_back(Gaudi::XYZVector(m_fitparams->par()(12+1), m_fitparams->par()(13+1), m_fitparams->par()(14+1)));
+      p_taum_nu.push_back(Gaudi::XYZVector(m_fitparams->par()(32+1), m_fitparams->par()(33+1), m_fitparams->par()(34+1)));
+      p_taup.push_back(Gaudi::XYZVector(m_fitparams->par()(19+1), m_fitparams->par()(20+1), m_fitparams->par()(21+1)));
+      p_taum.push_back(Gaudi::XYZVector(m_fitparams->par()(39+1), m_fitparams->par()(40+1), m_fitparams->par()(41+1)));
+      // std::cout<<"Pushing back Taup_nu: "<<m_fitparams->par()(12+1)<<" "<<m_fitparams->par()(13+1)<<" "<<m_fitparams->par()(14+1)<<std::endl;
+      // std::cout<<"Pushing back Taup_ENDVTX: "<<m_fitparams->par()(15+1)<<" "<<m_fitparams->par()(16+1)<<" "<<m_fitparams->par()(17+1)<<std::endl;
+      // std::cout<<"Pushing back Taum_nu: "<<m_fitparams->par()(32+1)<<" "<<m_fitparams->par()(33+1)<<" "<<m_fitparams->par()(34+1)<<std::endl;
+      // std::cout<<"Pushing back Taum_ENDVTX: "<<m_fitparams->par()(35+1)<<" "<<m_fitparams->par()(36+1)<<" "<<m_fitparams->par()(37+1)<<std::endl;
+      //B_M.push_back(fitParams(*pb).momentum().m().value());
+      // BV_X.push_back(m_fitparams->par()(posindex+1));
+      // BV_Y.push_back(m_fitparams->par()(posindex+2));
+      // BV_Z.push_back(m_fitparams->par()(posindex+3));
+      //std::cout<<"After initialization pushing back BV_X = "<<BV_X.back()<<" BV_Y = "<<BV_Y.back()<<" BV_Z = "<<BV_Z.back()<<std::endl;
+
+      //m_fitparams->chiSquare() here is 0
+      chisq_iters.push_back(m_fitparams->chiSquare()); //Pushing back anyway to have a same length array as the vertices
+      // std::cout<<"After initialization Pushing back "<<m_fitparams->chiSquare()<<std::endl;
+    }
+    
     // if(m_errCode.failure()) {
     if ( 0 != m_errCode ) {
       // the input tracks are too far apart
@@ -289,15 +295,19 @@ namespace DecayTreeFitter {
           std::cout << "press a key ...." << std::endl;
           getchar();
         }
-        chisq_iters.push_back(chisq);
-        BV.push_back(Gaudi::XYZPoint( m_fitparams->par()(posindex+1), m_fitparams->par()(posindex+2), m_fitparams->par()(posindex+3) ));
-        DV1.push_back(Gaudi::XYZPoint( m_fitparams->par()(posindex_Taup+1), m_fitparams->par()(posindex_Taup+2), m_fitparams->par()(posindex_Taup+3) ));
-        DV2.push_back(Gaudi::XYZPoint( m_fitparams->par()(posindex_Taum+1), m_fitparams->par()(posindex_Taum+2), m_fitparams->par()(posindex_Taum+3) ));
-        p_taup_nu.push_back(Gaudi::XYZVector(m_fitparams->par()(12+1), m_fitparams->par()(13+1), m_fitparams->par()(14+1)));
-        p_taum_nu.push_back(Gaudi::XYZVector(m_fitparams->par()(32+1), m_fitparams->par()(33+1), m_fitparams->par()(34+1)));
-        p_taup.push_back(Gaudi::XYZVector(m_fitparams->par()(19+1), m_fitparams->par()(20+1), m_fitparams->par()(21+1)));
-        p_taum.push_back(Gaudi::XYZVector(m_fitparams->par()(39+1), m_fitparams->par()(40+1), m_fitparams->par()(41+1)));
-        //std::cout<<"Pushing back Taup_nu: "<<m_fitparams->par()(12)<<" "<<m_fitparams->par()(13)<<" "<<m_fitparams->par()(14)<<std::endl;
+        if(fillArrays)
+        {
+          chisq_iters.push_back(chisq);
+          BV.push_back(Gaudi::XYZPoint( m_fitparams->par()(posindex+1), m_fitparams->par()(posindex+2), m_fitparams->par()(posindex+3) ));
+          DV1.push_back(Gaudi::XYZPoint( m_fitparams->par()(posindex_Taup+1), m_fitparams->par()(posindex_Taup+2), m_fitparams->par()(posindex_Taup+3) ));
+          DV2.push_back(Gaudi::XYZPoint( m_fitparams->par()(posindex_Taum+1), m_fitparams->par()(posindex_Taum+2), m_fitparams->par()(posindex_Taum+3) ));
+          p_taup_nu.push_back(Gaudi::XYZVector(m_fitparams->par()(12+1), m_fitparams->par()(13+1), m_fitparams->par()(14+1)));
+          p_taum_nu.push_back(Gaudi::XYZVector(m_fitparams->par()(32+1), m_fitparams->par()(33+1), m_fitparams->par()(34+1)));
+          p_taup.push_back(Gaudi::XYZVector(m_fitparams->par()(19+1), m_fitparams->par()(20+1), m_fitparams->par()(21+1)));
+          p_taum.push_back(Gaudi::XYZVector(m_fitparams->par()(39+1), m_fitparams->par()(40+1), m_fitparams->par()(41+1)));
+          //std::cout<<"Pushing back Taup_nu: "<<m_fitparams->par()(12)<<" "<<m_fitparams->par()(13)<<" "<<m_fitparams->par()(14)<<std::endl;
+
+        }
 
         // std::cout<<"Iteration "<<m_niter+1<<" printing params "<<std::endl;
         // m_fitparams->print();
