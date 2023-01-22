@@ -127,7 +127,6 @@ def plot_train_test(clf, name, sig_train, bkg_train, sig_test, bkg_test, year, d
     # Train outputs
     ax2.hist(sig_train[name+" output"],color='r', alpha=0.5, histtype='stepfilled', density=True, label='S (train)')
     ax2.hist(bkg_train[name+" output"],color='b', alpha=0.5, histtype='stepfilled', density=True, label='B (train)')
-    
 
     # Test output
     hist, bins = np.histogram(sig_test[name+" output"], density=True)
@@ -144,8 +143,8 @@ def plot_train_test(clf, name, sig_train, bkg_train, sig_test, bkg_test, year, d
     center = (bins[:-1] + bins[1:]) / 2
     ax2.errorbar(center, hist, yerr=err, fmt='o', c='b', label='B (test)')
 
-    plt.xlabel(name+" output")
-    plt.ylabel("Arbitrary units")
+    plt.xlabel("Signal probability")
+    plt.ylabel("Normalised entries")
     plt.legend(loc='best')
     fig2.savefig('/home/felician/B2Ktautau/Scikit_learn/Plots/'+year+'/ML_output/'+dir_name+'/'+name+'_overtraining_check.png')
     fig2.savefig('/home/felician/B2Ktautau/Scikit_learn/Plots/'+year+'/ML_output/'+dir_name+'/'+name+'_overtraining_check.pdf')
@@ -164,7 +163,7 @@ variables = 0
 # 3 -> tau+ isolation
 # 4 -> B+ kinematic
 # 5 -> B+ isolation
-plot = False
+plot = False # plots input vaiables (takes a while)
 
 if isWS:
     data_sign = 'WS'
@@ -248,16 +247,16 @@ sample = sample[preselCommon]
 # Training
 
 if variables == 0:
-    sample['DTF_taum_decayLength_sig'] = (sample['Bp_ConsBp_0_tauminus_0_decayLengthErr']/sample['Bp_ConsBp_0_tauminus_0_decayLength'])
+    sample['DTF_taum_decayLength_sig'] = (sample['Bp_ConsBp_0_tauminus_0_decayLength']/sample['Bp_ConsBp_0_tauminus_0_decayLengthErr'])
     sample['log(1-taum_DIRA_ORIVX)'] = np.log(1 - sample['taum_DIRA_ORIVX'])
     sample['log(1-taum_DIRA_OWNPV)'] = np.log(1 - sample['taum_DIRA_OWNPV'])
     sample['taum_daughters_min_IPCHI2_OWNPV'] = sample[['taum_pi1_IPCHI2_OWNPV', 'taum_pi2_IPCHI2_OWNPV', 'taum_pi2_IPCHI2_OWNPV']].min(axis=1)
     sample['Bp_ConsBp_0_tauminus_0_PT'] = np.sqrt( sample['Bp_ConsBp_0_tauminus_0_PX']**2 + sample['Bp_ConsBp_0_tauminus_0_PY']**2)
 
-    variables_to_model = ['taum_M', 'taum_M12', 'taum_M13', 'taum_M23', 'taum_ENDVERTEX_CHI2', 'DTF_taum_decayLength_sig', 'log(1-taum_DIRA_ORIVX)', 'log(1-taum_DIRA_OWNPV)', 'taum_daughters_min_IPCHI2_OWNPV', 'Bp_ConsBp_0_tauminus_0_PE', 'Bp_ConsBp_0_tauminus_0_PT', 'Bp_ConsBp_0_tauminus_0_PZ']
-    var_min = [800, 200, 200, 200, 0, 0, -25, -20, 0, 0, 0, 0]
-    var_max = [1600, 1400, 1600, 1600, 20, 5, 0, 0, 1500, 600000, 16000, 600000]
-    var_label = [r'Visible m($\tau^{-}$) (MeV)', r'Visible $\tau^{-}$ m($\pi^{+} \pi^{-}$) (MeV)', r'Visible $\tau^{-}$ m($\pi^{-} \pi^{-}$) (MeV)', r'Visible $\tau^{-}$ m($\pi^{+} \pi^{-}$) (MeV)', r'Visible $\tau^{-}$ DV $\chi^{2}$', r'DTF $\tau^{-}$ decay length significance', r'log(1 - $\tau^{-}$ DIRA to BV)', r'log(1 - $\tau^{-}$ DIRA to PV)', r'$\tau^{-}$ min($\pi_{1}$, $\pi_{2}$, $\pi_{3}$) IP $\chi^{2}$', r'DTF E($\tau^{-}$) (MeV)', r'DTF PT($\tau^{-}$) (MeV)', r'DTF PZ($\tau^{-}$) (MeV)']
+    variables_to_model = ['taum_M', 'taum_M12', 'taum_M13', 'taum_M23', 'taum_ENDVERTEX_CHI2', 'DTF_taum_decayLength_sig', 'log(1-taum_DIRA_ORIVX)', 'log(1-taum_DIRA_OWNPV)', 'taum_daughters_min_IPCHI2_OWNPV', 'Bp_ConsBp_0_tauminus_0_PT', 'Bp_ConsBp_0_tauminus_0_PZ']
+    var_min = [800, 200, 200, 200, 0, 0, -25, -20, 0, 0, 0]
+    var_max = [1600, 1400, 1600, 1600, 20, 0.5, 0, 0, 1500, 16000, 600000]
+    var_label = [r'Visible m($\tau^{-}$) (MeV)', r'Visible $\tau^{-}$ m($\pi^{+} \pi^{-}$) (MeV)', r'Visible $\tau^{-}$ m($\pi^{-} \pi^{-}$) (MeV)', r'Visible $\tau^{-}$ m($\pi^{+} \pi^{-}$) (MeV)', r'Visible $\tau^{-}$ DV $\chi^{2}$', r'DTF $\tau^{-}$ decay length significance', r'log(1 - $\tau^{-}$ DIRA to BV)', r'log(1 - $\tau^{-}$ DIRA to PV)', r'$\tau^{-}$ min($\pi_{1}$, $\pi_{2}$, $\pi_{3}$) IP $\chi^{2}$', r'DTF PT($\tau^{-}$) (MeV)', r'DTF PZ($\tau^{-}$) (MeV)']
 elif variables == 1:
     variables_to_model = ['taup_M', 'taup_M12', 'taup_M13', 'taup_M23', 'taup_ENDVERTEX_CHI2', 'Bp_ConsBp_0_tauminus_decayLength', 'Bp_ConsBp_0_tauminus_decayLengthErr', 'taup_DIRA_ORIVX', 'taup_DIRA_OWNPV', 'taup_pi1_IPCHI2_OWNPV', 'taup_pi2_IPCHI2_OWNPV', 'taup_pi3_IPCHI2_OWNPV', 'Bp_ConsBp_0_tauminus_PE', 'Bp_ConsBp_0_tauminus_PX', 'Bp_ConsBp_0_tauminus_PY', 'Bp_ConsBp_0_tauminus_PZ']
 elif variables == 2:
@@ -317,10 +316,10 @@ classifiers = [
     #SVC(kernel="linear", C=0.025),
     #SVC(gamma=2, C=1),
     #GaussianProcessClassifier(1.0 * RBF(1.0)),
-    DecisionTreeClassifier(max_depth=5),
+    DecisionTreeClassifier(max_depth=10),
     RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
-    MLPClassifier(alpha=1, max_iter=1000),
-    AdaBoostClassifier(),
+    MLPClassifier(verbose=True), #alpha=0.01, n_iter_no_change=200, verbose=True
+    AdaBoostClassifier(n_estimators=500),
     #GaussianNB(),
     #QuadraticDiscriminantAnalysis(),
 ]
