@@ -206,6 +206,7 @@ namespace DecayTreeFitter {
       ( *idau )->collectVertexDaughters( particles, posindex );
   }
 
+  // Initiates covariance matrix
   ErrCode ParticleBase::initCov( FitParams* fitparams ) const {
     ErrCode status;
     for ( daucontainer::const_iterator it = m_daughters.begin(); it != m_daughters.end(); ++it )
@@ -229,7 +230,7 @@ namespace DecayTreeFitter {
     if ( momindex >= 0 ) {
       if ( daughters().empty() ) {
         // TODO: calo at high energy?!
-        const double sigmom = 10 * Gaudi::Units::GeV; // GeV
+        const double sigmom = 10 * Gaudi::Units::GeV; // GeV (this is how the covariance matrix is initiatiated for particles without a daughter)
         int          maxrow = hasEnergy() ? 4 : 3;
         for ( int row = momindex + 1; row <= momindex + maxrow; ++row )
           fitparams->cov().fast( row, row ) = sigmom * sigmom;
@@ -254,6 +255,7 @@ namespace DecayTreeFitter {
       fitparams->cov().fast( lenindex + 1, lenindex + 1 ) = sigz * sigz;
     }
 
+    //std::cout<<fitparams->cov()<<std::endl;
     return status;
   }
 
@@ -306,7 +308,7 @@ namespace DecayTreeFitter {
       double py       = fitpar->par()( momindex + 2 );
       double pz       = fitpar->par()( momindex + 3 );
       double mass2    = E * E - px * px - py * py - pz * pz;
-      double mass     = mass2 > 0 ? std::sqrt( mass2 ) : -std::sqrt( -mass2 );
+      double mass = mass2 > 0 ? std::sqrt( mass2 ) : -std::sqrt( -mass2 );
 
       double masserr = 0;
       if ( !hasMassConstraint() ) {
@@ -354,7 +356,6 @@ namespace DecayTreeFitter {
 
   ErrCode ParticleBase::projectGeoConstraint( const FitParams& fitparams, Projection& p ) const {
     // implements the constraint
-
     //  vec{x}_decay = vec{x}_production + decaylength * vec{p} / p
     int posindexmother = mother()->posIndex();
     int posindex       = posIndex();
@@ -372,7 +373,7 @@ namespace DecayTreeFitter {
     double p2  = px * px + py * py + pz * pz;
     double mom = std::sqrt( p2 );
 
-    // lineair approximation is fine for now
+    // linear approximation is fine for now
     for ( int row = 1; row <= 3; ++row ) {
       double posxmother                = fitparams.par()( posindexmother + row );
       double posx                      = fitparams.par()( posindex + row );
@@ -453,7 +454,7 @@ namespace DecayTreeFitter {
   }
 
   ErrCode ParticleBase::projectConstraint( Constraint::Type atype, const FitParams&, Projection& ) const {
-    std::cout << "no method to project this constaint: " << name() << " " << type() << " " << atype << std::endl;
+    std::cout << "no method to project this constraint: " << name() << " " << type() << " " << atype << std::endl;
     return ErrCode::badsetup;
   }
 

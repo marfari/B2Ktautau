@@ -155,7 +155,6 @@ namespace DecayTreeFitter {
                     bool fillArrays) 
   {
     m_map.clear();
-
     const ParticleBase* pb = 0 != P ? m_decaychain->locate( *P ) : m_decaychain->cand();
 
     int posindex = pb->posIndex() - 2;
@@ -222,7 +221,7 @@ namespace DecayTreeFitter {
 
       //m_fitparams->chiSquare() here is 0
       chisq_iters.push_back(m_fitparams->chiSquare()); //Pushing back anyway to have a same length array as the vertices
-      // std::cout<<"After initialization Pushing back "<<m_fitparams->chiSquare()<<std::endl;
+      //std::cout<<"After initialization Pushing back "<<m_fitparams->chiSquare()<<std::endl;
     }
     
     // if(m_errCode.failure()) {
@@ -246,6 +245,7 @@ namespace DecayTreeFitter {
         double deltachisq          = chisq - m_chiSquare;
         // if chi2 increases by more than this --> fit failed
         int          ndof       = nDof();
+        std::cout << "ndof = " << ndof << std::endl;
         const double dChisqQuit = std::max( double( 2 * ndof ), 2 * m_chiSquare );
         const double dChisqConv = reldChisqConv * std::max( double( ndof ), std::min( chisq, m_chiSquare ) );
 
@@ -306,7 +306,7 @@ namespace DecayTreeFitter {
           p_taup.push_back(Gaudi::XYZVector(m_fitparams->par()(19+1), m_fitparams->par()(20+1), m_fitparams->par()(21+1)));
           p_taum.push_back(Gaudi::XYZVector(m_fitparams->par()(39+1), m_fitparams->par()(40+1), m_fitparams->par()(41+1)));
           //std::cout<<"Pushing back Taup_nu: "<<m_fitparams->par()(12)<<" "<<m_fitparams->par()(13)<<" "<<m_fitparams->par()(14)<<std::endl;
-
+          //std::cout<<"Iteration = "<<m_niter<<" ChiSquare = "<<chisq<<std::endl; -> the values of chisq for each iteration
         }
 
         // std::cout<<"Iteration "<<m_niter+1<<" printing params "<<std::endl;

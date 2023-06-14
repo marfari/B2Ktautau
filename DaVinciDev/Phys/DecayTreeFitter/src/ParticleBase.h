@@ -16,6 +16,7 @@
 #include "Projection.h"
 #include <string>
 #include <vector>
+#include "Event/Particle.h"
 
 namespace LHCb {
   class Particle;
@@ -85,7 +86,19 @@ namespace DecayTreeFitter {
     virtual int momIndex() const { return -1; }
 
     // does the particle have a 3-momentum or a 4-momentum ?
-    virtual bool hasEnergy() const { return false; }
+    // virtual bool hasEnergy() const { return true; } // default
+
+    virtual bool hasEnergy() const  
+    { 
+      if( (particle().particleID().pid() == 15) || (particle().particleID().pid() == -15) )
+      {
+        return false;
+      }
+      else 
+      {
+        return true;
+      }
+    }
 
     // does the particle have is own decay vertex ? (resonances and
     // recoparticles do not)

@@ -328,6 +328,7 @@ private:
   int m_maxNiter;
   int m_maxndiverging;
   double m_dChisqQuit;
+  double m_tauMass;
 
   LHCb::IParticlePropertySvc* m_ppSvc = nullptr;
   IParticleDescendants* m_particleDescendants = nullptr;

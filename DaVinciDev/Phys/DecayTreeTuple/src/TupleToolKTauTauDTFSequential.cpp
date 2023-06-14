@@ -57,6 +57,7 @@ TupleToolKTauTauDTFSequential::TupleToolKTauTauDTFSequential( const std::string&
   declareProperty( "dChisqQuit", m_dChisqQuit = 2e5, "Maximum number of diverging iterations during fitting." ); //currently not used by code
   declareProperty( "doNuPZFix", m_doNuPZFix = true, "if true, initialize nuPZ to 0 if calculated -ve");
   declareProperty( "tauMass", m_tauMass = 1776.86, "tau mass used in initialization calculation. 1776.8199 MeV is the number used in LHCb MC, 1776.86 is the PDG average");
+  declareProperty( "sequenceOrder", m_order = 0.12, "Order in which the initialisation methods in the sequential DTF are applied.");
 
   declareInterface<IParticleTupleTool>(this);
 }
@@ -180,7 +181,6 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
   
   // //Get K+ track reference point
   Gaudi::XYZPoint refPoint_Kplus = Kplus->referencePoint(); //ostensibly a point on the K+ trajectory
-
 
   // //Other method of getting reference point
   // const LHCb::ProtoParticle *proto_Kplus = Kplus->proto();
@@ -495,27 +495,75 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
   Gaudi::LorentzVector P4_tau2_strat4(p_tau2_strat4.x(), p_tau2_strat4.y(), p_tau2_strat4.z(), E_tau2_strat4);
 
   LHCb::Particle::Vector nuList;
-  nuList.push_back( new LHCb::Particle() );
-  nuList.back()->setParticleID( LHCb::ParticleID(16) ); //Looks like the order of neutrino PID's doesn't matter. Check again later to make sure.
-
-  nuList.back()->setMomentum( P4_tau1_strat0 - tauList[0]->momentum() );//NB 4 momenta going in here
   LHCb::Particle * tau1 = const_cast<LHCb::Particle*>(tauList[0]);
-  tau1->addToDaughters( nuList.back() );
-  tau1->setMomentum( P4_tau1_strat0 );
-  debug() << "Add nu 1 " << *nuList.back() << endmsg;
-  debug() << "After " << *tau1 << endmsg;
-
-  nuList.push_back( new LHCb::Particle() );
-  nuList.back()->setParticleID( LHCb::ParticleID(-16) );
-
-  nuList.back()->setMomentum( P4_tau2_strat0 - tauList[1]->momentum() );
   LHCb::Particle * tau2 = const_cast<LHCb::Particle*>(tauList[1]);
-  tau2->addToDaughters( nuList.back() );
-  tau2->setMomentum( P4_tau2_strat0 );
-  debug() << "Add nu 2 " << *nuList.back() << endmsg;
-  debug() << "After " << *tau2 << endmsg;
 
-  treeHead->setMomentum( P4_tau1_strat0 + P4_tau2_strat0 + Kplus->momentum() );
+  if( (m_order == 0.12) ||  (m_order == 0.21) )
+  {
+    nuList.push_back( new LHCb::Particle() );
+    nuList.back()->setParticleID( LHCb::ParticleID(16) ); //Looks like the order of neutrino PID's doesn't matter. Check again later to make sure.
+    nuList.back()->setMomentum( P4_tau1_strat0 - tauList[0]->momentum() );//NB 4 momenta going in here
+    
+    tau1->addToDaughters( nuList.back() );
+    tau1->setMomentum( P4_tau1_strat0 );
+    debug() << "Add nu 1 " << *nuList.back() << endmsg;
+    debug() << "After " << *tau1 << endmsg;
+
+    nuList.push_back( new LHCb::Particle() );
+    nuList.back()->setParticleID( LHCb::ParticleID(-16) );
+    nuList.back()->setMomentum( P4_tau2_strat0 - tauList[1]->momentum() );
+    
+    tau2->addToDaughters( nuList.back() );
+    tau2->setMomentum( P4_tau2_strat0 );
+    debug() << "Add nu 2 " << *nuList.back() << endmsg;
+    debug() << "After " << *tau2 << endmsg;
+
+    treeHead->setMomentum( P4_tau1_strat0 + P4_tau2_strat0 + Kplus->momentum() );
+  }
+  else if( (m_order == 1.02) || (m_order == 1.20) )
+  {
+    nuList.push_back( new LHCb::Particle() );
+    nuList.back()->setParticleID( LHCb::ParticleID(16) ); //Looks like the order of neutrino PID's doesn't matter. Check again later to make sure.
+    nuList.back()->setMomentum( P4_tau1_strat1 - tauList[0]->momentum() );//NB 4 momenta going in here
+    
+    tau1->addToDaughters( nuList.back() );
+    tau1->setMomentum( P4_tau1_strat1 );
+    debug() << "Add nu 1 " << *nuList.back() << endmsg;
+    debug() << "After " << *tau1 << endmsg;
+
+    nuList.push_back( new LHCb::Particle() );
+    nuList.back()->setParticleID( LHCb::ParticleID(-16) );
+    nuList.back()->setMomentum( P4_tau2_strat1 - tauList[1]->momentum() );
+    
+    tau2->addToDaughters( nuList.back() );
+    tau2->setMomentum( P4_tau2_strat1 );
+    debug() << "Add nu 2 " << *nuList.back() << endmsg;
+    debug() << "After " << *tau2 << endmsg;
+
+    treeHead->setMomentum( P4_tau1_strat1 + P4_tau2_strat1 + Kplus->momentum() );
+  }
+  else if( (m_order == 2.01) || (m_order == 2.10) )
+  {
+    nuList.push_back( new LHCb::Particle() );
+    nuList.back()->setParticleID( LHCb::ParticleID(16) ); //Looks like the order of neutrino PID's doesn't matter. Check again later to make sure.
+    nuList.back()->setMomentum( P4_tau1_strat2 - tauList[0]->momentum() );//NB 4 momenta going in here
+    
+    tau1->addToDaughters( nuList.back() );
+    tau1->setMomentum( P4_tau1_strat2 );
+    debug() << "Add nu 1 " << *nuList.back() << endmsg;
+    debug() << "After " << *tau1 << endmsg;
+
+    nuList.push_back( new LHCb::Particle() );
+    nuList.back()->setParticleID( LHCb::ParticleID(-16) );
+    nuList.back()->setMomentum( P4_tau2_strat2 - tauList[1]->momentum() );
+    
+    tau2->addToDaughters( nuList.back() );
+    tau2->setMomentum( P4_tau2_strat2 );
+    debug() << "Add nu 2 " << *nuList.back() << endmsg;
+    debug() << "After " << *tau2 << endmsg;
+
+    treeHead->setMomentum( P4_tau1_strat2 + P4_tau2_strat2 + Kplus->momentum() );
+  }
 
   //checkMassConstraints( LHCb::DecayTree( *treeHead) ) ;
 
@@ -525,39 +573,145 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
   DecayTreeFitter::Fitter fitter(*treeHead, *originVtx[0], stateprovider ) ;
   if (!fit(fitter, treeHead, originVtx[0], prefix, tMap, tuple, false)) return StatusCode::FAILURE ;
 
-  if(fitter.status() == 0) whichFitterSucceeded = 0;
+  if( (m_order == 0.12) || (m_order == 0.21))
+  {
+    if(fitter.status() == 0) whichFitterSucceeded = 0;
+  }
+  else if( (m_order == 1.02) || (m_order == 1.20) )
+  {
+    if(fitter.status() == 0) whichFitterSucceeded = 1;
+  }
+  else if( (m_order == 2.01) || (m_order == 2.10) )
+  {
+    if(fitter.status() == 0) whichFitterSucceeded = 2;
+  }
 
   if(fitter.status() != 0)
   {
-    std::cout<<" strategy 0 failed. trying strategy 1 "<<std::endl;
-
-    //remove previously attached neutrino daughters
-    tau1->removeFromDaughters(nuList.front());
-    tau2->removeFromDaughters(nuList.back());
-
-    //reset 4-momentum of 3pi to the original value
-    tau1->setMomentum(p4_3pi1);
-    tau2->setMomentum(p4_3pi2);
-
-    nuList.front()->setMomentum( P4_tau1_strat1 - tauList[0]->momentum() );//NB 4 momenta going in here
-    nuList.back()->setMomentum( P4_tau2_strat1 - tauList[1]->momentum() );//NB 4 momenta going in here
-
-    tau1->addToDaughters( nuList.front() );
-    tau1->setMomentum( P4_tau1_strat1 );
-
-    tau2->addToDaughters( nuList.back() );
-    tau2->setMomentum( P4_tau2_strat1 );
-
-    treeHead->setMomentum( P4_tau1_strat1 + P4_tau2_strat1 + Kplus->momentum() );
-
-    DecayTreeFitter::Fitter fitter_strat1(*treeHead, *originVtx[0], stateprovider ) ;
-    if (!fit(fitter_strat1, treeHead, originVtx[0], prefix, tMap, tuple, false)) return StatusCode::FAILURE ;
-
-    if(fitter_strat1.status() == 0) whichFitterSucceeded = 1;
-
-    if(fitter_strat1.status() != 0)
+    if(m_order == 0.12)
     {
-      std::cout<<" strategy 1 failed. trying strategy 2 "<<std::endl;
+      //std::cout<<" strategy 0 failed. trying strategy 1 "<<std::endl;
+
+      //remove previously attached neutrino daughters
+      tau1->removeFromDaughters(nuList.front());
+      tau2->removeFromDaughters(nuList.back());
+
+      //reset 4-momentum of 3pi to the original value
+      tau1->setMomentum(p4_3pi1);
+      tau2->setMomentum(p4_3pi2);
+
+      nuList.front()->setMomentum( P4_tau1_strat1 - tauList[0]->momentum() );//NB 4 momenta going in here
+      nuList.back()->setMomentum( P4_tau2_strat1 - tauList[1]->momentum() );//NB 4 momenta going in here
+
+      tau1->addToDaughters( nuList.front() );
+      tau1->setMomentum( P4_tau1_strat1 );
+
+      tau2->addToDaughters( nuList.back() );
+      tau2->setMomentum( P4_tau2_strat1 );
+
+      treeHead->setMomentum( P4_tau1_strat1 + P4_tau2_strat1 + Kplus->momentum() );
+
+      DecayTreeFitter::Fitter fitter_strat1(*treeHead, *originVtx[0], stateprovider ) ;
+      if (!fit(fitter_strat1, treeHead, originVtx[0], prefix, tMap, tuple, false)) return StatusCode::FAILURE ;
+
+      if(fitter_strat1.status() == 0) whichFitterSucceeded = 1;
+
+      if(fitter_strat1.status() != 0)
+      {
+        //std::cout<<" strategy 1 failed. trying strategy 2 "<<std::endl;
+
+        //remove previously attached neutrino daughters
+        tau1->removeFromDaughters(nuList.front());
+        tau2->removeFromDaughters(nuList.back());
+
+        //reset 4-momentum of 3pi to the original value
+        tau1->setMomentum(p4_3pi1);
+        tau2->setMomentum(p4_3pi2);
+
+        nuList.front()->setMomentum( P4_tau1_strat2 - tauList[0]->momentum() );//NB 4 momenta going in here
+        nuList.back()->setMomentum( P4_tau2_strat2 - tauList[1]->momentum() );//NB 4 momenta going in here
+
+        tau1->addToDaughters( nuList.front() );
+        tau1->setMomentum( P4_tau1_strat2 );
+
+        tau2->addToDaughters( nuList.back() );
+        tau2->setMomentum( P4_tau2_strat2 );
+
+        treeHead->setMomentum( P4_tau1_strat2 + P4_tau2_strat2 + Kplus->momentum() );
+
+        DecayTreeFitter::Fitter fitter_strat2(*treeHead, *originVtx[0], stateprovider ) ;
+        if (!fit(fitter_strat2, treeHead, originVtx[0], prefix, tMap, tuple, true)) return StatusCode::FAILURE ;
+
+        if(fitter_strat2.status() == 0) whichFitterSucceeded = 2;
+
+        /*if(fitter_strat2.status() != 0)
+        {
+          std::cout<<"strategy 2 failed. trying strategy 3"<<std::endl;
+
+          //remove previously attached neutrino daughters
+          tau1->removeFromDaughters(nuList.front());
+          tau2->removeFromDaughters(nuList.back());
+
+          //reset 4-momentum of 3pi to the original value
+          tau1->setMomentum(p4_3pi1);
+          tau2->setMomentum(p4_3pi2);
+
+          nuList.front()->setMomentum( P4_tau1_strat3 - tauList[0]->momentum() );//NB 4 momenta going in here
+          nuList.back()->setMomentum( P4_tau2_strat3 - tauList[1]->momentum() );//NB 4 momenta going in here
+
+          tau1->addToDaughters( nuList.front() );
+          tau1->setMomentum( P4_tau1_strat3 );
+
+          tau2->addToDaughters( nuList.back() );
+          tau2->setMomentum( P4_tau2_strat3 );
+
+          treeHead->setMomentum( P4_tau1_strat3 + P4_tau2_strat3 + Kplus->momentum() );
+
+          DecayTreeFitter::Fitter fitter_strat3(*treeHead, *originVtx[0], stateprovider ) ;
+          if (!fit(fitter_strat3, treeHead, originVtx[0], prefix, tMap, tuple, false)) return StatusCode::FAILURE ;
+
+          if(fitter_strat3.status() == 0) whichFitterSucceeded = 3;
+
+          if(fitter_strat3.status() != 0)
+          {
+            std::cout<<"strategy 3 failed. trying strategy 4"<<std::endl;
+
+            //remove previously attached neutrino daughters
+            tau1->removeFromDaughters(nuList.front());
+            tau2->removeFromDaughters(nuList.back());
+
+            //reset 4-momentum of 3pi to the original value
+            tau1->setMomentum(p4_3pi1);
+            tau2->setMomentum(p4_3pi2);
+
+            nuList.front()->setMomentum( P4_tau1_strat4 - tauList[0]->momentum() );//NB 4 momenta going in here
+            nuList.back()->setMomentum( P4_tau2_strat4 - tauList[1]->momentum() );//NB 4 momenta going in here
+
+            tau1->addToDaughters( nuList.front() );
+            tau1->setMomentum( P4_tau1_strat4 );
+
+            tau2->addToDaughters( nuList.back() );
+            tau2->setMomentum( P4_tau2_strat4 );
+
+            treeHead->setMomentum( P4_tau1_strat4 + P4_tau2_strat4 + Kplus->momentum() );
+
+            DecayTreeFitter::Fitter fitter_strat4(*treeHead, *originVtx[0], stateprovider ) ;
+            if (!fit(fitter_strat4, treeHead, originVtx[0], prefix, tMap, tuple, true)) return StatusCode::FAILURE ;
+
+            if(fitter_strat4.status() == 0) whichFitterSucceeded = 4;
+
+            if(fitter_strat4.status() != 0)
+            {
+              std::cout<<"Strategy 4 also failed. Bad luck!"<<std::endl;
+            }
+          }
+        }*/
+      }  
+    }
+
+    else if(m_order == 0.21)
+    {
+      //std::cout<<" strategy 0 failed. trying strategy 2 "<<std::endl;
 
       //remove previously attached neutrino daughters
       tau1->removeFromDaughters(nuList.front());
@@ -579,13 +733,13 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
       treeHead->setMomentum( P4_tau1_strat2 + P4_tau2_strat2 + Kplus->momentum() );
 
       DecayTreeFitter::Fitter fitter_strat2(*treeHead, *originVtx[0], stateprovider ) ;
-      if (!fit(fitter_strat2, treeHead, originVtx[0], prefix, tMap, tuple, true)) return StatusCode::FAILURE ;
+      if (!fit(fitter_strat2, treeHead, originVtx[0], prefix, tMap, tuple, false)) return StatusCode::FAILURE ;
 
       if(fitter_strat2.status() == 0) whichFitterSucceeded = 2;
 
-      /*if(fitter_strat2.status() != 0)
+      if(fitter_strat2.status() != 0)
       {
-        std::cout<<"strategy 2 failed. trying strategy 3"<<std::endl;
+        //std::cout<<" strategy 2 failed. trying strategy 1 "<<std::endl;
 
         //remove previously attached neutrino daughters
         tau1->removeFromDaughters(nuList.front());
@@ -595,57 +749,256 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
         tau1->setMomentum(p4_3pi1);
         tau2->setMomentum(p4_3pi2);
 
-        nuList.front()->setMomentum( P4_tau1_strat3 - tauList[0]->momentum() );//NB 4 momenta going in here
-        nuList.back()->setMomentum( P4_tau2_strat3 - tauList[1]->momentum() );//NB 4 momenta going in here
+        nuList.front()->setMomentum( P4_tau1_strat1 - tauList[0]->momentum() );//NB 4 momenta going in here
+        nuList.back()->setMomentum( P4_tau2_strat1 - tauList[1]->momentum() );//NB 4 momenta going in here
 
         tau1->addToDaughters( nuList.front() );
-        tau1->setMomentum( P4_tau1_strat3 );
+        tau1->setMomentum( P4_tau1_strat1 );
 
         tau2->addToDaughters( nuList.back() );
-        tau2->setMomentum( P4_tau2_strat3 );
+        tau2->setMomentum( P4_tau2_strat1 );
 
-        treeHead->setMomentum( P4_tau1_strat3 + P4_tau2_strat3 + Kplus->momentum() );
+        treeHead->setMomentum( P4_tau1_strat1 + P4_tau2_strat1 + Kplus->momentum() );
 
-        DecayTreeFitter::Fitter fitter_strat3(*treeHead, *originVtx[0], stateprovider ) ;
-        if (!fit(fitter_strat3, treeHead, originVtx[0], prefix, tMap, tuple, false)) return StatusCode::FAILURE ;
+        DecayTreeFitter::Fitter fitter_strat1(*treeHead, *originVtx[0], stateprovider ) ;
+        if (!fit(fitter_strat1, treeHead, originVtx[0], prefix, tMap, tuple, true)) return StatusCode::FAILURE ;
 
-        if(fitter_strat3.status() == 0) whichFitterSucceeded = 3;
-
-        if(fitter_strat3.status() != 0)
-        {
-          std::cout<<"strategy 3 failed. trying strategy 4"<<std::endl;
-
-          //remove previously attached neutrino daughters
-          tau1->removeFromDaughters(nuList.front());
-          tau2->removeFromDaughters(nuList.back());
-
-          //reset 4-momentum of 3pi to the original value
-          tau1->setMomentum(p4_3pi1);
-          tau2->setMomentum(p4_3pi2);
-
-          nuList.front()->setMomentum( P4_tau1_strat4 - tauList[0]->momentum() );//NB 4 momenta going in here
-          nuList.back()->setMomentum( P4_tau2_strat4 - tauList[1]->momentum() );//NB 4 momenta going in here
-
-          tau1->addToDaughters( nuList.front() );
-          tau1->setMomentum( P4_tau1_strat4 );
-
-          tau2->addToDaughters( nuList.back() );
-          tau2->setMomentum( P4_tau2_strat4 );
-
-          treeHead->setMomentum( P4_tau1_strat4 + P4_tau2_strat4 + Kplus->momentum() );
-
-          DecayTreeFitter::Fitter fitter_strat4(*treeHead, *originVtx[0], stateprovider ) ;
-          if (!fit(fitter_strat4, treeHead, originVtx[0], prefix, tMap, tuple, true)) return StatusCode::FAILURE ;
-
-          if(fitter_strat4.status() == 0) whichFitterSucceeded = 4;
-
-          if(fitter_strat4.status() != 0)
-          {
-            std::cout<<"Strategy 4 also failed. Bad luck!"<<std::endl;
-          }
-        }
-      }*/
+        if(fitter_strat1.status() == 0) whichFitterSucceeded = 1;
+      }
     }
+
+    else if(m_order == 1.02)
+    {
+      //std::cout<<" strategy 1 failed. trying strategy 0 "<<std::endl;
+
+      //remove previously attached neutrino daughters
+      tau1->removeFromDaughters(nuList.front());
+      tau2->removeFromDaughters(nuList.back());
+
+      //reset 4-momentum of 3pi to the original value
+      tau1->setMomentum(p4_3pi1);
+      tau2->setMomentum(p4_3pi2);
+
+      nuList.front()->setMomentum( P4_tau1_strat0 - tauList[0]->momentum() );//NB 4 momenta going in here
+      nuList.back()->setMomentum( P4_tau2_strat0 - tauList[1]->momentum() );//NB 4 momenta going in here
+
+      tau1->addToDaughters( nuList.front() );
+      tau1->setMomentum( P4_tau1_strat0 );
+
+      tau2->addToDaughters( nuList.back() );
+      tau2->setMomentum( P4_tau2_strat0 );
+
+      treeHead->setMomentum( P4_tau1_strat0 + P4_tau2_strat0 + Kplus->momentum() );
+
+      DecayTreeFitter::Fitter fitter_strat0(*treeHead, *originVtx[0], stateprovider ) ;
+      if (!fit(fitter_strat0, treeHead, originVtx[0], prefix, tMap, tuple, false)) return StatusCode::FAILURE ;
+
+      if(fitter_strat0.status() == 0) whichFitterSucceeded = 0;
+
+      if(fitter_strat0.status() != 0)
+      {
+        //std::cout<<" strategy 0 failed. trying strategy 2 "<<std::endl;
+
+        //remove previously attached neutrino daughters
+        tau1->removeFromDaughters(nuList.front());
+        tau2->removeFromDaughters(nuList.back());
+
+        //reset 4-momentum of 3pi to the original value
+        tau1->setMomentum(p4_3pi1);
+        tau2->setMomentum(p4_3pi2);
+
+        nuList.front()->setMomentum( P4_tau1_strat2 - tauList[0]->momentum() );//NB 4 momenta going in here
+        nuList.back()->setMomentum( P4_tau2_strat2 - tauList[1]->momentum() );//NB 4 momenta going in here
+
+        tau1->addToDaughters( nuList.front() );
+        tau1->setMomentum( P4_tau1_strat2 );
+
+        tau2->addToDaughters( nuList.back() );
+        tau2->setMomentum( P4_tau2_strat2 );
+
+        treeHead->setMomentum( P4_tau1_strat2 + P4_tau2_strat2 + Kplus->momentum() );
+
+        DecayTreeFitter::Fitter fitter_strat2(*treeHead, *originVtx[0], stateprovider ) ;
+        if (!fit(fitter_strat2, treeHead, originVtx[0], prefix, tMap, tuple, true)) return StatusCode::FAILURE ;
+
+        if(fitter_strat2.status() == 0) whichFitterSucceeded = 2;
+      }
+    }
+
+    else if(m_order == 1.20)
+    {
+      //std::cout<<" strategy 1 failed. trying strategy 2 "<<std::endl;
+
+      //remove previously attached neutrino daughters
+      tau1->removeFromDaughters(nuList.front());
+      tau2->removeFromDaughters(nuList.back());
+
+      //reset 4-momentum of 3pi to the original value
+      tau1->setMomentum(p4_3pi1);
+      tau2->setMomentum(p4_3pi2);
+
+      nuList.front()->setMomentum( P4_tau1_strat2 - tauList[0]->momentum() );//NB 4 momenta going in here
+      nuList.back()->setMomentum( P4_tau2_strat2 - tauList[1]->momentum() );//NB 4 momenta going in here
+
+      tau1->addToDaughters( nuList.front() );
+      tau1->setMomentum( P4_tau1_strat2 );
+
+      tau2->addToDaughters( nuList.back() );
+      tau2->setMomentum( P4_tau2_strat2 );
+
+      treeHead->setMomentum( P4_tau1_strat2 + P4_tau2_strat2 + Kplus->momentum() );
+
+      DecayTreeFitter::Fitter fitter_strat2(*treeHead, *originVtx[0], stateprovider ) ;
+      if (!fit(fitter_strat2, treeHead, originVtx[0], prefix, tMap, tuple, false)) return StatusCode::FAILURE ;
+
+      if(fitter_strat2.status() == 0) whichFitterSucceeded = 2;
+
+      if(fitter_strat2.status() != 0)
+      {
+        //std::cout<<" strategy 2 failed. trying strategy 0 "<<std::endl;
+
+        //remove previously attached neutrino daughters
+        tau1->removeFromDaughters(nuList.front());
+        tau2->removeFromDaughters(nuList.back());
+
+        //reset 4-momentum of 3pi to the original value
+        tau1->setMomentum(p4_3pi1);
+        tau2->setMomentum(p4_3pi2);
+
+        nuList.front()->setMomentum( P4_tau1_strat0 - tauList[0]->momentum() );//NB 4 momenta going in here
+        nuList.back()->setMomentum( P4_tau2_strat0 - tauList[1]->momentum() );//NB 4 momenta going in here
+
+        tau1->addToDaughters( nuList.front() );
+        tau1->setMomentum( P4_tau1_strat0 );
+
+        tau2->addToDaughters( nuList.back() );
+        tau2->setMomentum( P4_tau2_strat0 );
+
+        treeHead->setMomentum( P4_tau1_strat0 + P4_tau2_strat0 + Kplus->momentum() );
+
+        DecayTreeFitter::Fitter fitter_strat0(*treeHead, *originVtx[0], stateprovider ) ;
+        if (!fit(fitter_strat0, treeHead, originVtx[0], prefix, tMap, tuple, true)) return StatusCode::FAILURE ;
+
+        if(fitter_strat0.status() == 0) whichFitterSucceeded = 0;
+      }
+    }
+
+    else if(m_order == 2.01)
+    {
+      //std::cout<<" strategy 2 failed. trying strategy 0 "<<std::endl;
+
+      //remove previously attached neutrino daughters
+      tau1->removeFromDaughters(nuList.front());
+      tau2->removeFromDaughters(nuList.back());
+
+      //reset 4-momentum of 3pi to the original value
+      tau1->setMomentum(p4_3pi1);
+      tau2->setMomentum(p4_3pi2);
+
+      nuList.front()->setMomentum( P4_tau1_strat0 - tauList[0]->momentum() );//NB 4 momenta going in here
+      nuList.back()->setMomentum( P4_tau2_strat0 - tauList[1]->momentum() );//NB 4 momenta going in here
+
+      tau1->addToDaughters( nuList.front() );
+      tau1->setMomentum( P4_tau1_strat0 );
+
+      tau2->addToDaughters( nuList.back() );
+      tau2->setMomentum( P4_tau2_strat0 );
+
+      treeHead->setMomentum( P4_tau1_strat0 + P4_tau2_strat0 + Kplus->momentum() );
+
+      DecayTreeFitter::Fitter fitter_strat0(*treeHead, *originVtx[0], stateprovider ) ;
+      if (!fit(fitter_strat0, treeHead, originVtx[0], prefix, tMap, tuple, false)) return StatusCode::FAILURE ;
+
+      if(fitter_strat0.status() == 0) whichFitterSucceeded = 0;
+
+      if(fitter_strat0.status() != 0)
+      {
+        //std::cout<<" strategy 0 failed. trying strategy 1 "<<std::endl;
+
+        //remove previously attached neutrino daughters
+        tau1->removeFromDaughters(nuList.front());
+        tau2->removeFromDaughters(nuList.back());
+
+        //reset 4-momentum of 3pi to the original value
+        tau1->setMomentum(p4_3pi1);
+        tau2->setMomentum(p4_3pi2);
+
+        nuList.front()->setMomentum( P4_tau1_strat1 - tauList[0]->momentum() );//NB 4 momenta going in here
+        nuList.back()->setMomentum( P4_tau2_strat1 - tauList[1]->momentum() );//NB 4 momenta going in here
+
+        tau1->addToDaughters( nuList.front() );
+        tau1->setMomentum( P4_tau1_strat1 );
+
+        tau2->addToDaughters( nuList.back() );
+        tau2->setMomentum( P4_tau2_strat1 );
+
+        treeHead->setMomentum( P4_tau1_strat1 + P4_tau2_strat1 + Kplus->momentum() );
+
+        DecayTreeFitter::Fitter fitter_strat1(*treeHead, *originVtx[0], stateprovider ) ;
+        if (!fit(fitter_strat1, treeHead, originVtx[0], prefix, tMap, tuple, true)) return StatusCode::FAILURE ;
+
+        if(fitter_strat1.status() == 0) whichFitterSucceeded = 1;
+      }
+    }
+
+    else if(m_order == 2.10)
+    {
+      //std::cout<<" strategy 2 failed. trying strategy 1 "<<std::endl;
+
+      //remove previously attached neutrino daughters
+      tau1->removeFromDaughters(nuList.front());
+      tau2->removeFromDaughters(nuList.back());
+
+      //reset 4-momentum of 3pi to the original value
+      tau1->setMomentum(p4_3pi1);
+      tau2->setMomentum(p4_3pi2);
+
+      nuList.front()->setMomentum( P4_tau1_strat1 - tauList[0]->momentum() );//NB 4 momenta going in here
+      nuList.back()->setMomentum( P4_tau2_strat1 - tauList[1]->momentum() );//NB 4 momenta going in here
+
+      tau1->addToDaughters( nuList.front() );
+      tau1->setMomentum( P4_tau1_strat1 );
+
+      tau2->addToDaughters( nuList.back() );
+      tau2->setMomentum( P4_tau2_strat1 );
+
+      treeHead->setMomentum( P4_tau1_strat1 + P4_tau2_strat1 + Kplus->momentum() );
+
+      DecayTreeFitter::Fitter fitter_strat1(*treeHead, *originVtx[0], stateprovider ) ;
+      if (!fit(fitter_strat1, treeHead, originVtx[0], prefix, tMap, tuple, false)) return StatusCode::FAILURE ;
+
+      if(fitter_strat1.status() == 0) whichFitterSucceeded = 1;
+
+      if(fitter_strat1.status() != 0)
+      {
+        //std::cout<<" strategy 1 failed. trying strategy 0 "<<std::endl;
+
+        //remove previously attached neutrino daughters
+        tau1->removeFromDaughters(nuList.front());
+        tau2->removeFromDaughters(nuList.back());
+
+        //reset 4-momentum of 3pi to the original value
+        tau1->setMomentum(p4_3pi1);
+        tau2->setMomentum(p4_3pi2);
+
+        nuList.front()->setMomentum( P4_tau1_strat0 - tauList[0]->momentum() );//NB 4 momenta going in here
+        nuList.back()->setMomentum( P4_tau2_strat0 - tauList[1]->momentum() );//NB 4 momenta going in here
+
+        tau1->addToDaughters( nuList.front() );
+        tau1->setMomentum( P4_tau1_strat0 );
+
+        tau2->addToDaughters( nuList.back() );
+        tau2->setMomentum( P4_tau2_strat0 );
+
+        treeHead->setMomentum( P4_tau1_strat0 + P4_tau2_strat0 + Kplus->momentum() );
+
+        DecayTreeFitter::Fitter fitter_strat0(*treeHead, *originVtx[0], stateprovider ) ;
+        if (!fit(fitter_strat0, treeHead, originVtx[0], prefix, tMap, tuple, true)) return StatusCode::FAILURE ;
+
+        if(fitter_strat0.status() == 0) whichFitterSucceeded = 0;
+      }
+    }
+
   }
   //Note that calling the fit function with originVtx[0] instead of 0 ensures the point-to-PV constraint
   //In the future, we might want to loop this procedure for all the PVs

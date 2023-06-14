@@ -10,14 +10,14 @@
 \*****************************************************************************/
 
 // local
-#include "B2KtautauDTF.h"
+#include "B2KtautauDTF2.h"
 #include "TMath.h"
 #include <algorithm>
 
 using namespace LHCb;
 
 //-----------------------------------------------------------------------------
-// Implementation file for class : B2KtautauDTF
+// Implementation file for class : B2KtautauDTF2
 // Yasmine Amhis, Matt Needham, Patrick Koppenburg
 // 30-10-2010, 01-04-2011
 //-----------------------------------------------------------------------------
@@ -25,9 +25,9 @@ using namespace LHCb;
 //=============================================================================
 // Standard constructor, initializes variables
 //=============================================================================
-B2KtautauDTF::B2KtautauDTF( const std::string& type,
-                            const std::string& name,
-                            const IInterface* parent )
+B2KtautauDTF2::B2KtautauDTF2( const std::string& type,
+                                                    const std::string& name,
+                                                    const IInterface* parent )
   : TupleToolBase ( type, name, parent )
 {
   declareProperty( "daughtersToConstrain", m_massConstraints,
@@ -47,6 +47,9 @@ B2KtautauDTF::B2KtautauDTF( const std::string& type,
                    "Use an improved branch naming scheme that includes a full history of the "
                    "parents and grand-parents for each particle. Makes it easier to identify "
                    "cases where the same particle type appears at different levels in the decay tree." );
+  //declareProperty( "initStrategy", m_strategy = 0, "Fit initialization strategy. 0 = based tau decay vertex. 1 = based on 3pi direction. 2 = based on tau decay vertices, but using Marseille solution for tau momentum");
+  //declareProperty( "kmuIDs", m_v_ids = {100313, -100313, 100323, -100323, 32224, -32224 }, "List of IDs that hold kmu pairs. First ID used to name DTF branches");
+  //      std::vector<int> m_v_ids = { 100313, -100313, 100323, -100323, 32224, -32224 };
   declareProperty( "maxNumberOfIterations", m_maxNiter = 1000, "Maximum number of iterations during fitting." );
   declareProperty( "maxndiverging", m_maxndiverging = 15, "Maximum number of diverging iterations during fitting." );
   declareProperty( "dChisqQuit", m_dChisqQuit = 2e5, "Maximum number of diverging iterations during fitting." ); //currently not used by code
@@ -55,7 +58,7 @@ B2KtautauDTF::B2KtautauDTF( const std::string& type,
 }
 
 //=============================================================================
-StatusCode B2KtautauDTF::initialize()
+StatusCode B2KtautauDTF2::initialize()
 {
   StatusCode sc = TupleToolBase::initialize();
   if ( sc.isFailure() ) return sc;
@@ -85,14 +88,14 @@ StatusCode B2KtautauDTF::initialize()
     const auto en = name() ; // use tool name as prepended name
     const auto d = en.find_last_of(".");
     m_extraName = en.substr(d+1,en.size()-1); // from d to end
-    if ( "B2KtautauDTF" == m_extraName )  m_extraName = ""; // user has not changed instance name
+    if ( "B2KtautauDTF2" == m_extraName )  m_extraName = ""; // user has not chanegd instance name
     info() << "All fields will be prepended with ``" << m_extraName << "''" <<endmsg;
   }
 
   if ( m_extraName.empty() )
   {
     return Error( "Extraname is empty. Always give an instance name "
-                  "to B2KtautauDTF! See doxygen." );
+                  "to B2KtautauDTF2! See doxygen." );
   }
 
   if ( !m_map.empty() )
@@ -114,7 +117,7 @@ StatusCode B2KtautauDTF::initialize()
   return sc;
 }
 
-StatusCode B2KtautauDTF::finalize()
+StatusCode B2KtautauDTF2::finalize()
 {
   StatusCode sc = StatusCode::SUCCESS;
   if ( !m_stateprovider.empty() ) { sc = m_stateprovider.release(); }
@@ -124,8 +127,8 @@ StatusCode B2KtautauDTF::finalize()
 //=============================================================================
 //  The fill method implementation. This is where our modifications are happening
 //=============================================================================
-StatusCode B2KtautauDTF::fill(const LHCb::Particle* mother, const LHCb::Particle* P,
-                              const std::string& head, Tuples::Tuple& tuple )
+StatusCode B2KtautauDTF2::fill( const LHCb::Particle* mother, const LHCb::Particle* P,
+                                      const std::string& head, Tuples::Tuple& tuple )
 {
 
 //  bool runningOnMC = true;
@@ -133,7 +136,7 @@ StatusCode B2KtautauDTF::fill(const LHCb::Particle* mother, const LHCb::Particle
   if( !P ) return StatusCode::FAILURE;
   if ( P->isBasicParticle() )
   {
-    return Error("Do not call B2KtautauDTF for basic particles. Use Branches. See doxygen.");
+    return Error("Do not call B2KtautauDTF2 for basic particles. Use Branches. See doxygen.");
   }
   const std::string prefix = fullName(head);
   if (msgLevel(MSG::DEBUG)) debug() << "head ''" << head << "'' prefix ''" << prefix
@@ -168,13 +171,13 @@ StatusCode B2KtautauDTF::fill(const LHCb::Particle* mother, const LHCb::Particle
   //
   //End Arvind Notes
   
-  //1. Get PV
+  // Get PV
   std::vector<const VertexBase*> originVtx;
   originVtx = originVertex( mother, P );
   if( originVtx.empty() ){return Error("Can't get an origin vertex");}
-  Gaudi::XYZPoint PV( originVtx[0]->position().X(), originVtx[0]->position().Y(), originVtx[0]->position().Z() ); //Notice origVtx[0] is being used i.e. only "best PV"
+  Gaudi::XYZPoint PV( originVtx[0]->position().X(), originVtx[0]->position().Y(), originVtx[0]->position().Z() );//Notice origVtx[0] is being used i.e. only "best PV"
 
-  //Find K+
+  // Find K+
   const LHCb::Particle * Kplus = LHCb::DecayTree::findFirstInTree( treeHead, LHCb::ParticleID(321) );
   bool kplusFlag = true;
 
@@ -194,21 +197,21 @@ StatusCode B2KtautauDTF::fill(const LHCb::Particle* mother, const LHCb::Particle
     debug() << "   cov = " << Kplus->endVertex()->covMatrix() << endmsg;
   }
   
-  //2. Get K+ track reference point
+  // Get K+ track reference point
   Gaudi::XYZPoint refPoint_Kplus = Kplus->referencePoint(); //ostensibly a point on the K+ trajectory
 
   //Other method of getting reference point
-  const LHCb::ProtoParticle *proto_Kplus = Kplus->proto();
-  const LHCb::Track *track_Kplus         = proto_Kplus->track();
-  LHCb::State firstState_Kplus     = track_Kplus->firstState();
-  Gaudi::XYZPoint refPoint_Kplus_alt = firstState_Kplus.position();
+  // const LHCb::ProtoParticle *proto_Kplus = Kplus->proto();
+  // const LHCb::Track *track_Kplus         = proto_Kplus->track();
+  // LHCb::State firstState_Kplus     = track_Kplus->firstState();
+  // Gaudi::XYZPoint refPoint_Kplus_alt = firstState_Kplus.position();
 
-  //Get Kplus 3-momentum + ennergy
-  Gaudi::XYZVector Pk = Kplus->momentum().Vect(); //Kplus->momentum() gives 4-momentum
-  double Ek = Kplus->momentum().E();
+  // Get Kplus 3-momentum
+  Gaudi::XYZVector p_K = Kplus->momentum().Vect(); //Kplus->momentum() gives 4-momentum
 
-  //Get taus
-  //If kplusFlag is true then we want Taup with ID = -15, otherwise Taup with ID = 15
+  // Get taus
+  // If kplusFlag is true then we want Taup with ID = -15, otherwise Taup with ID = 15
+
   LHCb::Particle::ConstVector tauList;
   LHCb::DecayTree::findInTree( treeHead, LHCb::ParticleID(15), tauList);
   LHCb::DecayTree::findInTree( treeHead, LHCb::ParticleID(-15), tauList);
@@ -219,8 +222,11 @@ StatusCode B2KtautauDTF::fill(const LHCb::Particle* mother, const LHCb::Particle
   }
 
   //Get the energy and momentum of the 3pi
-  double E3pi1 = tauList[0]->momentum().E();
-  double E3pi2 = tauList[1]->momentum().E();
+  double E_3pi1 = tauList[0]->momentum().E();
+  double E_3pi2 = tauList[1]->momentum().E();
+
+  double E_K    = Kplus->momentum().E();
+
   Gaudi::XYZVector p_3pi1 = tauList[0]->momentum().Vect();
   Gaudi::XYZVector p_3pi2 = tauList[1]->momentum().Vect();
 
@@ -231,132 +237,112 @@ StatusCode B2KtautauDTF::fill(const LHCb::Particle* mother, const LHCb::Particle
   Gaudi::XYZPoint DV1(tauList[0]->endVertex()->position().X(), tauList[0]->endVertex()->position().Y(), tauList[0]->endVertex()->position().Z());
   Gaudi::XYZPoint DV2(tauList[1]->endVertex()->position().X(), tauList[1]->endVertex()->position().Y(), tauList[1]->endVertex()->position().Z());
 
-  //apply the transformations
-  Gaudi::XYZVector Pk_t     = makeTransformation_vec(Pk, refPoint_Kplus, Pk, false);
-  Gaudi::XYZVector P3pi1_t  = makeTransformation_vec(Pk, refPoint_Kplus, p_3pi1, false);
-  Gaudi::XYZVector P3pi2_t  = makeTransformation_vec(Pk, refPoint_Kplus, p_3pi2, false);
-  Gaudi::XYZPoint DV1_t      = makeTransformation_point(Pk, refPoint_Kplus, DV1, false);
-  Gaudi::XYZPoint DV2_t      = makeTransformation_point(Pk, refPoint_Kplus, DV2, false);
-  Gaudi::XYZPoint refPoint_t = makeTransformation_point(Pk, refPoint_Kplus, refPoint_Kplus, false);
-  Gaudi::XYZPoint PV_t       = makeTransformation_point(Pk, refPoint_Kplus, PV, false);
+  //Get vertex fitters estimate of B decay vertex
+  Gaudi::XYZPoint BV(treeHead->endVertex()->position().X(), treeHead->endVertex()->position().Y(), treeHead->endVertex()->position().Z());
 
-  // tau and 3pi masses
-  Double_t mtau = 1776.86;
-  Double_t m3pi1 = sqrt( pow(E3pi1,2) -  P3pi1_t.Mag2() );
-  Double_t m3pi2 = sqrt( pow(E3pi2,2) -  P3pi2_t.Mag2() );
+  // Known parameters : PV, DV1, DV2, P3pi1, P3pi2, PK, RefPoint, BV (offline estimate)
+  // Apply the transformation (to reference frame whose z-axis is parallel to K+ momentum)
+  // B+ must lie in K+ trajectory
+  Gaudi::XYZPoint BV_t       = makeTransformation_point(p_K, refPoint_Kplus, BV, false);
+  Gaudi::XYZPoint PV_t       = makeTransformation_point(p_K, refPoint_Kplus, PV, false);
+  Gaudi::XYZPoint DV1_t      = makeTransformation_point(p_K, refPoint_Kplus, DV1, false);
+  Gaudi::XYZPoint DV2_t      = makeTransformation_point(p_K, refPoint_Kplus, DV2, false);
+  Gaudi::XYZPoint refPoint_t = makeTransformation_point(p_K, refPoint_Kplus, refPoint_Kplus, false);
 
-  //Define the internal variables  
-  Double_t a1 = (DV1_t.y())/(DV1_t.x());
-  Double_t a2 = (DV2_t.y())/(DV2_t.x());
-  Double_t b = (PV_t.y() -a1*PV_t.x())/(a2*PV_t.x() - PV_t.y());
-  Double_t c = b*(DV1_t.x())/(DV2_t.x());
-  Double_t d = b*((DV2_t.z() - DV1_t.z())/(DV2_t.x()));
-  Double_t e = ( (1+b)*(DV1_t.z() - PV_t.z()) + d*PV_t.x() )/( (1+b)*DV1_t.x() - (1+c)*PV_t.x() );
-  Double_t f = ( PV_t.x()*sqrt(Pk_t.Mag2()) )/( (1+b)*DV1_t.x() -(1+c)*PV_t.x() );
-  Double_t g = c*e + d;
-  Double_t h = f*c;
-  Double_t i = DV1_t.z() - e*DV1_t.x();
-  Double_t j = f*DV1_t.x();
+  Gaudi::XYZVector p_K_t     = makeTransformation_vec(p_K, refPoint_Kplus, p_K, false);
+  Gaudi::XYZVector p_3pi1_t  = makeTransformation_vec(p_K, refPoint_Kplus, p_3pi1, false);
+  Gaudi::XYZVector p_3pi2_t  = makeTransformation_vec(p_K, refPoint_Kplus, p_3pi2, false);
 
-  Double_t x1 = P3pi1_t.x() + a1*P3pi1_t.y() + e*P3pi1_t.z();
-  Double_t x2 = b*P3pi2_t.x() + a2*b*P3pi2_t.y() + g*P3pi2_t.z();
+  //Define the internal variables
+  // ptau1 must point back to DV1
+  double a1 = DV1_t.y()/DV1_t.x();
+  double b1 = (DV1_t.z() - BV_t.z())/DV1_t.x();
+  // ptau2 must point back to DV2
+  double a2 = DV2_t.y()/DV2_t.x();
+  double b2 = (DV2_t.z() - BV_t.z())/DV2_t.x();
+  // pB must point back to PV
+  double c = (PV_t.y() - a1*PV_t.x())/(a2*PV_t.x() - PV_t.y());
+  double d = (PV_t.x()) / ( (1+c)*(BV_t.z() - PV_t.z()) - (b1 + c*b2)*PV_t.x() );
 
-  Double_t p1 = 1 + pow(a1,2) + pow(e,2) - pow(x1/E3pi1,2);
-  Double_t p2 = 2*e*f - ( pow(mtau,2) + pow(m3pi1,2) + 2*f*P3pi1_t.z() )*(x1/pow(E3pi1,2) );
-  Double_t p3 = pow(mtau,2) + pow(f,2) - pow( ( pow(mtau,2) + pow(m3pi1,2) + 2*f*P3pi1_t.z() )/(2*E3pi1), 2);
-  Double_t q1 = pow(b,2) + pow(a2*b,2) + pow(g,2) - pow(x2/E3pi2,2);
-  Double_t q2 = 2*g*h - ( pow(mtau,2) + pow(m3pi2,2) + 2*h*P3pi2_t.z() )*(x2/pow(E3pi2,2) );
-  Double_t q3 = pow(mtau,2) + pow(h,2) - pow( ( pow(mtau,2) + pow(m3pi2,2) + 2*h*P3pi2_t.z() )/(2*E3pi2),2 );
+  double p_tau1_x = d*p_K_t.z();
+  double p_tau1_y = a1*p_tau1_x;
+  double p_tau1_z = b1*p_tau1_x;
 
-  Double_t Ptau1x_t = (p1*q3 - p3*q1)/(p2*q1 - p1*q2);
-  Double_t Ptau1y_t = a1*Ptau1x_t;
-  Double_t Ptau1z_t = e*Ptau1x_t + f;
-  Double_t Ptau2x_t = b*Ptau1x_t;
-  Double_t Ptau2y_t = a2*b*Ptau1x_t;
-  Double_t Ptau2z_t = g*Ptau1x_t + h;
-  Double_t BVz_t = i - j*(1/Ptau1x_t);
+  double p_tau2_x = c*p_tau1_x;
+  double p_tau2_y = a2*c*p_tau1_x;
+  double p_tau2_z = b2*c*p_tau1_x;
 
-  ROOT::Math::XYZVector Ptau1_t(Ptau1x_t, Ptau1y_t, Ptau1z_t);
-  ROOT::Math::XYZVector Ptau2_t(Ptau2x_t, Ptau2y_t, Ptau2z_t); 
-  ROOT::Math::XYZPoint BV_t(0., 0., BVz_t);
-  ROOT::Math::XYZVector Pnu1_t = Ptau1_t - P3pi1_t;
-  ROOT::Math::XYZVector Pnu2_t = Ptau2_t - P3pi2_t;
-  ROOT::Math::XYZVector Pb_t = Ptau1_t + Ptau2_t + Pk_t;
+  Gaudi::XYZVector p_tau1(p_tau1_x, p_tau1_y, p_tau1_z);
+  Gaudi::XYZVector p_tau2(p_tau2_x, p_tau2_y, p_tau2_z);
 
-  // scale factors
-  Double_t L1x, L1y, L1z;
-  Double_t L2x, L2y, L2z;
-  Double_t Lx, Ly, Lz;
+  // Tau mass constraint
+  double mTau = 1776.86;
+  double E_tau1 = sqrt(pow(mTau, 2) + p_tau1.Mag2());
+  double E_tau2 = sqrt(pow(mTau, 2) + p_tau2.Mag2());
 
-  L1x = Ptau1_t.x()/DV1_t.x();
-  L1y = Ptau1_t.y()/DV1_t.y();
-  L1z = Ptau1_t.z()/(DV1_t.z() - BV_t.z());
-  L2x = Ptau2_t.x()/DV2_t.x();
-  L2y = Ptau2_t.y()/DV2_t.y();
-  L2z = Ptau2_t.z()/(DV2_t.z() - BV_t.z());
-  Lx = -Pb_t.x()/PV_t.x();
-  Ly = -Pb_t.y()/PV_t.y();
-  Lz = Pb_t.z()/(BV_t.z() - PV_t.z());
+  //Gaudi::LorentzVector P_K(p_K_t.x(), p_K_t.y(), p_K_t.z(), E_K);
+  Gaudi::LorentzVector P_tau1(p_tau1_x, p_tau1_y, p_tau1_z, E_tau1);
+  Gaudi::LorentzVector P_tau2(p_tau2_x, p_tau2_y, p_tau2_z, E_tau2);
 
-  // make transformation back to LHCb frame
-  ROOT::Math::XYZVector Ptau1 = makeTransformation_vec(Pk, refPoint_Kplus, Ptau1_t, true);
-  ROOT::Math::XYZVector Ptau2 = makeTransformation_vec(Pk, refPoint_Kplus, Ptau2_t, true);
-  ROOT::Math::XYZPoint BV = makeTransformation_point(Pk, refPoint_Kplus, BV_t, true);
-  ROOT::Math::XYZVector Pnu1 = makeTransformation_vec(Pk, refPoint_Kplus, Pnu1_t, true);
-  ROOT::Math::XYZVector Pnu2 = makeTransformation_vec(Pk, refPoint_Kplus, Pnu2_t, true);
-  ROOT::Math::XYZVector Pb = makeTransformation_vec(Pk, refPoint_Kplus, Pb_t, true);
+  // 3-momentum conservation at DV1 and DV2
+  Gaudi::XYZVector p_nu1 = p_tau1 - p_3pi1_t;
+  Gaudi::XYZVector p_nu2 = p_tau2 - p_3pi2_t;
 
-  Double_t Etau1 = sqrt( pow(mtau,2) + Ptau1_t.Mag2() );
-  Double_t Etau2 = sqrt( pow(mtau,2) + Ptau2_t.Mag2() );
-  Double_t Enu1 = sqrt(Pnu1_t.Mag2());
-  Double_t Enu2 = sqrt(Pnu2_t.Mag2());
-  Double_t Eb = Etau1 + Etau2 + Ek;
-  Double_t Mb = sqrt( pow(Eb,2) - Pb.Mag2() );
-  Double_t tau1_M = sqrt( pow(Etau1,2) - Ptau1_t.Mag2() );
-  Double_t tau2_M = sqrt( pow(Etau2,2) - Ptau2_t.Mag2() );
-  Double_t nu1_M = sqrt( pow(Enu1,2) - Pnu1_t.Mag2() );
-  Double_t nu2_M = sqrt( pow(Enu2,2) - Pnu2_t.Mag2() );
+  // Nu mass constraint
+  double E_nu1 = sqrt(p_nu1.Mag2());
+  double E_nu2 = sqrt(p_nu2.Mag2());
 
-  Gaudi::LorentzVector P4_tau1(Ptau1.x(), Ptau1.y(), Ptau1.z(), Etau1);
-  Gaudi::LorentzVector P4_tau2(Ptau2.x(), Ptau2.y(), Ptau2.z(), Etau2);
-  Gaudi::LorentzVector P4_nu1(Pnu1.x(), Pnu1.y(), Pnu1.z(), Enu1);
-  Gaudi::LorentzVector P4_nu2(Pnu2.x(), Pnu2.y(), Pnu2.z(), Enu2);
-  Gaudi::LorentzVector P4_b(Pb.x(), Pb.y(), Pb.z(), Eb);
+  Gaudi::LorentzVector P_nu1(p_nu1.x(), p_nu1.y(), p_nu1.z(), E_nu1);
+  Gaudi::LorentzVector P_nu2(p_nu2.x(), p_nu2.y(), p_nu2.z(), E_nu2);
 
-  // Antineutrino 4-momentum
+  //Now apply the inverse transformations to come back to the LHCb reference frame
+  Gaudi::XYZVector p_K_lhcb    = makeTransformation_vec(p_K, refPoint_Kplus, p_K_t, true);
+  Gaudi::XYZVector p_tau1_lhcb = makeTransformation_vec(p_K, refPoint_Kplus, p_tau1, true);
+  Gaudi::XYZVector p_tau2_lhcb = makeTransformation_vec(p_K, refPoint_Kplus, p_tau2, true);
+  Gaudi::XYZVector p_nu1_lhcb  = makeTransformation_vec(p_K, refPoint_Kplus, p_nu1, true);
+  Gaudi::XYZVector p_nu2_lhcb  = makeTransformation_vec(p_K, refPoint_Kplus, p_nu2, true);
+
+  Gaudi::XYZPoint PV_lhcb       = makeTransformation_point(p_K, refPoint_Kplus, PV_t, true);
+  Gaudi::XYZPoint refPoint_lhcb = makeTransformation_point(p_K, refPoint_Kplus, refPoint_t, true);
+  Gaudi::XYZPoint DV1_lhcb      = makeTransformation_point(p_K, refPoint_Kplus, DV1_t, true);
+  Gaudi::XYZPoint DV2_lhcb      = makeTransformation_point(p_K, refPoint_Kplus, DV2_t, true);
+  Gaudi::XYZPoint BV_lhcb       = makeTransformation_point(p_K, refPoint_Kplus, BV_t, true);
+
+  double E_tau1_lhcb = sqrt( p_tau1_lhcb.Mag2() + pow(mTau, 2));
+  double E_tau2_lhcb = sqrt( p_tau2_lhcb.Mag2() + pow(mTau, 2));
+
+  Gaudi::LorentzVector P4_tau1_lhcb(p_tau1_lhcb.x(), p_tau1_lhcb.y(), p_tau1_lhcb.z(), E_tau1_lhcb);
+  Gaudi::LorentzVector P4_tau2_lhcb(p_tau2_lhcb.x(), p_tau2_lhcb.y(), p_tau2_lhcb.z(), E_tau2_lhcb);
+
+  double E_nu1_lhcb = sqrt(p_nu1_lhcb.Mag2());
+  double E_nu2_lhcb = sqrt(p_nu2_lhcb.Mag2());
+
+  Gaudi::LorentzVector P4_nu1_lhcb(p_nu1_lhcb.x(), p_nu1_lhcb.y(), p_nu1_lhcb.z(), E_nu1_lhcb);
+  Gaudi::LorentzVector P4_nu2_lhcb(p_nu2_lhcb.x(), p_nu2_lhcb.y(), p_nu2_lhcb.z(), E_nu2_lhcb);
+
   LHCb::Particle::Vector nuList;
   nuList.push_back( new LHCb::Particle() );
   nuList.back()->setParticleID( LHCb::ParticleID(16) ); //Looks like the order of neutrino PID's doesn't matter. Check again later to make sure.
-  nuList.back()->setMomentum( P4_nu1 );//NB 4 momenta going in here
+  nuList.back()->setMomentum( P4_nu1_lhcb );//NB 4 momenta going in here
 
-  // tau+ 4-momentum
   LHCb::Particle * tau1 = const_cast<LHCb::Particle*>(tauList[0]);
   tau1->addToDaughters( nuList.back() );
-  tau1->setMomentum( P4_tau1 );
+  tau1->setMomentum( P4_tau1_lhcb );
 
-  // Neutrino 4-momentum
   nuList.push_back( new LHCb::Particle() );
   nuList.back()->setParticleID( LHCb::ParticleID(-16) );
-  nuList.back()->setMomentum( P4_nu2 );
+  nuList.back()->setMomentum( P4_nu2_lhcb );
 
-  // tau- 4-momentum
   LHCb::Particle * tau2 = const_cast<LHCb::Particle*>(tauList[1]);
   tau2->addToDaughters( nuList.back() );
-  tau2->setMomentum( P4_tau2 );
+  tau2->setMomentum( P4_tau2_lhcb );
 
-  // B+ 4-momentum
-  treeHead->setMomentum( P4_b );
-  // B+ decay vertex
-  const LHCb::Vertex* BV_vertex = new LHCb::Vertex( BV );
-  treeHead->setEndVertex( BV_vertex );
+  // 4-momentum conservation at PV
+  treeHead->setMomentum( P4_tau1_lhcb + P4_tau2_lhcb + Kplus->momentum() );
 
   TupleMap tMap ; // the temporary data map
   DecayTreeFitter::Fitter fitter(*treeHead, *originVtx[0], stateprovider ) ;
   if (!fit(fitter, treeHead, originVtx[0], prefix, tMap, tuple, true)) return StatusCode::FAILURE ;
-
-  tuple->column("refPoint_X", refPoint_Kplus.x());
-  tuple->column("refPoint_Y", refPoint_Kplus.y());
-  tuple->column("refPoint_Z", refPoint_Kplus.z());
 
   return fillTuple(tMap,tuple,prefix); // the actual filling
   //return StatusCode(true);
@@ -364,10 +350,10 @@ StatusCode B2KtautauDTF::fill(const LHCb::Particle* mother, const LHCb::Particle
 //=============================================================================
 // do filling for a given vertex
 //=============================================================================
-StatusCode B2KtautauDTF::fit(DecayTreeFitter::Fitter& fitter, const LHCb::Particle* P,
-                            const LHCb::VertexBase* pv, const std::string& prefix,
-                            TupleMap& tMap, Tuples::Tuple& tuple, 
-                            bool fillIfFailedn) const
+StatusCode B2KtautauDTF2::fit(DecayTreeFitter::Fitter& fitter, const LHCb::Particle* P,
+                                    const LHCb::VertexBase* pv, const std::string& prefix,
+                                    TupleMap& tMap, Tuples::Tuple& tuple, 
+                                    bool fillIfFailedn) const
 {
   if (msgLevel(MSG::VERBOSE)) verbose() << "fit " << P << " " << pv << " " << prefix << endmsg ;
   bool test = true ;
@@ -388,12 +374,27 @@ StatusCode B2KtautauDTF::fit(DecayTreeFitter::Fitter& fitter, const LHCb::Partic
   std::vector<Gaudi::XYZVector> p_taup_nu = {}, p_taum_nu = {}; //neutrino kinematics after every iteration
   std::vector<Gaudi::XYZVector> p_taup = {}, p_taum = {}; //tau kinematics after every iteration
 
+  //std::vector<float> BV_X = {}, BV_Y = {}, BV_Z = {};
+
+  // const ParticleBase& pb = P;
+  // int posindex = pb.posIndex();
+
   //calling the actual fit function.
   fitter.fit(m_maxNiter, 0.01, m_maxndiverging, m_dChisqQuit, chisq_iters, 
              BV, DV1, DV2, P, B_M,
              p_taup_nu, p_taum_nu,
              p_taup, p_taum, true);
 
+  // if( (p_taup[0].z()/abs(p_taup[0].z())) * ((DV1[0].z() - BV[0].z())/abs(DV1[0].z() - BV[0].z())) < 0 )
+  // {
+  //   std::cout<<"MARK2"<<std::endl;
+  //   std::cout<<"DV1_z - BV_z = "<<DV1[0].z() - BV[0].z()<<std::endl;
+  //   std::cout<<"p_tau1_z = "<<p_taup[0].z()<<std::endl;
+  // }
+  // for(int i=1; i<=fitter.nIter(); i++)
+  // {
+  //   std::cout<<"Iteration "<<i<<" chi2 = "<<p_taup_nu[i-1].X()<<std::endl;
+  // }
   if (msgLevel(MSG::VERBOSE)) verbose() << "called Fit" << endmsg ;
 
   //fill chi2 for each fitter iteration
@@ -423,11 +424,10 @@ StatusCode B2KtautauDTF::fit(DecayTreeFitter::Fitter& fitter, const LHCb::Partic
 
   return StatusCode(test);
 }
-
 //=============================================================================
 // Fill standard stuff
 //=============================================================================
-StatusCode B2KtautauDTF::fillPV(const LHCb::VertexBase* pv, const std::string& prefix,
+StatusCode B2KtautauDTF2::fillPV(const LHCb::VertexBase* pv, const std::string& prefix,
                                        TupleMap& tMap ) const
 {
   bool test = true;
@@ -442,11 +442,10 @@ StatusCode B2KtautauDTF::fillPV(const LHCb::VertexBase* pv, const std::string& p
   }
   return StatusCode(test);
 }
-
 //=============================================================================
 // Fill chi2 for all iterations of the fitter
 //=============================================================================
-StatusCode B2KtautauDTF::fillChi2Iter(DecayTreeFitter::Fitter& fitter, std::vector<float> chisq_iters,
+StatusCode B2KtautauDTF2::fillChi2Iter(DecayTreeFitter::Fitter& fitter, std::vector<float> chisq_iters,
                                              const std::string& prefix, Tuples::Tuple& tuple ) const
 {
   bool test = true;
@@ -462,11 +461,10 @@ StatusCode B2KtautauDTF::fillChi2Iter(DecayTreeFitter::Fitter& fitter, std::vect
   
   return StatusCode(test);
 }
-
 //=============================================================================
 // Fill standard stuff
 //=============================================================================
-StatusCode B2KtautauDTF::fillDecay(const DecayTreeFitter::Fitter& fitter, const std::string& prefix,
+StatusCode B2KtautauDTF2::fillDecay(const DecayTreeFitter::Fitter& fitter, const std::string& prefix,
                                           TupleMap& tMap ) const
 {
   bool test = true;
@@ -479,16 +477,15 @@ StatusCode B2KtautauDTF::fillDecay(const DecayTreeFitter::Fitter& fitter, const 
 
   return StatusCode(test);
 }
-
 //=============================================================================
 // Fill B decay vertex after each fitter iteration
 //=============================================================================
-StatusCode B2KtautauDTF::fillVtxIter(const DecayTreeFitter::Fitter& fitter, const std::string& prefix,
-                                    Tuples::Tuple& tuple, std::vector<Gaudi::XYZPoint> BV,
-                                    std::vector<Gaudi::XYZPoint> DV1, std::vector<Gaudi::XYZPoint> DV2,
-                                    std::vector<float> B_M,
-                                    std::vector<Gaudi::XYZVector> p_taup_nu, std::vector<Gaudi::XYZVector> p_taum_nu,
-                                    std::vector<Gaudi::XYZVector> p_taup, std::vector<Gaudi::XYZVector> p_taum) const
+StatusCode B2KtautauDTF2::fillVtxIter(const DecayTreeFitter::Fitter& fitter, const std::string& prefix,
+                                            Tuples::Tuple& tuple, std::vector<Gaudi::XYZPoint> BV,
+                                            std::vector<Gaudi::XYZPoint> DV1, std::vector<Gaudi::XYZPoint> DV2,
+                                            std::vector<float> B_M,
+                                            std::vector<Gaudi::XYZVector> p_taup_nu, std::vector<Gaudi::XYZVector> p_taum_nu,
+                                            std::vector<Gaudi::XYZVector> p_taup, std::vector<Gaudi::XYZVector> p_taum) const
 {
   bool test = true;
 
@@ -605,11 +602,10 @@ StatusCode B2KtautauDTF::fillVtxIter(const DecayTreeFitter::Fitter& fitter, cons
   //                       prefix+"_nIters1", m_maxNiter);
   return StatusCode(test);
 }
-
 //=============================================================================
 // Fill momentum and mass information
 //=============================================================================
-StatusCode B2KtautauDTF::fillMomentum(const DecayTreeFitter::Fitter& fitter, const Particle* P,
+StatusCode B2KtautauDTF2::fillMomentum(const DecayTreeFitter::Fitter& fitter, const Particle* P,
                                              const std::string& prefix, TupleMap& tMap ) const
 {
   bool test = true;
@@ -635,11 +631,10 @@ StatusCode B2KtautauDTF::fillMomentum(const DecayTreeFitter::Fitter& fitter, con
   test &= insert( prefix+"_PE", momentum.E() , tMap  );//MeV
   return StatusCode(test);
 }
-
 //=============================================================================
 // Fill lifetime information
 //=============================================================================
-StatusCode B2KtautauDTF::fillLT(const DecayTreeFitter::Fitter& fitter, const Particle* P,
+StatusCode B2KtautauDTF2::fillLT(const DecayTreeFitter::Fitter& fitter, const Particle* P,
                                        const std::string& prefix, TupleMap& tMap ) const
 {
   bool test = true;
@@ -657,11 +652,10 @@ StatusCode B2KtautauDTF::fillLT(const DecayTreeFitter::Fitter& fitter, const Par
 
   return StatusCode(test);
 }
-
 //=============================================================================
 // Fill lifetime information for non stable daughters
 //=============================================================================
-StatusCode B2KtautauDTF::fillDaughters(const DecayTreeFitter::Fitter& fitter, const LHCb::Particle* P,
+StatusCode B2KtautauDTF2::fillDaughters(const DecayTreeFitter::Fitter& fitter, const LHCb::Particle* P,
                                               const std::string& prefix, TupleMap& tMap ) const
 {
   bool test = true;
@@ -701,12 +695,11 @@ StatusCode B2KtautauDTF::fillDaughters(const DecayTreeFitter::Fitter& fitter, co
   }
   return StatusCode(test);
 }
-
 //=============================================================================
 // Fill lifetime information for stable daughters
 //=============================================================================
 StatusCode
-B2KtautauDTF::fillStableDaughters(const DecayTreeFitter::Fitter& fitter, const LHCb::Particle* P,
+B2KtautauDTF2::fillStableDaughters(const DecayTreeFitter::Fitter& fitter, const LHCb::Particle* P,
                                          const std::string& prefix, TupleMap& tMap ) const
 {
   bool test = true;
@@ -768,7 +761,7 @@ B2KtautauDTF::fillStableDaughters(const DecayTreeFitter::Fitter& fitter, const L
 // Fill updated tracks momentum
 //=============================================================================
 StatusCode
-B2KtautauDTF::fillTracksMomentum(const DecayTreeFitter::Fitter& fitter, const Particle* P,
+B2KtautauDTF2::fillTracksMomentum(const DecayTreeFitter::Fitter& fitter, const Particle* P,
                                         const std::string& prefix, TupleMap& tMap ) const
 {
   bool test = true;
@@ -793,7 +786,7 @@ B2KtautauDTF::fillTracksMomentum(const DecayTreeFitter::Fitter& fitter, const Pa
 //=============================================================================
 // append data to TupleMap
 //=============================================================================
-StatusCode B2KtautauDTF::insert(const std::string& leaf, const double val,
+StatusCode B2KtautauDTF2::insert(const std::string& leaf, const double val,
                                        TupleMap& tMap ) const
 {
   auto l = tMap.find(leaf);
@@ -816,7 +809,7 @@ StatusCode B2KtautauDTF::insert(const std::string& leaf, const double val,
 //=============================================================================
 // actual filling of the Tuple
 //=============================================================================
-StatusCode B2KtautauDTF::fillTuple(TupleMap& tMap, Tuples::Tuple& tuple,
+StatusCode B2KtautauDTF2::fillTuple(TupleMap& tMap, Tuples::Tuple& tuple,
                                           const std::string& prefix )
 {
   bool test = true ;
@@ -859,7 +852,7 @@ StatusCode B2KtautauDTF::fillTuple(TupleMap& tMap, Tuples::Tuple& tuple,
 // Sort Tracks
 //=============================================================================
 std::set<const LHCb::Track*>
-B2KtautauDTF::sortedTracks(const LHCb::VertexBase* vb) const
+B2KtautauDTF2::sortedTracks(const LHCb::VertexBase* vb) const
 {
   const LHCb::RecVertex* pv = dynamic_cast<const LHCb::RecVertex*>(vb);
   if (!pv) Exception("Failed to cast PV");
@@ -871,7 +864,7 @@ B2KtautauDTF::sortedTracks(const LHCb::VertexBase* vb) const
 //=============================================================================
 // Compare PVs, check that one PV's tracks is a subset of the other
 //=============================================================================
-bool B2KtautauDTF::samePV( const LHCb::VertexBase* vb1,
+bool B2KtautauDTF2::samePV( const LHCb::VertexBase* vb1,
                                   const LHCb::VertexBase* vb2 ) const
 {
   // exception checking. See bug https://savannah.cern.ch/bugs/?100933
@@ -913,7 +906,7 @@ bool B2KtautauDTF::samePV( const LHCb::VertexBase* vb1,
 // get origin vertex
 //=============================================================================
 std::vector<const VertexBase*>
-B2KtautauDTF::originVertex( const Particle* mother, const Particle* P ) const
+B2KtautauDTF2::originVertex( const Particle* mother, const Particle* P ) const
 {
   std::vector<const VertexBase*> oriVx;
   if ( mother == P )
@@ -986,7 +979,7 @@ B2KtautauDTF::originVertex( const Particle* mother, const Particle* P ) const
 //=============================================================================
 // Convert pid number in names
 //=============================================================================
-std::string B2KtautauDTF::getName(const int id) const
+std::string B2KtautauDTF2::getName(const int id) const
 {
   const auto * prop = m_ppSvc->find( LHCb::ParticleID(id) );
   if (!prop) Exception("Unknown PID");
@@ -998,7 +991,7 @@ std::string B2KtautauDTF::getName(const int id) const
 //=============================================================================
 // Substitute
 //=============================================================================
-StatusCode B2KtautauDTF::substitute(LHCb::DecayTree& tree)
+StatusCode B2KtautauDTF2::substitute(LHCb::DecayTree& tree)
 {
   if (msgLevel(MSG::DEBUG)) debug() << "Calling substitute" << endmsg ;
   const auto substituted = m_substitute->substitute ( tree.head() ) ;
@@ -1030,7 +1023,7 @@ StatusCode B2KtautauDTF::substitute(LHCb::DecayTree& tree)
 //=============================================================================
 // Check Mass Constraints
 //=============================================================================
-StatusCode B2KtautauDTF::checkMassConstraints(const LHCb::DecayTree& tree)
+StatusCode B2KtautauDTF2::checkMassConstraints(const LHCb::DecayTree& tree)
 {
   if (!m_first) return StatusCode::SUCCESS ;  // do that only once
   m_first = false ;
@@ -1060,8 +1053,8 @@ StatusCode B2KtautauDTF::checkMassConstraints(const LHCb::DecayTree& tree)
 
 }
 
-Gaudi::XYZVector B2KtautauDTF::makeTransformation_vec(Gaudi::XYZVector Pk, Gaudi::XYZPoint refPoint, 
-                                                      Gaudi::XYZVector theVector, bool invFlag)
+Gaudi::XYZVector B2KtautauDTF2::makeTransformation_vec(Gaudi::XYZVector p_K, Gaudi::XYZPoint refPoint, 
+                                                             Gaudi::XYZVector theVector, bool invFlag)
 {
   double deltaX = refPoint.x();
   double deltaY = refPoint.y();
@@ -1073,10 +1066,10 @@ Gaudi::XYZVector B2KtautauDTF::makeTransformation_vec(Gaudi::XYZVector Pk, Gaudi
   //See https://mathworld.wolfram.com/EulerAngles.html
   //https://root.cern.ch/doc/master/classROOT_1_1Math_1_1EulerAngles.html
 
-  //Rotation about original Z axis to bring Pk into YZ plane. If Y component is +ve, rotation is clockwise, else anti-clockwise
-  double phi = -1 * TMath::ATan(Pk.x()/Pk.y());
-  //Clockwise rotation about new X axis to align Z axis with Pk
-  double theta = -1 * TMath::ATan(Pk.Rho() * (Pk.y()/TMath::Abs(Pk.y())) /Pk.z());
+  //Rotation about original Z axis to bring p_K into YZ plane. If Y component is +ve, rotation is clockwise, else anti-clockwise
+  double phi = -1 * TMath::ATan(p_K.x()/p_K.y());
+  //Clockwise rotation about new X axis to align Z axis with p_K
+  double theta = -1 * TMath::ATan(p_K.Rho() * (p_K.y()/TMath::Abs(p_K.y())) /p_K.z());
 
   Gaudi::EulerAngles myRotation(phi, theta, 0);
 
@@ -1094,7 +1087,7 @@ Gaudi::XYZVector B2KtautauDTF::makeTransformation_vec(Gaudi::XYZVector Pk, Gaudi
   return theVector_t;
 }
 
-Gaudi::XYZPoint B2KtautauDTF::makeTransformation_point(Gaudi::XYZVector Pk, Gaudi::XYZPoint refPoint, 
+Gaudi::XYZPoint B2KtautauDTF2::makeTransformation_point(Gaudi::XYZVector p_K, Gaudi::XYZPoint refPoint, 
                                                               Gaudi::XYZPoint thePoint, bool invFlag)
 {
   double deltaX = refPoint.x();
@@ -1107,10 +1100,10 @@ Gaudi::XYZPoint B2KtautauDTF::makeTransformation_point(Gaudi::XYZVector Pk, Gaud
   //See https://mathworld.wolfram.com/EulerAngles.html
   //https://root.cern.ch/doc/master/classROOT_1_1Math_1_1EulerAngles.html
 
-  //Rotation about original Z axis to bring Pk into YZ plane. If Y component is +ve, rotation is clockwise, else anti-clockwise
-  double phi = -1 * TMath::ATan(Pk.x()/Pk.y());
-  //Clockwise rotation about new X axis to align Z axis with Pk
-  double theta = -1 * TMath::ATan(Pk.Rho() * (Pk.y()/TMath::Abs(Pk.y())) /Pk.z());
+  //Rotation about original Z axis to bring p_K into YZ plane. If Y component is +ve, rotation is clockwise, else anti-clockwise
+  double phi = -1 * TMath::ATan(p_K.x()/p_K.y());
+  //Clockwise rotation about new X axis to align Z axis with p_K
+  double theta = -1 * TMath::ATan(p_K.Rho() * (p_K.y()/TMath::Abs(p_K.y())) /p_K.z());
 
   Gaudi::EulerAngles myRotation(phi, theta, 0);
 
@@ -1128,4 +1121,4 @@ Gaudi::XYZPoint B2KtautauDTF::makeTransformation_point(Gaudi::XYZVector Pk, Gaud
   return thePoint_t;
 }
 // Declaration of the Tool Factory
-DECLARE_COMPONENT( B2KtautauDTF )
+DECLARE_COMPONENT( B2KtautauDTF2 )

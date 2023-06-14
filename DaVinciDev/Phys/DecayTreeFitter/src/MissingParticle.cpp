@@ -37,6 +37,7 @@ namespace DecayTreeFitter {
     // take them from the bc
     Gaudi::LorentzVector p4       = particle().momentum();
     int                  momindex = momIndex();
+
     fitpar->par()( momindex + 1 ) = p4.x();
     fitpar->par()( momindex + 2 ) = p4.y();
     fitpar->par()( momindex + 3 ) = p4.z();

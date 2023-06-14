@@ -286,22 +286,21 @@ namespace DecayTreeFitter {
     for ( daucontainer::const_iterator it = begin(); it != end(); ++it ) {
       int    daumomindex = ( *it )->momIndex();
       double e2( 0 );
-      // int maxrow = (*it)->hasEnergy() && !(*it)->hasMassConstraint() ? 4 : 3 ;
-      int maxrow = ( *it )->hasEnergy() ? 4 : 3;
+      int maxrow = ( *it )->hasEnergy() ? 4 : 3; 
       for ( int irow = 1; irow <= maxrow; ++irow ) {
         double px = fitparams->par()( daumomindex + irow );
         e2 += px * px;
         fitparams->par( momindex + irow ) += px;
       }
-      if ( maxrow == 3 ) {
+      if ( maxrow == 3 ) { // if daughter does not have an energy
         double mass = ( *it )->pdtMass();
-        fitparams->par( momindex + 4 ) += std::sqrt( e2 + mass * mass );
+        fitparams->par( momindex + 4 ) += std::sqrt( e2 + mass * mass ); 
       }
     }
-
+    
     // if there is a mass constraint, ignore what we have just
     // computed for the energy, and just insert the mass
-    if ( hasMassConstraint() ) {
+    if ( hasMassConstraint() ) { 
       double mass = pdtMass();
       double p2   = 0;
       for ( int irow = 1; irow <= 3; ++irow ) {
@@ -339,8 +338,7 @@ namespace DecayTreeFitter {
         p.r( imom ) += -px;
         p.H( imom, daumomindex + imom ) = -1;
       }
-
-      if ( maxrow == 3 ) {
+      if ( maxrow == 3 ) { // if daughter does not have an energy
         // treat the energy for particles that are parameterized with p3
         double energy = sqrt( e2 );
         p.r( 4 ) += -energy;
@@ -372,6 +370,7 @@ namespace DecayTreeFitter {
         }
       }
     }
+    
     return ErrCode::success;
   }
 
@@ -385,6 +384,168 @@ namespace DecayTreeFitter {
     //     p.H(1,lenindex+1) = 1 ;
     return ErrCode::success;
   }
+
+  //   ErrCode InternalParticle::projectScaleFactorConstraint( const FitParams& fitparams, Projection& p) const { // Added by Maria
+  //   // This is necessary for neutrino initialisatin calculation to work
+  //   // L1x = Ptau1x / (DV1x - BVx) ; L1y = Ptau1y / (DV1y - BVy) ; L1z = Ptau1z / (Dv1z - BVz)
+  //   // L2x = Ptau2x / (DV2x - BVx) ; L2y = Ptau2y / (DV2y - BVy) ; L2z = Ptau2z / (Dv2z - BVz)
+  //   // Lx = Pbx / (BVx - PVx) ; Ly = Pby / (BVy - PVy) ; Lz = Pbz / (BVz - PVz)
+  //   // we want the scale factors to be the same for the 3 momentum components:
+  //   // L1x - L1y = 0 and L1x - L1z = 0
+  //   // L2x - L2y = 0 and L2x - L2z = 0
+  //   // Lx - Ly = 0 and Lx - Lz = 0
+
+  //   // iterate over daughters
+  //   // primary vertex see DTF tuple; what are the PV indices?
+
+  //   // B+ momentum and position indices
+  //   int B_momindex = momIndex();
+  //   int B_posindex = posIndex();
+
+  //   //std::cout << "Particle ID = " << particle().particleID().pid() << std::endl;
+
+  //   // tau+ and tau- momentum and position indices
+  //   // check that tau+ = daughters()[1] and tau- = daughters()[2]
+  //   int tau1_momindex = daughters()[1]->momIndex();
+  //   int tau2_momindex = daughters()[2]->momIndex();
+  //   int tau1_posindex = daughters()[1]->posIndex();
+  //   int tau2_posindex = daughters()[2]->posIndex();
+
+  //   // Primary vertex
+  //   // the coordinates of the PV are the last 3 parameters in the model 
+  //   int PV_posindex = 51; // only true for our decay model; there should be a way to get this info generally but idk how
+  //   double PVx = fitparams.par()( PV_posindex + 1 );
+  //   double PVy = fitparams.par()( PV_posindex + 2 );
+  //   double PVz = fitparams.par()( PV_posindex + 3 );
+    
+  //   // Momentum
+  //   double Ptau1x = fitparams.par()( tau1_momindex + 1 );
+  //   double Ptau1y = fitparams.par()( tau1_momindex + 2 );
+  //   double Ptau1z = fitparams.par()( tau1_momindex + 3 );
+
+  //   double Ptau2x = fitparams.par()( tau2_momindex + 1 );
+  //   double Ptau2y = fitparams.par()( tau2_momindex + 2 );
+  //   double Ptau2z = fitparams.par()( tau2_momindex + 3 );
+
+  //   double Pbx = fitparams.par()( B_momindex + 1 );
+  //   double Pby = fitparams.par()( B_momindex + 2 );
+  //   double Pbz = fitparams.par()( B_momindex + 3 );
+
+  //   // Decay vertices
+  //   double DV1x = fitparams.par()( tau1_posindex + 1 );
+  //   double DV1y = fitparams.par()( tau1_posindex + 2 );
+  //   double DV1z = fitparams.par()( tau1_posindex + 3 );
+
+  //   double DV2x = fitparams.par()( tau2_posindex + 1 );
+  //   double DV2y = fitparams.par()( tau2_posindex + 2 );
+  //   double DV2z = fitparams.par()( tau2_posindex + 3 );
+
+  //   double BVx = fitparams.par()( B_posindex + 1 );
+  //   double BVy = fitparams.par()( B_posindex + 2 );
+  //   double BVz = fitparams.par()( B_posindex + 3 );
+
+  //   // Scale factors 
+  //   // check if SF denominator is zero. These are cases in which the 3pi combination comes from the BV (thrown away after truth-matc)
+  //   double d1x = DV1x - BVx;
+  //   double d1y = DV1y - BVy;
+  //   double d1z = DV1z - BVz;
+  //   double d2x = DV2x - BVx;
+  //   double d2y = DV2y - BVy;
+  //   double d2z = DV2z - BVz;
+  //   double dx = BVx - PVx;
+  //   double dy = BVy - PVy;
+  //   double dz = BVz - PVz;
+
+  //   double eps = pow(10,-6);
+
+  //   if( ( abs(d1x) < eps ) || ( abs(d1y) < eps ) || ( abs(d1z) < eps ) || ( abs(d2x) < eps ) || ( abs(d2y) < eps ) || ( abs(d2z) < eps ) || ( abs(dx) < eps ) || ( abs(dy < eps) ) || ( abs(dz) < eps ) )
+  //   {
+  //     std::cout << "Denominator of SF is zero. Setting it to 1" << std::endl;
+  //     if( abs(d1x) < eps ){d1x = 1.;}
+  //     if( abs(d1y) < eps ){d1y = 1.;}
+  //     if( abs(d1z) < eps ){d1z = 1.;}
+  //     if( abs(d2x) < eps ){d2x = 1.;}
+  //     if( abs(d2y) < eps ){d2y = 1.;}
+  //     if( abs(d2z) < eps ){d2z = 1.;}
+  //     if( abs(dx) < eps ){dx = 1.;}
+  //     if( abs(dy) < eps ){dy = 1.;}
+  //     if( abs(dz) < eps ){dz = 1.;}
+  //   }
+
+  //   double L1x = Ptau1x/d1x;
+  //   double L1y = Ptau1y/d1y;
+  //   double L1z = Ptau1z/d1z;
+
+  //   double L2x = Ptau2x/d2x;
+  //   double L2y = Ptau2y/d2y;
+  //   double L2z = Ptau2z/d2z;
+
+  //   double Lx = Pbx/dx;
+  //   double Ly = Pby/dy;
+  //   double Lz = Pbz/dz;
+
+  //   // L1x - L1y
+  //   p.r( 1 ) = L1x - L1y;
+
+  //   p.H( 1, tau1_momindex + 1 ) = 1/d1x; // Ptau1x
+  //   p.H( 1, tau1_posindex + 1 ) = -Ptau1x/pow( d1x, 2 ); // DV1x
+  //   p.H( 1, B_posindex + 1 ) = Ptau1x/pow( d1x, 2 ); // BVx
+  //   p.H( 1, tau1_momindex + 2 ) = -1/d1y; // Ptau1y
+  //   p.H( 1, tau1_posindex + 2 ) = Ptau1y/pow( d1y, 2 ); // DV1y
+  //   p.H( 1, B_posindex + 2 ) = -Ptau1y/pow( d1y, 2 ); // BVy
+
+  //   // L1x - L1z
+  //   p.r( 2 ) = L1x - L1z;
+
+  //   p.H( 2, tau1_momindex + 1 ) = 1/d1x; // Ptau1x
+  //   p.H( 2, tau1_posindex + 1 ) = -Ptau1x/pow( d1x, 2 ); // DV1x
+  //   p.H( 2, B_posindex + 1 ) = Ptau1x/pow( d1x, 2 ); // BVx
+  //   p.H( 2, tau1_momindex + 3 ) = -1/d1z; // Ptau1z
+  //   p.H( 2, tau1_posindex + 3 ) = Ptau1z/pow( d1z, 2 ); // DV1z
+  //   p.H( 2, B_posindex + 3 ) = -Ptau1z/pow( d1z, 2 ); // BVz
+
+  //   // L2x - L2y
+  //   p.r( 3 ) = L2x - L2y;
+
+  //   p.H( 3, tau2_momindex + 1 ) = 1/d2x; // Ptau2x
+  //   p.H( 3, tau2_posindex + 1 ) = -Ptau2x/pow( d2x, 2 ); // DV2x
+  //   p.H( 3, B_posindex + 1 ) = Ptau2x/pow( d2x, 2 ); // BVx
+  //   p.H( 3, tau2_momindex + 2 ) = -1/d2y; // Ptau2y
+  //   p.H( 3, tau2_posindex + 2 ) = Ptau2y/pow( d2y, 2 ); // DV2y
+  //   p.H( 3, B_posindex + 2 ) = -Ptau2y/pow( d2y, 2 ); // BVy
+ 
+  //   // L2x - L2z
+  //   p.r( 4 ) = L2x - L2z;
+
+  //   p.H( 4, tau2_momindex + 1 ) = 1/d2x; // Ptau2x
+  //   p.H( 4, tau2_posindex + 1 ) = -Ptau2x/pow( d2x, 2 ); // DV2x
+  //   p.H( 4, B_posindex + 1 ) = Ptau2x/pow( d2x, 2 ); // BVx
+  //   p.H( 4, tau2_momindex + 3 ) = -1/d2z; // Ptau2z
+  //   p.H( 4, tau2_posindex + 3 ) = Ptau2z/pow( d2z, 2 ); // DV2z
+  //   p.H( 4, B_posindex + 3 ) = -Ptau2z/pow( d2z, 2 ); // BVz
+
+  //   // Lx - Ly
+  //   p.r( 5 ) = Lx - Ly;
+
+  //   p.H( 5, B_momindex + 1 ) = 1/dx; // Pbx
+  //   p.H( 5, B_posindex + 1 ) = -Pbx/pow( dx, 2 ); // BVx
+  //   p.H( 5, PV_posindex + 1 ) = Pbx/pow( dx, 2 ); // PVx
+  //   p.H( 5, B_momindex + 2 ) = -1/dy; // Pby
+  //   p.H( 5, B_posindex + 2 ) = Pby/pow( dy, 2 ); // BVy
+  //   p.H( 5, PV_posindex + 2 ) = -Pby/pow( dy, 2 ); // PVy
+
+  //   // Lx - Lz
+  //   p.r( 6 ) = Lx - Lz;
+
+  //   p.H( 6, B_momindex + 1 ) = 1/dx; // Pbx
+  //   p.H( 6, B_posindex + 1 ) = -Pbx/pow( dx, 2 ); // BVx
+  //   p.H( 6, PV_posindex + 1 ) = Pbx/pow( dx, 2 ); // PVx
+  //   p.H( 6, B_momindex + 3 ) = -1/dz; // Pbz
+  //   p.H( 6, B_posindex + 3 ) = Pbz/pow( dz, 2 ); // BVz
+  //   p.H( 6, PV_posindex + 3 ) = -Pbz/pow( dz, 2 ); // PVz
+    
+  //   return ErrCode::success;
+  // }
 
   ErrCode InternalParticle::projectConstraint( Constraint::Type type, const FitParams& fitparams,
                                                Projection& p ) const {
@@ -477,6 +638,8 @@ namespace DecayTreeFitter {
     if ( momIndex() >= 0 ) alist.push_back( Constraint( this, Constraint::kinematic, depth, 4 ) );
     // the geometric constraint
     if ( mother() && lenIndex() >= 0 ) alist.push_back( Constraint( this, Constraint::geometric, depth, 3, 3 ) );
+    // the scalefactor constraint (apply it only if it is a B+ meson)
+    //if ( (particle().particleID().pid() == 521) || (particle().particleID().pid() == -521) ) alist.push_back( Constraint( this, Constraint::scalefactor, depth, 6 ) );
     // the mass constraint. FIXME: move to ParticleBase
     if ( hasMassConstraint() ) alist.push_back( Constraint( this, Constraint::mass, depth, 1, 3 ) );
   }

@@ -13,6 +13,7 @@
 
 #include "ParticleBase.h"
 #include <vector>
+#include "Event/Particle.h" // added by Maria
 
 namespace DecayTreeFitter {
 
@@ -20,7 +21,7 @@ namespace DecayTreeFitter {
   public:
     InternalParticle( const LHCb::Particle& bc, const ParticleBase* mother, const Configuration& config );
 
-    int dim() const override { return mother() ? 8 : 7; }
+    int dim() const override { return mother() ? 8 : 7; } // default
 
     ErrCode initPar1( FitParams* ) override;
     ErrCode initPar2( FitParams* ) override;
@@ -30,7 +31,18 @@ namespace DecayTreeFitter {
     int         posIndex() const override { return index(); }
     int         lenIndex() const override { return mother() ? index() + 3 : -1; }
     int         momIndex() const override { return mother() ? index() + 4 : index() + 3; }
-    bool        hasEnergy() const override { return true; }
+    // bool        hasEnergy() const override { return true; } // default
+    bool hasEnergy() const override 
+    { 
+      if( (particle().particleID().pid() == 15) || (particle().particleID().pid() == -15) )
+      {
+        return false;
+      }
+      else 
+      {
+        return true;
+      }
+    }
     bool        hasPosition() const override { return true; }
     std::string parname( int index ) const override;
 

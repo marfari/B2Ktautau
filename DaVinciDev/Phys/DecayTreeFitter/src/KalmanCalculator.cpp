@@ -27,12 +27,16 @@ namespace DecayTreeFitter {
 
   ErrCode KalmanCalculator::init( const CLHEP::HepVector& value, const CLHEP::HepMatrix& G, const FitParams& fitparams,
                                   const CLHEP::HepSymMatrix* V, int weight ) {
+
     ErrCode status;
     m_nconstraints = value.num_row(); // dimension of the constraint
     m_nparameters  = fitparams.dim(); // dimension of the state
 
     int valdim  = value.num_row();           // dimension of the constraint
     int statdim = fitparams.par().num_row(); // dimension of the state
+
+    std::cout << " num_constraints = " << valdim << std::endl;
+    std::cout << " num_parameters =  " << statdim << std::endl; 
 
 #ifdef VTK_BOUNDSCHECKING
     assert( G.num_row() == valdim && G.num_col() == statdim && ( !V || V->num_row() == valdim ) );
@@ -55,7 +59,6 @@ namespace DecayTreeFitter {
             m_matrixCGT.CLHEP::HepMatrix::operator()( row, col ) += C.fast( row, k ) * tmp;
         }
 #endif
-
     // calculate the error in the predicted residual R = G*C*GT + V
     // slow:
 #ifdef SLOWBUTSAFE
@@ -74,6 +77,7 @@ namespace DecayTreeFitter {
           for ( int col = 1; col <= row; ++col )
             m_matrixRinv.fast( row, col ) += tmp * m_matrixCGT.CLHEP::HepMatrix::operator()( k, col );
 #endif
+
     m_matrixR = m_matrixRinv;
     m_matrixRinv.invert( m_ierr );
     if ( m_ierr ) {

@@ -51,7 +51,7 @@ namespace DecayTreeFitter {
     // the order of the constraints is a rather delicate thing
     // std::sort(m_constraintlist.begin(),m_constraintlist.end()) ;
 
-    // merge all non-lineair constraints
+    // merge all non-linear constraints
     m_mergedconstraintlist.clear();
     if ( false ) {
       m_mergedconstraint = MergedConstraint();

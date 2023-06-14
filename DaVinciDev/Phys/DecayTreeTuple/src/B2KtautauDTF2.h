@@ -10,7 +10,7 @@
 \*****************************************************************************/
 #pragma once
 
-/**@class TupleToolKTauTauDTFSequential
+/**@class B2KtautauDTF2
  * -  History : this tool was written during the study of the b->JpsiX lifetimes. It was not very generic.
  *    This re-implmentation is hopefully more generic, although it requires several instances of the tool
  *    to achive the same result.
@@ -40,23 +40,23 @@
  tuple = DecayTreeTuple("MyTuple")
  tuple.ToolList +=  ["TupleToolGeometry",  "TupleToolKinematic", "TupleToolPrimaries", "TupleToolEventInfo" ]
  tuple.Branches = { "B"  : "["+bh+"]cc : "+decay.replace("^","") }
- from Configurables import TupleToolKTauTauDTFSequential
- tuple.B.ToolList +=  [ "TupleToolKTauTauDTFSequential/Fit",            # just a refit
- "TupleToolKTauTauDTFSequential/MassFit",        # fit with J/psi mass constraint
- "TupleToolKTauTauDTFSequential/PVFit" ]         # fit with all constraints I can think of
+ from Configurables import B2KtautauDTF2
+ tuple.B.ToolList +=  [ "B2KtautauDTF2/Fit",            # just a refit
+ "B2KtautauDTF2/MassFit",        # fit with J/psi mass constraint
+ "B2KtautauDTF2/PVFit" ]         # fit with all constraints I can think of
 
- tuple.B.addTool(TupleToolKTauTauDTFSequential("MassFit"))
+ tuple.B.addTool(B2KtautauDTF2("MassFit"))
  tuple.B.MassFit.constrainToOriginVertex = False
  tuple.B.MassFit.daughtersToConstrain = [ "J/psi(1S)" ]
 
- tuple.B.addTool(TupleToolKTauTauDTFSequential("PVFit"))
+ tuple.B.addTool(B2KtautauDTF2("PVFit"))
  tuple.B.PVFit.Verbose = True
  tuple.B.PVFit.constrainToOriginVertex = True
  tuple.B.PVFit.daughtersToConstrain = [ "J/psi(1S)", "KS0" ]
 
  # now two that check for reflections
- tuple.B.ToolList +=  ["TupleToolKTauTauDTFSequential/SubLambda", "TupleToolKTauTauDTFSequential/SubLambdabar" ]
- subDTF = TupleToolKTauTauDTFSequential("SubLambda", Verbose=True,
+ tuple.B.ToolList +=  ["B2KtautauDTF2/SubLambda", "B2KtautauDTF2/SubLambdabar" ]
+ subDTF = B2KtautauDTF2("SubLambda", Verbose=True,
  daughtersToConstrain = [ "J/psi(1S)" ],
  constrainToOriginVertex=True,
  Substitutions={ 'Beauty -> Meson (Strange -> ^pi+ pi-)': 'p+' })
@@ -140,12 +140,12 @@ namespace DecayTreeFitter
 }
 
 struct IDVAlgorithm;
-/** @class TupleToolKTauTauDTFSequential TupleToolKTauTauDTFSequential.h
+/** @class B2KtautauDTF2 B2KtautauDTF2.h
  *
  * Yasmine Amhis and Matt Needham
  * 30-10-10
  */
-class TupleToolKTauTauDTFSequential : public TupleToolBase, virtual public IParticleTupleTool
+class B2KtautauDTF2 : public TupleToolBase, virtual public IParticleTupleTool
 {
 
 private:
@@ -156,11 +156,11 @@ private:
 public:
 
   /// Standard constructor
-  TupleToolKTauTauDTFSequential( const std::string& type,
+  B2KtautauDTF2( const std::string& type,
                             const std::string& name,
                             const IInterface* parent);
 
-  ~TupleToolKTauTauDTFSequential( ) = default; ///< Destructor
+  ~B2KtautauDTF2( ) = default; ///< Destructor
 
   StatusCode initialize() override;
 
@@ -173,7 +173,7 @@ public:
 
 private:
 
-  ///  Fill information for a given origin vertex
+  ///  Fill inforation for a given origin vertex
   StatusCode fit(DecayTreeFitter::Fitter& fitter,
                  const LHCb::Particle* P,
                  const LHCb::VertexBase* pv,
@@ -197,11 +197,6 @@ private:
                           std::vector<float> chisq_iters,
                           const std::string& prefix,
                           Tuples::Tuple& tuple ) const;
-
-  //Added by AV
-  StatusCode fillEndVtx(const std::string& prefix, 
-                        TupleMap& tMap, 
-                        Gaudi::XYZPoint vtx) const;
 
   ///  Fill lifetime information
   ///  Fill fit inforation for top decay
@@ -328,15 +323,12 @@ private:
   std::vector<LHCb::ParticleID> m_massConstraintsPids;
 
   bool m_constrainToOriginVertex;   ///< Constrain to Origin Vertex for lifetime
-  bool m_fillIterInfo; // Added by AV
+  int m_strategy;
   std::vector<int> m_v_ids;
   int m_maxNiter;
   int m_maxndiverging;
   double m_dChisqQuit;
-  bool m_doNuPZFix;
-  double m_tauMass;
-  double m_order; // added by Maria
-  
+
   LHCb::IParticlePropertySvc* m_ppSvc = nullptr;
   IParticleDescendants* m_particleDescendants = nullptr;
 
