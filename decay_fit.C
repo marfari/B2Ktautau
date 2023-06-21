@@ -5,13 +5,17 @@ ROOT::Math::XYZPoint makeTransformation_point(ROOT::Math::XYZVector Pk, ROOT::Ma
 ROOT::Math::XYZVector makeTransformation_vec(ROOT::Math::XYZVector Pk, ROOT::Math::XYZPoint refPoint, ROOT::Math::XYZVector theVector, bool invFlag);
 
 // Global variables
-int dimM = 24; // number of known parameters
+int dimM = 23; // number of known parameters
 int dimX = 23; // number of unkown parameters
 
 TVectorD m( dimM );
-TMatrixD V( dimM, dimM );
+TMatrixDSym V( dimM );
+TMatrixDSym W( dimM );
+TVectorD x0( dimX );
+Double_t RPz;
 
 TVectorD x_initial_estimate( TVectorD m );
+
 TVectorD h( TVectorD x );
 TMatrixD dh_dx( TVectorD x );
 
@@ -32,15 +36,21 @@ void decay_fit()
     UInt_t num_entries = t->GetEntries(); 
     Double_t m_vars[dimM];
     Double_t V_vars[dimM][dimM];
+    Double_t x0_vars[dimX];
 
     for(int i = 1; i <= dimM; i++)
     {
         t->SetBranchAddress(Form("df_m_%i",i), &m_vars[i-1] );
         for(int j = 1; j <= dimM; j++)
         {
-            t->SetBranchAddress(Form("df_V_%i%i",i,j), &V_vars[i-1][j-1]);
+            t->SetBranchAddress(Form("df_V_%i_%i",i,j), &V_vars[i-1][j-1]);
         }
     }
+    for(int i = 1; i <= dimX; i++)
+    {
+      t->SetBranchAddress(Form("df_x0_%i",i), &x0_vars[i-1] );
+    }
+    t->SetBranchAddress("df_RPz", &RPz);
 
     TFile* fout = new TFile("/panfs/felician/B2Ktautau/ROOT_Sim/2018/decay_fit_tuple_2018.root", "RECREATE");
     TTree* tout = new TTree("DecayTree", "DecayTree");
@@ -69,35 +79,44 @@ void decay_fit()
       for(int i = 0; i < dimM; i++)
       {
           m(i) = m_vars[i];
+
           for(int j = 0; j < dimM; j++)
           {
             V(i,j) = V_vars[i][j];
           }
+      }  
+      for(int i = 0; i < dimX; i++)
+      {
+        x0(i) = x0_vars[i];
       }
-      V(19,19) = pow(10,-5); // z-component of the reference point is fixed; its error is zero; i'm setting it to a small non-zero number
 
-      // 2) Get an initial estimate for x = {BV, PB, ptau1, pnu1, ptau2, pnu2, L1, L2, L, LK}
-      TVectorD x0 = x_initial_estimate(m);
+      // swap pZ with E
 
-      // minimise(x0);
-  
-      ROOT::Math::Minimizer* min = ROOT::Math::Factory::CreateMinimizer("Minuit2");    
+      W = V;
+      W.Invert();
+
+      ROOT::Math::Minimizer* min = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad");    
       ROOT::Math::Functor func(&chisquare, dimX);
 
       min->SetMaxIterations(10000000);  
       min->SetPrintLevel(2);
-      min->SetPrecision(pow(10,-20));
+      min->SetPrecision(pow(10,-15));
       
       min->SetFunction(func);
 
-      double x0_values[dimX];
       double x0_err[dimX];
       for(int i = 0; i < dimX; i++)
       {
-        x0_values[i] = x0(i);
-        x0_err[i] = 0.1*abs(x0_values[i]);
+        if(x0_vars[i] == 0)
+        {
+          x0_err[i] = 0.1*10000;
+        }
+        else
+        {
+          x0_err[i] = 0.1*abs(x0_vars[i]);
+        }
 
-        min->SetVariable(i, Form("x_%i",i), x0_values[i], x0_err[i]);
+        min->SetVariable(i, Form("x_%i",i), x0_vars[i], x0_err[i]);
         // min->SetVariableLimits(i, x_min[i], x_max[i]);
       }
 
@@ -125,7 +144,7 @@ void decay_fit()
         MB = -sqrt( pB_min.Mag2() - pow(EB_min,2) );
       }
 
-      cout << "initial chi2 = " << chisquare(x0_values) << endl;
+      cout << "initial chi2 = " << chisquare(x0_vars) << endl;
       cout << "final chi2 = " << min->MinValue() << endl;
       cout << "MB = " << MB << endl;
       cout << "Status = " << status << endl;
@@ -137,51 +156,6 @@ void decay_fit()
     fout->Close();
 }
 
-// void minimise( TVectorD x )
-// {
-//   TVectorD first(dimX);
-//   TMatrixD second(dimX,dimX);
-//   TMatrixD second_inverse(dimX,dimX);
-
-//   TVectorD dx(dimX);
-//   TVectorD x_new(dimX);
-//   int max_iterations = 1000;
-
-//   TVectorD x0 = x;
-
-//   for(int i = 0; i < max_iterations; i++)
-//   {
-
-//     first = first_chi2_derivative(x);
-//     second = second_chi2_derivative(x);
-//     second_inverse = second;
-//     second_inverse.Invert();
-
-//     dx = second_inverse*first;
-
-//     x_new = x - dx;
-
-//     cout << chisquare(x_new) << endl;
-
-//     if( abs(chisquare(x) - chisquare(x_new)) < 0.001 )
-//     {
-//       break;
-//     }
-//     else
-//     {
-//       x = x_new;
-//     }
-
-//     if(i == max_iterations-1)
-//     {
-//       cout << "Maximum number of iterations has been reached. No convergence." << endl;
-//     }
-//   }
-
-//   cout << "Initial chi2 = " << chisquare(x0) << endl;
-//   cout << "Final chi2 = " << chisquare(x_new) << endl;
-// }
-
 double chisquare( const double* x_values )
 {
     TVectorD x(dimX);
@@ -192,14 +166,87 @@ double chisquare( const double* x_values )
 
     TVectorD hx = h( x );
 
-    TMatrixD W = V;
-    W.Invert();
+    TVectorD c( dimM );
+    for(int i = 0; i < dimM; i++)
+    {
+      for(int j = 0; j < dimM; j++)
+      {
+        c(i) += W(i,j)*hx(j);
+      }
+    }
+    
+    // TVectorD c = W*(m - hx);
 
-    //TVectorD c = W*(m - hx);
+    double chi2;
+    for(int i = 0; i < dimM; i++)
+    {
+      chi2 += ( m(i) - hx(i) )*c(i);
+    }
 
-    double chi2 = (m-hx)*(W*(m - hx));
+    //double chi2 = (m-hx)*(W*(m - hx));
     return chi2;
 }
+
+TVectorD h( TVectorD x )
+{
+  // h(x)
+  ROOT::Math::XYZPoint BV( x(0), x(1), x(2) );
+  ROOT::Math::XYZVector pB( x(3), x(4), x(5) );
+  double EB = x(6);
+  ROOT::Math::XYZVector ptau1( x(7), x(8), x(9) );
+  ROOT::Math::XYZVector pnu1( x(10), x(11), x(12) );
+  ROOT::Math::XYZVector ptau2( x(13), x(14), x(15) );
+  ROOT::Math::XYZVector pnu2( x(16), x(17), x(18) );
+  double L1 = x(19);
+  double L2 = x(20);
+  double L = x(21);
+  double LK = x(22);
+
+  double Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
+  double Enu1 = sqrt( pnu1.Mag2() );
+  double Etau2 = sqrt( pow(mtau,2) + ptau2.Mag2() );
+  double Enu2 = sqrt( pnu2.Mag2() );
+
+  ROOT::Math::XYZPoint PV( BV.x() - L*pB.x(), BV.y() - L*pB.y(), BV.z() - L*pB.z() );
+  ROOT::Math::XYZPoint DV1( BV.x() + L1*ptau1.x(), BV.y() + L1*ptau1.y(), BV.z() + L1*ptau1.z() );
+  ROOT::Math::XYZVector p3pi1( ptau1.x() - pnu1.x(), ptau1.y() - pnu1.y(), ptau1.z() - pnu1.z() );
+  double E3pi1 = Etau1 - Enu1;
+  ROOT::Math::XYZPoint DV2( BV.x() + L2*ptau2.x(), BV.y() + L2*ptau2.y(), BV.z() + L2*ptau2.z() );
+  ROOT::Math::XYZVector p3pi2( ptau2.x() - pnu2.x(), ptau2.y() - pnu2.y(), ptau2.z() - pnu2.z() );
+  double E3pi2 = Etau2 - Enu2;
+  ROOT::Math::XYZPoint RP( BV.x() - LK*( pB.x() - ptau1.x() - ptau2.x() ), BV.y() - LK*( pB.y() - ptau1.y() - ptau2.y() ), RPz );
+  ROOT::Math::XYZVector pK( pB.x() - ptau1.x() - ptau2.x(), pB.y() - ptau1.y() - ptau2.y(), pB.z() - ptau1.z() - ptau2.z() );
+  double EK = EB - Etau1 - Etau2;
+
+  TVectorD h( dimM );
+  h(0) = PV.x();
+  h(1) = PV.y();
+  h(2) = PV.z();
+  h(3) = DV1.x();
+  h(4) = DV1.y();
+  h(5) = DV1.z();
+  h(6) = p3pi1.x();
+  h(7) = p3pi1.y();
+  h(8) = p3pi1.z();
+  h(9) = E3pi1;
+  h(10) = DV2.x();
+  h(11) = DV2.y();
+  h(12) = DV2.z();
+  h(13) = p3pi2.x();
+  h(14) = p3pi2.y();
+  h(15) = p3pi2.z();
+  h(16) = E3pi2;
+  h(17) = RP.x();
+  h(18) = RP.y();
+  // h(19) = RP.z();
+  h(19) = pK.x();
+  h(20) = pK.y();
+  h(21) = pK.z();
+  h(22) = EK;
+
+  return h;
+}
+
 
 TMatrixD second_chi2_derivative( TVectorD x )
 {
@@ -209,7 +256,7 @@ TMatrixD second_chi2_derivative( TVectorD x )
   TMatrixD H_transpose = H;
   H_transpose.T();
 
-  TMatrixD V_inverse = V;
+  TMatrixDSym V_inverse = V;
   V_inverse.Invert();
 
   TMatrixD second_derivative = H_transpose*V_inverse*H;
@@ -227,7 +274,7 @@ TVectorD first_chi2_derivative( TVectorD x )
   TMatrixD H_transpose = H;
   H_transpose.T();
 
-  TMatrixD V_inverse = V;
+  TMatrixDSym V_inverse = V;
   V_inverse.Invert();
 
   TVectorD first_derivative = H_transpose*V_inverse*(m - hx);
@@ -312,66 +359,6 @@ TMatrixD dh_dx( TVectorD x )
     H(23,i) = h24[i];
   }
   return H;
-}
-
-TVectorD h( TVectorD x )
-{
-  // h(x)
-  ROOT::Math::XYZPoint BV( x(0), x(1), x(2) );
-  ROOT::Math::XYZVector pB( x(3), x(4), x(5) );
-  double EB = x(6);
-  ROOT::Math::XYZVector ptau1( x(7), x(8), x(9) );
-  ROOT::Math::XYZVector pnu1( x(10), x(11), x(12) );
-  ROOT::Math::XYZVector ptau2( x(13), x(14), x(15) );
-  ROOT::Math::XYZVector pnu2( x(16), x(17), x(18) );
-  double L1 = x(19);
-  double L2 = x(20);
-  double L = x(21);
-  double LK = x(22);
-
-  double Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
-  double Enu1 = sqrt( pnu1.Mag2() );
-  double Etau2 = sqrt( pow(mtau,2) + ptau2.Mag2() );
-  double Enu2 = sqrt( pnu2.Mag2() );
-
-  ROOT::Math::XYZPoint PV( BV.x() - L*pB.x(), BV.y() - L*pB.y(), BV.z() - L*pB.z() );
-  ROOT::Math::XYZPoint DV1( BV.x() + L1*ptau1.x(), BV.y() + L1*ptau1.y(), BV.z() + L1*ptau1.z() );
-  ROOT::Math::XYZVector p3pi1( ptau1.x() - pnu1.x(), ptau1.y() - pnu1.y(), ptau1.z() - pnu1.z() );
-  double E3pi1 = Etau1 - Enu1;
-  ROOT::Math::XYZPoint DV2( BV.x() + L2*ptau2.x(), BV.y() + L2*ptau2.y(), BV.z() + L2*ptau2.z() );
-  ROOT::Math::XYZVector p3pi2( ptau2.x() - pnu2.x(), ptau2.y() - pnu2.y(), ptau2.z() - pnu2.z() );
-  double E3pi2 = Etau2 - Enu2;
-  ROOT::Math::XYZPoint RP( BV.x() - LK*( pB.x() - ptau1.x() - ptau2.x() ), BV.y() - LK*( pB.y() - ptau1.y() - ptau2.y() ), BV.z() - LK*( pB.z() - ptau1.z() - ptau2.z() ) );
-  ROOT::Math::XYZVector pK( pB.x() - ptau1.x() - ptau2.x(), pB.y() - ptau1.y() - ptau2.y(), pB.z() - ptau1.z() - ptau2.z() );
-  double EK = EB - Etau1 - Etau2;
-
-  TVectorD h( dimM );
-  h(0) = PV.x();
-  h(1) = PV.y();
-  h(2) = PV.z();
-  h(3) = DV1.x();
-  h(4) = DV1.y();
-  h(5) = DV1.z();
-  h(6) = p3pi1.x();
-  h(7) = p3pi1.y();
-  h(8) = p3pi1.z();
-  h(9) = E3pi1;
-  h(10) = DV2.x();
-  h(11) = DV2.y();
-  h(12) = DV2.z();
-  h(13) = p3pi2.x();
-  h(14) = p3pi2.y();
-  h(15) = p3pi2.z();
-  h(16) = E3pi2;
-  h(17) = RP.x();
-  h(18) = RP.y();
-  h(19) = RP.z();
-  h(20) = pK.x();
-  h(21) = pK.y();
-  h(22) = pK.z();
-  h(23) = EK;
-
-  return h;
 }
 
 TVectorD x_initial_estimate( TVectorD m )
@@ -546,3 +533,48 @@ ROOT::Math::XYZPoint makeTransformation_point(ROOT::Math::XYZVector Pk, ROOT::Ma
   
   return thePoint_t;
 }
+
+// void minimise( TVectorD x )
+// {
+//   TVectorD first(dimX);
+//   TMatrixD second(dimX,dimX);
+//   TMatrixD second_inverse(dimX,dimX);
+
+//   TVectorD dx(dimX);
+//   TVectorD x_new(dimX);
+//   int max_iterations = 1000;
+
+//   TVectorD x0 = x;
+
+//   for(int i = 0; i < max_iterations; i++)
+//   {
+
+//     first = first_chi2_derivative(x);
+//     second = second_chi2_derivative(x);
+//     second_inverse = second;
+//     second_inverse.Invert();
+
+//     dx = second_inverse*first;
+
+//     x_new = x - dx;
+
+//     cout << chisquare(x_new) << endl;
+
+//     if( abs(chisquare(x) - chisquare(x_new)) < 0.001 )
+//     {
+//       break;
+//     }
+//     else
+//     {
+//       x = x_new;
+//     }
+
+//     if(i == max_iterations-1)
+//     {
+//       cout << "Maximum number of iterations has been reached. No convergence." << endl;
+//     }
+//   }
+
+//   cout << "Initial chi2 = " << chisquare(x0) << endl;
+//   cout << "Final chi2 = " << chisquare(x_new) << endl;
+// }
