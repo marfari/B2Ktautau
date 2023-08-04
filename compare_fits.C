@@ -12,13 +12,13 @@ void compare_fits()
     // TTree with results from the standalone fitter
     TFileCollection* fc1 = new TFileCollection("MC", "MC", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Component_-1/fit_results.txt");
     TChain* t1 = new TChain("DecayTree");
-    t1->AddFileInfoList((TCollection*)fc2->GetList());
+    t1->AddFileInfoList((TCollection*)fc1->GetList());
     t->AddFriend(t1);
 
     TH1D* h1_mb = new TH1D("h1_mb", "h1_mb", 100, 4000, 8000);
     TH1D* h2_mb = new TH1D("h2_mb", "h2_mb", 100, 4000, 8000);
 
-    t->Draw("Bp_ConsBp_seq_12_M >> h1_mb",passDTF);
+    t->Draw("Bp_dtf_12_M >> h1_mb",passDTF);
     t->Draw("df_Bp_M >> h2_mb", df_status);
 
     gStyle->SetOptStat(0);
@@ -71,7 +71,7 @@ void compare_fits()
     // B+ mass error
     TH1D* h1_mberr = new TH1D("h1_mberr", "h1_mberr", 100, 0, 5000);
     TH1D* h2_mberr = new TH1D("h2_mberr", "h2_mberr", 100, 0, 5000);
-    t->Draw("Bp_ConsBp_seq_12_MERR >> h1_mberr",passDTF);
+    t->Draw("Bp_dtf_12_MERR >> h1_mberr",passDTF);
     t->Draw("df_Bp_MERR >> h2_mberr", df_status);
 
     TCanvas c1;
@@ -99,7 +99,7 @@ void compare_fits()
     gStyle->SetOptStat(1);
     TH1D* h1_pull = new TH1D("h1_pull", "h1_pull", 100, -10, 10);
     TH1D* h2_pull = new TH1D("h2_pull", "h2_pull", 100, -10, 10);
-    t->Draw("(Bp_ConsBp_seq_12_M-5279)/Bp_ConsBp_seq_12_MERR >> h1_pull",passDTF);
+    t->Draw("(Bp_dtf_12_M-5279)/Bp_dtf_12_MERR >> h1_pull",passDTF);
     t->Draw("(df_Bp_M-5279)/df_Bp_MERR >> h2_pull", df_status);
 
     TCanvas c2;
@@ -127,7 +127,7 @@ void compare_fits()
     // Bias in antineutrino PZ
     TH1D* h1_bias1 = new TH1D("h1_bias1", "h1_bias1", 100, -100000, 100000);
     TH1D* h2_bias1 = new TH1D("h2_bias1", "h2_bias1", 100, -100000, 100000);
-    t->Draw("Bp_ConsBp_seq_12_tauminus_nu_tau_PZ - (taup_TRUEP_Z - taup_pi1_TRUEP_Z - taup_pi2_TRUEP_Z - taup_pi3_TRUEP_Z) >> h1_bias1",passDTF);
+    t->Draw("Bp_dtf_12_tauminus_nu_tau_PZ - (taup_TRUEP_Z - taup_pi1_TRUEP_Z - taup_pi2_TRUEP_Z - taup_pi3_TRUEP_Z) >> h1_bias1",passDTF);
     t->Draw("df_antinutau_PZ - (taup_TRUEP_Z - taup_pi1_TRUEP_Z - taup_pi2_TRUEP_Z - taup_pi3_TRUEP_Z) >> h2_bias1", df_status);
 
     TCanvas c3;
@@ -154,7 +154,7 @@ void compare_fits()
     // Bias in neutrino PZ
     TH1D* h1_bias2 = new TH1D("h1_bias2", "h1_bias2", 100, -100000, 100000);
     TH1D* h2_bias2 = new TH1D("h2_bias2", "h2_bias2", 100, -100000, 100000);
-    t->Draw("Bp_ConsBp_seq_12_tauminus_0_nu_tau_PZ - (taum_TRUEP_Z - taum_pi1_TRUEP_Z - taum_pi2_TRUEP_Z - taum_pi3_TRUEP_Z) >> h1_bias2",passDTF);
+    t->Draw("Bp_dtf_12_tauminus_0_nu_tau_PZ - (taum_TRUEP_Z - taum_pi1_TRUEP_Z - taum_pi2_TRUEP_Z - taum_pi3_TRUEP_Z) >> h1_bias2",passDTF);
     t->Draw("df_nutau_PZ - (taum_TRUEP_Z - taum_pi1_TRUEP_Z - taum_pi2_TRUEP_Z - taum_pi3_TRUEP_Z) >> h2_bias2", df_status);
 
     TCanvas c4;
@@ -182,7 +182,7 @@ void compare_fits()
     TH1D* h1_taup = new TH1D("h1_mtaup", "h1_mtaup", 100, 1600, 1900);
     TH1D* h2_taup = new TH1D("h2_mtaup", "h2_mtaup", 100, 1600, 1900);
 
-    t->Draw("Bp_ConsBp_seq_12_tauminus_M >> h1_mtaup",passDTF);
+    t->Draw("Bp_dtf_12_tauminus_M >> h1_mtaup",passDTF);
     t->Draw("df_taup_M  >> h2_mtaup", df_status);
 
     TCanvas cs5;
@@ -210,7 +210,7 @@ void compare_fits()
     TH1D* h1_E1 = new TH1D("h1_E1", "h1_E1", 100, -500, 500);
     TH1D* h2_E1 = new TH1D("h2_E1", "h2_E1", 100, -500, 500);
 
-    t->Draw("Bp_ConsBp_seq_12_tauminus_PE - Bp_ConsBp_seq_12_tauminus_piplus_PE - Bp_ConsBp_seq_12_tauminus_piplus_0_PE - Bp_ConsBp_seq_12_tauminus_piplus_1_PE - Bp_ConsBp_seq_12_tauminus_nu_tau_PE >> h1_E1",passDTF);
+    t->Draw("Bp_dtf_12_tauminus_PE - Bp_dtf_12_tauminus_piplus_PE - Bp_dtf_12_tauminus_piplus_0_PE - Bp_dtf_12_tauminus_piplus_1_PE - Bp_dtf_12_tauminus_nu_tau_PE >> h1_E1",passDTF);
     t->Draw(" sqrt( pow(1776.86,2) + pow(df_taup_PX,2) + pow(df_taup_PY,2) + pow(df_taup_PZ,2) ) - taup_pi1_PE - taup_pi2_PE - taup_pi3_PE - sqrt( pow(df_antinutau_PX,2) + pow(df_antinutau_PY,2) + pow(df_antinutau_PZ,2) ) >> h2_E1", df_status);
 
     TCanvas c5;
@@ -238,7 +238,7 @@ void compare_fits()
     TH1D* h1_E2 = new TH1D("h1_E2", "h1_E2", 100, -500, 500);
     TH1D* h2_E2 = new TH1D("h2_E2", "h2_E2", 100, -500, 500);
 
-    t->Draw("Bp_ConsBp_seq_12_tauminus_0_PE - Bp_ConsBp_seq_12_tauminus_0_piplus_PE - Bp_ConsBp_seq_12_tauminus_0_piplus_0_PE - Bp_ConsBp_seq_12_tauminus_0_piplus_1_PE - Bp_ConsBp_seq_12_tauminus_0_nu_tau_PE >> h1_E2",passDTF);
+    t->Draw("Bp_dtf_12_tauminus_0_PE - Bp_dtf_12_tauminus_0_piplus_PE - Bp_dtf_12_tauminus_0_piplus_0_PE - Bp_dtf_12_tauminus_0_piplus_1_PE - Bp_dtf_12_tauminus_0_nu_tau_PE >> h1_E2",passDTF);
     t->Draw(" sqrt( pow(1776.86,2) + pow(df_taum_PX,2) + pow(df_taum_PY,2) + pow(df_taum_PZ,2) ) - taum_pi1_PE - taum_pi2_PE - taum_pi3_PE - sqrt( pow(df_nutau_PX,2) + pow(df_nutau_PY,2) + pow(df_nutau_PZ,2) ) >> h2_E2", df_status);
 
     TCanvas c6;
@@ -266,7 +266,7 @@ void compare_fits()
     TH1D* h1_E = new TH1D("h1_E", "h1_E", 100, -500, 500);
     TH1D* h2_E = new TH1D("h2_E", "h2_E", 100, -500, 500);
 
-    t->Draw("Bp_ConsBp_seq_12_PE - Bp_ConsBp_seq_12_tauminus_PE - Bp_ConsBp_seq_12_tauminus_0_PE - Kp_PE >> h1_E",passDTF);
+    t->Draw("Bp_dtf_12_PE - Bp_dtf_12_tauminus_PE - Bp_dtf_12_tauminus_0_PE - Kp_PE >> h1_E",passDTF);
     t->Draw(" sqrt( pow(df_Bp_M,2) + pow(df_Bp_PX,2) + pow(df_Bp_PY,2) + pow(df_Bp_PZ,2) ) - sqrt( pow(1776.86,2) + pow(df_taum_PX,2) + pow(df_taum_PY,2) + pow(df_taum_PZ,2) ) - sqrt( pow(1776.86,2) + pow(df_taup_PX,2) + pow(df_taup_PY,2) + pow(df_taup_PZ,2) ) - Kp_PE  >> h2_E", df_status);
 
     TCanvas c7;
@@ -298,9 +298,9 @@ void compare_fits()
     TH1D* h1_P1z = new TH1D("h1_P1z", "h1_P1z", 100, -10, 10);
     TH1D* h2_P1z = new TH1D("h2_P1z", "h2_P1z", 100, -10, 10);
 
-    t->Draw("Bp_ConsBp_seq_12_tauminus_PX - Bp_ConsBp_seq_12_tauminus_piplus_PX - Bp_ConsBp_seq_12_tauminus_piplus_0_PX - Bp_ConsBp_seq_12_tauminus_piplus_1_PX - Bp_ConsBp_seq_12_tauminus_nu_tau_PX >> h1_P1x",passDTF);
-    t->Draw("Bp_ConsBp_seq_12_tauminus_PY - Bp_ConsBp_seq_12_tauminus_piplus_PY - Bp_ConsBp_seq_12_tauminus_piplus_0_PY - Bp_ConsBp_seq_12_tauminus_piplus_1_PY - Bp_ConsBp_seq_12_tauminus_nu_tau_PY >> h1_P1y",passDTF);
-    t->Draw("Bp_ConsBp_seq_12_tauminus_PZ - Bp_ConsBp_seq_12_tauminus_piplus_PZ - Bp_ConsBp_seq_12_tauminus_piplus_0_PZ - Bp_ConsBp_seq_12_tauminus_piplus_1_PZ - Bp_ConsBp_seq_12_tauminus_nu_tau_PZ >> h1_P1z",passDTF);
+    t->Draw("Bp_dtf_12_tauminus_PX - Bp_dtf_12_tauminus_piplus_PX - Bp_dtf_12_tauminus_piplus_0_PX - Bp_dtf_12_tauminus_piplus_1_PX - Bp_dtf_12_tauminus_nu_tau_PX >> h1_P1x",passDTF);
+    t->Draw("Bp_dtf_12_tauminus_PY - Bp_dtf_12_tauminus_piplus_PY - Bp_dtf_12_tauminus_piplus_0_PY - Bp_dtf_12_tauminus_piplus_1_PY - Bp_dtf_12_tauminus_nu_tau_PY >> h1_P1y",passDTF);
+    t->Draw("Bp_dtf_12_tauminus_PZ - Bp_dtf_12_tauminus_piplus_PZ - Bp_dtf_12_tauminus_piplus_0_PZ - Bp_dtf_12_tauminus_piplus_1_PZ - Bp_dtf_12_tauminus_nu_tau_PZ >> h1_P1z",passDTF);
 
     t->Draw("df_taup_PX - df_m_7 - df_m_10 - df_m_13 - df_antinutau_PX  >> h2_P1x", df_status);
     t->Draw("df_taup_PY - df_m_8 - df_m_11 - df_m_14 - df_antinutau_PY  >> h2_P1y", df_status);
@@ -377,9 +377,9 @@ void compare_fits()
     TH1D* h1_P2z = new TH1D("h1_P2z", "h1_P2z", 100, -10, 10);
     TH1D* h2_P2z = new TH1D("h2_P2z", "h2_P2z", 100, -10, 10);
 
-    t->Draw("Bp_ConsBp_seq_12_tauminus_0_PX - Bp_ConsBp_seq_12_tauminus_0_piplus_PX - Bp_ConsBp_seq_12_tauminus_0_piplus_0_PX - Bp_ConsBp_seq_12_tauminus_0_piplus_1_PX - Bp_ConsBp_seq_12_tauminus_0_nu_tau_PX >> h1_P2x",passDTF);
-    t->Draw("Bp_ConsBp_seq_12_tauminus_0_PY - Bp_ConsBp_seq_12_tauminus_0_piplus_PY - Bp_ConsBp_seq_12_tauminus_0_piplus_0_PY - Bp_ConsBp_seq_12_tauminus_0_piplus_1_PY - Bp_ConsBp_seq_12_tauminus_0_nu_tau_PY >> h1_P2y",passDTF);
-    t->Draw("Bp_ConsBp_seq_12_tauminus_0_PZ - Bp_ConsBp_seq_12_tauminus_0_piplus_PZ - Bp_ConsBp_seq_12_tauminus_0_piplus_0_PZ - Bp_ConsBp_seq_12_tauminus_0_piplus_1_PZ - Bp_ConsBp_seq_12_tauminus_0_nu_tau_PZ >> h1_P2z",passDTF);
+    t->Draw("Bp_dtf_12_tauminus_0_PX - Bp_dtf_12_tauminus_0_piplus_PX - Bp_dtf_12_tauminus_0_piplus_0_PX - Bp_dtf_12_tauminus_0_piplus_1_PX - Bp_dtf_12_tauminus_0_nu_tau_PX >> h1_P2x",passDTF);
+    t->Draw("Bp_dtf_12_tauminus_0_PY - Bp_dtf_12_tauminus_0_piplus_PY - Bp_dtf_12_tauminus_0_piplus_0_PY - Bp_dtf_12_tauminus_0_piplus_1_PY - Bp_dtf_12_tauminus_0_nu_tau_PY >> h1_P2y",passDTF);
+    t->Draw("Bp_dtf_12_tauminus_0_PZ - Bp_dtf_12_tauminus_0_piplus_PZ - Bp_dtf_12_tauminus_0_piplus_0_PZ - Bp_dtf_12_tauminus_0_piplus_1_PZ - Bp_dtf_12_tauminus_0_nu_tau_PZ >> h1_P2z",passDTF);
 
     t->Draw("df_taum_PX - df_m_19 - df_m_22 - df_m_25 - df_nutau_PX  >> h2_P2x", df_status);
     t->Draw("df_taum_PY - df_m_20 - df_m_23 - df_m_26 - df_nutau_PY  >> h2_P2y", df_status);
@@ -456,9 +456,9 @@ void compare_fits()
     TH1D* h1_Pz = new TH1D("h1_Pz", "h1_Pz", 100, -10, 10);
     TH1D* h2_Pz = new TH1D("h2_Pz", "h2_Pz", 100, -10, 10);
 
-    t->Draw("Bp_ConsBp_seq_12_PX - Bp_ConsBp_seq_12_tauminus_PX - Bp_ConsBp_seq_12_tauminus_0_PX - Kp_PX >> h1_Px",passDTF);
-    t->Draw("Bp_ConsBp_seq_12_PY - Bp_ConsBp_seq_12_tauminus_PY - Bp_ConsBp_seq_12_tauminus_0_PY - Kp_PY >> h1_Py",passDTF);
-    t->Draw("Bp_ConsBp_seq_12_PZ - Bp_ConsBp_seq_12_tauminus_PZ - Bp_ConsBp_seq_12_tauminus_0_PZ - Kp_PZ >> h1_Pz",passDTF);
+    t->Draw("Bp_dtf_12_PX - Bp_dtf_12_tauminus_PX - Bp_dtf_12_tauminus_0_PX - Kp_PX >> h1_Px",passDTF);
+    t->Draw("Bp_dtf_12_PY - Bp_dtf_12_tauminus_PY - Bp_dtf_12_tauminus_0_PY - Kp_PY >> h1_Py",passDTF);
+    t->Draw("Bp_dtf_12_PZ - Bp_dtf_12_tauminus_PZ - Bp_dtf_12_tauminus_0_PZ - Kp_PZ >> h1_Pz",passDTF);
 
     t->Draw("df_Bp_PX - Kp_PX - df_taup_PX - df_taum_PX  >> h2_Px", df_status);
     t->Draw("df_Bp_PY - Kp_PY - df_taup_PY - df_taum_PY  >> h2_Py", df_status);
