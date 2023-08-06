@@ -24,7 +24,7 @@ TMatrixDSym Bp_cov(7);
 Double_t RPz = 0; // z-component of the reference point in the K+ trajectory (fixed)
 
 // Things saved from the minimisation:
-Double_t chi2, MB, MB_err; 
+Double_t chi2, MB, MB_err, taup_PE, taum_PE, taup_M, taum_M; 
 TVectorD x_m(dimX); // vector of unkown parameters after the minimisation
 TMatrixD C_m(dimX,dimX); // covariance matrix of the fit parameters
 Int_t status; // status of the fit
@@ -36,8 +36,10 @@ Double_t mkaon = 493.677; // MeV
 // Functions
 ROOT::Math::XYZPoint makeTransformation_point(ROOT::Math::XYZVector Pk, ROOT::Math::XYZPoint refPoint, ROOT::Math::XYZPoint thePoint, bool invFlag);
 ROOT::Math::XYZVector makeTransformation_vec(ROOT::Math::XYZVector Pk, ROOT::Math::XYZPoint refPoint, ROOT::Math::XYZVector theVector, bool invFlag);
-TVectorD x_initial_estimate( TVectorD m );
-TVectorD x_initial_estimate2( TVectorD m, ROOT::Math::XYZPoint BV );
+TVectorD x_initial_estimate( TVectorD m ); // Original initialisation
+TVectorD x_initial_estimate0( TVectorD mprime, ROOT::Math::XYZPoint BV ); // B->K*tautau initialisation; taus direction from vertices
+TVectorD x_initial_estimate1( TVectorD mprime, ROOT::Math::XYZPoint BV ); // Using B->K* tautau initialisation; taus direction based visible 3pi momenta
+TVectorD x_initial_estimate2( TVectorD m, ROOT::Math::XYZPoint BV ); // Marseille's initialisation
 TVectorD h( TVectorD x );
 TMatrixD dh_dx( TVectorD x );
 Double_t chisquare( const Double_t* x_values );
@@ -124,6 +126,10 @@ void decay_fit(int year, TString MC_files, int component, int line)
   tout->Branch("df_Bp_M", &MB);
   tout->Branch("df_Bp_MERR", &MB_err);
   tout->Branch("df_status", &status);
+  tout->Branch("df_taup_PE", &taup_PE);
+  tout->Branch("df_taum_PE", &taum_PE);
+  tout->Branch("df_taup_M", &taup_M);
+  tout->Branch("df_taum_M", &taum_M);
 
   // Loop over events
   for(int evt = 0; evt < num_entries; evt++)
@@ -321,13 +327,21 @@ void minimize( ROOT::Math::XYZPoint BV, int init )
   // 4) It does the minimisation and updates the values of the parameters that will be saved in a TTree 
 
   // Initial values for the unkown parameters x0
-  if(init == 2) 
+  if(init == 0) // B->K*tautau initialisation; taus direction from vertices
+  {
+    x0 = x_initial_estimate0( mprime, BV );
+  }
+  else if(init == 1)
+  {
+    x0 = x_initial_estimate1( mprime, BV );
+  }
+  else if(init == 2) 
   {
      x0 = x_initial_estimate2( mprime, BV );
   }
-  else if(init == 0)
+  else if(init == -1)
   {
-    x0 = x_initial_estimate( mprime ); // this one is not updated
+    x0 = x_initial_estimate( mprime ); // Original initialisation
   }
 
   Double_t x0_vars[dimX], x0_err[dimX];
@@ -338,6 +352,7 @@ void minimize( ROOT::Math::XYZPoint BV, int init )
   }
 
   // x0.Print();
+  // mprime.Print();
   // TVectorD hx = h(x0);
   // hx.Print();
   // TVectorD r = mprime-hx;
@@ -457,6 +472,19 @@ void minimize( ROOT::Math::XYZPoint BV, int init )
   chi2 = min->MinValue();
   status = min->Status();
 
+  // if( (status != 0) && (init == 2) )
+  // {
+  //   minimize( BV, 1 );
+  // }
+  // if( (status != 0) && (init == 1) )
+  // {
+  //   minimize( BV, -1 );
+  // }
+  // if( (status != 0) && (init == -1) )
+  // {
+  //   minimize( BV, 0 );
+  // }
+
   const Double_t *xMin = min->X();
   for(int i = 0; i < dimX; i++)
   {
@@ -485,6 +513,30 @@ void minimize( ROOT::Math::XYZPoint BV, int init )
   }
   Double_t dMB_squared = sqrt(C_m(6,6));
   MB_err = dMB_squared/(2*MB);
+
+  ROOT::Math::XYZVector ptau1_m( x_m(7), x_m(8), x_m(9) );
+  ROOT::Math::XYZVector pnu1_m( x_m(10), x_m(11), x_m(12) );
+  ROOT::Math::XYZVector ptau2_m( x_m(13), x_m(14), x_m(15) );
+  ROOT::Math::XYZVector pnu2_m( x_m(16), x_m(17), x_m(18) );
+
+  Double_t m3pi1_squared = mprime(9);
+  Double_t m3pi2_squared = mprime(16);
+  ROOT::Math::XYZVector p3pi1( mprime(6), mprime(7), mprime(8) );
+  ROOT::Math::XYZVector p3pi2( mprime(13), mprime(14), mprime(15) );
+  Double_t E3pi1 = sqrt( m3pi1_squared + p3pi1.Mag2() );
+  Double_t E3pi2 = sqrt( m3pi2_squared + p3pi2.Mag2() );
+
+  Double_t Enu1_m = sqrt( pnu1_m.Mag2() ); 
+  Double_t Enu2_m = sqrt( pnu2_m.Mag2() ); 
+
+  taup_PE = E3pi1 + Enu1_m;
+  taum_PE = E3pi2 + Enu2_m;
+
+  taup_M = sqrt( pow(taup_PE,2) - ptau1_m.Mag2() );
+  taum_M = sqrt( pow(taum_PE,2) - ptau2_m.Mag2() );
+
+  cout << "taup mass = " << taup_M << endl;
+  cout << "taum mass = " << taum_M << endl;
 
   // cout << "initial chi2 = " << chisquare(x0_vars) << endl;
   cout << "final chi2 = " << min->MinValue() << endl;
@@ -603,6 +655,376 @@ TVectorD h( TVectorD x )
   return h;
 }
 
+TVectorD x_initial_estimate( TVectorD m ) // Original initialisation for x (based on Anne Keune's thesis)
+{
+  // Builds an initial estimate for x based on the analytical calculations and on the known parameters in m
+
+  ROOT::Math::XYZPoint PV( mprime(0), mprime(1), mprime(2) );
+  ROOT::Math::XYZPoint DV1( mprime(3), mprime(4), mprime(5) );
+  ROOT::Math::XYZVector p3pi1( mprime(6), mprime(7), mprime(8) );
+  Double_t m3pi1_squared = mprime(9);
+  ROOT::Math::XYZPoint DV2( mprime(10), mprime(11), mprime(12) );
+  ROOT::Math::XYZVector p3pi2( mprime(13), mprime(14), mprime(15) );
+  Double_t m3pi2_squared = mprime(16);
+  ROOT::Math::XYZPoint RP( mprime(17), mprime(18), RPz );
+  ROOT::Math::XYZVector p6piK( mprime(19), mprime(20), mprime(21) );
+  Double_t m6piK_squared = mprime(22);
+
+  Double_t E3pi1 = sqrt( m3pi1_squared + p3pi1.Mag2() );
+  Double_t E3pi2 = sqrt( m3pi2_squared + p3pi2.Mag2() );
+  Double_t E6piK = sqrt( m6piK_squared + p6piK.Mag2() );
+
+  Double_t EK = E6piK - E3pi1 - E3pi2;
+  ROOT::Math::XYZVector pK = p6piK - p3pi1 - p3pi2;
+
+  Double_t m3pi1 = sqrt( pow(E3pi1,2) - p3pi1.Mag2() );
+  Double_t m3pi2 = sqrt( pow(E3pi2,2) - p3pi2.Mag2() );
+
+  // Make transformation from LHCb to reference frame where the z-axis points along the K+ trajectory
+  ROOT::Math::XYZPoint PV_t = makeTransformation_point( pK, RP, PV, false );
+  ROOT::Math::XYZPoint DV1_t = makeTransformation_point( pK, RP, DV1, false );
+  ROOT::Math::XYZVector p3pi1_t = makeTransformation_vec( pK, RP, p3pi1, false );
+  ROOT::Math::XYZPoint DV2_t = makeTransformation_point( pK, RP, DV2, false );
+  ROOT::Math::XYZVector p3pi2_t = makeTransformation_vec( pK, RP, p3pi2, false );
+  ROOT::Math::XYZVector pK_t = makeTransformation_vec( pK, RP, pK, false );
+
+  Double_t a1 = (DV1_t.y())/(DV1_t.x());
+  Double_t a2 = (DV2_t.y())/(DV2_t.x());
+  Double_t b = (PV_t.y() - a1*PV_t.x())/(a2*PV_t.x() - PV_t.y());
+  Double_t c = b*(DV1_t.x())/(DV2_t.x());
+  Double_t d = b*((DV2_t.z() - DV1_t.z())/(DV2_t.x()));
+  Double_t e = ( (1+b)*(DV1_t.z() - PV_t.z()) + d*PV_t.x() )/( (1+b)*DV1_t.x() - (1+c)*PV_t.x() );
+  Double_t f = ( PV_t.x()*sqrt(pK_t.Mag2()) )/( (1+b)*DV1_t.x() - (1+c)*PV_t.x() );
+  Double_t g = c*e + d;
+  Double_t h = f*c;
+  Double_t i = DV1_t.z() - e*DV1_t.x();
+  Double_t j = f*DV1_t.x();
+
+  Double_t x1 = p3pi1_t.x() + a1*p3pi1_t.y() + e*p3pi1_t.z();
+  Double_t x2 = b*p3pi2_t.x() + a2*b*p3pi2_t.y() + g*p3pi2_t.z();
+
+  Double_t p1 = 1 + pow(a1,2) + pow(e,2) - pow(x1/E3pi1,2);
+  Double_t p2 = 2*e*f - ( pow(mtau,2) + pow(m3pi1,2) + 2*f*p3pi1_t.z() )*(x1/pow(E3pi1,2) );
+  Double_t p3 = pow(mtau,2) + pow(f,2) - pow( ( pow(mtau,2) + pow(m3pi1,2) + 2*f*p3pi1_t.z() )/(2*E3pi1), 2);
+  Double_t q1 = pow(b,2) + pow(a2*b,2) + pow(g,2) - pow(x2/E3pi2,2);
+  Double_t q2 = 2*g*h - ( pow(mtau,2) + pow(m3pi2,2) + 2*h*p3pi2_t.z() )*(x2/pow(E3pi2,2) );
+  Double_t q3 =  pow(mtau,2) + pow(h,2) - pow( ( pow(mtau,2) + pow(m3pi2,2) + 2*h*p3pi2_t.z() )/(2*E3pi2),2 );
+
+  Double_t Ptau1x_t = (p1*q3 - p3*q1)/(p2*q1 - p1*q2);
+  Double_t Ptau1y_t = a1*Ptau1x_t;
+  Double_t Ptau1z_t = e*Ptau1x_t + f;
+  Double_t Ptau2x_t = b*Ptau1x_t;
+  Double_t Ptau2y_t = a2*b*Ptau1x_t;
+  Double_t Ptau2z_t = g*Ptau1x_t + h;
+  Double_t BVz_t = i - j*(1/Ptau1x_t);
+
+  ROOT::Math::XYZVector ptau1_t( Ptau1x_t, Ptau1y_t, Ptau1z_t );
+  ROOT::Math::XYZVector ptau2_t( Ptau2x_t, Ptau2y_t, Ptau2z_t );
+  ROOT::Math::XYZPoint BV_t(0, 0, BVz_t);
+
+  // transform back to LHCb frame
+  ROOT::Math::XYZVector ptau1 = makeTransformation_vec( pK, RP, ptau1_t, true );
+  ROOT::Math::XYZVector ptau2 = makeTransformation_vec( pK, RP, ptau2_t, true );
+  ROOT::Math::XYZPoint BV = makeTransformation_point( pK, RP, BV_t, true );
+
+  // 3-momentum conservation in DV1, DV2 and BV
+  ROOT::Math::XYZVector pnu1 = ptau1 - p3pi1;
+  ROOT::Math::XYZVector pnu2 = ptau2 - p3pi2;
+  ROOT::Math::XYZVector pB = ptau1 + ptau2 + pK;
+
+  // Neutrino and tau mass constraints 
+  Double_t Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
+  Double_t Etau2 = sqrt( pow(mtau,2) + ptau2.Mag2() );
+  Double_t Enu1 = sqrt( pnu1.Mag2() );
+  Double_t Enu2 = sqrt( pnu2.Mag2() );
+
+  // Energy conservation in BV
+  Double_t EB = Etau1 + Etau2 + EK;
+  Double_t mB_squared = pow(EB,2) - pB.Mag2();
+
+  Double_t L1 = sqrt( (DV1 - BV).Mag2() )/sqrt( ptau1.Mag2() );
+  Double_t L2 = sqrt( (DV2 - BV).Mag2() )/sqrt( ptau2.Mag2() );
+  Double_t L = sqrt( (BV - PV).Mag2() )/sqrt( pB.Mag2() );
+  Double_t LK = sqrt( (RP - BV).Mag2() )/sqrt( pK.Mag2() );
+
+  TVectorD x0(dimX);
+  x0(0) = BV.x();
+  x0(1) = BV.y();
+  x0(2) = BV.z();
+  x0(3) = pB.x();
+  x0(4) = pB.y();
+  x0(5) = pB.z();
+  x0(6) = mB_squared;
+  x0(7) = ptau1.x();
+  x0(8) = ptau1.y();
+  x0(9) = ptau1.z();
+  x0(10) = pnu1.x();
+  x0(11) = pnu1.y();
+  x0(12) = pnu1.z();
+  x0(13) = ptau2.x();
+  x0(14) = ptau2.y();
+  x0(15) = ptau2.z();
+  x0(16) = pnu2.x();
+  x0(17) = pnu2.y();
+  x0(18) = pnu2.z();
+  x0(19) = L1;
+  x0(20) = L2;
+  x0(21) = L;
+  x0(22) = LK;
+
+  return x0;
+}
+
+TVectorD x_initial_estimate0( TVectorD mprime, ROOT::Math::XYZPoint BV ) // Using B->K* tautau initialisation; taus direction based on vertices
+{
+  // Builds an initial estimate for x based on the Mariseille analytical calculations; it uses the offline estimate for BV  
+  // (this initialisation does not apply the constraint: pB must point back to the PV) 
+
+  ROOT::Math::XYZPoint PV( mprime(0), mprime(1), mprime(2) );
+  ROOT::Math::XYZPoint DV1( mprime(3), mprime(4), mprime(5) );
+  ROOT::Math::XYZVector p3pi1( mprime(6), mprime(7), mprime(8) ); 
+  // Double_t E3pi1 = mprime(9); 
+  Double_t m3pi1_squared = mprime(9); 
+  ROOT::Math::XYZPoint DV2( mprime(10), mprime(11), mprime(12) );
+  ROOT::Math::XYZVector p3pi2( mprime(13), mprime(14), mprime(15) );
+  // Double_t E3pi2 = mprime(16); 
+  Double_t m3pi2_squared = mprime(16); 
+  ROOT::Math::XYZPoint RP( mprime(17), mprime(18), RPz );
+  ROOT::Math::XYZVector p6piK( mprime(19), mprime(20), mprime(21) );
+  // Double_t E6piK = mprime(22);
+  Double_t m6piK_squared = mprime(22);
+
+  Double_t E6piK = sqrt( m6piK_squared + p6piK.Mag2() );
+  Double_t E3pi1 = sqrt( m3pi1_squared + p3pi1.Mag2() );
+  Double_t E3pi2 = sqrt( m3pi2_squared + p3pi2.Mag2() );
+
+  // Get kaon momentum
+  ROOT::Math::XYZVector pK = p6piK - p3pi1 - p3pi2;
+  Double_t EK = E6piK - E3pi1 - E3pi2;
+
+  // Magnitude of 3pi momenta
+  Double_t p3pi1_mag = p3pi1.r();
+  Double_t p3pi2_mag = p3pi2.r();
+
+  // B+ flight direction
+  ROOT::Math::XYZVector bDir = (BV - PV).Unit();
+
+  // Get K+ momentum perpendicular to the B+ flight direction
+  ROOT::Math::XYZVector pK_perp = pK - (pK.Dot(bDir))*bDir;
+
+  // Get tau flight directions (from vertices)
+  ROOT::Math::XYZVector tau_dir1, tau_dir2;
+  tau_dir1.SetXYZ( DV1.x() - BV.x(), DV1.y() - BV.y(), DV1.z() - BV.z() );
+  tau_dir2.SetXYZ( DV2.x() - BV.x(), DV2.y() - BV.y(), DV2.z() - BV.z() );
+
+  tau_dir1 = tau_dir1.Unit();
+  tau_dir2 = tau_dir2.Unit();
+
+  // Get tau direction unit vectors perpendicular to B+ flight direction
+  ROOT::Math::XYZVector tau_dir1_perp = ( tau_dir1 - (tau_dir1.Dot(bDir))*bDir ).Unit();
+  ROOT::Math::XYZVector tau_dir2_perp = ( tau_dir2 - (tau_dir2.Dot(bDir))*bDir ).Unit();
+
+  // In plane perpendicular to B+ flight direction, get angles between tau momenta and K+ momentum
+  Double_t cosphi1 = tau_dir1_perp.Dot(pK_perp.Unit());
+  Double_t cosphi2 = tau_dir2_perp.Dot(pK_perp.Unit());
+
+  Double_t phi1 = TMath::ACos(cosphi1);
+  Double_t phi2 = TMath::ACos(cosphi2);
+
+  // In this place, get directions of tau momenta perpendicular to K+ momentum
+  ROOT::Math::XYZVector tau_perp1_perpK = tau_dir1_perp - ( tau_dir1_perp.Dot(pK_perp.Unit())*pK_perp.Unit() );
+  ROOT::Math::XYZVector tau_perp2_perpK = tau_dir2_perp - ( tau_dir2_perp.Dot(pK_perp.Unit())*pK_perp.Unit() );
+
+  Double_t tau_perp_ratio = (tau_perp1_perpK.R())/(tau_perp2_perpK.R());
+
+  // Calculate momentum component of taus in this plane
+  Double_t pMag_tau1_perp = -1*pK_perp.R()/( cosphi1 + (cosphi1 + (cosphi2*(sin(phi1)/sin(phi2)))) );
+  Double_t pMag_tau2_perp = pMag_tau1_perp*tau_perp_ratio;
+
+  ROOT::Math::XYZVector p_tau1_perp = pMag_tau1_perp*tau_dir1_perp;
+  ROOT::Math::XYZVector p_tau2_perp = pMag_tau2_perp*tau_dir2_perp;
+
+  // Get angles made by tau directions with B+ flight direction
+  Double_t tau_B_cos1 = (tau_dir1.Unit()).Dot(bDir.Unit());
+  Double_t tau_B_cos2 = (tau_dir2.Unit()).Dot(bDir.Unit());
+
+  // Get tau momenta parallel to B+ flight direction
+  Double_t pMag_tau1_long = fabs(pMag_tau1_perp)*tau_B_cos1/sqrt( 1 - pow(tau_B_cos1,2) );
+  Double_t pMag_tau2_long = fabs(pMag_tau2_perp)*tau_B_cos2/sqrt( 1 - pow(tau_B_cos2,2) );
+
+  // Total tau momentum vector
+  ROOT::Math::XYZVector ptau1 = p_tau1_perp + (pMag_tau1_long*bDir);
+  ROOT::Math::XYZVector ptau2 = p_tau2_perp + (pMag_tau2_long*bDir);
+
+  // Get the rest of x
+  ROOT::Math::XYZVector pB = ptau1 + ptau2 + pK;
+  ROOT::Math::XYZVector pnu1 = ptau1 - p3pi1;
+  ROOT::Math::XYZVector pnu2 = ptau2 - p3pi2;
+
+  Double_t Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
+  Double_t Etau2 = sqrt( pow(mtau,2) + ptau2.Mag2() );
+
+  Double_t EB = Etau1 + Etau2 + EK;
+  Double_t mB_squared = pow(EB,2) - pB.Mag2();
+
+  Double_t L1 = sqrt( (DV1 - BV).Mag2() )/sqrt( ptau1.Mag2() );
+  Double_t L2 = sqrt( (DV2 - BV).Mag2() )/sqrt( ptau2.Mag2() );
+  Double_t LK = sqrt( (RP - BV).Mag2() )/sqrt( pK.Mag2() );
+  Double_t L = sqrt( (BV - PV).Mag2() )/sqrt( pB.Mag2() );
+
+  TVectorD x0(dimX);
+  x0(0) = BV.x();
+  x0(1) = BV.y();
+  x0(2) = BV.z();
+  x0(3) = pB.x();
+  x0(4) = pB.y();
+  x0(5) = pB.z();
+  x0(6) = mB_squared;
+  x0(7) = ptau1.x();
+  x0(8) = ptau1.y();
+  x0(9) = ptau1.z();
+  x0(10) = pnu1.x();
+  x0(11) = pnu1.y();
+  x0(12) = pnu1.z();
+  x0(13) = ptau2.x();
+  x0(14) = ptau2.y();
+  x0(15) = ptau2.z();
+  x0(16) = pnu2.x();
+  x0(17) = pnu2.y();
+  x0(18) = pnu2.z();
+  x0(19) = L1;
+  x0(20) = L2;
+  x0(21) = L;
+  x0(22) = LK;
+
+  return x0;
+}
+
+TVectorD x_initial_estimate1( TVectorD mprime, ROOT::Math::XYZPoint BV ) // Using B->K* tautau initialisation; taus direction based visible 3pi momenta
+{
+  // Builds an initial estimate for x based on the Mariseille analytical calculations; it uses the offline estimate for BV  
+  // (this initialisation does not apply the constraint: pB must point back to the PV) 
+
+  ROOT::Math::XYZPoint PV( mprime(0), mprime(1), mprime(2) );
+  ROOT::Math::XYZPoint DV1( mprime(3), mprime(4), mprime(5) );
+  ROOT::Math::XYZVector p3pi1( mprime(6), mprime(7), mprime(8) ); 
+  // Double_t E3pi1 = mprime(9); 
+  Double_t m3pi1_squared = mprime(9); 
+  ROOT::Math::XYZPoint DV2( mprime(10), mprime(11), mprime(12) );
+  ROOT::Math::XYZVector p3pi2( mprime(13), mprime(14), mprime(15) );
+  // Double_t E3pi2 = mprime(16); 
+  Double_t m3pi2_squared = mprime(16); 
+  ROOT::Math::XYZPoint RP( mprime(17), mprime(18), RPz );
+  ROOT::Math::XYZVector p6piK( mprime(19), mprime(20), mprime(21) );
+  // Double_t E6piK = mprime(22);
+  Double_t m6piK_squared = mprime(22);
+
+  Double_t E6piK = sqrt( m6piK_squared + p6piK.Mag2() );
+  Double_t E3pi1 = sqrt( m3pi1_squared + p3pi1.Mag2() );
+  Double_t E3pi2 = sqrt( m3pi2_squared + p3pi2.Mag2() );
+
+  // Get kaon momentum
+  ROOT::Math::XYZVector pK = p6piK - p3pi1 - p3pi2;
+  Double_t EK = E6piK - E3pi1 - E3pi2;
+
+  // Magnitude of 3pi momenta
+  Double_t p3pi1_mag = p3pi1.r();
+  Double_t p3pi2_mag = p3pi2.r();
+
+  // B+ flight direction
+  ROOT::Math::XYZVector bDir = (BV - PV).Unit();
+
+  // Get K+ momentum perpendicular to the B+ flight direction
+  ROOT::Math::XYZVector pK_perp = pK - (pK.Dot(bDir))*bDir;
+
+  // Get tau flight directions (from vertices)
+  ROOT::Math::XYZVector tau_dir1, tau_dir2;
+  tau_dir1.SetXYZ( p3pi1.x(), p3pi1.y(), p3pi1.z() );
+  tau_dir2.SetXYZ( p3pi2.x(), p3pi2.y(), p3pi2.z() );
+
+  tau_dir1 = tau_dir1.Unit();
+  tau_dir2 = tau_dir2.Unit();
+
+  // Get tau direction unit vectors perpendicular to B+ flight direction
+  ROOT::Math::XYZVector tau_dir1_perp = ( tau_dir1 - (tau_dir1.Dot(bDir))*bDir ).Unit();
+  ROOT::Math::XYZVector tau_dir2_perp = ( tau_dir2 - (tau_dir2.Dot(bDir))*bDir ).Unit();
+
+  // In plane perpendicular to B+ flight direction, get angles between tau momenta and K+ momentum
+  Double_t cosphi1 = tau_dir1_perp.Dot(pK_perp.Unit());
+  Double_t cosphi2 = tau_dir2_perp.Dot(pK_perp.Unit());
+
+  Double_t phi1 = TMath::ACos(cosphi1);
+  Double_t phi2 = TMath::ACos(cosphi2);
+
+  // In this place, get directions of tau momenta perpendicular to K+ momentum
+  ROOT::Math::XYZVector tau_perp1_perpK = tau_dir1_perp - ( tau_dir1_perp.Dot(pK_perp.Unit())*pK_perp.Unit() );
+  ROOT::Math::XYZVector tau_perp2_perpK = tau_dir2_perp - ( tau_dir2_perp.Dot(pK_perp.Unit())*pK_perp.Unit() );
+
+  Double_t tau_perp_ratio = (tau_perp1_perpK.R())/(tau_perp2_perpK.R());
+
+  // Calculate momentum component of taus in this plane
+  Double_t pMag_tau1_perp = -1*pK_perp.R()/( cosphi1 + (cosphi1 + (cosphi2*(sin(phi1)/sin(phi2)))) );
+  Double_t pMag_tau2_perp = pMag_tau1_perp*tau_perp_ratio;
+
+  ROOT::Math::XYZVector p_tau1_perp = pMag_tau1_perp*tau_dir1_perp;
+  ROOT::Math::XYZVector p_tau2_perp = pMag_tau2_perp*tau_dir2_perp;
+
+  // Get angles made by tau directions with B+ flight direction
+  Double_t tau_B_cos1 = (tau_dir1.Unit()).Dot(bDir.Unit());
+  Double_t tau_B_cos2 = (tau_dir2.Unit()).Dot(bDir.Unit());
+
+  // Get tau momenta parallel to B+ flight direction
+  Double_t pMag_tau1_long = fabs(pMag_tau1_perp)*tau_B_cos1/sqrt( 1 - pow(tau_B_cos1,2) );
+  Double_t pMag_tau2_long = fabs(pMag_tau2_perp)*tau_B_cos2/sqrt( 1 - pow(tau_B_cos2,2) );
+
+  // Total tau momentum vector
+  ROOT::Math::XYZVector ptau1 = p_tau1_perp + (pMag_tau1_long*bDir);
+  ROOT::Math::XYZVector ptau2 = p_tau2_perp + (pMag_tau2_long*bDir);
+
+  // Get the rest of x
+  ROOT::Math::XYZVector pB = ptau1 + ptau2 + pK;
+  ROOT::Math::XYZVector pnu1 = ptau1 - p3pi1;
+  ROOT::Math::XYZVector pnu2 = ptau2 - p3pi2;
+
+  Double_t Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
+  Double_t Etau2 = sqrt( pow(mtau,2) + ptau2.Mag2() );
+
+  Double_t EB = Etau1 + Etau2 + EK;
+  Double_t mB_squared = pow(EB,2) - pB.Mag2();
+
+  Double_t L1 = sqrt( (DV1 - BV).Mag2() )/sqrt( ptau1.Mag2() );
+  Double_t L2 = sqrt( (DV2 - BV).Mag2() )/sqrt( ptau2.Mag2() );
+  Double_t LK = sqrt( (RP - BV).Mag2() )/sqrt( pK.Mag2() );
+  Double_t L = sqrt( (BV - PV).Mag2() )/sqrt( pB.Mag2() );
+
+  TVectorD x0(dimX);
+  x0(0) = BV.x();
+  x0(1) = BV.y();
+  x0(2) = BV.z();
+  x0(3) = pB.x();
+  x0(4) = pB.y();
+  x0(5) = pB.z();
+  x0(6) = mB_squared;
+  x0(7) = ptau1.x();
+  x0(8) = ptau1.y();
+  x0(9) = ptau1.z();
+  x0(10) = pnu1.x();
+  x0(11) = pnu1.y();
+  x0(12) = pnu1.z();
+  x0(13) = ptau2.x();
+  x0(14) = ptau2.y();
+  x0(15) = ptau2.z();
+  x0(16) = pnu2.x();
+  x0(17) = pnu2.y();
+  x0(18) = pnu2.z();
+  x0(19) = L1;
+  x0(20) = L2;
+  x0(21) = L;
+  x0(22) = LK;
+
+  return x0;
+}
+
 TVectorD x_initial_estimate2( TVectorD mprime, ROOT::Math::XYZPoint BV ) 
 {
   // Builds an initial estimate for x based on the Mariseille analytical calculations; it uses the offline estimate for BV  
@@ -670,117 +1092,6 @@ TVectorD x_initial_estimate2( TVectorD mprime, ROOT::Math::XYZPoint BV )
   x0(4) = pB.y();
   x0(5) = pB.z();
   x0(6) = MB_squared;
-  x0(7) = ptau1.x();
-  x0(8) = ptau1.y();
-  x0(9) = ptau1.z();
-  x0(10) = pnu1.x();
-  x0(11) = pnu1.y();
-  x0(12) = pnu1.z();
-  x0(13) = ptau2.x();
-  x0(14) = ptau2.y();
-  x0(15) = ptau2.z();
-  x0(16) = pnu2.x();
-  x0(17) = pnu2.y();
-  x0(18) = pnu2.z();
-  x0(19) = L1;
-  x0(20) = L2;
-  x0(21) = L;
-  x0(22) = LK;
-
-  return x0;
-}
-
-TVectorD x_initial_estimate( TVectorD m ) // Original initialisation for x (based on Anne Keune's thesis)
-{
-  // Builds an initial estimate for x based on the analytical calculations and on the known parameters in m
-  // THIS FUNCTION IS NOT UPDATED
-
-  ROOT::Math::XYZPoint PV( m(0), m(1), m(2) );
-  ROOT::Math::XYZPoint DV1( m(3), m(4), m(5) );
-  ROOT::Math::XYZVector p3pi1( m(6), m(7), m(8) );
-  Double_t E3pi1 = m(9);
-  ROOT::Math::XYZPoint DV2( m(10), m(11), m(12) );
-  ROOT::Math::XYZVector p3pi2( m(13), m(14), m(15) );
-  Double_t E3pi2 = m(16);
-  ROOT::Math::XYZPoint RP( m(17), m(18), RPz );
-  ROOT::Math::XYZVector p6piK( m(19), m(20), m(21) );
-  Double_t E6piK = m(22);
-
-  Double_t EK = E6piK - E3pi1 - E3pi2;
-  ROOT::Math::XYZVector pK = p6piK - p3pi1 - p3pi2;
-
-  Double_t m3pi1 = sqrt( pow(E3pi1,2) - p3pi1.Mag2() );
-  Double_t m3pi2 = sqrt( pow(E3pi2,2) - p3pi2.Mag2() );
-
-  ROOT::Math::XYZPoint PV_t = makeTransformation_point( pK, RP, PV, false );
-  ROOT::Math::XYZPoint DV1_t = makeTransformation_point( pK, RP, DV1, false );
-  ROOT::Math::XYZVector p3pi1_t = makeTransformation_vec( pK, RP, p3pi1, false );
-  ROOT::Math::XYZPoint DV2_t = makeTransformation_point( pK, RP, DV2, false );
-  ROOT::Math::XYZVector p3pi2_t = makeTransformation_vec( pK, RP, p3pi2, false );
-  ROOT::Math::XYZVector pK_t = makeTransformation_vec( pK, RP, pK, false );
-
-  Double_t a1 = (DV1_t.y())/(DV1_t.x());
-  Double_t a2 = (DV2_t.y())/(DV2_t.x());
-  Double_t b = (PV_t.y() -a1*PV_t.x())/(a2*PV_t.x() - PV_t.y());
-  Double_t c = b*(DV1_t.x())/(DV2_t.x());
-  Double_t d = b*((DV2_t.z() - DV1_t.z())/(DV2_t.x()));
-  Double_t e = ( (1+b)*(DV1_t.z() - PV_t.z()) + d*PV_t.x() )/( (1+b)*DV1_t.x() - (1+c)*PV_t.x() );
-  Double_t f = ( PV_t.x()*sqrt(pK_t.Mag2()) )/( (1+b)*DV1_t.x() -(1+c)*PV_t.x() );
-  Double_t g = c*e + d;
-  Double_t h = f*c;
-  Double_t i = DV1_t.z() - e*DV1_t.x();
-  Double_t j = f*DV1_t.x();
-
-  Double_t x1 = p3pi1_t.x() + a1*p3pi1_t.y() + e*p3pi1_t.z();
-  Double_t x2 = b*p3pi2_t.x() + a2*b*p3pi2_t.y() + g*p3pi2_t.z();
-
-  Double_t p1 = 1 + pow(a1,2) + pow(e,2) - pow(x1/E3pi1,2);
-  Double_t p2 = 2*e*f - ( pow(mtau,2) + pow(m3pi1,2) + 2*f*p3pi1_t.z() )*(x1/pow(E3pi1,2) );
-  Double_t p3 = pow(mtau,2) + pow(f,2) - pow( ( pow(mtau,2) + pow(m3pi1,2) + 2*f*p3pi1_t.z() )/(2*E3pi1), 2);
-  Double_t q1 = pow(b,2) + pow(a2*b,2) + pow(g,2) - pow(x2/E3pi2,2);
-  Double_t q2 = 2*g*h - ( pow(mtau,2) + pow(m3pi2,2) + 2*h*p3pi2_t.z() )*(x2/pow(E3pi2,2) );
-  Double_t q3 =  pow(mtau,2) + pow(h,2) - pow( ( pow(mtau,2) + pow(m3pi2,2) + 2*h*p3pi2_t.z() )/(2*E3pi2),2 );
-
-  Double_t Ptau1x_t = (p1*q3 - p3*q1)/(p2*q1 - p1*q2);
-  Double_t Ptau1y_t = a1*Ptau1x_t;
-  Double_t Ptau1z_t = e*Ptau1x_t + f;
-  Double_t Ptau2x_t = b*Ptau1x_t;
-  Double_t Ptau2y_t = a2*b*Ptau1x_t;
-  Double_t Ptau2z_t = g*Ptau1x_t + h;
-  Double_t BVz_t = i - j*(1/Ptau1x_t);
-
-  ROOT::Math::XYZVector ptau1_t( Ptau1x_t, Ptau1y_t, Ptau1z_t );
-  ROOT::Math::XYZVector ptau2_t( Ptau2x_t, Ptau2y_t, Ptau2z_t );
-  ROOT::Math::XYZPoint BV_t(0, 0, BVz_t);
-
-  // transform back to LHCb frame
-  ROOT::Math::XYZVector ptau1 = makeTransformation_vec( pK, RP, ptau1_t, true );
-  ROOT::Math::XYZVector ptau2 = makeTransformation_vec( pK, RP, ptau2_t, true );
-  ROOT::Math::XYZPoint BV = makeTransformation_point( pK, RP, BV_t, true );
-
-  ROOT::Math::XYZVector pnu1 = ptau1 - p3pi1;
-  ROOT::Math::XYZVector pnu2 = ptau2 - p3pi2;
-  ROOT::Math::XYZVector pB = ptau1 + ptau2 + pK;
-
-  Double_t Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
-  Double_t Etau2 = sqrt( pow(mtau,2) + ptau2.Mag2() );
-  Double_t Enu1 = sqrt( pnu1.Mag2() );
-  Double_t Enu2 = sqrt( pnu2.Mag2() );
-  Double_t EB = Etau1 + Etau2 + EK;
-
-  Double_t L1 = sqrt( (DV1 - BV).Mag2() )/sqrt( ptau1.Mag2() );
-  Double_t L2 = sqrt( (DV2 - BV).Mag2() )/sqrt( ptau2.Mag2() );
-  Double_t L = sqrt( (BV - PV).Mag2() )/sqrt( pB.Mag2() );
-  Double_t LK = sqrt( (RP - BV).Mag2() )/sqrt( pK.Mag2() );
-
-  TVectorD x0(dimX);
-  x0(0) = BV.x();
-  x0(1) = BV.y();
-  x0(2) = BV.z();
-  x0(3) = pB.x();
-  x0(4) = pB.y();
-  x0(5) = pB.z();
-  x0(6) = EB;
   x0(7) = ptau1.x();
   x0(8) = ptau1.y();
   x0(9) = ptau1.z();
