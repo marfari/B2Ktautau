@@ -35,8 +35,8 @@ namespace DecayTreeFitter {
     int valdim  = value.num_row();           // dimension of the constraint
     int statdim = fitparams.par().num_row(); // dimension of the state
 
-    std::cout << " num_constraints = " << valdim << std::endl;
-    std::cout << " num_parameters =  " << statdim << std::endl; 
+    // std::cout << " num_constraints = " << valdim << std::endl;
+    // std::cout << " num_parameters =  " << statdim << std::endl; 
 
 #ifdef VTK_BOUNDSCHECKING
     assert( G.num_row() == valdim && G.num_col() == statdim && ( !V || V->num_row() == valdim ) );

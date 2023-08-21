@@ -24,9 +24,9 @@ namespace DecayTreeFitter {
     ErrCode initPar2( FitParams* ) override { return ErrCode::success; }
 
     std::string parname( int index ) const override;
-    int         dim() const override { return 3; } // return hasMassConstraint() ? 3 : 4; }
+    int         dim() const override { return hasMassConstraint() ? 3 : 4; }
     int         momIndex() const override { return index(); }
-    bool        hasEnergy() const override { return false; } // return hasMassConstraint() ? false : true; }
+    bool        hasEnergy() const override { return hasMassConstraint() ? false : true; }
     int         type() const override { return kMissingParticle; }
     void        addToConstraintList( constraintlist& /*alist*/, int /*depth*/ ) const override {}
   };

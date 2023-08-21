@@ -230,8 +230,8 @@ namespace DecayTreeFitter {
     if ( momindex >= 0 ) {
       if ( daughters().empty() ) {
         // TODO: calo at high energy?!
-        const double sigmom = 10 * Gaudi::Units::GeV; // GeV (this is how the covariance matrix is initiatiated for particles without a daughter)
-        int          maxrow = hasEnergy() ? 4 : 3;
+        const double sigmom = 10 * Gaudi::Units::GeV; 
+        int          maxrow = hasEnergy() ? 4 : 3; 
         for ( int row = momindex + 1; row <= momindex + maxrow; ++row )
           fitparams->cov().fast( row, row ) = sigmom * sigmom;
       } else {
@@ -243,7 +243,7 @@ namespace DecayTreeFitter {
             fitparams->cov().fast( momindex + row, momindex + row ) +=
                 fitparams->cov().fast( daumomindex + row, daumomindex + row );
         }
-        if ( hasEnergy() )
+        if ( hasEnergy() ) 
           fitparams->cov().fast( momindex + 4, momindex + 4 ) = fitparams->cov().fast( momindex + 3, momindex + 3 );
       }
     }
@@ -301,7 +301,7 @@ namespace DecayTreeFitter {
          << fitpar->par()( theindex + 1 ) << std::setw( 15 ) << sqrt( fitpar->cov()( theindex + 1, theindex + 1 ) )
          << std::setw( 15 ) << fitpar->cov()( theindex + 1, theindex + 1 ) << std::endl;
     }
-    if ( hasEnergy() ) {
+    if ( hasEnergy() ) { 
       int    momindex = momIndex();
       double E        = fitpar->par()( momindex + 4 );
       double px       = fitpar->par()( momindex + 1 );

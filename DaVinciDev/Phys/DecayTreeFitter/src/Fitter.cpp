@@ -238,6 +238,7 @@ namespace DecayTreeFitter {
       double prevabsdeltachisq = -1;
 
       for ( m_niter = 0; m_niter < nitermax && !finished; ++m_niter ) {
+
         CLHEP::HepVector prevpar   = m_fitparams->par();
         bool             firstpass = m_niter == 0;
         m_errCode                  = m_decaychain->filter( *m_fitparams, firstpass ).flag();
@@ -245,7 +246,7 @@ namespace DecayTreeFitter {
         double deltachisq          = chisq - m_chiSquare;
         // if chi2 increases by more than this --> fit failed
         int          ndof       = nDof();
-        std::cout << "ndof = " << ndof << std::endl;
+        // std::cout << "ndof = " << ndof << std::endl;
         const double dChisqQuit = std::max( double( 2 * ndof ), 2 * m_chiSquare );
         const double dChisqConv = reldChisqConv * std::max( double( ndof ), std::min( chisq, m_chiSquare ) );
 
@@ -275,7 +276,10 @@ namespace DecayTreeFitter {
               // if( m_niter>10) m_fitparams->scale() *= 0.5 ;
             }
           }
-          if ( deltachisq < 0 ) ndiverging = 0; // start over with counting
+          if ( deltachisq < 0 )
+          {
+            ndiverging = 0; // start over with counting
+          } 
           if ( !finished ) {
             m_chiSquare       = chisq;
             prevabsdeltachisq = std::abs( deltachisq );
@@ -320,7 +324,9 @@ namespace DecayTreeFitter {
 
       }
 
-      if ( m_niter == nitermax && m_status != Success ) { m_status = NonConverged; }
+      if ( m_niter == nitermax && m_status != Success ) { 
+        m_status = NonConverged; 
+      }
 
       // m_decaychain->mother()->forceP4Sum(*m_fitparams) ;
 
@@ -462,6 +468,7 @@ namespace DecayTreeFitter {
     p4.SetPx( m_fitparams->par()( momindex + 1 ) );
     p4.SetPy( m_fitparams->par()( momindex + 2 ) );
     p4.SetPz( m_fitparams->par()( momindex + 3 ) );
+
     Gaudi::SymMatrix8x8 cov8;
     double              decaylength = lenindex >= 0 ? m_fitparams->par()( lenindex + 1 ) : 0;
 
@@ -504,6 +511,7 @@ namespace DecayTreeFitter {
       p4.SetE( energy );
       cov8 = ROOT::Math::Similarity( jacobian, cov7 );
     }
+    
     //
     // VtxFitParams vtxfitparams(pb.charge(),pos,p4,decaylength,cov8) ;
     // return vtxfitparams ;
@@ -626,7 +634,7 @@ namespace DecayTreeFitter {
     Gaudi::Math::ParticleParams vtxpar = fitParams( pb );
 
     // update everything inside the particle. don't update the vertex, for now.
-    particle.setMomentum( vtxpar.momentum() );
+    particle.setMomentum( vtxpar.momentum() ); // default
     particle.setReferencePoint( vtxpar.position() );
     particle.setMomCovMatrix( vtxpar.momCovMatrix() );
     particle.setPosCovMatrix( vtxpar.posCovMatrix() );

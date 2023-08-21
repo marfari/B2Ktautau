@@ -308,6 +308,54 @@ void decay_fit(int year, TString MC_files, int component, int line)
     ROOT::Math::XYZPoint BV( BVx, BVy, BVz ); // BV (necessary for Marseille initialisation)
     minimize( BV, 2 );
 
+    // 2130
+    // int init = 2; // Marseille
+    // minimize( BV, init );
+    // if( (status != 0) && (init == 2) )
+    // {
+    //   init = 1; // K*tautau w/ visible 3pi momenta
+    //   cout << "status before init = 1 : " << status << endl;
+    //   minimize( BV, init );
+    // }
+    // if( (status != 0) && (init == 1) )
+    // {
+    //   init = -1; // Anne Keune's
+    //   minimize( BV, init );
+    // }
+    // if( (status != 0) && (init == -1) )
+    // {
+    //   init = 0; // K*tautau from vertices
+    //   minimize( BV, init );
+    // }
+  
+    // 012
+    // int init = 0; // K*tautau from vertices
+    // minimize( BV, init );
+    // if( (status != 0) && (init == 0) )
+    // {
+    //   init = 1; // K*tautau w/ visible 3pi momenta
+    //   minimize( BV, init );
+    // }
+    // if( (status != 0) && (init == 1) )
+    // {
+    //   init = 2; // Marseille's
+    //   minimize( BV, init );
+    // }
+  
+    // 210
+    // int init = 2; 
+    // minimize( BV, init );
+    // if( (status != 0) && (init == 2) )
+    // {
+    //   init = 1; 
+    //   minimize( BV, init );
+    // }
+    // if( (status != 0) && (init == 1) )
+    // {
+    //   init = 0; // Marseille's
+    //   minimize( BV, init );
+    // }
+
     tout->Fill();
   }
   cout << "FINISHED" << endl;
@@ -472,19 +520,6 @@ void minimize( ROOT::Math::XYZPoint BV, int init )
   chi2 = min->MinValue();
   status = min->Status();
 
-  // if( (status != 0) && (init == 2) )
-  // {
-  //   minimize( BV, 1 );
-  // }
-  // if( (status != 0) && (init == 1) )
-  // {
-  //   minimize( BV, -1 );
-  // }
-  // if( (status != 0) && (init == -1) )
-  // {
-  //   minimize( BV, 0 );
-  // }
-
   const Double_t *xMin = min->X();
   for(int i = 0; i < dimX; i++)
   {
@@ -534,9 +569,6 @@ void minimize( ROOT::Math::XYZPoint BV, int init )
 
   taup_M = sqrt( pow(taup_PE,2) - ptau1_m.Mag2() );
   taum_M = sqrt( pow(taum_PE,2) - ptau2_m.Mag2() );
-
-  cout << "taup mass = " << taup_M << endl;
-  cout << "taum mass = " << taum_M << endl;
 
   // cout << "initial chi2 = " << chisquare(x0_vars) << endl;
   cout << "final chi2 = " << min->MinValue() << endl;
@@ -1054,6 +1086,7 @@ TVectorD x_initial_estimate2( TVectorD mprime, ROOT::Math::XYZPoint BV )
   Double_t m3pi1 = sqrt( pow(E3pi1,2) - p3pi1.Mag2() );
   Double_t m3pi2 = sqrt( pow(E3pi2,2) - p3pi2.Mag2() );
 
+  // Use the maximum value of theta: neutrino takes the maximum portion of momentum from the tau
   Double_t theta1 = asin( ( pow(mtau,2) - pow(m3pi1,2) )/( 2*mtau*sqrt( p3pi1.Mag2() ) ) );
   Double_t theta2 = asin( ( pow(mtau,2) - pow(m3pi2,2) )/( 2*mtau*sqrt( p3pi2.Mag2() ) ) );
   

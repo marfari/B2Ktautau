@@ -1,5 +1,5 @@
 
-#include "TupleToolDecayFit.h"
+#include "TupleToolDecayFit1.h"
 #include "TMath.h"
 #include <algorithm>
 #include "TMinuit.h"
@@ -7,7 +7,7 @@
 using namespace LHCb;
 using namespace std;
 
-TupleToolDecayFit::TupleToolDecayFit( const std::string& type, const std::string& name, const IInterface* parent ):TupleToolBase( type, name, parent )
+TupleToolDecayFit1::TupleToolDecayFit1( const std::string& type, const std::string& name, const IInterface* parent ):TupleToolBase( type, name, parent )
 {
     declareProperty( "StateProvider", m_stateprovider ) ;
     declareProperty( "constrainToOriginVertex", m_constrainToOriginVertex = false,
@@ -16,7 +16,7 @@ TupleToolDecayFit::TupleToolDecayFit( const std::string& type, const std::string
     declareInterface<IParticleTupleTool>(this);
 }
 
-StatusCode TupleToolDecayFit::initialize()
+StatusCode TupleToolDecayFit1::initialize()
 {
     StatusCode sc = TupleToolBase::initialize();
     if( sc.isFailure() ) return sc;
@@ -27,56 +27,52 @@ StatusCode TupleToolDecayFit::initialize()
     return sc;
 }
 
-StatusCode TupleToolDecayFit::finalize()
+StatusCode TupleToolDecayFit1::finalize()
 {
     StatusCode sc = StatusCode::SUCCESS;
     return StatusCode{ TupleToolBase::finalize() && sc };
 }
 
-StatusCode TupleToolDecayFit::fill( const LHCb::Particle* mother, const LHCb::Particle* P,
+StatusCode TupleToolDecayFit1::fill( const LHCb::Particle* mother, const LHCb::Particle* P,
                                     const std::string& head, Tuples::Tuple& tuple )
 {
     LHCb::DecayTree tree(*P);
     LHCb::Particle* treeHead = tree.head();
 
     // 1) Initialise vector of measured parameters m in LHCb frame
-    int dimM = 23;
-    int dimX = 23;
+    int dimM = 32;
     // Get primary vertex
     std::vector<const VertexBase*> originVtx;
     originVtx = originVertex(mother, P);
     if( originVtx.empty() ){return Error("Can't get an origin vertex");}
     ROOT::Math::XYZPoint PV( originVtx[0]->position().X(), originVtx[0]->position().Y(), originVtx[0]->position().Z() ); // originVtx[0] is the best PV in the event
- 
-    // Get tau+ decay vertex and visible 4-momentum (3pi)
-    const LHCb::Particle* taup = LHCb::DecayTree::findFirstInTree( treeHead, LHCb::ParticleID(-15) );
-    ROOT::Math::XYZPoint DV1( taup->endVertex()->position().X(), taup->endVertex()->position().Y(), taup->endVertex()->position().Z() );
-    Gaudi::LorentzVector P3pi1( taup->momentum().X(), taup->momentum().Y(), taup->momentum().Z(), taup->momentum().E() );
 
-    // Get tau+ daughters reference point + endvertex + 4-momentum
+    // Get tau+ decay vertex + tau+ pions momenta
+    LHCb::Particle::ConstVector tauList;
+    LHCb::DecayTree::findInTree( treeHead, LHCb::ParticleID(-15), tauList); // tau+
+    LHCb::DecayTree::findInTree( treeHead, LHCb::ParticleID(15), tauList); // tau-
+    if ( tauList.size() != 2 ) 
+    {
+        return Error("Can't find two tau decays");
+    }
+
+    const LHCb::Particle* taup = tauList[0];    
+    ROOT::Math::XYZPoint DV1( taup->endVertex()->position().X(), taup->endVertex()->position().Y(), taup->endVertex()->position().Z() );
     LHCb::Particle::ConstVector taup_pions = taup->daughtersVector();
-    ROOT::Math::XYZPoint RP1 = taup_pions[0]->referencePoint();
-    ROOT::Math::XYZPoint RP2 = taup_pions[1]->referencePoint();
-    ROOT::Math::XYZPoint RP3 = taup_pions[2]->referencePoint();
     Gaudi::LorentzVector P1( taup_pions[0]->momentum().X(), taup_pions[0]->momentum().Y(), taup_pions[0]->momentum().Z(), taup_pions[0]->momentum().E() );
     Gaudi::LorentzVector P2( taup_pions[1]->momentum().X(), taup_pions[1]->momentum().Y(), taup_pions[1]->momentum().Z(), taup_pions[1]->momentum().E() );
     Gaudi::LorentzVector P3( taup_pions[2]->momentum().X(), taup_pions[2]->momentum().Y(), taup_pions[2]->momentum().Z(), taup_pions[2]->momentum().E() );
 
-    // Get tau- decay vertex and visible 4-momentum (3pi)
-    const LHCb::Particle* taum = LHCb::DecayTree::findFirstInTree( treeHead, LHCb::ParticleID(15) );
+    // Get tau- decay vertex + tau- pions momenta
+    // const LHCb::Particle* taum = LHCb::DecayTree::findFirstInTree( treeHead, LHCb::ParticleID(15) );
+    const LHCb::Particle* taum = tauList[1];
     ROOT::Math::XYZPoint DV2( taum->endVertex()->position().X(), taum->endVertex()->position().Y(), taum->endVertex()->position().Z() );
-    Gaudi::LorentzVector P3pi2( taum->momentum().X(), taum->momentum().Y(), taum->momentum().Z(), taum->momentum().E() );
-
-    // Get tau- daughters reference point + endvertex + 4-momentum 
     LHCb::Particle::ConstVector taum_pions = taum->daughtersVector();
-    ROOT::Math::XYZPoint RP4 = taum_pions[0]->referencePoint();
-    ROOT::Math::XYZPoint RP5 = taum_pions[1]->referencePoint();
-    ROOT::Math::XYZPoint RP6 = taum_pions[2]->referencePoint();
     Gaudi::LorentzVector P4( taum_pions[0]->momentum().X(), taum_pions[0]->momentum().Y(), taum_pions[0]->momentum().Z(), taum_pions[0]->momentum().E() );
     Gaudi::LorentzVector P5( taum_pions[1]->momentum().X(), taum_pions[1]->momentum().Y(), taum_pions[1]->momentum().Z(), taum_pions[1]->momentum().E() );
     Gaudi::LorentzVector P6( taum_pions[2]->momentum().X(), taum_pions[2]->momentum().Y(), taum_pions[2]->momentum().Z(), taum_pions[2]->momentum().E() );
 
-    // Get reference point in K+ trajectory and K+ 4-momentum
+    // Get K+ reference point + 4-momentum
     const LHCb::Particle* Kp = LHCb::DecayTree::findFirstInTree( treeHead, LHCb::ParticleID(321) );
     if( Kp == 0 )
     {
@@ -86,11 +82,8 @@ StatusCode TupleToolDecayFit::fill( const LHCb::Particle* mother, const LHCb::Pa
     {
         return Error("Can't find a K meson in decay tree");
     }
-    ROOT::Math::XYZPoint refPoint_Kp = Kp->referencePoint();
+    ROOT::Math::XYZPoint RPK = Kp->referencePoint();
     Gaudi::LorentzVector PK( Kp->momentum().X(), Kp->momentum().Y(), Kp->momentum().Z(), Kp->momentum().E() );
-
-    // Get 6piK 4-momentum (visible B+)
-    Gaudi::LorentzVector P6piK( mother->momentum().X(), mother->momentum().Y() , mother->momentum().Z(), mother->momentum().E() );
 
     // There are 24 known parameters
     CLHEP::HepVector m(dimM);
@@ -100,51 +93,56 @@ StatusCode TupleToolDecayFit::fill( const LHCb::Particle* mother, const LHCb::Pa
     m(4) = DV1.x();
     m(5) = DV1.y();
     m(6) = DV1.z();
-    m(7) = P3pi1.x();
-    m(8) = P3pi1.y();
-    m(9) = P3pi1.z();
-    m(10) = P3pi1.t();
-    m(11) = DV2.x();
-    m(12) = DV2.y();
-    m(13) = DV2.z();
-    m(14) = P3pi2.x();
-    m(15) = P3pi2.y();
-    m(16) = P3pi2.z();
-    m(17) = P3pi2.t();
-    m(18) = refPoint_Kp.x();
-    m(19) = refPoint_Kp.y();
-    // m(20) = refPoint_Kp.z();
-    m(20) = P6piK.x();
-    m(21) = P6piK.y();
-    m(22) = P6piK.z();
-    m(23) = P6piK.t();
-    // m(20) = PK.x();
-    // m(21) = PK.y();
-    // m(22) = PK.z();
-    // m(23) = PK.t();
+    m(7) = P1.x();
+    m(8) = P1.y();
+    m(9) = P1.z();
+    m(10) = P2.x();
+    m(11) = P2.y();
+    m(12) = P2.z();
+    m(13) = P3.x();
+    m(14) = P3.y();
+    m(15) = P3.z();
+    m(16) = DV2.x();
+    m(17) = DV2.y();
+    m(18) = DV2.z();
+    m(19) = P4.x();
+    m(20) = P4.y();
+    m(21) = P4.z();
+    m(22) = P5.x();
+    m(23) = P5.y();
+    m(24) = P5.z();
+    m(25) = P6.x();
+    m(26) = P6.y();
+    m(27) = P6.z();
+    m(28) = RPK.x();
+    m(29) = RPK.y();
+    m(30) = PK.x();
+    m(31) = PK.y();
+    m(32) = PK.z();
 
     // 2) Initialise covariance matrix of measured quantities in LHCb frame 
     // Get PV covariance matrix
-    // auto pv = m_dva->bestVertex( P );
     Gaudi::SymMatrix3x3 PV_cov = originVtx[0]->covMatrix(); // pv[0] is the best PV
-    // Get DV1 + P3pi1 covariance matrix
-    Gaudi::SymMatrix7x7 taup_cov = taup->covMatrix();
-    // Get DV2 + P3pi2 covariance matrix
-    Gaudi::SymMatrix7x7 taum_cov = taum->covMatrix();
-    // Get covariance matrix of 6piK system
-    Gaudi::SymMatrix4x4 Bp_mom_cov = mother->momCovMatrix();
-
-    // Get covariance matrix of tracks
-    Gaudi::SymMatrix7x7 pi1_cov = taup_pions[0]->covMatrix();
-    Gaudi::SymMatrix7x7 pi2_cov = taup_pions[1]->covMatrix();
-    Gaudi::SymMatrix7x7 pi3_cov = taup_pions[2]->covMatrix();
-    Gaudi::SymMatrix7x7 pi4_cov = taum_pions[0]->covMatrix();
-    Gaudi::SymMatrix7x7 pi5_cov = taum_pions[1]->covMatrix();
-    Gaudi::SymMatrix7x7 pi6_cov = taum_pions[2]->covMatrix();
+    // Get DV1 covariance matrix
+    Gaudi::SymMatrix3x3 DV1_cov = taup->posCovMatrix();
+    // Get tau+ pions momentum covariance matrix
+    Gaudi::SymMatrix4x4 pi1_mom_cov = taup_pions[0]->momCovMatrix();
+    Gaudi::SymMatrix4x4 pi2_mom_cov = taup_pions[1]->momCovMatrix();
+    Gaudi::SymMatrix4x4 pi3_mom_cov = taup_pions[2]->momCovMatrix();
+    // Get DV2 covariance matrix
+    Gaudi::SymMatrix3x3 DV2_cov = taum->posCovMatrix();
+    // Get tau- pions momentum covariance matrix
+    Gaudi::SymMatrix4x4 pi4_mom_cov = taum_pions[0]->momCovMatrix();
+    Gaudi::SymMatrix4x4 pi5_mom_cov = taum_pions[1]->momCovMatrix();
+    Gaudi::SymMatrix4x4 pi6_mom_cov = taum_pions[2]->momCovMatrix();
+    // Get K+ reference point + momentum covariance matrix
     Gaudi::SymMatrix7x7 Kp_cov = Kp->covMatrix();
-    Gaudi::SymMatrix3x3 Kp_pos_cov = Kp->posCovMatrix();
 
-    CLHEP::HepSymMatrix V(dimM); // covariance matrix of measured quantities (PV,tau+,tau-,K+ RP_T, B+ P4)
+    Gaudi::SymMatrix7x7 taup_cov = taup->covMatrix();
+    Gaudi::SymMatrix7x7 taum_cov = taum->covMatrix();
+    Gaudi::SymMatrix7x7 Bp_cov = mother->covMatrix();
+
+    CLHEP::HepSymMatrix V(dimM); 
     for(int i = 1; i <= dimM; i++)
     {
         for(int j = 1; j <= dimM; j++)
@@ -157,65 +155,96 @@ StatusCode TupleToolDecayFit::fill( const LHCb::Particle* mother, const LHCb::Pa
     {
         for(int j = 1; j <= 3; j++)
         {
-            V(i, j) = PV_cov(i-1,j-1);
+            V(i,j) = PV_cov(i-1,j-1);
         }
     }
-    // DV1 and P3pi1 (4,5,6, 7,8,9,10)
-    for(int i = 4; i <= 10; i++)
+    // DV1 (4,5,6)
+    for(int i = 4; i <= 6; i++)
     {
-        for(int j = 4; j <= 10; j++)
+        for(int j = 4; j <= 6; j++)
         {
-            V(i, j) = taup_cov(i-4,j-4);
+            V(i,j) = DV1_cov(i-4,j-4);
         }
     }
-    // DV2 and p3pi2 (11,12,13 ,14,15,16,17)
-    for(int i = 11; i <= 17; i++)
+    // p1 (7,8,9)
+    for(int i = 7; i <= 9; i++)
     {
-        for(int j = 11; j <= 17; j++)
+        for(int j = 7; j <= 9; j++)
         {
-            V(i, j) = taum_cov(i-11,j-11);
+            V(i,j) = pi1_mom_cov(i-7,j-7);
         }
     }
-    // K+ reference point (18,19)
-    for(int i = 18; i <= 19; i++)
+    // p2 (10,11,12)
+    for(int i = 10; i <= 12; i++)
     {
-        for(int j = 18; j <= 19; j++)
+        for(int j = 10; j <= 12; j++)
         {
-            V(i, j) = Kp_pos_cov(i-18,j-18);
+            V(i,j) = pi2_mom_cov(i-10,j-10);
         }
     }
-    // P6piK (20,21,22,23)
-    for(int i = 20; i <= 23; i++)
+    // p3 (13,14,15)
+    for(int i = 13; i <= 15; i++)
     {
-        for(int j = 20; j <= 23; j++)
+        for(int j = 13; j <= 15; j++)
         {
-            V(i, j) = Bp_mom_cov(i-20,j-20);
+            V(i,j) = pi3_mom_cov(i-13,j-13);
         }
     }
-
-    // K+ reference point + 3-momentum (18,19, 20,21,22,23)
-    // for(int i = 18; i <= 23; i++ )
-    // {
-    //     for(int j = 18; j <= 23; j++)
-    //     {
-    //         if( (i < 20) && (j < 20) )
-    //         {
-    //             V(i,j) = Kp_cov(i-18,j-18);
-    //         }
-    //         else if( (i < 20) && (j >= 20) )
-    //         {
-    //             V(i,j) = Kp_cov(i-18,j-17);
-    //         }
-    //         else if( (i >= 20) && (j < 20) )
-    //         {
-    //             V(i,j) = Kp_cov(i-17,j-18);
-    //         }
-    //         else if( (i >= 20) && (j >= 20) )
-    //         {
-    //             V(i,j) = Kp_cov(i-17,j-17);
-    //         }
-    //     }
-    // }
+    // DV2 (16,17,18)
+    for(int i = 16; i <= 18; i++)
+    {
+        for(int j = 16; j <= 18; j++)
+        {
+            V(i,j) = DV2_cov(i-16,j-16);
+        }
+    }
+    // p4 (19,20,21)
+    for(int i = 19; i <= 21; i++)
+    {
+        for(int j = 19; j <= 21; j++)
+        {
+            V(i,j) = pi4_mom_cov(i-19,j-19);
+        }
+    }
+    // p5 (22,23,24)
+    for(int i = 22; i <= 24; i++)
+    {
+        for(int j = 22; j <= 24; j++)
+        {
+            V(i,j) = pi5_mom_cov(i-22,j-22);
+        }
+    }
+    // p6 (25,26,27)
+    for(int i = 25; i <= 27; i++)
+    {
+        for(int j = 25; j <= 27; j++)
+        {
+            V(i,j) = pi6_mom_cov(i-25,j-25);
+        }
+    }
+    // RP + pK (28,29, 30,31,32)
+    for(int i = 28; i <= 32; i++ )
+    {
+        for(int j = 28; j <= 32; j++)
+        {
+            if( (i < 30) && (j < 30) )
+            {
+                V(i,j) = Kp_cov(i-28,j-28);
+            }
+            else if( (i < 30) && (j >= 30) )
+            {
+                V(i,j) = Kp_cov(i-28,j-27);
+            }
+            else if( (i >= 30) && (j < 30) )
+            {
+                V(i,j) = Kp_cov(i-27,j-28);
+            }
+            else if( (i >= 30) && (j >= 30) )
+            {
+                V(i,j) = Kp_cov(i-27,j-27);
+            }
+        }
+    }
 
     // Measurement vector m
     for(int i = 1; i <= dimM; i++)
@@ -231,29 +260,25 @@ StatusCode TupleToolDecayFit::fill( const LHCb::Particle* mother, const LHCb::Pa
             tuple->column(Form("df_V_%i_%i",i,j), V(i,j));
         }
     }
-
-    tuple->column("df_RPx", refPoint_Kp.x());
-    tuple->column("df_RPy", refPoint_Kp.y());
-    tuple->column("df_RPz", refPoint_Kp.z());
+    
+    tuple->column("Kp_RP_X", RPK.x());
+    tuple->column("Kp_RP_Y", RPK.y());
+    tuple->column("Kp_RP_Z", RPK.z());
 
     for(int i = 0; i < 7; i++)
     {
         for(int j = 0; j < 7; j++)
         {
-            tuple->column(Form("df_pi1_cov_%i_%i",i,j), pi1_cov(i,j));
-            tuple->column(Form("df_pi2_cov_%i_%i",i,j), pi2_cov(i,j));
-            tuple->column(Form("df_pi3_cov_%i_%i",i,j), pi3_cov(i,j));
-            tuple->column(Form("df_pi4_cov_%i_%i",i,j), pi4_cov(i,j));
-            tuple->column(Form("df_pi5_cov_%i_%i",i,j), pi5_cov(i,j));
-            tuple->column(Form("df_pi6_cov_%i_%i",i,j), pi6_cov(i,j));
-            tuple->column(Form("df_Kp_cov_%i_%i",i,j), Kp_cov(i,j));
+            tuple->column(Form("taup_cov_%i_%i",i,j), taup_cov(i,j));
+            tuple->column(Form("taum_cov_%i_%i",i,j), taum_cov(i,j));
+            tuple->column(Form("Bp_cov_%i_%i",i,j), Bp_cov(i,j));
         }
     }
 
     return StatusCode(true);
 }
 
-std::vector<const VertexBase*> TupleToolDecayFit::originVertex( const Particle* mother, const Particle* P ) const
+std::vector<const VertexBase*> TupleToolDecayFit1::originVertex( const Particle* mother, const Particle* P ) const
 {
     std::vector<const VertexBase*> oriVx;
 
@@ -305,4 +330,4 @@ std::vector<const VertexBase*> TupleToolDecayFit::originVertex( const Particle* 
 }
 
 // Declaration of the Tool Factory
-DECLARE_COMPONENT( TupleToolDecayFit )
+DECLARE_COMPONENT( TupleToolDecayFit1 )

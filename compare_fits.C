@@ -1,16 +1,16 @@
 
-void compare_fits()
+void compare_fits( int year, int component, TString MC_files, TString FIT_files )
 {
     TCut df_status = "df_status==0";
     TCut passDTF = "Bp_dtf_12_status==0";
 
     // TTree from DaVinci
-    TFileCollection* fc = new TFileCollection("MC", "MC", "/panfs/felician/B2Ktautau/workflow/create_MC_pre_selection_tree/2018/Component_-1/pre_sel_tree.txt");
+    TFileCollection* fc = new TFileCollection("fc", "fc", MC_files);
     TChain* t = new TChain("DecayTree");
     t->AddFileInfoList((TCollection*)fc->GetList());
 
     // TTree with results from the standalone fitter
-    TFileCollection* fc1 = new TFileCollection("MC", "MC", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Component_-1/fit_results.txt");
+    TFileCollection* fc1 = new TFileCollection("fc1", "fc1", FIT_files);
     TChain* t1 = new TChain("DecayTree");
     t1->AddFileInfoList((TCollection*)fc1->GetList());
     t->AddFriend(t1);
@@ -65,8 +65,18 @@ void compare_fits()
     cout << "Nominal DTF: B+ mass peak is " << m1_peak << " MeV" << endl;
     cout << "Standalone fit: B+ mass peak is " << m2_peak << " MeV" << endl;
 
-    c.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/Bmass.gif");
-    c.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/Bmass.pdf");
+    double DTF_num = t->GetEntries("Bp_dtf_12_status==0");
+    double fitter_num = t->GetEntries("df_status==0");
+    double num_entries = t->GetEntries();
+
+    double DTF_pass = DTF_num/num_entries;
+    double fitter_pass = fitter_num/num_entries;
+
+    cout << "Nominal DTF : passing rate of " << DTF_pass*100 << " \% " << endl;
+    cout << "Standalone fit : passing rate of " << fitter_pass*100 << " \% " << endl;
+
+    c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/Bmass.gif",year,component));
+    c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/Bmass.pdf",year,component));
 
     // B+ mass error
     TH1D* h1_mberr = new TH1D("h1_mberr", "h1_mberr", 100, 0, 5000);
@@ -92,11 +102,10 @@ void compare_fits()
     leg1->AddEntry(h1_mberr,"Nominal DTF","f");
     leg1->AddEntry(h2_mberr,"New fit","f");
     leg1->Draw("same");
-    c1.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/Bmass_err.gif");
-    c1.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/Bmass_err.pdf");
+    c1.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/Bmass_err.gif",year,component));
+    c1.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/Bmass_err.pdf",year,component));
 
     // B+ mass pull
-    gStyle->SetOptStat(1);
     TH1D* h1_pull = new TH1D("h1_pull", "h1_pull", 100, -10, 10);
     TH1D* h2_pull = new TH1D("h2_pull", "h2_pull", 100, -10, 10);
     t->Draw("(Bp_dtf_12_M-5279)/Bp_dtf_12_MERR >> h1_pull",passDTF);
@@ -104,16 +113,16 @@ void compare_fits()
 
     TCanvas c2;
     c2.cd();
-    h1_pull->GetXaxis()->SetTitle("Pull: (m_{B}-m_{B}^{PDG})/#Delta m_{B}");
-    h1_pull->GetYaxis()->SetTitle("Events / (100) MeV");
-    h1_pull->SetTitle("");
+    h2_pull->GetXaxis()->SetTitle("Pull: (m_{B}-m_{B}^{PDG})/#Delta m_{B}");
+    h2_pull->GetYaxis()->SetTitle("Events / (100) MeV");
+    h2_pull->SetTitle("");
     h1_pull->SetLineColor(kBlack);
     h1_pull->SetFillColorAlpha(kBlack, 0.25);
     h2_pull->SetLineColor(kBlue);
     h2_pull->SetFillColorAlpha(kBlue, 0.25);
 
-    h1_pull->DrawNormalized();
-    h2_pull->DrawNormalized("same");
+    h2_pull->DrawNormalized();
+    h1_pull->DrawNormalized("same");
 
     TLegend* leg2 = new TLegend(0.2, 0.6, 0.5, 0.85);
     leg2->SetBorderSize(0);
@@ -121,8 +130,8 @@ void compare_fits()
     leg2->AddEntry(h1_pull,"Nominal DTF","f");
     leg2->AddEntry(h2_pull,"New fit","f");
     leg2->Draw("same");
-    c2.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/Bmass_pull.gif");
-    c2.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/Bmass_pull.pdf");
+    c2.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/Bmass_pull.gif",year,component));
+    c2.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/Bmass_pull.pdf",year,component));
 
     // Bias in antineutrino PZ
     TH1D* h1_bias1 = new TH1D("h1_bias1", "h1_bias1", 100, -100000, 100000);
@@ -148,8 +157,8 @@ void compare_fits()
     leg3->AddEntry(h1_bias1,"Nominal DTF","f");
     leg3->AddEntry(h2_bias1,"New fit","f");
     leg3->Draw("same");
-    c3.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/Bmass_antinutau_PZ_bias.gif");
-    c3.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/Bmass_antinutau_PZ_bias.pdf");
+    c3.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/Bmass_antinutau_PZ_bias.gif",year,component));
+    c3.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/Bmass_antinutau_PZ_bias.pdf",year,component));
 
     // Bias in neutrino PZ
     TH1D* h1_bias2 = new TH1D("h1_bias2", "h1_bias2", 100, -100000, 100000);
@@ -175,8 +184,8 @@ void compare_fits()
     leg4->AddEntry(h1_bias2,"Nominal DTF","f");
     leg4->AddEntry(h2_bias2,"New fit","f");
     leg4->Draw("same");
-    c4.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/Bmass_nutau_PZ_bias.gif");
-    c4.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/Bmass_nutau_PZ_bias.pdf");
+    c4.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/Bmass_nutau_PZ_bias.gif",year,component));
+    c4.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/Bmass_nutau_PZ_bias.pdf",year,component));
 
     // tau+ mass
     TH1D* h1_taup = new TH1D("h1_mtaup", "h1_mtaup", 100, 1600, 1900);
@@ -203,8 +212,8 @@ void compare_fits()
     legs5->AddEntry(h1_taup,"Nominal DTF","f");
     legs5->AddEntry(h2_taup,"New fit","f");
     legs5->Draw("same");
-    cs5.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/taup.gif");
-    cs5.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/taup.pdf");
+    cs5.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/taup_M.gif",year,component));
+    cs5.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/taup_M.pdf",year,component));
 
     // Energy conservation in DV1
     TH1D* h1_E1 = new TH1D("h1_E1", "h1_E1", 100, -500, 500);
@@ -231,8 +240,8 @@ void compare_fits()
     leg5->AddEntry(h1_E1,"Nominal DTF","f");
     leg5->AddEntry(h2_E1,"New fit","f");
     leg5->Draw("same");
-    c5.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/E_conservation_DV1.gif");
-    c5.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/E_conservation_DV1.pdf");
+    c5.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/E_conservation_DV1.gif",year,component));
+    c5.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/E_conservation_DV1.pdf",year,component));
 
     // Energy conservation in DV2
     TH1D* h1_E2 = new TH1D("h1_E2", "h1_E2", 100, -500, 500);
@@ -259,8 +268,8 @@ void compare_fits()
     leg6->AddEntry(h1_E2,"Nominal DTF","f");
     leg6->AddEntry(h2_E2,"New fit","f");
     leg6->Draw("same");
-    c6.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/E_conservation_DV2.gif");
-    c6.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/E_conservation_DV2.pdf");
+    c6.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/E_conservation_DV2.gif",year,component));
+    c6.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/E_conservation_DV2.pdf",year,component));
 
     // Energy conservation in BV
     TH1D* h1_E = new TH1D("h1_E", "h1_E", 100, -500, 500);
@@ -287,8 +296,8 @@ void compare_fits()
     leg7->AddEntry(h1_E,"Nominal DTF","f");
     leg7->AddEntry(h2_E,"New fit","f");
     leg7->Draw("same");
-    c7.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/E_conservation_BV.gif");
-    c7.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/E_conservation_BV.pdf");
+    c7.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/E_conservation_BV.gif",year,component));
+    c7.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/E_conservation_BV.pdf",year,component));
 
     // 3-momentum conservation in DV1
     TH1D* h1_P1x = new TH1D("h1_P1x", "h1_P1x", 100, -10, 10);
@@ -324,8 +333,8 @@ void compare_fits()
     leg8x->AddEntry(h1_P1x,"Nominal DTF","f");
     leg8x->AddEntry(h2_P1x,"New fit","f");
     leg8x->Draw("same");
-    c8x.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/PX_conservation_DV1.gif");
-    c8x.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/PX_conservation_DV1.pdf");
+    c8x.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/PX_conservation_DV1.gif",year,component));
+    c8x.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/PX_conservation_DV1.pdf",year,component));
 
     TCanvas c8y;
     c8y.cd();
@@ -345,8 +354,8 @@ void compare_fits()
     leg8y->AddEntry(h1_P1y,"Nominal DTF","f");
     leg8y->AddEntry(h2_P1y,"New fit","f");
     leg8y->Draw("same");
-    c8y.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/PY_conservation_DV1.gif");
-    c8y.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/PY_conservation_DV1.pdf");
+    c8y.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/PY_conservation_DV1.gif",year,component));
+    c8y.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/PY_conservation_DV1.pdf",year,component));
 
     TCanvas c8z;
     c8z.cd();
@@ -366,8 +375,8 @@ void compare_fits()
     leg8z->AddEntry(h1_P1z,"Nominal DTF","f");
     leg8z->AddEntry(h2_P1z,"New fit","f");
     leg8z->Draw("same");
-    c8z.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/PZ_conservation_DV1.gif");
-    c8z.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/PZ_conservation_DV1.pdf");
+    c8z.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/PZ_conservation_DV1.gif",year,component));
+    c8z.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/PZ_conservation_DV1.pdf",year,component));
 
     // 3-momentum conservation in DV2
     TH1D* h1_P2x = new TH1D("h1_P2x", "h1_P2x", 100, -10, 10);
@@ -403,8 +412,8 @@ void compare_fits()
     leg9x->AddEntry(h1_P2x,"Nominal DTF","f");
     leg9x->AddEntry(h2_P2x,"New fit","f");
     leg9x->Draw("same");
-    c9x.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/PX_conservation_DV2.gif");
-    c9x.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/PX_conservation_DV2.pdf");
+    c9x.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/PX_conservation_DV2.gif",year,component));
+    c9x.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/PX_conservation_DV2.pdf",year,component));
 
     TCanvas c9y;
     c9y.cd();
@@ -424,8 +433,8 @@ void compare_fits()
     leg9y->AddEntry(h1_P2y,"Nominal DTF","f");
     leg9y->AddEntry(h2_P2y,"New fit","f");
     leg9y->Draw("same");
-    c9y.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/PY_conservation_DV2.gif");
-    c9y.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/PY_conservation_DV2.pdf");
+    c9y.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/PY_conservation_DV2.gif",year,component));
+    c9y.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/PY_conservation_DV2.pdf",year,component));
 
     TCanvas c9z;
     c9z.cd();
@@ -445,8 +454,8 @@ void compare_fits()
     leg9z->AddEntry(h1_P2z,"Nominal DTF","f");
     leg9z->AddEntry(h2_P2z,"New fit","f");
     leg9z->Draw("same");
-    c9z.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/PZ_conservation_DV2.gif");
-    c9z.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/PZ_conservation_DV2.pdf");
+    c9z.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/PZ_conservation_DV2.gif",year,component));
+    c9z.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/PZ_conservation_DV2.pdf",year,component));
 
     // 3-momentum conservation in BV
     TH1D* h1_Px = new TH1D("h1_Px", "h1_Px", 100, -10, 10);
@@ -482,8 +491,8 @@ void compare_fits()
     leg10x->AddEntry(h1_Px,"Nominal DTF","f");
     leg10x->AddEntry(h2_Px,"New fit","f");
     leg10x->Draw("same");
-    c10x.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/PX_conservation_BV.gif");
-    c10x.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/PX_conservation_BV.pdf");
+    c10x.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/PX_conservation_BV.gif",year,component));
+    c10x.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/PX_conservation_BV.pdf",year,component));
 
     TCanvas c10y;
     c10y.cd();
@@ -503,8 +512,8 @@ void compare_fits()
     leg10y->AddEntry(h1_Py,"Nominal DTF","f");
     leg10y->AddEntry(h2_Py,"New fit","f");
     leg10y->Draw("same");
-    c10y.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/PY_conservation_BV.gif");
-    c10y.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/PY_conservation_BV.pdf");
+    c10y.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/PY_conservation_BV.gif",year,component));
+    c10y.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/PY_conservation_BV.pdf",year,component));
 
     TCanvas c10z;
     c10z.cd();
@@ -524,7 +533,7 @@ void compare_fits()
     leg10z->AddEntry(h1_Pz,"Nominal DTF","f");
     leg10z->AddEntry(h2_Pz,"New fit","f");
     leg10z->Draw("same");
-    c10z.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/PZ_conservation_BV.gif");
-    c10z.SaveAs("/panfs/felician/B2Ktautau/ROOT_Sim/2018/Plots/PZ_conservation_BV.pdf");
+    c10z.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/PZ_conservation_BV.gif",year,component));
+    c10z.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201%i/Component_%i/PZ_conservation_BV.pdf",year,component));
 
 }

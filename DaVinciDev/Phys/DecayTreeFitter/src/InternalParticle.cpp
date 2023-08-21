@@ -280,6 +280,7 @@ namespace DecayTreeFitter {
   ErrCode InternalParticle::initMom( FitParams* fitparams ) const {
     int momindex = momIndex();
     // reset
+
     for ( int irow = 1; irow <= 4; ++irow ) fitparams->par( momindex + irow ) = 0;
 
     // now add daughter momenta
@@ -319,7 +320,8 @@ namespace DecayTreeFitter {
     // CPU.
 
     // first add the mother
-    int momindex = momIndex();
+    int momindex = momIndex();  
+
     for ( int imom = 1; imom <= 4; ++imom ) {
       p.r( imom )                  = fitparams.par()( momindex + imom );
       p.H( imom, momindex + imom ) = 1;
@@ -331,7 +333,7 @@ namespace DecayTreeFitter {
       int    daumomindex = ( *it )->momIndex();
       double mass        = ( *it )->pdtMass();
       double e2          = mass * mass;
-      int    maxrow      = ( *it )->hasEnergy() ? 4 : 3;
+      int    maxrow      = ( *it )->hasEnergy() ? 4 : 3; 
       for ( int imom = 1; imom <= maxrow; ++imom ) {
         double px = fitparams.par()( daumomindex + imom );
         e2 += px * px;
@@ -341,11 +343,13 @@ namespace DecayTreeFitter {
       if ( maxrow == 3 ) { // if daughter does not have an energy
         // treat the energy for particles that are parameterized with p3
         double energy = sqrt( e2 );
+
         p.r( 4 ) += -energy;
         for ( int jmom = 1; jmom <= 3; ++jmom ) {
           double px                    = fitparams.par()( daumomindex + jmom );
           p.H( 4, daumomindex + jmom ) = -px / energy;
         }
+
       } else if ( false && daulenindex >= 0 && ( *it )->charge() != 0 ) {
 
         double       tau          = fitparams.par()( daulenindex + 1 );
@@ -370,18 +374,18 @@ namespace DecayTreeFitter {
         }
       }
     }
-    
+  
     return ErrCode::success;
   }
 
-  ErrCode InternalParticle::projectLifeTimeConstraint( const FitParams&, Projection& ) const {
-    std::cout << "Not yet implemented lifetime constraint!" << std::endl;
-    // int lenindex = lenIndex() ;
-    //     assert(lenindex>=0) ;
-    //     double tau = pdtTau() ;
-    //     p.r(1)            = fitparams.par()(lenindex+1) - tau ;
-    //     p.Vfast(1,1)      = tau*tau ;
-    //     p.H(1,lenindex+1) = 1 ;
+  ErrCode InternalParticle::projectLifeTimeConstraint( const FitParams& fitparams, Projection& p) const {
+    // std::cout << "Not yet implemented lifetime constraint!" << std::endl;
+    int lenindex = lenIndex() ;
+        assert(lenindex>=0) ;
+        double tau = pdtTau() ;
+        p.r(1)            = fitparams.par()(lenindex+1) - tau ;
+        p.Vfast(1,1)      = tau*tau ;
+        p.H(1,lenindex+1) = 1 ;
     return ErrCode::success;
   }
 
@@ -632,16 +636,18 @@ namespace DecayTreeFitter {
     // double massprecision = 4*pdtMass()*pdtMass()*1e-5 ; // 0.01 MeV
 
     // the lifetime constraint
-    if ( lenIndex() >= 0 && m_lifetimeconstraint )
+    if ( lenIndex() >= 0 && m_lifetimeconstraint ) 
       alist.push_back( Constraint( this, Constraint::lifetime, depth, 1 ) );
+
     // the kinematic constraint
-    if ( momIndex() >= 0 ) alist.push_back( Constraint( this, Constraint::kinematic, depth, 4 ) );
+    if ( momIndex() >= 0 ) alist.push_back( Constraint( this, Constraint::kinematic, depth, 4 ) ); 
+
     // the geometric constraint
     if ( mother() && lenIndex() >= 0 ) alist.push_back( Constraint( this, Constraint::geometric, depth, 3, 3 ) );
-    // the scalefactor constraint (apply it only if it is a B+ meson)
-    //if ( (particle().particleID().pid() == 521) || (particle().particleID().pid() == -521) ) alist.push_back( Constraint( this, Constraint::scalefactor, depth, 6 ) );
+
     // the mass constraint. FIXME: move to ParticleBase
-    if ( hasMassConstraint() ) alist.push_back( Constraint( this, Constraint::mass, depth, 1, 3 ) );
+    if ( hasMassConstraint() ) alist.push_back( Constraint( this, Constraint::mass, depth, 1, 3 ) ); 
+
   }
 
   std::string InternalParticle::parname( int thisindex ) const {

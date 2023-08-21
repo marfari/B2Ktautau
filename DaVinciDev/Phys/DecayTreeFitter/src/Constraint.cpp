@@ -94,9 +94,9 @@ namespace DecayTreeFitter {
             finished                     = ++iter >= m_maxNIter || diverging || converged;
 
             if ( vtxverbose >= 3 ) {
-              std::cout << "chi2,niter: " << iter << " " << std::setprecision( 7 ) << std::setw( 12 ) << chisq << " "
-                        << std::setw( 12 ) << newchisq << " " << std::setw( 12 ) << dchisq << " " << diverging << " "
-                        << converged << " " << status << std::endl;
+            std::cout << "chi2,niter: " << iter << " " << std::setprecision( 7 ) << std::setw( 12 ) << chisq << " "
+                      << std::setw( 12 ) << newchisq << " " << std::setw( 12 ) << dchisq << " " << diverging << " "
+                      << converged << " " << status << std::endl;
             }
             chisq = newchisq;
           }

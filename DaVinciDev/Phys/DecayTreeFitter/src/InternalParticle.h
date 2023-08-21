@@ -22,6 +22,17 @@ namespace DecayTreeFitter {
     InternalParticle( const LHCb::Particle& bc, const ParticleBase* mother, const Configuration& config );
 
     int dim() const override { return mother() ? 8 : 7; } // default
+    // int dim() const override
+    // {
+    //   if( (particle().particleID().pid() == 15) || (particle().particleID().pid() == -15) )
+    //   {
+    //     return mother() ? 7 : 6;
+    //   }
+    //   else
+    //   {
+    //     return mother() ? 8 : 7;
+    //   } 
+    // }
 
     ErrCode initPar1( FitParams* ) override;
     ErrCode initPar2( FitParams* ) override;
@@ -31,24 +42,25 @@ namespace DecayTreeFitter {
     int         posIndex() const override { return index(); }
     int         lenIndex() const override { return mother() ? index() + 3 : -1; }
     int         momIndex() const override { return mother() ? index() + 4 : index() + 3; }
-    // bool        hasEnergy() const override { return true; } // default
-    bool hasEnergy() const override 
-    { 
-      if( (particle().particleID().pid() == 15) || (particle().particleID().pid() == -15) )
-      {
-        return false;
-      }
-      else 
-      {
-        return true;
-      }
-    }
+    bool        hasEnergy() const override { return true; } // default
+    // bool hasEnergy() const override
+    // {
+    //   if( (particle().particleID().pid() == 15) || (particle().particleID().pid() == -15) )
+    //   {
+    //     return false;
+    //   }
+    //   else
+    //   {
+    //     return true;
+    //   }
+    // }
+
     bool        hasPosition() const override { return true; }
     std::string parname( int index ) const override;
 
     // constraints
     ErrCode projectKineConstraint( const FitParams&, Projection& ) const;
-    ErrCode projectLifeTimeConstraint( const FitParams&, Projection& ) const;
+    ErrCode projectLifeTimeConstraint( const FitParams& fitparams, Projection& p) const;
     ErrCode projectMassConstraintTwoBody( const FitParams& fitparams, Projection& p ) const;
     ErrCode projectConstraint( Constraint::Type type, const FitParams& fitparams, Projection& p ) const override;
 
