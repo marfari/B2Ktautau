@@ -47,9 +47,22 @@ void minimize( ROOT::Math::XYZPoint BV, int init );
 TVectorD transform_m( TVectorD m );
 TMatrixDSym transform_V( TVectorD m, TMatrixDSym V, TMatrixDSym taup_cov, TMatrixDSym taum_cov );
 
-void decay_fit(int year, TString MC_files, int component, int line)
+void decay_fit(int year, TString MC_files, TString RS_DATA_files, TString WS_DATA_files, int species, int component, int line)
 {
-  TFileCollection* fc = new TFileCollection("MC", "MC", MC_files, 1, line);
+  TFileCollection* fc;
+  if(species == 0)
+  { 
+    fc = new TFileCollection("MC", "MC", MC_files, 1, line);
+  }
+  else if(species == 1)
+  {
+    fc = new TFileCollection("MC", "MC", RS_DATA_files, 1, line);
+  }
+  else if(species == 2)
+  {
+    fc = new TFileCollection("MC", "MC", WS_DATA_files, 1, line);
+  }
+
   TChain* t = new TChain("DecayTree");
   t->AddFileInfoList((TCollection*)fc->GetList());
 
@@ -85,7 +98,7 @@ void decay_fit(int year, TString MC_files, int component, int line)
     }
   }
 
-  TFile* fout = new TFile(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Component_%i/fit_result_%i.root",year,component,line), "RECREATE");
+  TFile* fout = new TFile(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/Component_%i/fit_result_%i.root",year,species,component,line), "RECREATE");
   TTree* tout = new TTree("DecayTree", "DecayTree");
 
   TString name_x[] = {
@@ -154,23 +167,23 @@ void decay_fit(int year, TString MC_files, int component, int line)
     // TMatrixD V_eigen_vectors = V.EigenVectors(V_eigen_values);
     // V_eigen_values.Print();
 
-    for(int i = 0; i < 7; i++)
-    {
-      for(int j = 0; j < 7; j++)
-      {
-        taup_cov(i,j) = taup_cov_vars[i][j];
-        taum_cov(i,j) = taum_cov_vars[i][j];
-        Bp_cov(i,j) = Bp_cov_vars[i][j];
-      }
-    }
+    // for(int i = 0; i < 7; i++)
+    // {
+    //   for(int j = 0; j < 7; j++)
+    //   {
+    //     taup_cov(i,j) = taup_cov_vars[i][j];
+    //     taum_cov(i,j) = taum_cov_vars[i][j];
+    //     Bp_cov(i,j) = Bp_cov_vars[i][j];
+    //   }
+    // }
     // taup_cov.Print();
     // taum_cov.Print();
     // Bp_cov.Print();
 
-    Vprime.SetTol(pow(10,-23));
-    W.SetTol(pow(10,-23));
-    mprime = transform_m(m);
-    Vprime = transform_V(m,V,taup_cov,taum_cov);
+    // Vprime.SetTol(pow(10,-23));
+    // W.SetTol(pow(10,-23));
+    // mprime = transform_m(m);
+    // Vprime = transform_V(m,V,taup_cov,taum_cov);
     // mprime.Print();
     // Vprime.Print();
 
@@ -306,27 +319,26 @@ void decay_fit(int year, TString MC_files, int component, int line)
     // W.Print();
 
     ROOT::Math::XYZPoint BV( BVx, BVy, BVz ); // BV (necessary for Marseille initialisation)
-    minimize( BV, 2 );
 
     // 2130
-    // int init = 2; // Marseille
-    // minimize( BV, init );
-    // if( (status != 0) && (init == 2) )
-    // {
-    //   init = 1; // K*tautau w/ visible 3pi momenta
-    //   cout << "status before init = 1 : " << status << endl;
-    //   minimize( BV, init );
-    // }
-    // if( (status != 0) && (init == 1) )
-    // {
-    //   init = -1; // Anne Keune's
-    //   minimize( BV, init );
-    // }
-    // if( (status != 0) && (init == -1) )
-    // {
-    //   init = 0; // K*tautau from vertices
-    //   minimize( BV, init );
-    // }
+    int init = 2; // Marseille
+    minimize( BV, init );
+    if( (status != 0) && (init == 2) )
+    {
+      init = 1; // K*tautau w/ visible 3pi momenta
+      cout << "status before init = 1 : " << status << endl;
+      minimize( BV, init );
+    }
+    if( (status != 0) && (init == 1) )
+    {
+      init = -1; // Anne Keune's
+      minimize( BV, init );
+    }
+    if( (status != 0) && (init == -1) )
+    {
+      init = 0; // K*tautau from vertices
+      minimize( BV, init );
+    }
   
     // 012
     // int init = 0; // K*tautau from vertices
