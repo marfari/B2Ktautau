@@ -321,6 +321,7 @@ void decay_fit(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
     ROOT::Math::XYZPoint BV( BVx, BVy, BVz ); // BV (necessary for Marseille initialisation)
 
     // 2130
+    // best sequence so far
     int init = 2; // Marseille
     minimize( BV, init );
     if( (status != 0) && (init == 2) )
