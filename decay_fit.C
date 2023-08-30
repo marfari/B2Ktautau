@@ -182,8 +182,8 @@ void decay_fit(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
 
     // Vprime.SetTol(pow(10,-23));
     // W.SetTol(pow(10,-23));
-    // mprime = transform_m(m);
-    // Vprime = transform_V(m,V,taup_cov,taum_cov);
+    mprime = transform_m(m);
+    Vprime = transform_V(m,V,taup_cov,taum_cov);
     // mprime.Print();
     // Vprime.Print();
 
