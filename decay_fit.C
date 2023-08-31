@@ -40,7 +40,7 @@ TVectorD x_initial_estimate( TVectorD m ); // Original initialisation
 TVectorD x_initial_estimate0( TVectorD mprime, ROOT::Math::XYZPoint BV ); // B->K*tautau initialisation; taus direction from vertices
 TVectorD x_initial_estimate1( TVectorD mprime, ROOT::Math::XYZPoint BV ); // Using B->K* tautau initialisation; taus direction based visible 3pi momenta
 TVectorD x_initial_estimate2( TVectorD m, ROOT::Math::XYZPoint BV ); // Marseille's initialisation
-TVectorD h( TVectorD x );
+TVectorD model( TVectorD x );
 TMatrixD dh_dx( TVectorD x );
 Double_t chisquare( const Double_t* x_values );
 void minimize( ROOT::Math::XYZPoint BV, int init );
@@ -180,6 +180,7 @@ void decay_fit(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
     // taum_cov.Print();
     // Bp_cov.Print();
 
+    // 2) Make transformation from 32D track to 23D m6piK parametrisation
     // Vprime.SetTol(pow(10,-23));
     // W.SetTol(pow(10,-23));
     mprime = transform_m(m);
@@ -313,7 +314,7 @@ void decay_fit(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
     // // return;
     // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // // Weights matrix W = V'^-1
+    // 3) Weights matrix W = V'^-1
     W = Vprime;
     W.Invert();
     // W.Print();
@@ -392,17 +393,17 @@ void minimize( ROOT::Math::XYZPoint BV, int init )
   {
     x0 = x_initial_estimate0( mprime, BV );
   }
-  else if(init == 1)
+  else if(init == 1) // B->K*tautau initialisation; taus direction from 3pi momenta
   {
     x0 = x_initial_estimate1( mprime, BV );
   }
-  else if(init == 2) 
+  else if(init == 2) // Marseille's initialisation
   {
      x0 = x_initial_estimate2( mprime, BV );
   }
-  else if(init == -1)
+  else if(init == -1) // Original initialisation, Anne Keune's
   {
-    x0 = x_initial_estimate( mprime ); // Original initialisation
+    x0 = x_initial_estimate( mprime ); 
   }
 
   Double_t x0_vars[dimX], x0_err[dimX];
@@ -610,16 +611,16 @@ Double_t chisquare( const Double_t* x_values )
     x(i) = x_values[i];
   }
 
-  TVectorD hx = h( x );
+  TVectorD hx = model( x );
 
-  TVectorD r = mprime - h(x);
+  TVectorD r = mprime - hx;
 
   Double_t chi2 = r*(W*r);
 
   return chi2;
 }
 
-TVectorD h( TVectorD x )
+TVectorD model( TVectorD x )
 {
   // The model; writes the known parameters in terms of the unkown parameters using the model constraints
   ROOT::Math::XYZPoint BV( x(0), x(1), x(2) );

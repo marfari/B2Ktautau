@@ -27,7 +27,7 @@ def addBranches(self, branches):
     for branch in branches:
         # check for whitespace
         #for char in ""\t\r\s":
-            #if char in branch:
+        	#if char in branch:
                 #raise NameError('You have tried to add a branch named \'' + branch + '\',which contains whitespace. This is not permitted.')
         self.Branches[branch] = branches[branch]
         self.addTool(TupleToolDecay, branch)
@@ -93,7 +93,7 @@ def addSubmassInfo( branch ):
 
 # Isolation information (stripping line output isolation variables)
 def addIsoInfo(branch, stream, line, year):
-	LoKi_Cone =  branch.Bp.addTupleTool("LoKi::Hybrid::TupleTool/KoKi_Cone")
+	LoKi_Cone =  branch.Bp.addTupleTool("LoKi::Hybrid::TupleTool/LoKi_Cone")
 
 	if(year == '2018'):
 		LoKi_Cone.Variables = {
@@ -341,7 +341,7 @@ def addTopInfo( branch ):
         "BPVLTIME":"BPVLTIME()",
         "BPVZ":"BPV(VZ)",
     	"VCHI2PDOF":"VFASPF(VCHI2PDOF)",
-        "AM" : "PFUNA(AM)"
+        "AM" : "PFUNA(AM)",
     }
 
 def addTrkInfo( branch ):
@@ -354,15 +354,15 @@ def addTrkInfo( branch ):
         "TRGHOSTPROB":"TRGHOSTPROB"
     }
 
-# DecayTreeFitter
+# DecayTreeFitter / standalone fitter input branches
 def addKTTDTF(branch):
 	# my decay fit
-	# df = branch.addTupleTool("TupleToolDecayFit/df")
-	# df.constrainToOriginVertex = True
+	df = branch.addTupleTool("TupleToolDecayFit1/df")
+	df.constrainToOriginVertex = True
 
 	# original initialisation
 	# dtf = branch.addTupleTool("B2KtautauDTF/dtf")
-	# dtf.daughtersToConstrain = ['nu_tau', 'nu_tau~', 'tau-', 'tau+']
+	# # dtf.daughtersToConstrain = ['nu_tau', 'tau-']
 	# dtf.UseFullTreeInName = True
 	# dtf.UpdateDaughters = True
 	# dtf.Verbose = True
@@ -397,7 +397,7 @@ def addKTTDTF(branch):
 
 	# sequential DTF (012 - default)
 	dtf_seq_012 = branch.addTupleTool("TupleToolKTauTauDTFSequential/dtf_{}".format(12))
-	# dtf_seq_012.daughtersToConstrain = ['nu_tau', 'nu_tau~', 'tau-', 'tau+']
+	dtf_seq_012.daughtersToConstrain = ['nu_tau', 'tau+']
 	dtf_seq_012.UseFullTreeInName = True
 	dtf_seq_012.UpdateDaughters = True
 	dtf_seq_012.Verbose = True
@@ -459,7 +459,7 @@ def addKTTDTF(branch):
 
 def addTISTOS( branch ):
     ttb = branch.addTupleTool("TupleToolTISTOS")
-    ttb.VerboseL0=True #if you want to fill info for each trigger line
+    ttb.VerboseL0=True # if you want to fill info for each trigger line
     ttb.VerboseHlt1=True
     ttb.VerboseHlt2=True
     ttb.TriggerList=[
@@ -524,27 +524,28 @@ mcdtt_3pi_3pipi0 = MCDecayTreeTuple('mc_ntuple_3pi_3pipi0')
 mcdtt_3pipi0_3pi = MCDecayTreeTuple('mc_ntuple_3pipi0_3pi')
 mcdtt_3pipi0_3pipi0 = MCDecayTreeTuple('mc_ntuple_3pipi0_3pipi0')
 
-#Loose preselections to reduce the size of tuples
-if isMC:
-	b_strip = AutomaticData('/Event/{0}/Phys/{1}/Particles'.format(stream, line))# DST
-else:
-	b_strip    = AutomaticData('/Phys/{0}/Particles'.format(line))# microDST 
-	b_strip_SS = AutomaticData('/Phys/{0}/Particles'.format(line_SS))# microDST 
+# Loose preselections to reduce the size of the tuples (in data)
+# These (rectangular) selections are applied to MC offline
 
+# filter code (will be updated)
 filtercode = " (NINGENERATION( (M < 3400) & (ABSID=='B+') , 0) == 0)  "\
 			 "& (NINGENERATION( (M > 5000) & (ABSID=='B+') , 0) == 0) "\
 			 "& (NINGENERATION( (M < 800) & (ABSID=='tau+') , 1) == 0) "\
 			 "& (NINGENERATION( (M > 1600) & (ABSID=='tau+') , 1) == 0) "
 
-b_Filter    = FilterSelection("b_Filter", b_strip, Code = filtercode)
 if not isMC:
+	b_strip    = AutomaticData('/Phys/{0}/Particles'.format(line)) # microDST 
+	b_strip_SS = AutomaticData('/Phys/{0}/Particles'.format(line_SS)) # microDST 
+
+	b_Filter    = FilterSelection("b_Filter", b_strip, Code = filtercode)
 	b_Filter_SS = FilterSelection("b_Filter_SS", b_strip_SS, Code = filtercode)
 
-if isMC:
 	dtt.Inputs = [b_Filter.outputLocation()]
-else:
-	dtt.Inputs = ['/Phys/{0}/Particles'.format(line)] # microDST 
-	dtt_SS.Inputs = ['/Phys/{0}/Particles'.format(line_SS)] # microDST 
+	dtt_SS.Inputs = [b_Filter_SS.outputLocation()]
+
+# Do not apply rectangular cuts to MC @ DaVinci stage:
+if isMC:
+	dtt.Inputs = ['/Event/{0}/Phys/{1}/Particles'.format(stream, line)] # DST
 
 dtt.setDescriptorTemplate('${Bp}[B+ -> ${taup}(tau+ -> ${taup_pi1}pi+ ${taup_pi2}pi- ${taup_pi3}pi+) ${taum}(tau- -> ${taum_pi1}pi- ${taum_pi2}pi+ ${taum_pi3}pi-) ${Kp}K+]CC')
 dtt_SS.setDescriptorTemplate('(${Bp}[B+ -> ${taup}(tau+ -> ${taup_pi1}pi+ ${taup_pi2}pi- ${taup_pi3}pi+) ${taum}(tau+ -> ${taum_pi1}pi+ ${taum_pi2}pi- ${taum_pi3}pi+) ${Kp}K+]CC)'
@@ -587,8 +588,8 @@ if not isMC:
 # PV checker -> TupleToolPrimaries requires there to be a PV in the event, otherwise it throws an error
 DaVinci().UserAlgorithms += [CheckPV()]
 
-DaVinci().UserAlgorithms += [b_Filter]
 if not isMC:
+	DaVinci().UserAlgorithms += [b_Filter]
 	DaVinci().UserAlgorithms += [b_Filter_SS]
 
 DaVinci().UserAlgorithms += [dtt]
@@ -600,9 +601,22 @@ if isMC:
 if not isMC:
 	DaVinci().UserAlgorithms += [dtt_SS]
 
+if isMC:
+	# Apply momentum smearing to MC
+	from Configurables import TrackSmearState as SMEAR
+	smear = SMEAR('StateSmear')
+	DaVinci().UserAlgorithms += [smear]
+else:
+	# Apply momentum scaling to data
+	from Configurables import TrackScaleState as SCALE
+	from Configurables import CondDB
+	CondDB(LatestGlobalTagByDataType=year) # sets the DDDB and CondDB for data to the latest recommended tags for that year
+	scaler = SCALE('StateScale')
+	DaVinci().UserAlgorithms += [scaler]
+
 # Configure DaVinci
 if isMC:
-	#DaVinci().TupleFile = 'DVntuple_MC_'+year+'_'+pol+'.root'
+	# DaVinci().TupleFile = 'DVntuple_MC_'+year+'_'+pol+'.root'
 	DaVinci().TupleFile = '/panfs/felician/B2Ktautau/ROOT_Sim/2018/DVntuple_MC_'+year+'_'+pol+'.root'
 else:
 	DaVinci().TupleFile = 'DVntuple_data_'+year+'_'+pol+'.root'
@@ -613,9 +627,8 @@ DaVinci().DataType = year
 if isMC:
 	DaVinci().Simulation = True
 	DaVinci().InputType = 'DST'
-	# CondDBtag / DDDBtag specify the exact detector conditions with which the MC was generated. They are specified in the downloaded DST file.
 
-	# Official MC:
+	# CondDBtag / DDDBtag specify the exact detector conditions with which the MC was generated. They are specified in the downloaded DST file.
 	if year == '2016':
 		DaVinci().DDDBtag = "dddb-20210528-6"
 		if pol == 'MagUp':
@@ -639,10 +652,12 @@ else:
 	DaVinci().Simulation = False
 	DaVinci().InputType = 'MDST'
 	DaVinci().RootInTES = '/Event/{0}'.format(stream) # for MDST only
+
 DaVinci().Lumi = not DaVinci().Simulation # Only ask for luminosity information when not using simulated data
-	
 DaVinci().EvtMax = -1 # how many events to run over (-1 = runs over all events)
 
-# # Use the local input data
+# Use the local input data
 from GaudiConf import IOHelper
-IOHelper().inputFiles(['/panfs/felician/B2Ktautau/ROOT_Sim/2018/00175275_00000001_1.b2ktautau.strip.dst'], clear=True)
+IOHelper().inputFiles([
+	'/panfs/felician/B2Ktautau/ROOT_Sim/2018/DST/00175275_00000033_1.b2ktautau.strip.dst'
+	], clear=True)
