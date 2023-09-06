@@ -27,7 +27,7 @@ Double_t RPz = 0; // z-component of the reference point in the K+ trajectory (fi
 Double_t chi2, MB, MB_err, taup_PE, taum_PE, taup_M, taum_M; 
 TVectorD x_m(dimX); // vector of unkown parameters after the minimisation
 TMatrixD C_m(dimX,dimX); // covariance matrix of the fit parameters
-Int_t status; // status of the fit
+Int_t status, init; // status of the fit
 
 Double_t mtau = 1776.86; // MeV (PDG 2023)
 Double_t mpion = 139.57039; // MeV
@@ -136,6 +136,7 @@ void decay_fit(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
     }
   }
   tout->Branch("df_chi2", &chi2);
+  tout->Branch("df_init", &init);
   tout->Branch("df_Bp_M", &MB);
   tout->Branch("df_Bp_MERR", &MB_err);
   tout->Branch("df_status", &status);
@@ -321,54 +322,45 @@ void decay_fit(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
 
     ROOT::Math::XYZPoint BV( BVx, BVy, BVz ); // BV (necessary for Marseille initialisation)
 
-    // 2130
-    // best sequence so far
-    int init = 2; // Marseille
+    // 2301
+    init = 2; // Marseille
     minimize( BV, init );
-    if( (status != 0) && (init == 2) )
+    if((status != 0) && (init == 2))
     {
-      init = 1; // K*tautau w/ visible 3pi momenta
-      cout << "status before init = 1 : " << status << endl;
+      init = -1; // Anne Keunes
       minimize( BV, init );
     }
-    if( (status != 0) && (init == 1) )
+    if((status != 0) && (init == -1))
     {
-      init = -1; // Anne Keune's
+      init = 0; //K*tautau DVs
       minimize( BV, init );
     }
-    if( (status != 0) && (init == -1) )
+    if((status != 0) && (init == 0))
     {
-      init = 0; // K*tautau from vertices
+      init = 1; // K*tautau vertices
       minimize( BV, init );
     }
   
-    // 012
-    // int init = 0; // K*tautau from vertices
+    // 2130
+    // init = 2; // Marseille
     // minimize( BV, init );
-    // if( (status != 0) && (init == 0) )
+    // if((status != 0) && (init == 2))
     // {
-    //   init = 1; // K*tautau w/ visible 3pi momenta
+    //   init = 1; // K*tautau vertices
     //   minimize( BV, init );
     // }
-    // if( (status != 0) && (init == 1) )
+    // if((status != 0) && (init == 1))
     // {
-    //   init = 2; // Marseille's
+    //   init = -1; // Anne Keune's
     //   minimize( BV, init );
     // }
-  
-    // 210
-    // int init = 2; 
-    // minimize( BV, init );
-    // if( (status != 0) && (init == 2) )
+    // if((status != 0) && (init == -1))
     // {
-    //   init = 1; 
+    //   init = 0; // K*tautau DVs
     //   minimize( BV, init );
     // }
-    // if( (status != 0) && (init == 1) )
-    // {
-    //   init = 0; // Marseille's
-    //   minimize( BV, init );
-    // }
+
+    // minimize(BV,2);
 
     tout->Fill();
   }
@@ -485,10 +477,9 @@ void minimize( ROOT::Math::XYZPoint BV, int init )
   ROOT::Math::Minimizer* min = ROOT::Math::Factory::CreateMinimizer("Minuit", "Migrad");    
   ROOT::Math::Functor func(&chisquare, dimX);
 
-  min->SetMaxIterations(100000000);  
-  min->SetMaxFunctionCalls(100000000);
+  min->SetMaxIterations(10000000);  
+  min->SetMaxFunctionCalls(10000000);
   min->SetPrintLevel(1);
-  // min->SetPrecision(pow(10,-15));
   min->SetTolerance(0.000000001);
   min->SetFunction(func);
 
@@ -544,7 +535,7 @@ void minimize( ROOT::Math::XYZPoint BV, int init )
     }
   }
   // x_m.Print();
-  // TVectorD hx_m = h(x_m);
+  // TVectorD hx_m = model(x_m);
   // hx_m.Print();
   // TVectorD r_m = mprime-hx_m;
   // r_m.Print();
@@ -585,6 +576,7 @@ void minimize( ROOT::Math::XYZPoint BV, int init )
   taum_M = sqrt( pow(taum_PE,2) - ptau2_m.Mag2() );
 
   // cout << "initial chi2 = " << chisquare(x0_vars) << endl;
+  cout << "init = " << init << endl;
   cout << "final chi2 = " << min->MinValue() << endl;
   cout << "MB = " << MB << " +/- " << MB_err << endl;
   cout << "Status = " << status << endl;
@@ -637,7 +629,7 @@ TVectorD model( TVectorD x )
 
   Double_t EB = sqrt( MB_squared + pB.Mag2() );
 
-  // Tau and neutrino mass constraints:
+  // Tau and neutrino mass constraints (4):
   Double_t Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
   Double_t Etau2 = sqrt( pow(mtau,2) + ptau2.Mag2() );
   Double_t Enu1 = sqrt( pnu1.Mag2() );
@@ -649,23 +641,23 @@ TVectorD model( TVectorD x )
   ROOT::Math::PxPyPzEVector Pnu2( pnu2.x(), pnu2.y(), pnu2.z(), Enu2 );
   ROOT::Math::PxPyPzEVector PB( pB.x(), pB.y(), pB.z(), EB);
 
-  // pB must point back to the PV:
+  // pB must point back to the PV (2):
   ROOT::Math::XYZPoint PV( BV.x() - L*pB.x(), BV.y() - L*pB.y(), BV.z() - L*pB.z() );
-  // ptau1 must point back to BV:
+  // ptau1 must point back to BV (2):
   ROOT::Math::XYZPoint DV1( BV.x() + L1*ptau1.x(), BV.y() + L1*ptau1.y(), BV.z() + L1*ptau1.z() );
-  // 4-momentum conservation in DV1:
+  // 4-momentum conservation in DV1 (4):
   ROOT::Math::XYZVector p3pi1 = ptau1 - pnu1;
   // Double_t E3pi1 = Etau1 - Enu1; 
   Double_t m3pi1_squared = pow(mtau,2) -2*Ptau1.Dot(Pnu1); 
-  // ptau2 must point back to DV2:
+  // ptau2 must point back to DV2 (2):
   ROOT::Math::XYZPoint DV2( BV.x() + L2*ptau2.x(), BV.y() + L2*ptau2.y(), BV.z() + L2*ptau2.z() );
-  // 4-momentum conservation in DV2:
+  // 4-momentum conservation in DV2 (4):
   ROOT::Math::XYZVector p3pi2 = ptau2 - pnu2;
   // Double_t E3pi2 = Etau2 - Enu2; 
   Double_t m3pi2_squared = pow(mtau,2) -2*Ptau2.Dot(Pnu2);  
-  // B+ must lie in the K+ trajectory:
+  // B+ must lie in the K+ trajectory (2):
   ROOT::Math::XYZPoint RP( BV.x() + LK*( pB.x() - ptau1.x() - ptau2.x() ), BV.y() + LK*( pB.y() - ptau1.y() - ptau2.y() ), RPz );
-  // 4-momentum conservation in BV:
+  // 4-momentum conservation in BV (4):
   ROOT::Math::XYZVector p6piK = pB - pnu1 - pnu2;
   // Double_t E6piK = EB - Enu1 - Enu2;
   Double_t m6piK_squared = MB_squared - 2*PB.Dot(Pnu1) - 2*PB.Dot(Pnu2) + 2*Pnu1.Dot(Pnu2);
@@ -884,7 +876,7 @@ TVectorD x_initial_estimate0( TVectorD mprime, ROOT::Math::XYZPoint BV ) // Usin
   Double_t tau_perp_ratio = (tau_perp1_perpK.R())/(tau_perp2_perpK.R());
 
   // Calculate momentum component of taus in this plane
-  Double_t pMag_tau1_perp = -1*pK_perp.R()/( cosphi1 + (cosphi1 + (cosphi2*(sin(phi1)/sin(phi2)))) );
+  Double_t pMag_tau1_perp = -1*pK_perp.R()/( cosphi1 + (cosphi2*(sin(phi1)/sin(phi2))) );
   Double_t pMag_tau2_perp = pMag_tau1_perp*tau_perp_ratio;
 
   ROOT::Math::XYZVector p_tau1_perp = pMag_tau1_perp*tau_dir1_perp;
@@ -1009,7 +1001,7 @@ TVectorD x_initial_estimate1( TVectorD mprime, ROOT::Math::XYZPoint BV ) // Usin
   Double_t tau_perp_ratio = (tau_perp1_perpK.R())/(tau_perp2_perpK.R());
 
   // Calculate momentum component of taus in this plane
-  Double_t pMag_tau1_perp = -1*pK_perp.R()/( cosphi1 + (cosphi1 + (cosphi2*(sin(phi1)/sin(phi2)))) );
+  Double_t pMag_tau1_perp = -1*pK_perp.R()/( cosphi1 + (cosphi2*(sin(phi1)/sin(phi2))) );
   Double_t pMag_tau2_perp = pMag_tau1_perp*tau_perp_ratio;
 
   ROOT::Math::XYZVector p_tau1_perp = pMag_tau1_perp*tau_dir1_perp;
