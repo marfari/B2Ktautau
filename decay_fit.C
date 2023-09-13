@@ -17,10 +17,6 @@ TMatrixDSym Vprime( dimM );
 TMatrixDSym W( dimM ); // weights matrix, W=V^-1
 TVectorD x0( dimX ); // initial estimate for the vector of unkown parameters
 
-TMatrixDSym taup_cov(7);
-TMatrixDSym taum_cov(7);
-TMatrixDSym Bp_cov(7);
-
 Double_t RPz = 0; // z-component of the reference point in the K+ trajectory (fixed)
 // Double_t RPz_t = 0; // truth-match
 
@@ -46,9 +42,10 @@ TMatrixD dh_dx( TVectorD x );
 Double_t chisquare( const Double_t* x_values );
 void minimize( ROOT::Math::XYZPoint BV, int init );
 TVectorD transform_m( TVectorD m );
-TMatrixDSym transform_V( TVectorD m, TMatrixDSym V, TMatrixDSym taup_cov, TMatrixDSym taum_cov );
+TMatrixDSym transform_V( TVectorD m, TMatrixDSym V );
 TMatrixDSym scale_tau_DVs_uncertainties(TMatrixDSym V, Double_t factor);
 TMatrixDSym scale_uncertainties(TMatrixDSym V, Double_t factor);
+TMatrixDSym invert_sum(TMatrixDSym V1, TMatrixDSym V2);
 
 void decay_fit(int year, TString MC_files, TString RS_DATA_files, TString WS_DATA_files, int species, int component, int line)
 {
@@ -187,7 +184,7 @@ void decay_fit(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
   tout->Branch("df_taum_M", &taum_M);
 
   // Loop over events
-  for(int evt = 0; evt < 1; evt++)
+  for(int evt = 0; evt < num_entries; evt++)
   {
     t->GetEntry(evt);
     
@@ -211,7 +208,7 @@ void decay_fit(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
 
     // 2) Make transformation from 32D track to 23D m6piK parametrisation
     mprime = transform_m(m);
-    Vprime = transform_V(m,V,taup_cov,taum_cov);
+    Vprime = transform_V(m,V);
     // mprime.Print();
     // Vprime.Print();
 
@@ -266,20 +263,50 @@ void decay_fit(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
     // W = Vprime;
     // W.Invert();
 
-    W = Vprime;
+    TMatrixDSym V1(dimM); // diagonal blocks
+    TMatrixDSym V2(dimM); // off-diagonal blocks
 
-    TDecompBK* bk = new TDecompBK(W);
-    W = bk->Invert();
-    W.Print();
+    for(int i = 6; i < 10; i++)
+    {
+      for(int j = 19; j < 23; j++)
+      {
+        V2(i,j) = Vprime(i,j);
+      }
+    }
+    for(int i = 19; i < 23; i++)
+    {
+      for(int j = 6; j < 10; j++)
+      {
+        V2(i,j) = Vprime(i,j);
+      }
+    }
+    for(int i = 13; i < 17; i++)
+    {
+      for(int j = 19; j < 23; j++)
+      {
+        V2(i,j) = Vprime(i,j);
+      }
+    }
+    for(int i = 19; i < 23; i++)
+    {
+      for(int j = 13; j < 17; j++)
+      {
+        V2(i,j) = Vprime(i,j);
+      }
+    }
+    V1 = Vprime - V2;
+    // V2.Print();
+    // V1.Print();
+
+    W = V1;
+    W.Invert();
 
     // TVectorD W_eigen_values(dimM);  
     // TMatrixD W_eigen_vectors = W.EigenVectors(W_eigen_values);
     // W_eigen_values.Print();
 
-    TMatrixD identity = W*Vprime;
-    identity.Print();
-
-    return;
+    // TMatrixD identity = W*Vprime;
+    // identity.Print();
 
     // TMatrixD V_transpose = Vprime;
     // V_transpose.T();
@@ -1274,7 +1301,7 @@ TVectorD transform_m( TVectorD m )
 
 }
 
-TMatrixDSym transform_V( TVectorD m, TMatrixDSym V, TMatrixDSym taup_cov, TMatrixDSym taum_cov )
+TMatrixDSym transform_V( TVectorD m, TMatrixDSym V )
 {
   TMatrixD Vp( dimM, dimM );
 
@@ -1434,25 +1461,6 @@ TMatrixDSym transform_V( TVectorD m, TMatrixDSym V, TMatrixDSym taup_cov, TMatri
 
   Vp = J*(V*J_transpose);
 
-  // DV vs p3pi correlations
-  // for(int i = 0; i < 3; i++)
-  // {
-  //   for(int j = 0; j < 4; j++)
-  //   {
-  //     Vp(i+3,j+6) = taup_cov(i,j+3);
-  //     Vp(i+10,j+13) = taum_cov(i,j+3);
-  //   }
-  // }
-
-  // for(int i = 0; i < 4; i++)
-  // {
-  //   for(int j = 0; j < 3; j++)
-  //   {
-  //     Vp(i+6,j+3) = taup_cov(i+3,j);
-  //     Vp(i+13,j+10) = taum_cov(i+3,j);
-  //   }
-  // }
-
   TMatrixDSym Vp_sym(dimM);
   Vp_sym.SetTol(pow(10,-23));
   for(int i = 0; i < dimM; i++)
@@ -1544,4 +1552,55 @@ TMatrixDSym scale_uncertainties(TMatrixDSym V, Double_t factor)
   }
 
   return V;
+}
+
+TMatrixDSym invert_sum(TMatrixDSym V1, TMatrixDSym V2)
+{
+  // V1 has diagonal blocks
+  // V2 has off-diagonal blocks
+
+  TMatrixDSym V_inverse(dimM);
+
+  // 1) Write V2 has the sum of rank 1 matrices
+  // For this we will use the SVD decomposition
+  // SVD decomposition: V2 = U S V^T = sum_i s_i u_i v_i^T (= sum of rank 1 matrices)
+  TDecompSVD *svd = new TDecompSVD(V2);  
+  TMatrixD U = svd->GetU(); // orthogonal matrix
+  TVectorD S = svd->GetSig(); // diagonal matrix (vector w/ diagonal entries)
+  TMatrixD V = svd->GetV(); // orthogonal matrix
+
+  // 2) Invert simpler matrix V1; here inversion works well, V1*V1^-1 ~ I
+  TMatrixDSym V1_inverse = V1;
+  V1_inverse.Invert();
+
+  TMatrixD Bk(dimM,dimM);
+  TMatrixD trace_matrix(dimM,dimM);
+  Double_t gk = 0;
+  TMatrixD Wk(dimM,dimM);
+
+  for(int k = 0; k < dimM; k++)
+  {
+    TMatrixD u = U.GetSub(0,dimM-1,k,k); // columns of U
+    TMatrixD v = V.GetSub(0,dimM-1,k,k); // columns of V = rows of V^T
+
+    if(k == 0)
+    {
+      Wk = V1_inverse;
+    }
+    else
+    {
+      // TMatrixDSym bk = S(k)*(u*v);
+      Bk += S(k)*(u*v.T());
+
+      trace_matrix = Bk*Wk;
+      for(int i = 0; i < dimM; i++)
+      {
+        gk += trace_matrix(i,i);
+      }
+
+      Wk -= (1/(1+gk))*(Wk*(Bk*Wk));
+    }
+  }
+
+  return V_inverse;
 }
