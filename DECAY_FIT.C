@@ -2,8 +2,8 @@ using namespace std;
 
 // Global variables 
 int dimM = 22; // number of measured parameters
-int dimX = 23; // number of unknown parameters
-int dimC = 24; // number of exact constraints
+int dimX = 19; // number of unknown parameters
+int dimC = 20; // number of exact constraints
 int eq_flag = 0; // index of the equation
 
 TVectorD m(dimM);
@@ -101,14 +101,6 @@ double eq58( const double* x );
 double eq59( const double* x );
 double eq60( const double* x );
 double eq61( const double* x );
-double eq62( const double* x );
-double eq63( const double* x );
-double eq64( const double* x );
-double eq65( const double* x );
-double eq66( const double* x );
-double eq67( const double* x );
-double eq68( const double* x );
-double eq69( const double* x );
 
 void DECAY_FIT(int year, TString MC_files, TString RS_DATA_files, TString WS_DATA_files, int species, int component, int line)
 {
@@ -134,7 +126,6 @@ void DECAY_FIT(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
     Double_t m_vars[dimM];
     Double_t V_vars[dimM][dimM];
     Double_t BVx, BVy, BVz; // offline estimate for the BV is needed to have a first estimate for the unknown parameters using some of the initialisations
-
     for(int i = 1; i <= dimM; i++)
     {
         t->SetBranchAddress(Form("df_m_%i",i), &m_vars[i-1] );
@@ -185,19 +176,15 @@ void DECAY_FIT(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
         "df_taup_PX",
         "df_taup_PY",
         "df_taup_PZ",
-        "df_taup_PE",
         "df_antinutau_PX",
         "df_antinutau_PY",
         "df_antinutau_PZ",
-        "df_antinutau_PE",
         "df_taum_PX",
         "df_taum_PY",
         "df_taum_PZ",
-        "df_taum_PE",
         "df_nutau_PX",
         "df_nutau_PY",
-        "df_nutau_PZ",
-        "df_nutau_PE"
+        "df_nutau_PZ"
     };
 
     TString name_x_err[] = {
@@ -233,19 +220,15 @@ void DECAY_FIT(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
         "df_taup_PX_err",
         "df_taup_PY_err",
         "df_taup_PZ_err",
-        "df_taup_PE_err",
         "df_antinutau_PX_err",
         "df_antinutau_PY_err",
         "df_antinutau_PZ_err",
-        "df_antinutau_PE_err",
         "df_taum_PX_err",
         "df_taum_PY_err",
         "df_taum_PZ_err",
-        "df_taum_PE_err",
         "df_nutau_PX_err",
         "df_nutau_PY_err",
-        "df_nutau_PZ_err",
-        "df_nutau_PE_err"
+        "df_nutau_PZ_err"
     };
 
     for(int i = 0; i < dimM+dimX; i++)
@@ -263,7 +246,7 @@ void DECAY_FIT(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
     tout->Branch("df_status", &status);
 
     // Loop over events
-    for(int evt = 0; evt < 10; evt++)
+    for(int evt = 0; evt < num_entries; evt++)
     {
         t->GetEntry(evt);
 
@@ -298,8 +281,6 @@ void DECAY_FIT(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
         // 2) Build weights matrix W = V^-1
         W = V;
         W.Invert();
-
-        ROOT::Math::XYZPoint BV(BVx,BVy,BVz);
 
         // 3) Define the system of equations
         ROOT::Math::GSLMultiRootFinder * solver = new ROOT::Math::GSLMultiRootFinder("HybridS");
@@ -363,36 +344,61 @@ void DECAY_FIT(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
         solver->AddFunction(eq58,dimM+dimX+dimC);
         solver->AddFunction(eq59,dimM+dimX+dimC);
         solver->AddFunction(eq60,dimM+dimX+dimC);
-        solver->AddFunction(eq61,dimM+dimX+dimC);
-        solver->AddFunction(eq62,dimM+dimX+dimC);
-        solver->AddFunction(eq63,dimM+dimX+dimC);
-        solver->AddFunction(eq64,dimM+dimX+dimC);
-        solver->AddFunction(eq65,dimM+dimX+dimC);
-        solver->AddFunction(eq66,dimM+dimX+dimC);
-        solver->AddFunction(eq67,dimM+dimX+dimC);
-        solver->AddFunction(eq68,dimM+dimX+dimC);
-        solver->AddFunction(eq69,dimM+dimX+dimC);    
+        solver->AddFunction(eq61,dimM+dimX+dimC);  
         solver->SetPrintLevel(1);
 
-        // 4) Solve the system of euqations
-        // init = 0:  original calculations = Anne Keune
-        // init = 1: K*tautau calculations; tau momentum direction initialised based on vertices (uses offline estimate for BV)
-        // init = 2: // K*tautau calculations; tau momentum direction initialised based on 3pi visible momentum (uses offline estimate for BV) 
-        // init = 3: RD calculations (uses offline estimate for BV)
+        // 4) Solve the system of euqations (61)
+        // init = 0:  original calculations = Anne Keune (29%)
+        // init = 1: K*tautau calculations; tau momentum direction initialised based on vertices (uses offline estimate for BV) (13%)
+        // init = 2: // K*tautau calculations; tau momentum direction initialised based on 3pi visible momentum (uses offline estimate for BV) (8%)
+        // init = 3: RD calculations (uses offline estimate for BV) (9%)
 
-        solve( BV, 2, solver );
-        if(status != 0)
-        {
-            solve( BV, 3, solver );
-        }
+        ROOT::Math::XYZPoint BV( BVx, BVy, BVz );
+
+        // 0132 (62%)
+        solve( BV, 0, solver );
         if(status != 0)
         {
             solve( BV, 1, solver );
         }
         if(status != 0)
         {
-            solve( BV, 0, solver );
+            solve( BV, 3, solver );
         }
+        if(status != 0)
+        {
+            solve( BV, 2, solver );
+        }
+
+        // 1230 (62%)
+        // solve( BV, 1, solver );
+        // if(status != 0)
+        // {
+        //     solve( BV, 2, solver );
+        // }
+        // if(status != 0)
+        // {
+        //     solve( BV, 3, solver );
+        // }
+        // if(status != 0)
+        // {
+        //     solve( BV, 0, solver );
+        // }
+
+        // 3012 (38%)
+        // solve( BV, 3, solver );
+        // if(status != 0)
+        // {
+        //     solve( BV, 0, solver );
+        // }
+        // if(status != 0)
+        // {
+        //     solve( BV, 1, solver );
+        // }
+        // if(status != 0)
+        // {
+        //     solve( BV, 2, solver );
+        // }
 
         tout->Fill();
     }
@@ -428,18 +434,16 @@ void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* 
         x0 = x_initial_estimate_3( m, BV ); // RD calculations (uses offline estimate for BV)
     }
     // x0.Print();
-    // TVectorD g = exact_constraints(x0);
-    // g.Print();
 
     Double_t x0_vars[dimM+dimX+dimC], x0_err[dimM+dimX+dimC];
     for(int i = 0; i < dimM+dimX+dimC; i++)
     {
         x0_vars[i] = x0(i); // x0_vars is a Double_t, x0 is a TVectorD; the function to minimise must receive a Double_t as input
-        x0_err[i] = 0.1*abs(x0_vars[i]); // initial errors on x0; they are used as the first step size in the minimisation; considering a 10% error for now
+        x0_err[i] = 0.1*abs(x0_vars[i]); // initial errors on x0; they are used as the first step size 
     }
 
     // 2) Solve system of equations
-    solver->Solve(x0_vars, 10000, 10);
+    solver->Solve(x0_vars, 10000, 61);
 
     // 3) Retrieve results
     const double* x_results = solver->X();
@@ -774,46 +778,6 @@ double eq61( const double* x_vars )
     eq_flag = 60;
     return equations(x_vars);
 }
-double eq62( const double* x_vars )
-{
-    eq_flag = 61;
-    return equations(x_vars);
-}
-double eq63( const double* x_vars )
-{
-    eq_flag = 62;
-    return equations(x_vars);
-}
-double eq64( const double* x_vars )
-{
-    eq_flag = 63;
-    return equations(x_vars);
-}
-double eq65( const double* x_vars )
-{
-    eq_flag = 64;
-    return equations(x_vars);
-}
-double eq66( const double* x_vars )
-{
-    eq_flag = 65;
-    return equations(x_vars);
-}
-double eq67( const double* x_vars )
-{
-    eq_flag = 66;
-    return equations(x_vars);
-}
-double eq68( const double* x_vars )
-{
-    eq_flag = 67;
-    return equations(x_vars);
-}
-double eq69( const double* x_vars )
-{
-    eq_flag = 68;
-    return equations(x_vars);
-}
 
 double equations( const double* x_vars )
 {
@@ -836,21 +800,23 @@ double equations( const double* x_vars )
     ROOT::Math::XYZVector pK( x(19), x(20), x(21) );
     Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
 
-    // Unknown parameters (23)
+    // Unknown parameters (19)
     ROOT::Math::XYZPoint BV( x(dimM), x(dimM+1), x(dimM+2) );
     ROOT::Math::XYZVector pB( x(dimM+3), x(dimM+4), x(dimM+5) );
     Double_t MB_squared = x(dimM+6);
-    Double_t EB = sqrt( MB_squared + pB.Mag2() );
     ROOT::Math::XYZVector ptau1( x(dimM+7), x(dimM+8), x(dimM+9) );
-    Double_t Etau1 = x(dimM+10);
-    ROOT::Math::XYZVector pnu1( x(dimM+11), x(dimM+12), x(dimM+13) );
-    Double_t Enu1 = x(dimM+14);
-    ROOT::Math::XYZVector ptau2( x(dimM+15), x(dimM+16), x(dimM+17) );
-    Double_t Etau2 = x(dimM+18);
-    ROOT::Math::XYZVector pnu2( x(dimM+19), x(dimM+20), x(dimM+21) );
-    Double_t Enu2 = x(dimM+22);
+    ROOT::Math::XYZVector pnu1( x(dimM+10), x(dimM+11), x(dimM+12) );
+    ROOT::Math::XYZVector ptau2( x(dimM+13), x(dimM+14), x(dimM+15) );
+    ROOT::Math::XYZVector pnu2( x(dimM+16), x(dimM+17), x(dimM+18) );
 
-    // Lagrange multipliers (24)
+    Double_t EB = sqrt( MB_squared + pB.Mag2() );
+    // tau and neutrino mass constraints are applied by simple parameter substitution
+    Double_t Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
+    Double_t Etau2 = sqrt( pow(mtau,2) + ptau2.Mag2() );
+    Double_t Enu1 = sqrt( pnu1.Mag2() );
+    Double_t Enu2 = sqrt( pnu2.Mag2() );
+
+    // Lagrange multipliers (20)
     TVectorD l(dimC);
     for(int i = 0; i < dimC;i++)
     {
@@ -859,107 +825,107 @@ double equations( const double* x_vars )
 
     // Get terms sum_i Wki (mi - xm^i) that are common for derivatives of the chi2 wrt xm^k 
     TVectorD chi2_sum(dimM);
-    for(int i = 0; i < dimM; i++)
+    for(int k = 0; k < dimM; k++)
     {
-        for(int j = 0; j < dimM; j++)
+        for(int i = 0; i < dimM; i++)
         {
-            chi2_sum(i) += W(i,j)*(m(i) - x(i));
+            chi2_sum(k) += W(k,i)*(m(i) - x(i));
         }
     }
 
-    // Write 69 equations:
+    // Write 61 equations:
     TVectorD eqs(dimM+dimX+dimC);
     // PV
-    eqs(0) = -2*chi2_sum(0) - pB.x()*(l(0) + l(1));
-    eqs(1) = -2*chi2_sum(1) + pB.y()*l(0);
-    eqs(2) = -2*chi2_sum(2) + pB.z()*l(1);
+    eqs(0) = -2*chi2_sum(0) + ( pB.x()/pow(BV.x()-PV.x(),2) )*(l(0) + l(1));
+    eqs(1) = -2*chi2_sum(1) - ( pB.y()/pow(BV.y()-PV.y(),2) )*l(0);
+    eqs(2) = -2*chi2_sum(2) - ( pB.z()/pow(BV.z()-PV.z(),2) )*l(1);
     // DV1
-    eqs(3) = -2*chi2_sum(3) + ptau1.x()*( l(2) + l(3) );
-    eqs(4) = -2*chi2_sum(4) - ptau1.y()*l(2);
-    eqs(5) = -2*chi2_sum(5) - ptau1.z()*l(3);
+    eqs(3) = -2*chi2_sum(3) - ( ptau1.x()/pow(DV1.x()-BV.x(),2) )*( l(2) + l(3) );
+    eqs(4) = -2*chi2_sum(4) + ( ptau1.y()/pow(DV1.y()-BV.y(),2) )*l(2);
+    eqs(5) = -2*chi2_sum(5) + ( ptau1.z()/pow(DV1.z()-BV.z(),2) )*l(3);
     // P3pi1
     eqs(6) = -2*chi2_sum(6) - l(4);
     eqs(7) = -2*chi2_sum(7) - l(5);
     eqs(8) = -2*chi2_sum(8) - l(6);
     eqs(9) = -2*chi2_sum(9) - l(7);
     // DV2
-    eqs(10) = -2*chi2_sum(10) + ptau2.x()*(l(10) + l(11));
-    eqs(11) = -2*chi2_sum(11) - ptau2.y()*l(10);
-    eqs(12) = -2*chi2_sum(12) - ptau2.z()*l(11);
+    eqs(10) = -2*chi2_sum(10) - ( ptau2.x()/pow(DV2.x()-BV.x(),2) )*(l(8) + l(9));
+    eqs(11) = -2*chi2_sum(11) + ( ptau2.y()/pow(DV2.y()-BV.y(),2) )*l(8);
+    eqs(12) = -2*chi2_sum(12) + ( ptau2.z()/pow(DV2.z()-BV.z(),2) )*l(9);
     // P3pi2
-    eqs(13) = -2*chi2_sum(13) - l(12);
-    eqs(14) = -2*chi2_sum(14) - l(13);
-    eqs(15) = -2*chi2_sum(15) - l(14);
-    eqs(16) = -2*chi2_sum(16) - l(15);
+    eqs(13) = -2*chi2_sum(13) - l(10);
+    eqs(14) = -2*chi2_sum(14) - l(11);
+    eqs(15) = -2*chi2_sum(15) - l(12);
+    eqs(16) = -2*chi2_sum(16) - l(13);
     // RP_T
-    eqs(17) = -2*chi2_sum(17) - pK.x()*(l(18) + l(19));
-    eqs(18) = -2*chi2_sum(18) + pK.y()*l(18);
+    eqs(17) = -2*chi2_sum(17) + ( pK.x()/pow(BV.x()-RP.x(),2) )*(l(14) + l(15));
+    eqs(18) = -2*chi2_sum(18) - ( pK.y()/pow(BV.y()-RP.y(),2) )*l(14);
     // pK
-    eqs(19) = -2*chi2_sum(19) + (BV.x() - RP.x())*(l(18) + l(19)) - l(20) - l(23)*(pK.x()/EK);
-    eqs(20) = -2*chi2_sum(20) - (BV.y() - RP.y())*l(18) - l(21) - l(23)*(pK.y()/EK);
-    eqs(21) = -2*chi2_sum(21) - (BV.z() - RP.z())*l(19) - l(22) - l(23)*(pK.z()/EK);
+    eqs(19) = -2*chi2_sum(19) + (1/(BV.x() - RP.x()))*(l(14) + l(15)) - l(16) - (pK.x()/EK)*l(19);
+    eqs(20) = -2*chi2_sum(20) - (1/(BV.y() - RP.y()))*l(14) - l(17) - (pK.y()/EK)*l(19);
+    eqs(21) = -2*chi2_sum(21) - (1/(BV.z() - RP.z()))*l(15) - l(18) - (pK.z()/EK)*l(19);
     // BV
-    eqs(dimM) = pB.x()*(l(0) + l(1)) - ptau1.x()*(l(2) + l(3)) - ptau2.x()*(l(10) + l(11)) + pK.x()*(l(18) + l(19));
-    eqs(dimM+1) = -pB.y()*l(0) + ptau1.y()*l(2) + ptau2.y()*l(10) - pK.y()*l(18);
-    eqs(dimM+2) = -pB.z()*l(1) + ptau1.z()*l(3) + ptau2.z()*l(11) - pK.z()*l(19);
+    eqs(dimM) = -( pB.x()/pow(BV.x()-PV.x(),2) )*(l(0) + l(1)) + ( ptau1.x()/pow(DV1.x()-BV.x(),2) )*(l(2) + l(3)) + ( ptau2.x()/pow(DV2.x()-BV.x(),2) )*(l(8) + l(9)) - ( pK.x()/pow(BV.x()-RP.x(),2) )*(l(14) + l(15));
+    eqs(dimM+1) = ( pB.y()/pow(BV.y()-PV.y(),2) )*l(0) - ( ptau1.y()/pow(DV1.y()-BV.y(),2) )*l(2) - ( ptau2.y()/pow(DV2.y()-BV.y(),2) )*l(8) + ( pK.y()/pow(BV.y()-RP.y(),2) )*l(14);
+    eqs(dimM+2) = ( pB.z()/pow(BV.z()-PV.z(),2) )*l(1) - ( ptau1.z()/pow(DV1.z()-BV.z(),2) )*l(3) - ( ptau2.z()/pow(DV2.z()-BV.z(),2) )*l(9) + ( pK.z()/pow(BV.z()-RP.z(),2) )*l(15);
     // pB, mB^2
-    eqs(dimM+3) = (BV.x() - PV.x())*(l(0) + l(1)) + l(20);
-    eqs(dimM+4) = -(BV.y() - PV.y())*l(0) + l(21);
-    eqs(dimM+5) = -(BV.z() - PV.z())*l(1) + l(22);
-    eqs(dimM+6) = (1/(2*EB))*l(23);
-    // Ptau1
-    eqs(dimM+7) = (DV1.x() - BV.x())*(l(2) + l(3)) + l(4) - (ptau1.x()/Etau1)*l(8) - l(20);
-    eqs(dimM+8) = -(DV1.y() - BV.y())*l(2) + l(5) - (ptau1.y()/Etau1)*l(8) - l(21);
-    eqs(dimM+9) = -(DV1.z() - BV.z())*l(3) + l(6) - (ptau1.z()/Etau1)*l(8) - l(22);
-    eqs(dimM+10) = l(7) + l(8) - l(23);
-    // Pnu1
-    eqs(dimM+11) = -l(4) - (pnu1.x()/Enu1)*l(9);
-    eqs(dimM+12) = -l(5) - (pnu1.y()/Enu1)*l(9);
-    eqs(dimM+13) = -l(6) - (pnu1.z()/Enu1)*l(9);
-    eqs(dimM+14) = -l(7) + l(9);
-    // Ptau2
-    eqs(dimM+15) = (DV2.x() - BV.x())*(l(10) + l(11)) + l(12) - (ptau2.x()/Etau2)*l(16) - l(20);
-    eqs(dimM+16) = -(DV2.y() - BV.y())*l(10) + l(13) - (ptau2.y()/Etau2)*l(16) - l(21);
-    eqs(dimM+17) = -(DV2.z() - BV.z())*l(11) + l(14) - (ptau2.z()/Etau2)*l(16) - l(22);
-    eqs(dimM+18) = l(15) + l(16) - l(23);
-    // Pnu2
-    eqs(dimM+19) = -l(12) - (pnu2.x()/Enu2)*l(17);
-    eqs(dimM+20) = -l(13) - (pnu2.y()/Enu2)*l(17);
-    eqs(dimM+21) = -l(14) - (pnu2.z()/Enu2)*l(17);
-    eqs(dimM+22) = -l(15) + l(17);
+    eqs(dimM+3) = (1/(BV.x() - PV.x()))*(l(0) + l(1)) + l(16);
+    eqs(dimM+4) = -(1/(BV.y() - PV.y()))*l(0) + l(17);
+    eqs(dimM+5) = -(1/(BV.z() - PV.z()))*l(1) + l(18);
+    eqs(dimM+6) = (1/(2*EB))*l(19);
+    // ptau1
+    eqs(dimM+7) = (1/(DV1.x() - BV.x()))*(l(2) + l(3)) + l(4) + (ptau1.x()/Etau1)*l(7) - l(16) - (ptau1.x()/Etau1)*l(19);
+    eqs(dimM+8) = -(1/(DV1.y() - BV.y()))*l(2) + l(5) + (ptau1.y()/Etau1)*l(7) - l(17) - (ptau1.y()/Etau1)*l(19);
+    eqs(dimM+9) = -(1/(DV1.z() - BV.z()))*l(3) + l(6) + (ptau1.z()/Etau1)*l(7) - l(18) - (ptau1.z()/Etau1)*l(19);
+    // eqs(dimM+10) = l(7) + l(8) - l(23);
+    // pnu1
+    eqs(dimM+10) = -l(4) - (pnu1.x()/Enu1)*l(7);
+    eqs(dimM+11) = -l(5) - (pnu1.y()/Enu1)*l(7);
+    eqs(dimM+12) = -l(6) - (pnu1.z()/Enu1)*l(7);
+    // eqs(dimM+14) = -l(7) + l(9);
+    // ptau2
+    eqs(dimM+13) = (1/(DV2.x() - BV.x()))*(l(8) + l(9)) + l(10) + (ptau2.x()/Etau2)*l(13) - l(16) - (ptau2.x()/Etau2)*l(19);
+    eqs(dimM+14) = -(1/(DV2.y() - BV.y()))*l(8) + l(11) + (ptau2.y()/Etau2)*l(13) - l(17) - (ptau2.y()/Etau2)*l(19);
+    eqs(dimM+15) = -(1/(DV2.z() - BV.z()))*l(9) + l(12) + (ptau2.z()/Etau2)*l(13) - l(18) - (ptau2.z()/Etau2)*l(19);
+    // eqs(dimM+18) = l(15) + l(16) - l(23);
+    // pnu2
+    eqs(dimM+16) = -l(10) - (pnu2.x()/Enu2)*l(13);
+    eqs(dimM+17) = -l(11) - (pnu2.y()/Enu2)*l(13);
+    eqs(dimM+18) = -l(12) - (pnu2.z()/Enu2)*l(13);
+    // eqs(dimM+22) = -l(15) + l(17);
     // pB must point back to the PV (2)
-    eqs(dimM+dimX) = pB.x()*( BV.x() - PV.x() ) - pB.y()*( BV.y() - PV.y() );
-    eqs(dimM+dimX+1) = pB.x()*( BV.x() - PV.x() ) - pB.z()*( BV.z() - PV.z() );
+    eqs(dimM+dimX) = pB.x()/( BV.x() - PV.x() ) - pB.y()/( BV.y() - PV.y() );
+    eqs(dimM+dimX+1) = pB.x()/( BV.x() - PV.x() ) - pB.z()/( BV.z() - PV.z() );
     // ptau1 must point back to the BV (2)
-    eqs(dimM+dimX+2) = ptau1.x()*( DV1.x() - BV.x() ) - ptau1.y()*( DV1.y() - BV.y() );
-    eqs(dimM+dimX+3) = ptau1.x()*( DV1.x() - BV.x() ) - ptau1.z()*( DV1.z() - BV.z() );
+    eqs(dimM+dimX+2) = ptau1.x()/( DV1.x() - BV.x() ) - ptau1.y()/( DV1.y() - BV.y() );
+    eqs(dimM+dimX+3) = ptau1.x()/( DV1.x() - BV.x() ) - ptau1.z()/( DV1.z() - BV.z() );
     // 4-momentum conservation in DV1 (4)
     eqs(dimM+dimX+4) = ptau1.x() - p3pi1.x() - pnu1.x();
     eqs(dimM+dimX+5) = ptau1.y() - p3pi1.y() - pnu1.y();
     eqs(dimM+dimX+6) = ptau1.z() - p3pi1.z() - pnu1.z();
     eqs(dimM+dimX+7) = Etau1 - E3pi1 - Enu1;
     // tau+ and anti-nu mass constraints (2)
-    eqs(dimM+dimX+8) = Etau1 - sqrt( pow(mtau,2) + ptau1.Mag2() );
-    eqs(dimM+dimX+9) = Enu1 - sqrt( pnu1.Mag2() );
+    // eqs(dimM+dimX+8) = Etau1 - sqrt( pow(mtau,2) + ptau1.Mag2() );
+    // eqs(dimM+dimX+9) = Enu1 - sqrt( pnu1.Mag2() );
     // ptau2 must point back to the BV (2)
-    eqs(dimM+dimX+10) = ptau2.x()*( DV2.x() - BV.x() ) - ptau2.y()*( DV2.y() - BV.y() );
-    eqs(dimM+dimX+11) = ptau2.x()*( DV2.x() - BV.x() ) - ptau2.z()*( DV2.z() - BV.z() );
+    eqs(dimM+dimX+8) = ptau2.x()/( DV2.x() - BV.x() ) - ptau2.y()/( DV2.y() - BV.y() );
+    eqs(dimM+dimX+9) = ptau2.x()/( DV2.x() - BV.x() ) - ptau2.z()/( DV2.z() - BV.z() );
     // 4-momentum conservation in DV2 (4)
-    eqs(dimM+dimX+12) = ptau2.x() - p3pi2.x() - pnu2.x();
-    eqs(dimM+dimX+13) = ptau2.y() - p3pi2.y() - pnu2.y();
-    eqs(dimM+dimX+14) = ptau2.z() - p3pi2.z() - pnu2.z();
-    eqs(dimM+dimX+15) = Etau2 - E3pi2 - Enu2;
+    eqs(dimM+dimX+10) = ptau2.x() - p3pi2.x() - pnu2.x();
+    eqs(dimM+dimX+11) = ptau2.y() - p3pi2.y() - pnu2.y();
+    eqs(dimM+dimX+12) = ptau2.z() - p3pi2.z() - pnu2.z();
+    eqs(dimM+dimX+13) = Etau2 - E3pi2 - Enu2;
     // tau- and nu mass constraints (2)
-    eqs(dimM+dimX+16) = Etau2 - sqrt( pow(mtau,2) + ptau2.Mag2() );
-    eqs(dimM+dimX+17) = Enu2 - sqrt( pnu2.Mag2() );
+    // eqs(dimM+dimX+16) = Etau2 - sqrt( pow(mtau,2) + ptau2.Mag2() );
+    // eqs(dimM+dimX+17) = Enu2 - sqrt( pnu2.Mag2() );
     // BV must lie in K+ trajectory (2)
-    eqs(dimM+dimX+18) = pK.x()*( BV.x() - RP.x() ) - pK.y()*( BV.y() - RP.y() );
-    eqs(dimM+dimX+19) = pK.x()*( BV.x() - RP.x() ) - pK.z()*( BV.z() - RP.z() );
+    eqs(dimM+dimX+14) = pK.x()/( BV.x() - RP.x() ) - pK.y()/( BV.y() - RP.y() );
+    eqs(dimM+dimX+15) = pK.x()/( BV.x() - RP.x() ) - pK.z()/( BV.z() - RP.z() );
     // 4-momentum conservation in BV (4)
-    eqs(dimM+dimX+20) = pB.x() - ptau1.x() - ptau2.x() - pK.x();
-    eqs(dimM+dimX+21) = pB.y() - ptau1.y() - ptau2.y() - pK.y();
-    eqs(dimM+dimX+22) = pB.z() - ptau1.z() - ptau2.z() - pK.z();
-    eqs(dimM+dimX+23) = EB - Etau1 - Etau2 - EK;
+    eqs(dimM+dimX+16) = pB.x() - ptau1.x() - ptau2.x() - pK.x();
+    eqs(dimM+dimX+17) = pB.y() - ptau1.y() - ptau2.y() - pK.y();
+    eqs(dimM+dimX+18) = pB.z() - ptau1.z() - ptau2.z() - pK.z();
+    eqs(dimM+dimX+19) = EB - Etau1 - Etau2 - EK;
  
     if( (eq_flag < 0) || (eq_flag > dimM+dimX+dimC))
     {
@@ -1184,19 +1150,15 @@ TVectorD x_initial_estimate_0( TVectorD m ) // Original initialisation for x (ba
     x0(dimM+7) = ptau1.x();
     x0(dimM+8) = ptau1.y();
     x0(dimM+9) = ptau1.z();
-    x0(dimM+10) = Etau1;
-    x0(dimM+11) = pnu1.x();
-    x0(dimM+12) = pnu1.y();
-    x0(dimM+13) = pnu1.z();
-    x0(dimM+14) = Enu1;
-    x0(dimM+15) = ptau2.x();
-    x0(dimM+16) = ptau2.y();
-    x0(dimM+17) = ptau2.z();
-    x0(dimM+18) = Etau2;
-    x0(dimM+19) = pnu2.x();
-    x0(dimM+20) = pnu2.y();
-    x0(dimM+21) = pnu2.z();
-    x0(dimM+22) = Enu2;
+    x0(dimM+10) = pnu1.x();
+    x0(dimM+11) = pnu1.y();
+    x0(dimM+12) = pnu1.z();
+    x0(dimM+13) = ptau2.x();
+    x0(dimM+14) = ptau2.y();
+    x0(dimM+15) = ptau2.z();
+    x0(dimM+16) = pnu2.x();
+    x0(dimM+17) = pnu2.y();
+    x0(dimM+18) = pnu2.z();
 
     // 3) Initialise lambda (to 1)
     for(int i = 0; i < dimC; i++)
@@ -1308,19 +1270,15 @@ TVectorD x_initial_estimate_1( TVectorD m, ROOT::Math::XYZPoint BV )
     x0(dimM+7) = ptau1.x();
     x0(dimM+8) = ptau1.y();
     x0(dimM+9) = ptau1.z();
-    x0(dimM+10) = Etau1;
-    x0(dimM+11) = pnu1.x();
-    x0(dimM+12) = pnu1.y();
-    x0(dimM+13) = pnu1.z();
-    x0(dimM+14) = Enu1;
-    x0(dimM+15) = ptau2.x();
-    x0(dimM+16) = ptau2.y();
-    x0(dimM+17) = ptau2.z();
-    x0(dimM+18) = Etau2;
-    x0(dimM+19) = pnu2.x();
-    x0(dimM+20) = pnu2.y();
-    x0(dimM+21) = pnu2.z();
-    x0(dimM+22) = Enu2;
+    x0(dimM+10) = pnu1.x();
+    x0(dimM+11) = pnu1.y();
+    x0(dimM+12) = pnu1.z();
+    x0(dimM+13) = ptau2.x();
+    x0(dimM+14) = ptau2.y();
+    x0(dimM+15) = ptau2.z();
+    x0(dimM+16) = pnu2.x();
+    x0(dimM+17) = pnu2.y();
+    x0(dimM+18) = pnu2.z();
 
     // 3) Initialise lambda (to 1)
     for(int i = 0; i < dimC; i++)
@@ -1432,19 +1390,15 @@ TVectorD x_initial_estimate_2( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B-
     x0(dimM+7) = ptau1.x();
     x0(dimM+8) = ptau1.y();
     x0(dimM+9) = ptau1.z();
-    x0(dimM+10) = Etau1;
-    x0(dimM+11) = pnu1.x();
-    x0(dimM+12) = pnu1.y();
-    x0(dimM+13) = pnu1.z();
-    x0(dimM+14) = Enu1;
-    x0(dimM+15) = ptau2.x();
-    x0(dimM+16) = ptau2.y();
-    x0(dimM+17) = ptau2.z();
-    x0(dimM+18) = Etau2;
-    x0(dimM+19) = pnu2.x();
-    x0(dimM+20) = pnu2.y();
-    x0(dimM+21) = pnu2.z();
-    x0(dimM+22) = Enu2;
+    x0(dimM+10) = pnu1.x();
+    x0(dimM+11) = pnu1.y();
+    x0(dimM+12) = pnu1.z();
+    x0(dimM+13) = ptau2.x();
+    x0(dimM+14) = ptau2.y();
+    x0(dimM+15) = ptau2.z();
+    x0(dimM+16) = pnu2.x();
+    x0(dimM+17) = pnu2.y();
+    x0(dimM+18) = pnu2.z();
 
     // 3) Initialise lambda (to 1)
     for(int i = 0; i < dimC; i++)
@@ -1519,19 +1473,15 @@ TVectorD x_initial_estimate_3( TVectorD m, ROOT::Math::XYZPoint BV )
     x0(dimM+7) = ptau1.x();
     x0(dimM+8) = ptau1.y();
     x0(dimM+9) = ptau1.z();
-    x0(dimM+10) = Etau1;
-    x0(dimM+11) = pnu1.x();
-    x0(dimM+12) = pnu1.y();
-    x0(dimM+13) = pnu1.z();
-    x0(dimM+14) = Enu1;
-    x0(dimM+15) = ptau2.x();
-    x0(dimM+16) = ptau2.y();
-    x0(dimM+17) = ptau2.z();
-    x0(dimM+18) = Etau2;
-    x0(dimM+19) = pnu2.x();
-    x0(dimM+20) = pnu2.y();
-    x0(dimM+21) = pnu2.z();
-    x0(dimM+22) = Enu2;
+    x0(dimM+10) = pnu1.x();
+    x0(dimM+11) = pnu1.y();
+    x0(dimM+12) = pnu1.z();
+    x0(dimM+13) = ptau2.x();
+    x0(dimM+14) = ptau2.y();
+    x0(dimM+15) = ptau2.z();
+    x0(dimM+16) = pnu2.x();
+    x0(dimM+17) = pnu2.y();
+    x0(dimM+18) = pnu2.z();
 
     // 3) Initialise lambda (to 1)
     for(int i = 0; i < dimC; i++)
