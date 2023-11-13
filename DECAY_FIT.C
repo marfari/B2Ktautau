@@ -20,6 +20,7 @@ Double_t RPz; // z-component of the RP on the K+ trajectory (fixed)
 Double_t MB, MB_err;
 TVectorD X(dimM+dimX+dimC);
 TVectorD X_ERR(dimM+dimX+dimC);
+TVectorD F(dimM+dimX+dimC);
 TMatrixDSym C(dimM+dimX+dimC);
 TMatrixDSym C_corr(dimM+dimX+dimC);
 Int_t status, init;
@@ -39,6 +40,7 @@ TVectorD x_initial_estimate_3( TVectorD m, ROOT::Math::XYZPoint BV );
 Double_t lagrangian( const Double_t* x_values );
 Double_t chisquare( TVectorD xm );
 TVectorD exact_constraints( TVectorD x );
+TMatrixDSym U_matrix();
 double equations( const double* x_vars );
 double eq1( const double* x );
 double eq2( const double* x );
@@ -108,15 +110,15 @@ void DECAY_FIT(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
     TFileCollection* fc;
     if(species == 0)
     { 
-    fc = new TFileCollection("MC", "MC", MC_files, 1, line);
+        fc = new TFileCollection("MC", "MC", MC_files, 1, line);
     }
     else if(species == 1)
     {
-    fc = new TFileCollection("MC", "MC", RS_DATA_files, 1, line);
+        fc = new TFileCollection("MC", "MC", RS_DATA_files, 1, line);
     }
     else if(species == 2)
     {
-    fc = new TFileCollection("MC", "MC", WS_DATA_files, 1, line);
+        fc = new TFileCollection("MC", "MC", WS_DATA_files, 1, line);
     }
 
     TChain* t = new TChain("DecayTree");
@@ -240,13 +242,19 @@ void DECAY_FIT(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
         //     tout->Branch(Form("df_C_%i_%i",i,j), &C(i,j));
         // }
     }
+
+    for(int i = 0; i < dimM+dimX+dimC; i++)
+    {
+        tout->Branch(Form("df_F_%i",i), &F(i));
+    }
+
     // tout->Branch("df_init", &init);
     tout->Branch("df_Bp_M", &MB);
     // tout->Branch("df_Bp_MERR", &MB_err);
     tout->Branch("df_status", &status);
 
     // Loop over events
-    for(int evt = 0; evt < num_entries; evt++)
+    for(int evt = 0; evt < 1; evt++)
     {
         t->GetEntry(evt);
 
@@ -351,19 +359,19 @@ void DECAY_FIT(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
         // init = 0:  original calculations = Anne Keune (29%)
         // init = 1: K*tautau calculations; tau momentum direction initialised based on vertices (uses offline estimate for BV) (13%)
         // init = 2: // K*tautau calculations; tau momentum direction initialised based on 3pi visible momentum (uses offline estimate for BV) (8%)
-        // init = 3: RD calculations (uses offline estimate for BV) (9%)
+        // init = 3: RD calculations (uses offline estimate for BV) (58%)
 
         ROOT::Math::XYZPoint BV( BVx, BVy, BVz );
 
-        // 0132 (62%)
-        solve( BV, 0, solver );
+        // 3102
+        solve( BV, 3, solver );
         if(status != 0)
         {
             solve( BV, 1, solver );
         }
         if(status != 0)
         {
-            solve( BV, 3, solver );
+            solve( BV, 0, solver );
         }
         if(status != 0)
         {
@@ -443,7 +451,7 @@ void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* 
     }
 
     // 2) Solve system of equations
-    solver->Solve(x0_vars, 10000, 61);
+    solver->Solve(x0_vars, 10000, 1);
 
     // 3) Retrieve results
     const double* x_results = solver->X();
@@ -451,7 +459,6 @@ void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* 
     status = solver->Status();
     cout << "status = " << status << endl;
 
-    TVectorD F(dimM+dimX+dimC);
     for(int i = 0; i < dimM+dimX+dimC; i++)
     {
         X(i) = x_results[i];
@@ -471,6 +478,419 @@ void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* 
     }
     cout << "MB = " << MB << endl;
 
+    TMatrixDSym U = U_matrix();
+
+}
+
+TMatrixDSym U_matrix()
+{
+    TMatrixDSym U_cov(dimM+dimX+dimC);
+
+    // Matrix B
+    TMatrixD B(dimM+dimX+dimC,dimM);
+    for(int i = 0; i < dimM+dimX+dimC; i++)
+    {
+        for(int j = 0; j < dimM; j++)
+        {
+            if(i < dimM)
+            {
+                B(i,j) = -2*W(i,j);
+            }
+            else
+            {
+                B(i,j) = 0.;
+            }
+        }
+    }
+    // B.Print();
+
+    TMatrixD A(dimM+dimX+dimC,dimM+dimX+dimC);
+
+    // Measured parameters (22)
+    ROOT::Math::XYZPoint PV( X(0), X(1), X(2) );
+    ROOT::Math::XYZPoint DV1( X(3), X(4), X(5) );
+    ROOT::Math::XYZVector p3pi1( X(6), X(7), X(8) );
+    Double_t E3pi1 = X(9);
+    ROOT::Math::XYZPoint DV2( X(10), X(11), X(12) );
+    ROOT::Math::XYZVector p3pi2( X(13), X(14), X(15) );
+    Double_t E3pi2 = X(16);
+    ROOT::Math::XYZPoint RP( X(17), X(18), RPz );
+    ROOT::Math::XYZVector pK( X(19), X(20), X(21) );
+    Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
+
+    // Unknown parameters (19)
+    ROOT::Math::XYZPoint BV( X(dimM), X(dimM+1), X(dimM+2) );
+    ROOT::Math::XYZVector pB( X(dimM+3), X(dimM+4), X(dimM+5) );
+    Double_t MB_squared = X(dimM+6);
+    ROOT::Math::XYZVector ptau1( X(dimM+7), X(dimM+8), X(dimM+9) );
+    ROOT::Math::XYZVector pnu1( X(dimM+10), X(dimM+11), X(dimM+12) );
+    ROOT::Math::XYZVector ptau2( X(dimM+13), X(dimM+14), X(dimM+15) );
+    ROOT::Math::XYZVector pnu2( X(dimM+16), X(dimM+17), X(dimM+18) );
+
+    Double_t EB = sqrt( MB_squared + pB.Mag2() );
+    // tau and neutrino mass constraints are applied by simple parameter substitution
+    Double_t Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
+    Double_t Etau2 = sqrt( pow(mtau,2) + ptau2.Mag2() );
+    Double_t Enu1 = sqrt( pnu1.Mag2() );
+    Double_t Enu2 = sqrt( pnu2.Mag2() );
+
+    // Lagrange multipliers (20)
+    TVectorD l(dimC);
+    for(int i = 0; i < dimC;i++)
+    {
+        l(i) = X(dimM+dimX+i);
+    }
+
+    int L = dimM+dimX;
+
+    ///////////////////////////// xm ///////////////////////////
+    A(0,0) = 2*W(0,0) + (2*pB.x()/pow(BV.x()-PV.x(),3))*(l(0)+l(1));
+    for(int i = 0; i < dimM; i++)
+    {
+        if(i != 0)
+        {
+            A(0,i) = 2*W(0,i);
+        }
+    }
+    A(0,22) = -(2*pB.x()/pow(BV.x()-PV.x(),3))*(l(0) + l(1));
+    A(0,25) = (l(0) + l(1))/pow(BV.x()-PV.x(),2);
+    A(0,L) = pB.x()/pow(BV.x()-pB.x(),2);
+    A(0,L+1) = pB.x()/pow(BV.x()-pB.x(),2);
+
+    A(1,1) = 2*W(1,1) - (2*pB.y()/pow(BV.y()-PV.y(),3))*l(0);
+    for(int i = 0; i < dimM; i++)
+    {
+        if(i != 1)
+        {
+            A(1,i) = 2*W(1,i);
+        }
+    }
+    A(1,23) = (2*pB.y()/pow(BV.y()-PV.y(),3))*l(0);
+    A(1,L) = -pB.y()/pow(BV.y()-pB.y(),2);
+
+    A(2,2) = 2*W(2,2) - (2*pB.z()/pow(BV.z()-PV.z(),3))*l(1);
+    for(int i = 0; i < dimM; i++)
+    {
+        if(i != 2)
+        {
+            A(2,i) = 2*W(2,i);
+        }
+    }
+    A(2,24) = (2*pB.z()/pow(BV.z()-PV.z(),3))*l(1);
+    A(2,L+1) = -pB.z()/pow(BV.z()-PV.z(),2);
+
+    A(3,3) = 2*W(3,3) + (2*ptau1.x()/pow(DV1.x()-BV.x(),3))*(l(2) + l(3));
+    for(int i = 0; i < dimM; i++)
+    {
+        if(i != 3)
+        {
+            A(3,i) = 2*W(3,i);
+        }
+    }
+    A(3,22) = -(2*ptau1.x()/pow(DV1.x()-BV.x(),3))*(l(2) + l(3));
+    A(3,29) = -(l(2) + l(3))/pow(DV1.x()-BV.x(),2);
+    A(3,L+2) = -ptau1.x()/pow(DV1.x()-BV.x(),2);
+    A(3,L+3) = -ptau1.x()/pow(DV1.x()-BV.x(),2);
+
+    A(4,4) = 2*W(4,4) - (2*ptau1.y()/pow(DV1.y()-BV.y(),3))*l(2);
+    for(int i = 0; i < dimM; i++)
+    {
+        if(i != 4)
+        {
+            A(4,i) = 2*W(4,i);
+        }
+    }
+    A(4,23) = (2*ptau1.y()/pow(DV1.y()-BV.y(),3))*l(2);
+    A(4,30) = l(2)/pow(DV1.y()-BV.y(),2);
+    A(4,L+2) = ptau1.y()/pow(DV1.y()-BV.y(),2);
+
+    A(5,5) = 2*W(5,5) - (2*ptau1.z()/pow(DV1.z()-BV.z(),3))*l(3);
+    for(int i = 0; i < dimM; i++)
+    {
+        if(i != 5)
+        {
+            A(5,i) = 2*W(5,i);
+        }
+    }
+    A(5,24) = (2*ptau1.z()/pow(DV1.z()-BV.z(),3))*l(3);
+    A(5,31) = l(3)/pow(DV1.z()-BV.z(),2);
+    A(5,L+3) = ptau1.z()/pow(DV1.z()-BV.z(),2);
+
+    for(int i = 0; i < dimM; i++)
+    {
+        A(6,i) = 2*W(6,i);
+        A(7,i) = 2*W(7,i);
+        A(8,i) = 2*W(8,i);
+        A(9,i) = 2*W(9,i);
+    }
+    A(6,L+4) = -1;
+    A(7,L+5) = -1;
+    A(8,L+6) = -1;
+    A(9,L+7) = -1;
+
+    A(10,10) = 2*W(10,10) + (2*ptau2.x()/pow(DV2.x()-BV.x(),3))*(l(8) + l(9));
+    for(int i = 0; i < dimM; i++)
+    {
+        if(i != 10)
+        {
+            A(10,i) = 2*W(10,i);
+        }
+    }
+    A(10,22) = -(2*ptau2.x()/pow(DV2.x()-BV.x(),3))*(l(8) + l(9));
+    A(10,35) = -(l(8) + l(9))/pow(DV2.x()-BV.x(),2);
+    A(10,L+8) = -ptau2.x()/pow(DV2.x()-BV.x(),2);
+    A(10,L+9) = -ptau2.x()/pow(DV2.x()-BV.x(),2);
+
+    A(11,11) = 2*W(11,11) - (2*ptau2.y()/pow(DV2.y()-BV.y(),3))*l(8);
+    for(int i = 0; i < dimM; i++)
+    {
+        if(i != 11)
+        {
+            A(11,i) = 2*W(11,i);
+        }
+    }
+    A(11,23) = (2*ptau2.y()/pow(DV2.y()-BV.y(),3))*l(8);
+    A(11,36) = l(8)/pow(DV2.y()-BV.y(),2);
+    A(11,L+8) = ptau2.y()/pow(DV2.y()-BV.y(),2);
+
+    A(12,12) = 2*W(12,12) - (2*ptau2.z()/pow(DV2.z()-BV.z(),3))*l(9);
+    for(int i = 0; i < dimM; i++)
+    {
+        if(i != 12)
+        {
+            A(12,i) = 2*W(12,i);
+        }
+    }
+    A(12,24) = (2*ptau2.z()/pow(DV2.z()-BV.z(),3))*l(9);
+    A(12,37) = l(9)/pow(DV2.z()-BV.z(),2);
+    A(12,L+9) = ptau2.z()/pow(DV2.z()-BV.z(),2);
+
+    for(int i = 0; i < dimM; i++)
+    {
+        A(13,i) = 2*W(13,i);
+        A(14,i) = 2*W(14,i);
+        A(15,i) = 2*W(15,i);
+        A(16,i) = 2*W(16,i);
+    }
+    A(13,L+10) = -1;
+    A(14,L+11) = -1;
+    A(15,L+12) = -1;
+    A(16,L+13) = -1;
+
+    A(17,17) = 2*W(17,17) + (2*pK.x()/pow(BV.x()-RP.x(),3))*(l(14) + l(15));
+    for(int i = 0; i < dimM; i++)
+    {
+        if((i != 17) && (i != 19))
+        {
+            A(17,i) = 2*W(17,i);
+        }
+    }
+    A(17,22) = -(2*pK.x()/pow(BV.x()-RP.x(),3))*(l(14) + l(15));
+    A(17,19) = 2*W(17,19) + (l(14) + l(15))/pow(BV.x()-RP.x(),2);
+    A(17,L+14) = pK.x()/pow(BV.x()-RP.x(),2);
+    A(17,L+15) = pK.x()/pow(BV.x()-RP.x(),2);
+
+    A(18,18) = 2*W(18,18) - (2*pK.y()/pow(BV.y()-RP.y(),3))*l(14);
+    for(int i = 0; i < dimM; i++)
+    {
+        if((i != 18) && (i != 20))
+        {
+            A(18,i) = 2*W(18,i);
+        }
+    }
+    A(18,23) = (2*pK.y()/pow(BV.y()-RP.y(),3))*l(14);
+    A(18,20) = 2*W(18,20) - l(14)/pow(BV.y()-RP.y(),2);
+    A(18,L+14) = pK.y()/pow(BV.y()-RP.y(),2);
+
+    A(19,19) = 2*W(19,19) - ((pow(EK,2) - pow(pK.x(),2))/pow(EK,3))*l(19);
+    for(int i = 0; i < dimM; i++)
+    {
+        if((i != 19) && (i != 17))
+        {
+            A(19,i) = 2*W(19,i);
+        }
+    }
+    A(19,17) = 2*W(19,17) + (l(14) + l(15))/pow(BV.x()-RP.x(),2);
+    A(19,22) = -(l(14) + l(15))/pow(BV.x()-RP.x(),2);
+    A(19,L+14) = 1/(BV.x()-RP.x());
+    A(19,L+15) = 1/(BV.x()-RP.x());
+    A(19,L+16) = -1;
+    A(19,L+19) = -pK.x()/EK;
+
+    A(20,20) = 2*W(20,20) - ((pow(EK,2) - pow(pK.y(),2))/pow(EK,3))*l(19);
+    for(int i = 0; i < dimM; i++)
+    {
+        if((i != 20) && (i != 18))
+        {
+            A(20,i) = 2*W(20,i);
+        }
+    }
+    A(20,18) = 2*W(20,18) - l(14)/pow(BV.y()-RP.y(),2);
+    A(20,23) = l(14)/pow(BV.y()-RP.y(),2);
+    A(20,L+14) = -1/(BV.y()-RP.y());
+    A(20,L+17) = -1;
+    A(20,L+19) = -pK.y()/EK;
+
+    A(21,21) = 2*W(21,21) - ((pow(EK,2) - pow(pK.z(),2))/pow(EK,3))*l(19);
+    for(int i = 0; i < dimM; i++)
+    {
+        if(i != 21)
+        {
+            A(21,i) = 2*W(21,i);
+        }
+    }
+    A(21,24) = l(15)/pow(BV.z()-RP.z(),2);
+    A(21,L+15) = -1/(BV.z()-RP.z());
+    A(21,L+18) = -1;
+    A(21,L+19) = -pK.z()/EK;
+
+    //////////////////////////////// xu /////////////////////////
+    A(22,0) = -(2*pB.x()/pow(BV.x()-PV.x(),3))*(l(0)+l(1));
+    A(22,3) = -(2*ptau1.x()/pow(DV1.x()-BV.x(),3))*(L(2)+l(3));
+    A(22,10) = -(2*ptau2.x()/pow(DV2.x()-BV.x(),3))*(l(8)+l(9));
+    A(22,17) = -(2*pK.x()/pow(BV.x()-RP.x(),3))*(l(14)+l(15));
+    A(22,19) = -(l(14)+l(15))/pow(BV.x()-RP.x(),2);
+    A(22,22) = (2*pB.x()/pow(BV.x()-PV.x(),3))*(l(0)+l(1)) + (2*ptau1.x()/pow(DV1.x()-BV.x(),3))*(l(2)+l(3)) + (2*ptau2.x()/pow(DV2.x()-BV.x(),3))*(l(8)+l(9)) + (2*pK.x()/pow(BV.x()-RP.x(),3))*(l(14)+l(15));
+    A(22,25) = -(l(0)+l(1))/pow(BV.x()-PV.x(),2);
+    A(22,29) = (l(2)+l(3))/pow(DV1.x()-BV.x(),2);
+    A(22,35) = (l(8)+l(9))/pow(DV2.x()-BV.x(),2);
+    A(22,L) = -pB.x()/pow(BV.x()-PV.x(),2);
+    A(22,L+1) = -pB.x()/pow(BV.x()-PV.x(),2);
+    A(22,L+2) = ptau1.x()/pow(DV1.x()-BV.x(),2);
+    A(22,L+3) = ptau1.x()/pow(DV1.x()-BV.x(),2);
+    A(22,L+8) = ptau2.x()/pow(DV2.x()-BV.x(),2);
+    A(22,L+9) = ptau2.x()/pow(DV2.x()-BV.x(),2);
+    A(22,L+14) = -pK.x()/pow(BV.x()-RP.x(),2);
+    A(22,L+15) = -pK.x()/pow(BV.x()-RP.x(),2);
+
+    A(23,1) = (2*pB.y()/pow(BV.y()-PV.y(),3))*l(0);
+    A(23,4) = (2*ptau1.y()/pow(DV1.y()-BV.y(),3))*l(2);
+    A(23,11) = (2*ptau2.y()/pow(DV2.y()-BV.y(),3))*l(8);
+    A(23,18) = -(2*pK.y()/pow(BV.y()-RP.y(),3))*l(14);
+    A(23,20) = l(14)/pow(BV.y()-RP.y(),2);
+    A(23,23) = -(2*pB.y()/pow(BV.y()-RP.y(),3))*l(0) - (2*ptau1.y()/pow(DV1.y()-BV.y(),3))*l(2) - (2*ptau2.y()/pow(DV2.y()-BV.y(),3))*l(8) - (2*pK.y()/pow(BV.y()-RP.y(),3))*l(14);
+    A(23,26) = l(0)/pow(BV.y()-PV.y(),2);
+    A(23,30) = -l(2)/pow(DV1.y()-BV.y(),2);
+    A(23,36) = -l(8)/pow(DV2.y()-BV.y(),2);
+    A(23,L) = pB.y()/pow(BV.y()-PV.y(),2);
+    A(23,L+2) = -ptau1.y()/pow(DV1.y()-BV.y(),2);
+    A(23,L+8) = -ptau2.y()/pow(DV2.y()-BV.y(),2);
+    A(23,L+14) = pK.y()/pow(BV.y()-RP.y(),2);
+
+    A(24,2) = (2*pB.z()/pow(BV.z()-RP.z(),3))*l(1);
+    A(24,5) = (2*ptau1.z()/pow(DV1.z()-BV.z(),3))*l(3);
+    A(24,12) = (2*ptau2.z()/pow(DV2.z()-BV.z(),3))*l(9);
+    A(24,19) = l(15)/pow(BV.z()-RP.z(),2);
+    A(24,24) = -(2*pB.z()/pow(BV.z()-RP.z(),3))*l(1) - (2*ptau1.z()/pow(DV1.z()-BV.z(),3))*l(3) - (2*ptau2.z()/pow(DV2.z()-BV.z(),3))*l(9) - (2*pK.z()/pow(BV.z()-RP.z(),3))*l(15);
+    A(24,27) = l(1)/pow(BV.z()-PV.z(),2);
+    A(24,31) = -l(3)/pow(DV1.z()-BV.z(),2);
+    A(24,37) = -l(9)/pow(DV2.z()-BV.z(),2);
+    A(24,L+1) = pB.z()/pow(BV.z()-PV.z(),2);
+    A(24,L+3) = -ptau1.z()/pow(DV1.z()-BV.z(),2);
+    A(24,L+9) = -ptau2.z()/pow(DV2.z()-BV.z(),2);
+    A(24,L+15) = pK.z()/pow(BV.z()-RP.z(),2);
+
+    A(25,0) = (l(0)+l(1))/pow(BV.x()-PV.x(),2);
+    A(25,22) = -(l(0)+l(1))/pow(BV.x()-PV.x(),2);
+    A(25,L) = 1/(BV.x()-PV.x());
+    A(25,L+1) = 1/(BV.x()-PV.x());
+    A(25,L+16) = 1;
+
+    A(26,1) = -l(0)/pow(BV.y()-PV.y(),2);
+    A(26,23) = l(0)/pow(BV.y()-PV.y(),2);
+    A(26,L) = -1/(BV.y()-PV.y());
+    A(26,L+17) = 1;
+
+    A(27,2) = -l(1)/pow(BV.z()-PV.z(),2);
+    A(27,24) = l(1)/pow(BV.z()-PV.z(),2);
+    A(27,L+1) = -1/(BV.z()-PV.z());
+    A(27,L+18) = 1;
+
+    A(28,28) = -l(19)/(2*pow(EB,3));
+
+    A(29,3) = -(l(2)+l(3))/pow(DV1.x()-BV.x(),2);
+    A(29,22) = (l(2)+l(3))/pow(DV1.x()-BV.x(),2);
+    A(29,29) = ((pow(Etau1,2) - pow(ptau1.x(),2))/pow(Etau1,3))*(l(7)-l(19));
+    A(29,L+2) = 1/(DV1.x()-BV.x());
+    A(29,L+3) = 1/(DV1.x()-BV.x());
+    A(29,L+4) = 1;
+    A(29,L+7) = ptau1.x()/Etau1;
+    A(29,L+16) = -1;
+    A(29,L+19) = -ptau1.x()/Etau1;
+
+    A(30,4) = l(2)/pow(DV1.y()-BV.y(),2);
+    A(30,23) = -l(2)/pow(DV1.y()-BV.y(),2);
+    A(30,30) = ((pow(Etau1,2) - pow(ptau1.y(),2))/pow(Etau1,3))*(l(7)-l(19));
+    A(30,L+2) = -1/(DV1.y()-BV.y());
+    A(30,L+5) = 1;
+    A(30,L+7) = ptau1.y()/Etau1;
+    A(30,L+17) = -1;
+    A(30,L+19) = -ptau1.y()/Etau1;
+
+    A(31,5) = l(3)/pow(DV1.z()-BV.z(),2);
+    A(31,24) = -l(3)/pow(DV1.z()-BV.z(),2);
+    A(31,31) = ((pow(Etau1,2) - pow(ptau1.z(),2))/pow(Etau1,3))*(l(7)-l(19));
+    A(31,L+3) = -1/(DV1.z()-BV.z());
+    A(31,L+6) = 1;
+    A(31,L+7) = ptau1.z()/Etau1;
+    A(31,L+18) = -1;
+    A(31,L+19) = -ptau1.z()/Etau1;
+
+    A(32,32) = -((pow(Enu1,2) - pow(pnu1.x(),2))/pow(Enu1,3))*l(7);
+    A(32,L+4) = -1;
+    A(32,L+7) = -pnu1.x()/Enu1;
+
+    A(33,33) = -((pow(Enu1,2) - pow(pnu1.y(),2))/pow(Enu1,3))*l(7);
+    A(33,L+5) = -1;
+    A(33,L+7) = -pnu1.y()/Enu1;
+
+    A(34,34) = -((pow(Enu1,2) - pow(pnu1.z(),2))/pow(Enu1,3))*l(7);
+    A(34,L+6) = -1;
+    A(34,L+7) = -pnu1.z()/Enu1;
+
+    A(35,10) = -(l(8)+l(9))/pow(DV2.x()-BV.x(),2);
+    A(35,22) = (l(8)+l(9))/pow(DV2.x()-BV.x(),2);
+    A(35,35) = ((pow(Etau2,2) - pow(ptau2.x(),2))/pow(Etau2,3))*(l(13)-l(19));
+    A(35,L+8) = 1/(DV2.x()-BV.x());
+    A(35,L+9) = 1/(DV2.x()-BV.x());
+    A(35,L+10) = 1;
+    A(35,L+13) = ptau2.x()/Etau2;
+    A(35,L+16) = -1;
+    A(35,L+19) = -ptau2.x()/Etau2;
+
+    A(36,11) = l(8)/pow(DV2.y()-BV.y(),2);
+    A(36,23) = -l(8)/pow(DV2.y()-BV.y(),2);
+    A(36,36) = ((pow(Etau2,2) - pow(ptau2.y(),2))/pow(Etau2,3))*(l(13)-l(19));
+    A(36,L+8) = -1/(DV2.y()-BV.y());
+    A(36,L+11) = 1;
+    A(36,L+13) = ptau2.y()/Etau2;
+    A(36,L+17) = -1;
+    A(36,L+19) = -ptau2.y()/Etau2;
+
+    A(37,12) = l(9)/pow(DV2.z()-BV.z(),2);
+    A(37,24) = -l(9)/pow(DV2.z()-BV.z(),2);
+    A(37,37) = ((pow(Etau2,2) - pow(ptau2.z(),2))/pow(Etau2,3))*(l(13)-l(19));
+    A(37,L+9) = -1/(DV2.z()-BV.z());
+    A(37,L+12) = 1;
+    A(37,L+13) = ptau2.z()/Etau2;
+    A(37,L+18) = -1;
+    A(37,L+19) = -ptau2.z()/Etau2;
+
+    A(38,38) = -((pow(Enu2,2) - pow(pnu2.x(),2))/pow(Enu2,3))*l(13);
+    A(38,L+10) = -1;
+    A(38,L+13) = pnu2.x()/Enu2;
+
+    A(39,39) = -((pow(Enu2,2) - pow(pnu2.y(),2))/pow(Enu2,3))*l(13);
+    A(39,L+11) = -1;
+    A(39,L+13) = -pnu2.y()/Enu2;
+
+    A(40,40) = -((pow(Enu2,2) - pow(pnu2.z(),2))/pow(Enu2,3))*l(13);
+    A(40,L+12) = -1;
+    A(40,L+13) = -pnu2.z()/Enu2;
+  
+    A.Print();
+
+    return U_cov;
 }
 
 double eq1( const double* x_vars )
@@ -1161,10 +1581,31 @@ TVectorD x_initial_estimate_0( TVectorD m ) // Original initialisation for x (ba
     x0(dimM+18) = pnu2.z();
 
     // 3) Initialise lambda (to 1)
-    for(int i = 0; i < dimC; i++)
-    {
-        x0(dimM+dimX+i) = 1.;
-    }
+    // for(int i = 0; i < dimC; i++)
+    // {
+    //     x0(dimM+dimX+i) = 1.;
+    // }
+
+    x0(dimM+dimX) = 1/10000; // pBx/(BVx - PVx)
+    x0(dimM+dimX+1) = 1/10000; // pBx/(BVx - PVx)
+    x0(dimM+dimX+2) = 1/10000; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+3) = 1/10000; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+4) = 1/1000;
+    x0(dimM+dimX+5) = 1/1000;
+    x0(dimM+dimX+6) = 1/10000;
+    x0(dimM+dimX+7) = 1/10000;
+    x0(dimM+dimX+8) = 1/10000; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+9) = 1/10000; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+10) = 1/1000;
+    x0(dimM+dimX+11) = 1/1000;
+    x0(dimM+dimX+12) = 1/10000;
+    x0(dimM+dimX+13) = 1/10000;
+    x0(dimM+dimX+14) = 1/1000;
+    x0(dimM+dimX+15) = 1/1000;
+    x0(dimM+dimX+16) = 1/10000;
+    x0(dimM+dimX+17) = 1/10000;
+    x0(dimM+dimX+18) = 1/100000;
+    x0(dimM+dimX+19) = 1/100000;
 
     return x0;
 }
@@ -1281,10 +1722,31 @@ TVectorD x_initial_estimate_1( TVectorD m, ROOT::Math::XYZPoint BV )
     x0(dimM+18) = pnu2.z();
 
     // 3) Initialise lambda (to 1)
-    for(int i = 0; i < dimC; i++)
-    {
-        x0(dimM+dimX+i) = 1.;
-    }
+    // for(int i = 0; i < dimC; i++)
+    // {
+    //     x0(dimM+dimX+i) = 1.;
+    // }
+
+    x0(dimM+dimX) = 1/10000; 
+    x0(dimM+dimX+1) = 1/10000;
+    x0(dimM+dimX+2) = 1/1000;
+    x0(dimM+dimX+3) = 1/1000;
+    x0(dimM+dimX+4) = 1/1000;
+    x0(dimM+dimX+5) = 1/1000;
+    x0(dimM+dimX+6) = 1/10000;
+    x0(dimM+dimX+7) = 1/10000;
+    x0(dimM+dimX+8) = 1/1000;
+    x0(dimM+dimX+9) = 1/1000;
+    x0(dimM+dimX+10) = 1/1000;
+    x0(dimM+dimX+11) = 1/1000;
+    x0(dimM+dimX+12) = 1/10000;
+    x0(dimM+dimX+13) = 1/10000;
+    x0(dimM+dimX+14) = 1/1000;
+    x0(dimM+dimX+15) = 1/1000;
+    x0(dimM+dimX+16) = 1/10000;
+    x0(dimM+dimX+17) = 1/10000;
+    x0(dimM+dimX+18) = 1/100000;
+    x0(dimM+dimX+19) = 1/100000;
 
     return x0;
 }
@@ -1401,10 +1863,31 @@ TVectorD x_initial_estimate_2( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B-
     x0(dimM+18) = pnu2.z();
 
     // 3) Initialise lambda (to 1)
-    for(int i = 0; i < dimC; i++)
-    {
-        x0(dimM+dimX+i) = 1.;
-    }
+    // for(int i = 0; i < dimC; i++)
+    // {
+    //     x0(dimM+dimX+i) = 1.;
+    // }
+
+    x0(dimM+dimX) = 1/10000; 
+    x0(dimM+dimX+1) = 1/10000;
+    x0(dimM+dimX+2) = 1/1000;
+    x0(dimM+dimX+3) = 1/1000;
+    x0(dimM+dimX+4) = 1/1000;
+    x0(dimM+dimX+5) = 1/1000;
+    x0(dimM+dimX+6) = 1/10000;
+    x0(dimM+dimX+7) = 1/10000;
+    x0(dimM+dimX+8) = 1/1000;
+    x0(dimM+dimX+9) = 1/1000;
+    x0(dimM+dimX+10) = 1/1000;
+    x0(dimM+dimX+11) = 1/1000;
+    x0(dimM+dimX+12) = 1/10000;
+    x0(dimM+dimX+13) = 1/10000;
+    x0(dimM+dimX+14) = 1/1000;
+    x0(dimM+dimX+15) = 1/1000;
+    x0(dimM+dimX+16) = 1/10000;
+    x0(dimM+dimX+17) = 1/10000;
+    x0(dimM+dimX+18) = 1/100000;
+    x0(dimM+dimX+19) = 1/100000;
 
     return x0;
 }
@@ -1484,10 +1967,31 @@ TVectorD x_initial_estimate_3( TVectorD m, ROOT::Math::XYZPoint BV )
     x0(dimM+18) = pnu2.z();
 
     // 3) Initialise lambda (to 1)
-    for(int i = 0; i < dimC; i++)
-    {
-        x0(dimM+dimX+i) = 1.;
-    }
+    // for(int i = 0; i < dimC; i++)
+    // {
+    //     x0(dimM+dimX+i) = 1.;
+    // }
+
+    x0(dimM+dimX) = 1/10000; 
+    x0(dimM+dimX+1) = 1/10000;
+    x0(dimM+dimX+2) = 1/1000;
+    x0(dimM+dimX+3) = 1/1000;
+    x0(dimM+dimX+4) = 1/1000;
+    x0(dimM+dimX+5) = 1/1000;
+    x0(dimM+dimX+6) = 1/10000;
+    x0(dimM+dimX+7) = 1/10000;
+    x0(dimM+dimX+8) = 1/1000;
+    x0(dimM+dimX+9) = 1/1000;
+    x0(dimM+dimX+10) = 1/1000;
+    x0(dimM+dimX+11) = 1/1000;
+    x0(dimM+dimX+12) = 1/10000;
+    x0(dimM+dimX+13) = 1/10000;
+    x0(dimM+dimX+14) = 1/1000;
+    x0(dimM+dimX+15) = 1/1000;
+    x0(dimM+dimX+16) = 1/10000;
+    x0(dimM+dimX+17) = 1/10000;
+    x0(dimM+dimX+18) = 1/100000;
+    x0(dimM+dimX+19) = 1/100000;
 
     return x0;
 }
