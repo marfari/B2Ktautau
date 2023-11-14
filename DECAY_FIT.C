@@ -484,7 +484,7 @@ void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* 
 
 TMatrixDSym U_matrix()
 {
-    TMatrixDSym U_cov(dimM+dimX+dimC);
+    TMatrixDSym U_sym(dimM+dimX+dimC);
 
     // Matrix B
     TMatrixD B(dimM+dimX+dimC,dimM);
@@ -746,7 +746,7 @@ TMatrixDSym U_matrix()
 
     //////////////////////////////// xu /////////////////////////
     A(22,0) = -(2*pB.x()/pow(BV.x()-PV.x(),3))*(l(0)+l(1));
-    A(22,3) = -(2*ptau1.x()/pow(DV1.x()-BV.x(),3))*(L(2)+l(3));
+    A(22,3) = -(2*ptau1.x()/pow(DV1.x()-BV.x(),3))*(l(2)+l(3));
     A(22,10) = -(2*ptau2.x()/pow(DV2.x()-BV.x(),3))*(l(8)+l(9));
     A(22,17) = -(2*pK.x()/pow(BV.x()-RP.x(),3))*(l(14)+l(15));
     A(22,19) = -(l(14)+l(15))/pow(BV.x()-RP.x(),2);
@@ -768,7 +768,7 @@ TMatrixDSym U_matrix()
     A(23,11) = (2*ptau2.y()/pow(DV2.y()-BV.y(),3))*l(8);
     A(23,18) = -(2*pK.y()/pow(BV.y()-RP.y(),3))*l(14);
     A(23,20) = l(14)/pow(BV.y()-RP.y(),2);
-    A(23,23) = -(2*pB.y()/pow(BV.y()-RP.y(),3))*l(0) - (2*ptau1.y()/pow(DV1.y()-BV.y(),3))*l(2) - (2*ptau2.y()/pow(DV2.y()-BV.y(),3))*l(8) - (2*pK.y()/pow(BV.y()-RP.y(),3))*l(14);
+    A(23,23) = -(2*pB.y()/pow(BV.y()-PV.y(),3))*l(0) - (2*ptau1.y()/pow(DV1.y()-BV.y(),3))*l(2) - (2*ptau2.y()/pow(DV2.y()-BV.y(),3))*l(8) - (2*pK.y()/pow(BV.y()-RP.y(),3))*l(14);
     A(23,26) = l(0)/pow(BV.y()-PV.y(),2);
     A(23,30) = -l(2)/pow(DV1.y()-BV.y(),2);
     A(23,36) = -l(8)/pow(DV2.y()-BV.y(),2);
@@ -777,11 +777,11 @@ TMatrixDSym U_matrix()
     A(23,L+8) = -ptau2.y()/pow(DV2.y()-BV.y(),2);
     A(23,L+14) = pK.y()/pow(BV.y()-RP.y(),2);
 
-    A(24,2) = (2*pB.z()/pow(BV.z()-RP.z(),3))*l(1);
+    A(24,2) = (2*pB.z()/pow(BV.z()-PV.z(),3))*l(1);
     A(24,5) = (2*ptau1.z()/pow(DV1.z()-BV.z(),3))*l(3);
     A(24,12) = (2*ptau2.z()/pow(DV2.z()-BV.z(),3))*l(9);
     A(24,19) = l(15)/pow(BV.z()-RP.z(),2);
-    A(24,24) = -(2*pB.z()/pow(BV.z()-RP.z(),3))*l(1) - (2*ptau1.z()/pow(DV1.z()-BV.z(),3))*l(3) - (2*ptau2.z()/pow(DV2.z()-BV.z(),3))*l(9) - (2*pK.z()/pow(BV.z()-RP.z(),3))*l(15);
+    A(24,24) = -(2*pB.z()/pow(BV.z()-PV.z(),3))*l(1) - (2*ptau1.z()/pow(DV1.z()-BV.z(),3))*l(3) - (2*ptau2.z()/pow(DV2.z()-BV.z(),3))*l(9) - (2*pK.z()/pow(BV.z()-RP.z(),3))*l(15);
     A(24,27) = l(1)/pow(BV.z()-PV.z(),2);
     A(24,31) = -l(3)/pow(DV1.z()-BV.z(),2);
     A(24,37) = -l(9)/pow(DV2.z()-BV.z(),2);
@@ -806,7 +806,8 @@ TMatrixDSym U_matrix()
     A(27,L+1) = -1/(BV.z()-PV.z());
     A(27,L+18) = 1;
 
-    A(28,28) = -l(19)/(2*pow(EB,3));
+    A(28,28) = -l(19)/(4*pow(EB,3));
+    A(28,L+19) = 1/(2*EB);
 
     A(29,3) = -(l(2)+l(3))/pow(DV1.x()-BV.x(),2);
     A(29,22) = (l(2)+l(3))/pow(DV1.x()-BV.x(),2);
@@ -878,7 +879,7 @@ TMatrixDSym U_matrix()
 
     A(38,38) = -((pow(Enu2,2) - pow(pnu2.x(),2))/pow(Enu2,3))*l(13);
     A(38,L+10) = -1;
-    A(38,L+13) = pnu2.x()/Enu2;
+    A(38,L+13) = -pnu2.x()/Enu2;
 
     A(39,39) = -((pow(Enu2,2) - pow(pnu2.y(),2))/pow(Enu2,3))*l(13);
     A(39,L+11) = -1;
@@ -887,10 +888,173 @@ TMatrixDSym U_matrix()
     A(40,40) = -((pow(Enu2,2) - pow(pnu2.z(),2))/pow(Enu2,3))*l(13);
     A(40,L+12) = -1;
     A(40,L+13) = -pnu2.z()/Enu2;
-  
-    A.Print();
 
-    return U_cov;
+    ///////////////////////////// lambda /////////////////////////
+    A(41,0) = pB.x()/pow(BV.x()-PV.x(),2);
+    A(41,1) = -pB.y()/pow(BV.y()-PV.y(),2);
+    A(41,22) = -pB.x()/pow(BV.x()-PV.x(),2);
+    A(41,23) = pB.y()/pow(BV.y()-PV.y(),2);
+    A(41,25) = 1/(BV.x()-PV.x());
+    A(41,26) = -1/(BV.y()-PV.y());
+
+    A(42,0) = pB.x()/pow(BV.x()-PV.x(),2);
+    A(42,2) = -pB.z()/pow(BV.z()-PV.z(),2);
+    A(42,22) = -pB.x()/pow(BV.x()-PV.x(),2);
+    A(42,24) = pB.z()/pow(BV.z()-PV.z(),2);
+    A(42,25) = 1/(BV.x()-PV.x());
+    A(42,27) = -1/(BV.z()-PV.z());
+
+    A(43,3) = -ptau1.x()/pow(DV1.x()-BV.x(),2);
+    A(43,4) = ptau1.y()/pow(DV1.y()-BV.y(),2);
+    A(43,22) = ptau1.x()/pow(DV1.x()-BV.x(),2);
+    A(43,23) = -ptau1.y()/pow(DV1.y()-BV.y(),2);
+    A(43,29) = 1/(DV1.x()-BV.x());
+    A(43,30) = -1/(DV1.y()-BV.y());
+
+    A(44,3) = -ptau1.x()/pow(DV1.x()-BV.x(),2);
+    A(44,5) = ptau1.z()/pow(DV1.z()-BV.z(),2);
+    A(44,22) = ptau1.x()/pow(DV1.x()-BV.x(),2);
+    A(44,24) = -ptau1.z()/pow(DV1.z()-BV.z(),2);
+    A(44,29) = 1/(DV1.x()-BV.x());
+    A(44,31) = -1/(DV1.z()-BV.z());
+
+    A(45,29) = 1;
+    A(45,6) = -1;
+    A(45,32) = -1;
+
+    A(46,30) = 1;
+    A(46,7) = -1;
+    A(46,33) = -1;
+
+    A(47,31) = 1;
+    A(47,8) = -1;
+    A(47,34) = -1;
+
+    A(48,29) = ptau1.x()/Etau1;
+    A(48,30) = ptau1.y()/Etau1;
+    A(48,31) = ptau1.z()/Etau1;
+    A(48,9) = -1;
+    A(48,32) = -pnu1.x()/Enu1;
+    A(48,33) = -pnu1.y()/Enu1;
+    A(48,34) = -pnu1.z()/Enu1;
+
+    A(49,10) = -ptau2.x()/pow(DV2.x()-BV.x(),2);
+    A(49,11) = ptau2.y()/pow(DV2.y()-BV.y(),2);
+    A(49,22) = ptau2.x()/pow(DV2.x()-BV.x(),2);
+    A(49,23) = -ptau2.y()/pow(DV2.y()-BV.y(),2);
+    A(49,35) = 1/(DV2.x()-BV.x());
+    A(49,36) = -1/(DV2.y()-BV.y());
+
+    A(50,10) = -ptau2.x()/pow(DV2.x()-BV.x(),2);
+    A(50,12) = ptau2.z()/pow(DV2.z()-BV.z(),2);
+    A(50,22) = ptau2.x()/pow(DV2.x()-BV.x(),2);
+    A(50,24) = -ptau2.z()/pow(DV2.z()-BV.z(),2);
+    A(50,35) = 1/(DV2.x()-BV.x());
+    A(50,37) = -1/(DV2.z()-BV.z());
+
+    A(51,35) = 1;
+    A(51,13) = -1;
+    A(51,38) = -1;
+
+    A(52,36) = 1;
+    A(52,14) = -1;
+    A(52,39) = -1;
+
+    A(53,37) = 1;
+    A(53,15) = -1;
+    A(53,40) = -1;
+
+    A(54,35) = ptau2.x()/Etau2;
+    A(54,36) = ptau2.y()/Etau2;
+    A(54,37) = ptau2.z()/Etau2;
+    A(54,16) = -1;
+    A(54,38) = -pnu2.x()/Enu2;
+    A(54,39) = -pnu2.y()/Enu2;
+    A(54,40) = -pnu2.z()/Enu2;
+
+    A(55,17) = pK.x()/pow(BV.x()-RP.x(),2);
+    A(55,18) = -pK.y()/pow(BV.y()-RP.y(),2);
+    A(55,22) = -pK.x()/pow(BV.x()-RP.x(),2);
+    A(55,23) = pK.y()/pow(BV.y()-RP.y(),2);
+    A(55,19) = 1/(BV.x()-RP.x());
+    A(55,20) = -1/(BV.y()-RP.y());
+
+    A(56,17) = pK.x()/pow(BV.x()-RP.x(),2);
+    A(56,22) = -pK.x()/pow(BV.x()-RP.x(),2);
+    A(56,24) = pK.z()/pow(BV.z()-RP.z(),2);
+    A(56,19) = 1/(BV.x()-RP.x());
+    A(56,21) = -1/(BV.z()-RP.z());
+
+    A(57,25) = 1;
+    A(57,29) = -1;
+    A(57,35) = -1;
+    A(57,19) = -1;
+
+    A(58,26) = 1;
+    A(58,30) = -1;
+    A(58,36) = -1;
+    A(58,20) = -1;
+
+    A(59,27) = 1;
+    A(59,31) = -1;
+    A(59,37) = -1;
+    A(59,21) = -1;
+
+    A(60,28) = 1/(2*EB);
+    A(60,29) = -ptau1.x()/Etau1;
+    A(60,30) = -ptau1.y()/Etau1;
+    A(60,31) = -ptau1.z()/Etau1;
+    A(60,35) = -ptau2.x()/Etau2;
+    A(60,36) = -ptau2.y()/Etau2;
+    A(60,37) = -ptau2.z()/Etau2;
+    A(60,19) = -pK.x()/EK;
+    A(60,20) = -pK.y()/EK;
+    A(60,21) = -pK.z()/EK;
+
+    // A.Print();
+
+    TMatrixDSym A_sym(dimM+dimX+dimC);
+    for(int i = 0; i < dimM+dimX+dimC; i++)
+    {
+        for(int j = 0; j < dimM+dimX+dimC; j++)
+        {
+            A_sym(i,j) = A(i,j);
+        }
+    }
+
+    // cout << "|A| = " << A_sym.Determinant() << endl;
+
+    // TVectorD A_eigen_values(dimM+dimX+dimC);  
+    // TMatrixD A_eigen_vectors = A_sym.EigenVectors(A_eigen_values);
+    // A_eigen_values.Print();
+
+    TMatrixD A_inverse = A_sym;
+    A_inverse.Invert();
+
+    // TMatrixD identity = A_inverse*A_sym;
+    // identity.Print();
+
+    // C = - A^-1 B
+    TMatrixD C = (A_inverse*B);
+    C *= -1;
+    // C.Print();
+
+    // Covariance matrix of fit parameters U = C V C^T
+    TMatrixD C_transpose = C;
+    C_transpose.T();
+
+    TMatrixD U = C*(V*C_transpose);
+
+    for(int i = 0; i < dimM+dimX+dimC; i++)
+    {
+        for(int j = 0; j < dimM+dimX+dimC; j++)
+        {
+            U_sym(i,j) = U(i,j);
+        }
+    }
+    U_sym.Print();
+
+    return U_sym;
 }
 
 double eq1( const double* x_vars )
