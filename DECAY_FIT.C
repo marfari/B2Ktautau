@@ -17,30 +17,43 @@ TVectorD x0(dimM+dimX+dimC);
 Double_t RPz; // z-component of the RP on the K+ trajectory (fixed)
 
 // Fit results saved
-Double_t MB, MB_err;
+Double_t MB, MB_err, F_tolerance;
 TVectorD X(dimM+dimX+dimC);
 TVectorD X_ERR(dimM+dimX+dimC);
 TVectorD F(dimM+dimX+dimC);
-TMatrixDSym C(dimM+dimX+dimC);
-TMatrixDSym C_corr(dimM+dimX+dimC);
+TMatrixDSym U(dimM+dimX+dimC);
+TMatrixDSym U_corr(dimM+dimX+dimC);
 Int_t status, init;
 
 // Constants
 Double_t mtau = 1776.86;
 Double_t mkaon = 493.677;
+Double_t tolerance = 0.01;
 
 // Functions
-void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* solver );
+void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* solver, Double_t tolerance );
 ROOT::Math::XYZVector makeTransformation_vec(ROOT::Math::XYZVector Pk, ROOT::Math::XYZPoint refPoint, ROOT::Math::XYZVector theVector, bool invFlag);
 ROOT::Math::XYZPoint makeTransformation_point(ROOT::Math::XYZVector Pk, ROOT::Math::XYZPoint refPoint, ROOT::Math::XYZPoint thePoint, bool invFlag);
+
 TVectorD x_initial_estimate_0( TVectorD m );
 TVectorD x_initial_estimate_1( TVectorD m, ROOT::Math::XYZPoint BV );
 TVectorD x_initial_estimate_2( TVectorD m, ROOT::Math::XYZPoint BV );
 TVectorD x_initial_estimate_3( TVectorD m, ROOT::Math::XYZPoint BV );
-Double_t lagrangian( const Double_t* x_values );
+TVectorD x_initial_estimate_4( TVectorD m, ROOT::Math::XYZPoint BV );
+TVectorD x_initial_estimate_5( TVectorD m, ROOT::Math::XYZPoint BV );
+TVectorD x_initial_estimate_6( TVectorD m, ROOT::Math::XYZPoint BV );
+TVectorD x_initial_estimate_7( TVectorD m, ROOT::Math::XYZPoint BV );
+TVectorD x_initial_estimate_8( TVectorD m, ROOT::Math::XYZPoint BV );
+TVectorD x_initial_estimate_9( TVectorD m, ROOT::Math::XYZPoint BV );
+
+Double_t lagrangian( TVectorD x );
 Double_t chisquare( TVectorD xm );
 TVectorD exact_constraints( TVectorD x );
 TMatrixDSym U_matrix();
+vector<double> range(double min, double max, size_t N);
+void scan_lagrangian( TVectorD X, Int_t index, Int_t npoints, TString x_name, Int_t year, Int_t species, Int_t component, Int_t line );
+void scan_chisquare( TVectorD X, Int_t index, Int_t npoints, TString x_name, Int_t year, Int_t species, Int_t component, Int_t line);
+
 double equations( const double* x_vars );
 double eq1( const double* x );
 double eq2( const double* x );
@@ -236,11 +249,7 @@ void DECAY_FIT(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
     for(int i = 0; i < dimM+dimX; i++)
     {
         tout->Branch(name_x[i], &X(i));
-        // tout->Branch(name_x_err[i], &X_ERR(i));
-        // for(int j = 0; j < dimX; j++)
-        // {
-        //     tout->Branch(Form("df_C_%i_%i",i,j), &C(i,j));
-        // }
+        tout->Branch(name_x_err[i], &X_ERR[i]);
     }
 
     for(int i = 0; i < dimM+dimX+dimC; i++)
@@ -248,13 +257,14 @@ void DECAY_FIT(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
         tout->Branch(Form("df_F_%i",i), &F(i));
     }
 
-    // tout->Branch("df_init", &init);
+    tout->Branch("df_init", &init);
     tout->Branch("df_Bp_M", &MB);
-    // tout->Branch("df_Bp_MERR", &MB_err);
+    tout->Branch("df_Bp_MERR", &MB_err);
     tout->Branch("df_status", &status);
+    tout->Branch("df_F_tolerance", &F_tolerance);
 
     // Loop over events
-    for(int evt = 0; evt < 1; evt++)
+    for(int evt = 0; evt < num_entries; evt++)
     {
         t->GetEntry(evt);
 
@@ -353,7 +363,7 @@ void DECAY_FIT(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
         solver->AddFunction(eq59,dimM+dimX+dimC);
         solver->AddFunction(eq60,dimM+dimX+dimC);
         solver->AddFunction(eq61,dimM+dimX+dimC);  
-        solver->SetPrintLevel(1);
+        solver->SetPrintLevel(0);
 
         // 4) Solve the system of euqations (61)
         // init = 0:  original calculations = Anne Keune (29%)
@@ -363,50 +373,307 @@ void DECAY_FIT(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
 
         ROOT::Math::XYZPoint BV( BVx, BVy, BVz );
 
-        // 3102
-        solve( BV, 3, solver );
-        if(status != 0)
+        // 310245
+
+        // Init 0
+        solve( BV, 0, solver, tolerance );
+        Int_t status0 = status;
+        Double_t MB_0 = MB;
+        Double_t MB_err0 = MB_err;
+        TVectorD X0 = X;
+        TVectorD X0_ERR = X_ERR;
+        TVectorD F0 = F;
+        Double_t F_tol_0 = F_tolerance;
+        // cout << "init = " << 0 << endl;
+        // cout << "MB = " << MB_0 << endl;
+        // cout << "F_tol = " << F_tol_0 << endl;
+
+        // Init 1
+        solve( BV, 1, solver, tolerance );
+        Int_t status1 = status;
+        Double_t MB_1 = MB;
+        Double_t MB_err1 = MB_err;
+        TVectorD X1 = X;
+        TVectorD X1_ERR = X_ERR;
+        TVectorD F1 = F;
+        Double_t F_tol_1 = F_tolerance;
+        // cout << "init = " << 1 << endl;
+        // cout << "MB = " << MB_1 << endl;
+        // cout << "F_tol = " << F_tol_1 << endl;
+
+        // Init 2
+        solve( BV, 2, solver, tolerance );
+        Int_t status2 = status;
+        Double_t MB_2 = MB;
+        Double_t MB_err2 = MB_err;
+        TVectorD X2 = X;
+        TVectorD X2_ERR = X_ERR;
+        TVectorD F2 = F;
+        Double_t F_tol_2 = F_tolerance;
+        // cout << "init = " << 2 << endl;
+        // cout << "MB = " << MB_2 << endl;
+        // cout << "F_tol = " << F_tol_2 << endl;
+
+        // Init 3
+        solve( BV, 3, solver, tolerance );
+        Int_t status3 = status;
+        Double_t MB_3 = MB;
+        Double_t MB_err3 = MB_err;
+        TVectorD X3 = X;
+        TVectorD X3_ERR = X_ERR;
+        TVectorD F3 = F; 
+        Double_t F_tol_3 = F_tolerance;  
+        // cout << "init = " << 3 << endl;
+        // cout << "MB = " << MB_3 << endl;
+        // cout << "F_tol = " << F_tol_3 << endl; 
+
+        // Init 4
+        solve( BV, 4, solver, tolerance );
+        Int_t status4 = status;
+        Double_t MB_4 = MB;
+        Double_t MB_err4 = MB_err;
+        TVectorD X4 = X;
+        TVectorD X4_ERR = X_ERR;
+        TVectorD F4 = F;
+        Double_t F_tol_4 = F_tolerance;
+        // cout << "init = " << 4 << endl;
+        // cout << "MB = " << MB_4 << endl;
+        // cout << "F_tol = " << F_tol_4 << endl;
+
+        // Init 5
+        solve( BV, 5, solver, tolerance );
+        Int_t status5 = status;
+        Double_t MB_5 = MB;
+        Double_t MB_err5 = MB_err;
+        TVectorD X5 = X;
+        TVectorD X5_ERR = X_ERR;
+        TVectorD F5 = F;
+        Double_t F_tol_5 = F_tolerance;
+        // cout << "init = " << 5 << endl;
+        // cout << "MB = " << MB_5 << endl;
+        // cout << "F_tol = " << F_tol_5 << endl;
+
+        // Init 6
+        solve( BV, 6, solver, tolerance );
+        Int_t status6 = status;
+        Double_t MB_6 = MB;
+        Double_t MB_err6 = MB_err;
+        TVectorD X6 = X;
+        TVectorD X6_ERR = X_ERR;
+        TVectorD F6 = F;
+        Double_t F_tol_6 = F_tolerance;
+        // cout << "init = " << 6 << endl;
+        // cout << "MB = " << MB_6 << endl;
+        // cout << "F_tol = " << F_tol_6 << endl;
+
+        // Init 7
+        solve( BV, 7, solver, tolerance );
+        Int_t status7 = status;
+        Double_t MB_7 = MB;
+        Double_t MB_err7 = MB_err;
+        TVectorD X7 = X;
+        TVectorD X7_ERR = X_ERR;
+        TVectorD F7 = F;
+        Double_t F_tol_7 = F_tolerance;
+        // cout << "init = " << 7 << endl;
+        // cout << "MB = " << MB_7 << endl;
+        // cout << "F_tol = " << F_tol_7 << endl;
+
+        // Init 8
+        solve( BV, 8, solver, tolerance );
+        Int_t status8 = status;
+        Double_t MB_8 = MB;
+        Double_t MB_err8 = MB_err;
+        TVectorD X8 = X;
+        TVectorD X8_ERR = X_ERR;
+        TVectorD F8 = F;
+        Double_t F_tol_8 = F_tolerance;
+        // cout << "init = " << 8 << endl;
+        // cout << "MB = " << MB_8 << endl;
+        // cout << "F_tol = " << F_tol_8 << endl;
+
+        // Init 9
+        solve( BV, 9, solver, tolerance );
+        Int_t status9 = status;
+        Double_t MB_9 = MB;
+        Double_t MB_err9 = MB_err;
+        TVectorD X9 = X;
+        TVectorD X9_ERR = X_ERR;
+        TVectorD F9 = F;
+        Double_t F_tol_9 = F_tolerance;
+        // cout << "init = " << 9 << endl;
+        // cout << "MB = " << MB_9 << endl;
+        // cout << "F_tol = " << F_tol_9 << endl;
+
+        Int_t status_vec[10] = { status0, status1, status2, status3, status4, status5, status6, status7, status8, status9 };
+        Double_t MB_vec[10] = { MB_0, MB_1, MB_2, MB_3, MB_4, MB_5, MB_6, MB_7, MB_8, MB_9 }; 
+        Double_t MB_err_vec[10] = { MB_err0, MB_err1, MB_err2, MB_err3, MB_err4, MB_err5, MB_err6, MB_err7, MB_err8, MB_err9 };
+        Double_t F_tol_vec[10] = { F_tol_0, F_tol_1, F_tol_2, F_tol_3, F_tol_4, F_tol_5, F_tol_6, F_tol_7, F_tol_8, F_tol_9 };
+
+        std::vector<TVectorD> X_vec;
+        X_vec.push_back(X0);
+        X_vec.push_back(X1);
+        X_vec.push_back(X2);
+        X_vec.push_back(X3);
+        X_vec.push_back(X4);
+        X_vec.push_back(X5);
+        X_vec.push_back(X6);
+        X_vec.push_back(X7);
+        X_vec.push_back(X8);
+        X_vec.push_back(X9);
+
+        std::vector<TVectorD> X_ERR_vec;
+        X_ERR_vec.push_back(X0_ERR);
+        X_ERR_vec.push_back(X1_ERR);
+        X_ERR_vec.push_back(X2_ERR);
+        X_ERR_vec.push_back(X3_ERR);
+        X_ERR_vec.push_back(X4_ERR);
+        X_ERR_vec.push_back(X5_ERR);
+        X_ERR_vec.push_back(X6_ERR);
+        X_ERR_vec.push_back(X7_ERR);
+        X_ERR_vec.push_back(X8_ERR);
+        X_ERR_vec.push_back(X9_ERR);
+
+        std::vector<TVectorD> F_vec;
+        F_vec.push_back(F0);
+        F_vec.push_back(F1);
+        F_vec.push_back(F2);
+        F_vec.push_back(F3);
+        F_vec.push_back(F4);
+        F_vec.push_back(F5);
+        F_vec.push_back(F6);
+        F_vec.push_back(F7);
+        F_vec.push_back(F8);
+        F_vec.push_back(F9);
+
+        Double_t F_min = 0.1;
+        Int_t i_min = 0;
+        for(int i = 0; i < 10; i++)
         {
-            solve( BV, 1, solver );
-        }
-        if(status != 0)
+            if( (F_tol_vec[i] < F_min) && (status_vec[i] == 0) )
+            {
+                F_min = F_tol_vec[i];
+                i_min = i;
+            }
+        }   
+
+        bool all_fail = false;
+        if( (status0 != 0) && (status1 != 0) && (status2 != 0) && (status3 != 0) && (status4 != 0) && (status5 != 0) && (status6 != 0) && (status7 != 0) && (status8 != 0) && (status9 != 0) )
         {
-            solve( BV, 0, solver );
-        }
-        if(status != 0)
-        {
-            solve( BV, 2, solver );
+            all_fail = true;
         }
 
-        // 1230 (62%)
-        // solve( BV, 1, solver );
-        // if(status != 0)
+        init = i_min;
+        if(all_fail){init = -1;}
+        status = status_vec[i_min];
+        MB = MB_vec[i_min];
+        MB_err = MB_err_vec[i_min];
+        X = X_vec[i_min];
+        X_ERR = X_ERR_vec[i_min];
+        F = F_vec[i_min];
+        F_tolerance = F_tol_vec[i_min];
+
+        cout << "FINAL" << endl;
+        cout << "init = " << init << endl;
+        cout << "status == " << status << endl;
+        cout << "sum_Fi = " << F_tolerance << endl;
+        cout << "MB = " << MB << " +/- " << MB_err << endl;
+
+        // X.Print();
+        // X_ERR.Print();
+
+        // TMatrixDSym U_corr(dimM+dimX+dimC);
+        // for(int i = 0; i < dimM+dimX+dimC; i++)
         // {
-        //     solve( BV, 2, solver );
+        //     for(int j = 0; j < dimM+dimX+dimC; j++)
+        //     {
+        //         U_corr(i,j) = U(i,j)/sqrt( U(i,i)*U(j,j) );
+        //     }
         // }
-        // if(status != 0)
+        // U_corr.Print();
+
+        // TVectorD U_eigen_values(dimM+dimX+dimC);  
+        // TMatrixD U_eigen_vectors = U.EigenVectors(U_eigen_values);
+        // U_eigen_values.Print();
+
+        TString NAME[] = {
+            "PVx (mm)",
+            "PVy (mm)",
+            "PVz (mm)",
+            "DV1x (mm)",
+            "DV1y (mm)",
+            "DV1z (mm)",
+            "p3pi1x (MeV)",
+            "p3pi1y (MeV)",
+            "p3pi1z (MeV)",
+            "E3pi1 (MeV)",
+            "DV2x (mm)",
+            "DV2y (mm)",
+            "DV2z (mm)",
+            "p3pi2x (MeV)",
+            "p3pi2y (MeV)",
+            "p3pi2z (MeV)",
+            "E3pi2 (MeV)",
+            "RPx (mm)",
+            "RPy (mm)",
+            "pKx (MeV)",
+            "pKy (MeV)",
+            "pKz (MeV)",
+            "BVx (mm)",
+            "BVy (mm)",
+            "BVz (mm)",
+            "pBx (MeV)",
+            "pBy (MeV)",
+            "pBz (MeV)",
+            "MB^{2} (MeV^{2})",
+            "ptau1x (MeV)",
+            "ptau1y (MeV)",
+            "ptau1z (MeV)",
+            "pnu1x (MeV)",
+            "pnu1y (MeV)",
+            "pnu1z (MeV)",
+            "ptau2x (MeV)",
+            "ptau2y (MeV)",
+            "ptau2z (MeV)",
+            "pnu2x (MeV)",
+            "pnu2y (MeV)",
+            "pnu2z (MeV)",
+            "lambda1",
+            "lambda2",
+            "lambda3",
+            "lambda4",
+            "lambda5",
+            "lambda6",
+            "lambda7",
+            "lambda8",
+            "lambda9",
+            "lambda10",
+            "lambda11",
+            "lambda12",
+            "lambda13",
+            "lambda14",
+            "lambda15",
+            "lambda16",
+            "lambda17",
+            "lambda18",
+            "lambda19",
+            "lambda20"
+        };
+        if( sizeof(NAME)/sizeof(NAME[0]) != dimM+dimX+dimC )
+        {
+            cout << "NAME size is not correct" << endl;
+            return;
+        }
+
+        // for(int i = 0; i < dimM+dimX+dimC; i++)
         // {
-        //     solve( BV, 3, solver );
+        //     scan_lagrangian(X, i, 100, NAME[i], year, species, component, line);
         // }
-        // if(status != 0)
+        // for(int i = 0; i < dimM; i++)
         // {
-        //     solve( BV, 0, solver );
+        //     scan_chisquare(X, i, 100, NAME[i], year, species, component, line);
         // }
 
-        // 3012 (38%)
-        // solve( BV, 3, solver );
-        // if(status != 0)
-        // {
-        //     solve( BV, 0, solver );
-        // }
-        // if(status != 0)
-        // {
-        //     solve( BV, 1, solver );
-        // }
-        // if(status != 0)
-        // {
-        //     solve( BV, 2, solver );
-        // }
 
         tout->Fill();
     }
@@ -417,7 +684,7 @@ void DECAY_FIT(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
     fout->Close();
 }
 
-void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* solver )
+void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* solver, Double_t tolerance )
 {
     // 1) This function initialises the vector of unkown parameters x with the result of analytical calculations
     // 2) It sets up the minimizer: defining the initial values and bounds on the x parameters  
@@ -441,6 +708,30 @@ void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* 
     {
         x0 = x_initial_estimate_3( m, BV ); // RD calculations (uses offline estimate for BV)
     }
+    else if(init == 4)
+    {
+        x0 = x_initial_estimate_4( m, BV ); // K*tautau; tau+ from vertices, tau- from pions
+    }
+    else if(init == 5)
+    {
+        x0 = x_initial_estimate_5( m, BV ); // K*tautau; tau- from vertices, tau+ from pions
+    }
+    else if(init == 6)
+    {
+        x0 = x_initial_estimate_6( m, BV ); // Mixes Marseille (tau+) and K*tautau vertices (tau-)
+    }
+    else if(init == 7)
+    {
+        x0 = x_initial_estimate_7( m, BV ); // Mixes Marseille (tau-) and K*tautau vertices (tau+)
+    }
+    else if(init == 8)
+    {
+        x0 = x_initial_estimate_8( m, BV ); // Mixes Marseille (tau+) and K*tautau pions (tau-)
+    }
+    else if(init == 9)
+    {
+        x0 = x_initial_estimate_9( m, BV ); // Mixes Marseille (tau-) and K*tautau pions (tau+)
+    }
     // x0.Print();
 
     Double_t x0_vars[dimM+dimX+dimC], x0_err[dimM+dimX+dimC];
@@ -451,13 +742,14 @@ void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* 
     }
 
     // 2) Solve system of equations
-    solver->Solve(x0_vars, 10000, 1);
+    solver->Solve(x0_vars, 10000, tolerance, tolerance/10000);
+    // status = solver->Status();
 
     // 3) Retrieve results
     const double* x_results = solver->X();
     const double* f_vals = solver->FVal();
     status = solver->Status();
-    cout << "status = " << status << endl;
+    // cout << "status = " << status << endl;
 
     for(int i = 0; i < dimM+dimX+dimC; i++)
     {
@@ -466,6 +758,14 @@ void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* 
     }
     // X.Print();
     // F.Print();
+
+    U = U_matrix();
+    for(int i = 0; i < dimM+dimX+dimC; i++)
+    {
+        X_ERR(i) = sqrt(U(i,i));
+    }
+    // X.Print();
+    // X_ERR.Print();
 
     Double_t MB_squared = X(dimM+6);
     if( MB_squared > 0 )
@@ -476,10 +776,166 @@ void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* 
     {
         MB = -sqrt( abs(MB_squared) );
     }
-    cout << "MB = " << MB << endl;
 
-    TMatrixDSym U = U_matrix();
+    Double_t dMB_squared = sqrt(U(28,28));
+    MB_err = dMB_squared/(2*abs(MB));
 
+    // cout << "MB = " << MB << " +/- " << MB_err << endl;
+
+    // TVectorD V_errors(dimM);
+    // for(int i = 0; i < dimM; i++)
+    // {
+    //     V_errors(i) = sqrt(V(i,i));
+    // }
+    // m.Print();
+    // V_errors.Print();
+
+    // TVectorD diff(dimM);
+    // for(int i = 0; i < dimM; i++)
+    // {
+    //     diff(i) = X(i)-m(i);
+    // }
+    // diff.Print();
+
+    // TVectorD ratio(dimM);
+    // for(int i = 0; i < dimM; i++)
+    // {
+    //     ratio(i) = X_ERR(i)/V_errors(i);
+    // }
+    // ratio.Print();
+
+    F_tolerance = 0;
+    for(int i = 0; i < dimM+dimX+dimC; i++)
+    {
+        F_tolerance += abs(F(i));
+    }
+
+}
+
+void scan_chisquare( TVectorD X, Int_t index, Int_t npoints, TString x_name, Int_t year, Int_t species, Int_t component, Int_t line)
+{
+    if(index > dimM)
+    {
+        cout << "Wrong index" << endl;
+        return;
+    }
+
+    TVectorD xm(dimM);
+    for(int i = 0; i < dimM; i++)
+    {
+        xm(i) = X(i);
+    }
+
+    Double_t x_val = xm(index);
+    Double_t x_min = x_val - X_ERR(index);
+    Double_t x_max = x_val + X_ERR(index);
+
+    vector<Double_t> scan_range = range(x_min, x_max, npoints);
+
+    Double_t x[npoints];
+    Double_t y[npoints];
+
+    for(int i = 0; i < npoints; i++)
+    {
+        x[i] = scan_range[i];
+        xm(index) = x[i];
+        y[i] = chisquare(xm);
+    }
+
+    TGraph* g = new TGraph(npoints, x, y);
+
+    TCanvas c;
+    c.cd();
+    gPad->SetGrid(1,1);
+    g->SetMarkerStyle(8);
+    g->SetMarkerColor(kBlue);
+    g->Draw("AP");
+    g->GetXaxis()->SetTitle(x_name);
+    g->GetYaxis()->SetTitle("#chi^{2}");
+    g->SetTitle("");
+
+    TLine* line1 = new TLine(x_val, g->GetYaxis()->GetXmin(), x_val, g->GetYaxis()->GetXmax());
+    line1->SetLineColor(kRed);
+    line1->SetLineWidth(2);
+    line1->Draw("same");
+
+    c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/Component_%i/Plots_chisquare/%i_%i.gif",year,species,component,index,line));
+    c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/Component_%i/Plots_chisquare/%i_%i.pdf",year,species,component,index,line));
+
+    X(index) = x_val;
+}
+
+
+void scan_lagrangian( TVectorD X, Int_t index, Int_t npoints, TString x_name, Int_t year, Int_t species, Int_t component, Int_t line)
+{
+    Double_t x_val = X(index);
+    Double_t x_min = x_val - X_ERR(index);
+    Double_t x_max = x_val + X_ERR(index);
+
+    // if( (index == 25) || (index == 26) || (index == 27) || (index == 28) )
+    // {
+    //     x_min = x_val - 1000*X_ERR(index);
+    //     x_max = x_val + 1000*X_ERR(index);
+
+    //     if(index == 28) // MB^2
+    //     {
+    //         x_min = x_val - 20*X_ERR(index);
+    //         x_max = x_val + 20*X_ERR(index);  
+    //     }
+    //     if(index == 26) // pBy
+    //     {
+    //         x_min = x_val - 5000*X_ERR(index);
+    //         x_max = x_val + 10000*X_ERR(index);    
+    //     }
+    //     if(index == 27)
+    //     {
+    //         x_min = x_val - 200*X_ERR(index);
+    //         x_max = x_val + 200*X_ERR(index); 
+    //     }
+    // }
+
+    vector<Double_t> scan_range = range(x_min, x_max, npoints);
+
+    Double_t x[npoints];
+    Double_t y[npoints];
+
+    for(int i = 0; i < npoints; i++)
+    {
+        x[i] = scan_range[i];
+        X(index) = x[i];
+        y[i] = log(lagrangian(X));
+    }
+
+    TGraph* g = new TGraph(npoints, x, y);
+
+    TCanvas c;
+    c.cd();
+    gPad->SetGrid(1,1);
+    g->SetMarkerStyle(8);
+    g->SetMarkerColor(kBlue);
+    g->Draw("AP");
+    g->GetXaxis()->SetTitle(x_name);
+    g->GetYaxis()->SetTitle("ln(L)");
+    g->SetTitle("");
+
+    TLine* line2 = new TLine(x_val, g->GetYaxis()->GetXmin(), x_val, g->GetYaxis()->GetXmax());
+    line2->SetLineColor(kRed);
+    line2->SetLineWidth(2);
+    line2->Draw("same");
+
+    c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/Component_%i/Plots_lagrangian/%i_%i.gif",year,species,component,index,line));
+    c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/Component_%i/Plots_lagrangian/%i_%i.pdf",year,species,component,index,line));
+
+    X(index) = x_val;
+}
+
+vector<double> range(double min, double max, size_t N) {
+    vector<double> range;
+    double delta = (max-min)/double(N-1);
+    for(int i=0; i<N; i++) {
+        range.push_back(min + i*delta);
+    }
+    return range;
 }
 
 TMatrixDSym U_matrix()
@@ -552,7 +1008,7 @@ TMatrixDSym U_matrix()
             A(0,i) = 2*W(0,i);
         }
     }
-    A(0,22) = -(2*pB.x()/pow(BV.x()-PV.x(),3))*(l(0) + l(1));
+    A(0,22) = -(2*pB.x()/pow(BV.x()-PV.x(),3))*(l(0)+l(1));
     A(0,25) = (l(0) + l(1))/pow(BV.x()-PV.x(),2);
     A(0,L) = pB.x()/pow(BV.x()-pB.x(),2);
     A(0,L+1) = pB.x()/pow(BV.x()-pB.x(),2);
@@ -628,7 +1084,7 @@ TMatrixDSym U_matrix()
     A(8,L+6) = -1;
     A(9,L+7) = -1;
 
-    A(10,10) = 2*W(10,10) + (2*ptau2.x()/pow(DV2.x()-BV.x(),3))*(l(8) + l(9));
+    A(10,10) = 2*W(10,10) + (2*ptau2.x()/pow(DV2.x()-BV.x(),3))*(l(8)+l(9));
     for(int i = 0; i < dimM; i++)
     {
         if(i != 10)
@@ -636,8 +1092,8 @@ TMatrixDSym U_matrix()
             A(10,i) = 2*W(10,i);
         }
     }
-    A(10,22) = -(2*ptau2.x()/pow(DV2.x()-BV.x(),3))*(l(8) + l(9));
-    A(10,35) = -(l(8) + l(9))/pow(DV2.x()-BV.x(),2);
+    A(10,22) = -(2*ptau2.x()/pow(DV2.x()-BV.x(),3))*(l(8)+l(9));
+    A(10,35) = -(l(8)+l(9))/pow(DV2.x()-BV.x(),2);
     A(10,L+8) = -ptau2.x()/pow(DV2.x()-BV.x(),2);
     A(10,L+9) = -ptau2.x()/pow(DV2.x()-BV.x(),2);
 
@@ -677,7 +1133,7 @@ TMatrixDSym U_matrix()
     A(15,L+12) = -1;
     A(16,L+13) = -1;
 
-    A(17,17) = 2*W(17,17) + (2*pK.x()/pow(BV.x()-RP.x(),3))*(l(14) + l(15));
+    A(17,17) = 2*W(17,17) + (2*pK.x()/pow(BV.x()-RP.x(),3))*(l(14)+l(15));
     for(int i = 0; i < dimM; i++)
     {
         if((i != 17) && (i != 19))
@@ -685,8 +1141,8 @@ TMatrixDSym U_matrix()
             A(17,i) = 2*W(17,i);
         }
     }
-    A(17,22) = -(2*pK.x()/pow(BV.x()-RP.x(),3))*(l(14) + l(15));
-    A(17,19) = 2*W(17,19) + (l(14) + l(15))/pow(BV.x()-RP.x(),2);
+    A(17,22) = -(2*pK.x()/pow(BV.x()-RP.x(),3))*(l(14)+l(15));
+    A(17,19) = 2*W(17,19) + (l(14)+l(15))/pow(BV.x()-RP.x(),2);
     A(17,L+14) = pK.x()/pow(BV.x()-RP.x(),2);
     A(17,L+15) = pK.x()/pow(BV.x()-RP.x(),2);
 
@@ -710,8 +1166,8 @@ TMatrixDSym U_matrix()
             A(19,i) = 2*W(19,i);
         }
     }
-    A(19,17) = 2*W(19,17) + (l(14) + l(15))/pow(BV.x()-RP.x(),2);
-    A(19,22) = -(l(14) + l(15))/pow(BV.x()-RP.x(),2);
+    A(19,17) = 2*W(19,17) + (l(14)+l(15))/pow(BV.x()-RP.x(),2);
+    A(19,22) = -(l(14)+l(15))/pow(BV.x()-RP.x(),2);
     A(19,L+14) = 1/(BV.x()-RP.x());
     A(19,L+15) = 1/(BV.x()-RP.x());
     A(19,L+16) = -1;
@@ -766,7 +1222,7 @@ TMatrixDSym U_matrix()
     A(23,1) = (2*pB.y()/pow(BV.y()-PV.y(),3))*l(0);
     A(23,4) = (2*ptau1.y()/pow(DV1.y()-BV.y(),3))*l(2);
     A(23,11) = (2*ptau2.y()/pow(DV2.y()-BV.y(),3))*l(8);
-    A(23,18) = -(2*pK.y()/pow(BV.y()-RP.y(),3))*l(14);
+    A(23,18) = (2*pK.y()/pow(BV.y()-RP.y(),3))*l(14);
     A(23,20) = l(14)/pow(BV.y()-RP.y(),2);
     A(23,23) = -(2*pB.y()/pow(BV.y()-PV.y(),3))*l(0) - (2*ptau1.y()/pow(DV1.y()-BV.y(),3))*l(2) - (2*ptau2.y()/pow(DV2.y()-BV.y(),3))*l(8) - (2*pK.y()/pow(BV.y()-RP.y(),3))*l(14);
     A(23,26) = l(0)/pow(BV.y()-PV.y(),2);
@@ -780,7 +1236,7 @@ TMatrixDSym U_matrix()
     A(24,2) = (2*pB.z()/pow(BV.z()-PV.z(),3))*l(1);
     A(24,5) = (2*ptau1.z()/pow(DV1.z()-BV.z(),3))*l(3);
     A(24,12) = (2*ptau2.z()/pow(DV2.z()-BV.z(),3))*l(9);
-    A(24,19) = l(15)/pow(BV.z()-RP.z(),2);
+    A(24,21) = l(15)/pow(BV.z()-RP.z(),2);
     A(24,24) = -(2*pB.z()/pow(BV.z()-PV.z(),3))*l(1) - (2*ptau1.z()/pow(DV1.z()-BV.z(),3))*l(3) - (2*ptau2.z()/pow(DV2.z()-BV.z(),3))*l(9) - (2*pK.z()/pow(BV.z()-RP.z(),3))*l(15);
     A(24,27) = l(1)/pow(BV.z()-PV.z(),2);
     A(24,31) = -l(3)/pow(DV1.z()-BV.z(),2);
@@ -806,6 +1262,9 @@ TMatrixDSym U_matrix()
     A(27,L+1) = -1/(BV.z()-PV.z());
     A(27,L+18) = 1;
 
+    A(28,25) = (pB.x()/EB)*l(19);
+    A(28,26) = (pB.y()/EB)*l(19);
+    A(28,27) = (pB.z()/EB)*l(19);
     A(28,28) = -l(19)/(4*pow(EB,3));
     A(28,L+19) = 1/(2*EB);
 
@@ -1000,6 +1459,9 @@ TMatrixDSym U_matrix()
     A(59,37) = -1;
     A(59,21) = -1;
 
+    A(60,25) = pB.x()/EB;
+    A(60,26) = pB.y()/EB;
+    A(60,27) = pB.z()/EB;
     A(60,28) = 1/(2*EB);
     A(60,29) = -ptau1.x()/Etau1;
     A(60,30) = -ptau1.y()/Etau1;
@@ -1052,7 +1514,7 @@ TMatrixDSym U_matrix()
             U_sym(i,j) = U(i,j);
         }
     }
-    U_sym.Print();
+    // U_sym.Print();
 
     return U_sym;
 }
@@ -1522,14 +1984,8 @@ double equations( const double* x_vars )
     }
 }
 
-Double_t lagrangian( const Double_t* x_values )
+Double_t lagrangian( TVectorD x )
 {
-    TVectorD x(dimM+dimX+dimC);
-    for(int i = 0; i < dimM+dimX+dimC; i++)
-    {
-        x(i) = x_values[i];
-    }
-
     // 1) Separate x into xm, xu and lambda
     TVectorD xm(dimM);
     for(int i = 0; i < dimM; i++)
@@ -1577,50 +2033,44 @@ TVectorD exact_constraints( TVectorD x )
     ROOT::Math::XYZPoint BV( x(dimM), x(dimM+1), x(dimM+2) );
     ROOT::Math::XYZVector pB( x(dimM+3), x(dimM+4), x(dimM+5) );
     Double_t MB_squared = x(dimM+6);
-    Double_t EB = sqrt( MB_squared + pB.Mag2() );
     ROOT::Math::XYZVector ptau1( x(dimM+7), x(dimM+8), x(dimM+9) );
-    Double_t Etau1 = x(dimM+10);
-    ROOT::Math::XYZVector pnu1( x(dimM+11), x(dimM+12), x(dimM+13) );
-    Double_t Enu1 = x(dimM+14);
-    ROOT::Math::XYZVector ptau2( x(dimM+15), x(dimM+16), x(dimM+17) );
-    Double_t Etau2 = x(dimM+18);
-    ROOT::Math::XYZVector pnu2( x(dimM+19), x(dimM+20), x(dimM+21) );
-    Double_t Enu2 = x(dimM+22);
+    ROOT::Math::XYZVector pnu1( x(dimM+10), x(dimM+11), x(dimM+12) );
+    ROOT::Math::XYZVector ptau2( x(dimM+13), x(dimM+14), x(dimM+15) );
+    ROOT::Math::XYZVector pnu2( x(dimM+16), x(dimM+17), x(dimM+18) );
+    Double_t EB = sqrt( MB_squared + pB.Mag2() );
+    Double_t Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
+    Double_t Enu1 = sqrt( pnu1.Mag2() );
+    Double_t Etau2 = sqrt( pow(mtau,2) + ptau2.Mag2() );
+    Double_t Enu2 = sqrt( pnu2.Mag2() );
 
     TVectorD g(dimC);
     // pB must point back to the PV (2)
-    g(0) = pB.x()*( BV.x() - PV.x() ) - pB.y()*( BV.y() - PV.y() );
-    g(1) = pB.x()*( BV.x() - PV.x() ) - pB.z()*( BV.z() - PV.z() );
+    g(0) = pB.x()/( BV.x() - PV.x() ) - pB.y()/( BV.y() - PV.y() );
+    g(1) = pB.x()/( BV.x() - PV.x() ) - pB.z()/( BV.z() - PV.z() );
     // ptau1 must point back to the BV (2)
-    g(2) = ptau1.x()*( DV1.x() - BV.x() ) - ptau1.y()*( DV1.y() - BV.y() );
-    g(3) = ptau1.x()*( DV1.x() - BV.x() ) - ptau1.z()*( DV1.z() - BV.z() );
+    g(2) = ptau1.x()/( DV1.x() - BV.x() ) - ptau1.y()/( DV1.y() - BV.y() );
+    g(3) = ptau1.x()/( DV1.x() - BV.x() ) - ptau1.z()/( DV1.z() - BV.z() );
     // 4-momentum conservation in DV1 (4)
     g(4) = ptau1.x() - p3pi1.x() - pnu1.x();
     g(5) = ptau1.y() - p3pi1.y() - pnu1.y();
     g(6) = ptau1.z() - p3pi1.z() - pnu1.z();
     g(7) = Etau1 - E3pi1 - Enu1;
-    // tau+ and anti-nu mass constraints (2)
-    g(8) = Etau1 - sqrt( pow(mtau,2) + ptau1.Mag2() );
-    g(9) = Enu1 - sqrt( pnu1.Mag2() );
     // ptau2 must point back to the BV (2)
-    g(10) = ptau2.x()*( DV2.x() - BV.x() ) - ptau2.y()*( DV2.y() - BV.y() );
-    g(11) = ptau2.x()*( DV2.x() - BV.x() ) - ptau2.z()*( DV2.z() - BV.z() );
+    g(8) = ptau2.x()/( DV2.x() - BV.x() ) - ptau2.y()/( DV2.y() - BV.y() );
+    g(9) = ptau2.x()/( DV2.x() - BV.x() ) - ptau2.z()/( DV2.z() - BV.z() );
     // 4-momentum conservation in DV2 (4)
-    g(12) = ptau2.x() - p3pi2.x() - pnu2.x();
-    g(13) = ptau2.y() - p3pi2.y() - pnu2.y();
-    g(14) = ptau2.z() - p3pi2.z() - pnu2.z();
-    g(15) = Etau2 - E3pi2 - Enu2;
-    // tau- and nu mass constraints (2)
-    g(16) = Etau2 - sqrt( pow(mtau,2) + ptau2.Mag2() );
-    g(17) = Enu2 - sqrt( pnu2.Mag2() );
+    g(10) = ptau2.x() - p3pi2.x() - pnu2.x();
+    g(11) = ptau2.y() - p3pi2.y() - pnu2.y();
+    g(12) = ptau2.z() - p3pi2.z() - pnu2.z();
+    g(13) = Etau2 - E3pi2 - Enu2;
     // BV must lie in K+ trajectory (2)
-    g(18) = pK.x()*( BV.x() - RP.x() ) - pK.y()*( BV.y() - RP.y() );
-    g(19) = pK.x()*( BV.x() - RP.x() ) - pK.z()*( BV.z() - RP.z() );
+    g(14) = pK.x()/( BV.x() - RP.x() ) - pK.y()/( BV.y() - RP.y() );
+    g(15) = pK.x()/( BV.x() - RP.x() ) - pK.z()/( BV.z() - RP.z() );
     // 4-momentum conservation in BV (4)
-    g(20) = pB.x() - ptau1.x() - ptau2.x() - pK.x();
-    g(21) = pB.y() - ptau1.y() - ptau2.y() - pK.y();
-    g(22) = pB.z() - ptau1.z() - ptau2.z() - pK.z();
-    g(23) = EB - Etau1 - Etau2 - EK;
+    g(16) = pB.x() - ptau1.x() - ptau2.x() - pK.x();
+    g(17) = pB.y() - ptau1.y() - ptau2.y() - pK.y();
+    g(18) = pB.z() - ptau1.z() - ptau2.z() - pK.z();
+    g(19) = EB - Etau1 - Etau2 - EK;
 
     return g;
 }
@@ -1754,16 +2204,16 @@ TVectorD x_initial_estimate_0( TVectorD m ) // Original initialisation for x (ba
     x0(dimM+dimX+1) = 1/10000; // pBx/(BVx - PVx)
     x0(dimM+dimX+2) = 1/10000; // ptau1x/(DV1x - BVx)
     x0(dimM+dimX+3) = 1/10000; // ptau1x/(DV1x - BVx)
-    x0(dimM+dimX+4) = 1/1000;
-    x0(dimM+dimX+5) = 1/1000;
-    x0(dimM+dimX+6) = 1/10000;
-    x0(dimM+dimX+7) = 1/10000;
+    x0(dimM+dimX+4) = 1/1000; // px conservation in DV1
+    x0(dimM+dimX+5) = 1/1000; // py conservation in DV1
+    x0(dimM+dimX+6) = 1/10000; // pz conservation in DV1
+    x0(dimM+dimX+7) = 1/10000; // E conservation in DV1
     x0(dimM+dimX+8) = 1/10000; // ptau2x/(DV2x - BVx)
     x0(dimM+dimX+9) = 1/10000; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+10) = 1/1000;
-    x0(dimM+dimX+11) = 1/1000;
-    x0(dimM+dimX+12) = 1/10000;
-    x0(dimM+dimX+13) = 1/10000;
+    x0(dimM+dimX+10) = 1/1000; // px conservation in DV2
+    x0(dimM+dimX+11) = 1/1000; // py conservation in DV2
+    x0(dimM+dimX+12) = 1/10000; // pz conservation in DV2
+    x0(dimM+dimX+13) = 1/10000; // E conservation in DV2
     x0(dimM+dimX+14) = 1/1000;
     x0(dimM+dimX+15) = 1/1000;
     x0(dimM+dimX+16) = 1/10000;
@@ -1949,7 +2399,7 @@ TVectorD x_initial_estimate_2( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B-
     // Get K+ momentum perpendicular to the B+ flight direction
     ROOT::Math::XYZVector pK_perp = pK - (pK.Dot(bDir))*bDir;
 
-    // Get tau flight directions (from vertices)
+    // Get tau flight directions (from pions visible momenta)
     ROOT::Math::XYZVector tau_dir1, tau_dir2;
     tau_dir1.SetXYZ( p3pi1.x(), p3pi1.y(), p3pi1.z() );
     tau_dir2.SetXYZ( p3pi2.x(), p3pi2.y(), p3pi2.z() );
@@ -2056,7 +2506,6 @@ TVectorD x_initial_estimate_2( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B-
     return x0;
 }
 
-
 TVectorD x_initial_estimate_3( TVectorD m, ROOT::Math::XYZPoint BV ) 
 {
     // Builds an initial estimate for x based on the Marseille analytical calculations; it uses the offline estimate for BV  
@@ -2159,6 +2608,843 @@ TVectorD x_initial_estimate_3( TVectorD m, ROOT::Math::XYZPoint BV )
 
     return x0;
 }
+
+TVectorD x_initial_estimate_4( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B->K* tautau initialisation; tau+ direction from vertices ; tau- direction from pions
+{
+    TVectorD x0(dimM+dimX+dimC);
+
+    // 1) Initialise xm
+    for(int i = 0; i < dimM; i++)
+    {
+        x0(i) = m(i);
+    }
+
+    // 2) Initialise xu
+    ROOT::Math::XYZPoint PV( m(0), m(1), m(2) );
+    ROOT::Math::XYZPoint DV1( m(3), m(4), m(5) );
+    ROOT::Math::XYZVector p3pi1( m(6), m(7), m(8) ); 
+    Double_t E3pi1 = m(9); 
+    ROOT::Math::XYZPoint DV2( m(10), m(11), m(12) );
+    ROOT::Math::XYZVector p3pi2( m(13), m(14), m(15) );
+    Double_t E3pi2 = m(16); 
+    ROOT::Math::XYZPoint RP( m(17), m(18), RPz );
+    ROOT::Math::XYZVector pK( m(19), m(20), m(21) );
+
+    Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
+
+    // Magnitude of 3pi momenta
+    Double_t p3pi1_mag = p3pi1.r();
+    Double_t p3pi2_mag = p3pi2.r();
+
+    // B+ flight direction
+    ROOT::Math::XYZVector bDir = (BV - PV).Unit();
+
+    // Get K+ momentum perpendicular to the B+ flight direction
+    ROOT::Math::XYZVector pK_perp = pK - (pK.Dot(bDir))*bDir;
+
+    // Get tau flight directions (tau+ from vertices, tau- from pions)
+    ROOT::Math::XYZVector tau_dir1, tau_dir2;
+    tau_dir1.SetXYZ( DV1.x() - BV.x(), DV1.y() - BV.y(), DV1.z() - BV.z() );
+    tau_dir2.SetXYZ( p3pi2.x(), p3pi2.y(), p3pi2.z() );
+
+    tau_dir1 = tau_dir1.Unit();
+    tau_dir2 = tau_dir2.Unit();
+
+    // Get tau direction unit vectors perpendicular to B+ flight direction
+    ROOT::Math::XYZVector tau_dir1_perp = ( tau_dir1 - (tau_dir1.Dot(bDir))*bDir ).Unit();
+    ROOT::Math::XYZVector tau_dir2_perp = ( tau_dir2 - (tau_dir2.Dot(bDir))*bDir ).Unit();
+
+    // In plane perpendicular to B+ flight direction, get angles between tau momenta and K+ momentum
+    Double_t cosphi1 = tau_dir1_perp.Dot(pK_perp.Unit());
+    Double_t cosphi2 = tau_dir2_perp.Dot(pK_perp.Unit());
+
+    Double_t phi1 = TMath::ACos(cosphi1);
+    Double_t phi2 = TMath::ACos(cosphi2);
+
+    // In this place, get directions of tau momenta perpendicular to K+ momentum
+    ROOT::Math::XYZVector tau_perp1_perpK = tau_dir1_perp - ( tau_dir1_perp.Dot(pK_perp.Unit())*pK_perp.Unit() );
+    ROOT::Math::XYZVector tau_perp2_perpK = tau_dir2_perp - ( tau_dir2_perp.Dot(pK_perp.Unit())*pK_perp.Unit() );
+
+    Double_t tau_perp_ratio = (tau_perp1_perpK.R())/(tau_perp2_perpK.R());
+
+    // Calculate momentum component of taus in this plane
+    Double_t pMag_tau1_perp = -1*pK_perp.R()/( cosphi1 + (cosphi2*(sin(phi1)/sin(phi2))) );
+    Double_t pMag_tau2_perp = pMag_tau1_perp*tau_perp_ratio;
+
+    ROOT::Math::XYZVector p_tau1_perp = pMag_tau1_perp*tau_dir1_perp;
+    ROOT::Math::XYZVector p_tau2_perp = pMag_tau2_perp*tau_dir2_perp;
+
+    // Get angles made by tau directions with B+ flight direction
+    Double_t tau_B_cos1 = (tau_dir1.Unit()).Dot(bDir.Unit());
+    Double_t tau_B_cos2 = (tau_dir2.Unit()).Dot(bDir.Unit());
+
+    // Get tau momenta parallel to B+ flight direction
+    Double_t pMag_tau1_long = fabs(pMag_tau1_perp)*tau_B_cos1/sqrt( 1 - pow(tau_B_cos1,2) );
+    Double_t pMag_tau2_long = fabs(pMag_tau2_perp)*tau_B_cos2/sqrt( 1 - pow(tau_B_cos2,2) );
+
+    // Total tau momentum vector
+    ROOT::Math::XYZVector ptau1 = p_tau1_perp + (pMag_tau1_long*bDir);
+    ROOT::Math::XYZVector ptau2 = p_tau2_perp + (pMag_tau2_long*bDir);
+
+    // Get the rest of x
+    ROOT::Math::XYZVector pB = ptau1 + ptau2 + pK;
+    ROOT::Math::XYZVector pnu1 = ptau1 - p3pi1;
+    ROOT::Math::XYZVector pnu2 = ptau2 - p3pi2;
+
+    Double_t Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
+    Double_t Etau2 = sqrt( pow(mtau,2) + ptau2.Mag2() );
+    Double_t Enu1 = sqrt( pnu1.Mag2() );
+    Double_t Enu2 = sqrt( pnu2.Mag2() );
+
+    Double_t EB = Etau1 + Etau2 + EK;
+    Double_t MB_squared = pow(EB,2) - pB.Mag2();
+
+    x0(dimM) = BV.x();
+    x0(dimM+1) = BV.y();
+    x0(dimM+2) = BV.z();
+    x0(dimM+3) = pB.x();
+    x0(dimM+4) = pB.y();
+    x0(dimM+5) = pB.z();
+    x0(dimM+6) = MB_squared;
+    x0(dimM+7) = ptau1.x();
+    x0(dimM+8) = ptau1.y();
+    x0(dimM+9) = ptau1.z();
+    x0(dimM+10) = pnu1.x();
+    x0(dimM+11) = pnu1.y();
+    x0(dimM+12) = pnu1.z();
+    x0(dimM+13) = ptau2.x();
+    x0(dimM+14) = ptau2.y();
+    x0(dimM+15) = ptau2.z();
+    x0(dimM+16) = pnu2.x();
+    x0(dimM+17) = pnu2.y();
+    x0(dimM+18) = pnu2.z();
+
+    // 3) Initialise lambda (to 1)
+    // for(int i = 0; i < dimC; i++)
+    // {
+    //     x0(dimM+dimX+i) = 1.;
+    // }
+
+    x0(dimM+dimX) = 1/10000; 
+    x0(dimM+dimX+1) = 1/10000;
+    x0(dimM+dimX+2) = 1/1000;
+    x0(dimM+dimX+3) = 1/1000;
+    x0(dimM+dimX+4) = 1/1000;
+    x0(dimM+dimX+5) = 1/1000;
+    x0(dimM+dimX+6) = 1/10000;
+    x0(dimM+dimX+7) = 1/10000;
+    x0(dimM+dimX+8) = 1/1000;
+    x0(dimM+dimX+9) = 1/1000;
+    x0(dimM+dimX+10) = 1/1000;
+    x0(dimM+dimX+11) = 1/1000;
+    x0(dimM+dimX+12) = 1/10000;
+    x0(dimM+dimX+13) = 1/10000;
+    x0(dimM+dimX+14) = 1/1000;
+    x0(dimM+dimX+15) = 1/1000;
+    x0(dimM+dimX+16) = 1/10000;
+    x0(dimM+dimX+17) = 1/10000;
+    x0(dimM+dimX+18) = 1/100000;
+    x0(dimM+dimX+19) = 1/100000;
+
+    return x0;
+}
+
+TVectorD x_initial_estimate_5( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B->K* tautau initialisation; tau- direction from vertices ; tau+ direction from pions
+{
+    TVectorD x0(dimM+dimX+dimC);
+
+    // 1) Initialise xm
+    for(int i = 0; i < dimM; i++)
+    {
+        x0(i) = m(i);
+    }
+
+    // 2) Initialise xu
+    ROOT::Math::XYZPoint PV( m(0), m(1), m(2) );
+    ROOT::Math::XYZPoint DV1( m(3), m(4), m(5) );
+    ROOT::Math::XYZVector p3pi1( m(6), m(7), m(8) ); 
+    Double_t E3pi1 = m(9); 
+    ROOT::Math::XYZPoint DV2( m(10), m(11), m(12) );
+    ROOT::Math::XYZVector p3pi2( m(13), m(14), m(15) );
+    Double_t E3pi2 = m(16); 
+    ROOT::Math::XYZPoint RP( m(17), m(18), RPz );
+    ROOT::Math::XYZVector pK( m(19), m(20), m(21) );
+
+    Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
+
+    // Magnitude of 3pi momenta
+    Double_t p3pi1_mag = p3pi1.r();
+    Double_t p3pi2_mag = p3pi2.r();
+
+    // B+ flight direction
+    ROOT::Math::XYZVector bDir = (BV - PV).Unit();
+
+    // Get K+ momentum perpendicular to the B+ flight direction
+    ROOT::Math::XYZVector pK_perp = pK - (pK.Dot(bDir))*bDir;
+
+    // Get tau flight directions (tau+ from vertices, tau- from pions)
+    ROOT::Math::XYZVector tau_dir1, tau_dir2;
+    tau_dir1.SetXYZ( p3pi1.x(), p3pi1.y(), p3pi1.z() );
+    tau_dir2.SetXYZ( DV2.x() - BV.x(), DV2.y() - BV.y(), DV2.z() - BV.z() );
+
+    tau_dir1 = tau_dir1.Unit();
+    tau_dir2 = tau_dir2.Unit();
+
+    // Get tau direction unit vectors perpendicular to B+ flight direction
+    ROOT::Math::XYZVector tau_dir1_perp = ( tau_dir1 - (tau_dir1.Dot(bDir))*bDir ).Unit();
+    ROOT::Math::XYZVector tau_dir2_perp = ( tau_dir2 - (tau_dir2.Dot(bDir))*bDir ).Unit();
+
+    // In plane perpendicular to B+ flight direction, get angles between tau momenta and K+ momentum
+    Double_t cosphi1 = tau_dir1_perp.Dot(pK_perp.Unit());
+    Double_t cosphi2 = tau_dir2_perp.Dot(pK_perp.Unit());
+
+    Double_t phi1 = TMath::ACos(cosphi1);
+    Double_t phi2 = TMath::ACos(cosphi2);
+
+    // In this place, get directions of tau momenta perpendicular to K+ momentum
+    ROOT::Math::XYZVector tau_perp1_perpK = tau_dir1_perp - ( tau_dir1_perp.Dot(pK_perp.Unit())*pK_perp.Unit() );
+    ROOT::Math::XYZVector tau_perp2_perpK = tau_dir2_perp - ( tau_dir2_perp.Dot(pK_perp.Unit())*pK_perp.Unit() );
+
+    Double_t tau_perp_ratio = (tau_perp1_perpK.R())/(tau_perp2_perpK.R());
+
+    // Calculate momentum component of taus in this plane
+    Double_t pMag_tau1_perp = -1*pK_perp.R()/( cosphi1 + (cosphi2*(sin(phi1)/sin(phi2))) );
+    Double_t pMag_tau2_perp = pMag_tau1_perp*tau_perp_ratio;
+
+    ROOT::Math::XYZVector p_tau1_perp = pMag_tau1_perp*tau_dir1_perp;
+    ROOT::Math::XYZVector p_tau2_perp = pMag_tau2_perp*tau_dir2_perp;
+
+    // Get angles made by tau directions with B+ flight direction
+    Double_t tau_B_cos1 = (tau_dir1.Unit()).Dot(bDir.Unit());
+    Double_t tau_B_cos2 = (tau_dir2.Unit()).Dot(bDir.Unit());
+
+    // Get tau momenta parallel to B+ flight direction
+    Double_t pMag_tau1_long = fabs(pMag_tau1_perp)*tau_B_cos1/sqrt( 1 - pow(tau_B_cos1,2) );
+    Double_t pMag_tau2_long = fabs(pMag_tau2_perp)*tau_B_cos2/sqrt( 1 - pow(tau_B_cos2,2) );
+
+    // Total tau momentum vector
+    ROOT::Math::XYZVector ptau1 = p_tau1_perp + (pMag_tau1_long*bDir);
+    ROOT::Math::XYZVector ptau2 = p_tau2_perp + (pMag_tau2_long*bDir);
+
+    // Get the rest of x
+    ROOT::Math::XYZVector pB = ptau1 + ptau2 + pK;
+    ROOT::Math::XYZVector pnu1 = ptau1 - p3pi1;
+    ROOT::Math::XYZVector pnu2 = ptau2 - p3pi2;
+
+    Double_t Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
+    Double_t Etau2 = sqrt( pow(mtau,2) + ptau2.Mag2() );
+    Double_t Enu1 = sqrt( pnu1.Mag2() );
+    Double_t Enu2 = sqrt( pnu2.Mag2() );
+
+    Double_t EB = Etau1 + Etau2 + EK;
+    Double_t MB_squared = pow(EB,2) - pB.Mag2();
+
+    x0(dimM) = BV.x();
+    x0(dimM+1) = BV.y();
+    x0(dimM+2) = BV.z();
+    x0(dimM+3) = pB.x();
+    x0(dimM+4) = pB.y();
+    x0(dimM+5) = pB.z();
+    x0(dimM+6) = MB_squared;
+    x0(dimM+7) = ptau1.x();
+    x0(dimM+8) = ptau1.y();
+    x0(dimM+9) = ptau1.z();
+    x0(dimM+10) = pnu1.x();
+    x0(dimM+11) = pnu1.y();
+    x0(dimM+12) = pnu1.z();
+    x0(dimM+13) = ptau2.x();
+    x0(dimM+14) = ptau2.y();
+    x0(dimM+15) = ptau2.z();
+    x0(dimM+16) = pnu2.x();
+    x0(dimM+17) = pnu2.y();
+    x0(dimM+18) = pnu2.z();
+
+    // 3) Initialise lambda (to 1)
+    // for(int i = 0; i < dimC; i++)
+    // {
+    //     x0(dimM+dimX+i) = 1.;
+    // }
+
+    x0(dimM+dimX) = 1/10000; 
+    x0(dimM+dimX+1) = 1/10000;
+    x0(dimM+dimX+2) = 1/1000;
+    x0(dimM+dimX+3) = 1/1000;
+    x0(dimM+dimX+4) = 1/1000;
+    x0(dimM+dimX+5) = 1/1000;
+    x0(dimM+dimX+6) = 1/10000;
+    x0(dimM+dimX+7) = 1/10000;
+    x0(dimM+dimX+8) = 1/1000;
+    x0(dimM+dimX+9) = 1/1000;
+    x0(dimM+dimX+10) = 1/1000;
+    x0(dimM+dimX+11) = 1/1000;
+    x0(dimM+dimX+12) = 1/10000;
+    x0(dimM+dimX+13) = 1/10000;
+    x0(dimM+dimX+14) = 1/1000;
+    x0(dimM+dimX+15) = 1/1000;
+    x0(dimM+dimX+16) = 1/10000;
+    x0(dimM+dimX+17) = 1/10000;
+    x0(dimM+dimX+18) = 1/100000;
+    x0(dimM+dimX+19) = 1/100000;
+
+    return x0;
+}
+
+TVectorD x_initial_estimate_6( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes Marseille (tau+) and K* tau tau vertices (tau-)
+{  
+    TVectorD x0(dimM+dimX+dimC);
+
+    // 1) Initialise xm
+    for(int i = 0; i < dimM; i++)
+    {
+        x0(i) = m(i);
+    }
+
+    // 2) Initialise xu
+    ROOT::Math::XYZPoint PV( m(0), m(1), m(2) );
+    ROOT::Math::XYZPoint DV1( m(3), m(4), m(5) );
+    ROOT::Math::XYZVector p3pi1( m(6), m(7), m(8) ); 
+    Double_t E3pi1 = m(9);
+    ROOT::Math::XYZPoint DV2( m(10), m(11), m(12) );
+    ROOT::Math::XYZVector p3pi2( m(13), m(14), m(15) );
+    Double_t E3pi2 = m(16);
+    ROOT::Math::XYZPoint RP( m(17), m(18), RPz );
+    ROOT::Math::XYZVector pK( m(19), m(20), m(21) );  
+
+    ROOT::Math::XYZVector u1 = (DV1 - BV).Unit();
+    ROOT::Math::XYZVector u2 = (DV2 - BV).Unit();
+
+    Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
+
+    Double_t m3pi1 = sqrt( pow(E3pi1,2) - p3pi1.Mag2() );
+    Double_t m3pi2 = sqrt( pow(E3pi2,2) - p3pi2.Mag2() );
+
+    //////////////////////////////////////////////////////////////////////////////////////////// tau+ is Marseille
+    Double_t theta1 = asin( ( pow(mtau,2) - pow(m3pi1,2) )/( 2*mtau*sqrt( p3pi1.Mag2() ) ) );
+
+    Double_t ptau1_mag = ( (pow(mtau,2) + pow(m3pi1,2))*sqrt(p3pi1.Mag2())*cos(theta1) )/( 2*( pow(E3pi1,2) - p3pi1.Mag2()*pow(cos(theta1),2) ) );
+
+    ROOT::Math::XYZVector ptau1 = ptau1_mag*u1;
+
+    ////////////////////////////////////////////////////////////////////////////////////////// tau- is K*tautau vertices
+    ROOT::Math::XYZVector bDir = (BV - PV).Unit();
+
+    ROOT::Math::XYZVector pK_perp = pK - (pK.Dot(bDir))*bDir;
+
+    ROOT::Math::XYZVector tau_dir1, tau_dir2;
+    tau_dir1.SetXYZ( DV1.x() - BV.x(), DV1.y() - BV.y(), DV1.z() - BV.z() );
+    tau_dir2.SetXYZ( DV2.x() - BV.x(), DV2.y() - BV.y(), DV2.z() - BV.z() );
+
+    tau_dir1 = tau_dir1.Unit();
+    tau_dir2 = tau_dir2.Unit();
+
+    ROOT::Math::XYZVector tau_dir1_perp = ( tau_dir1 - (tau_dir1.Dot(bDir))*bDir ).Unit();
+    ROOT::Math::XYZVector tau_dir2_perp = ( tau_dir2 - (tau_dir2.Dot(bDir))*bDir ).Unit();
+
+    Double_t cosphi1 = tau_dir1_perp.Dot(pK_perp.Unit());
+    Double_t cosphi2 = tau_dir2_perp.Dot(pK_perp.Unit());
+
+    Double_t phi1 = TMath::ACos(cosphi1);
+    Double_t phi2 = TMath::ACos(cosphi2);
+
+    ROOT::Math::XYZVector tau_perp1_perpK = tau_dir1_perp - ( tau_dir1_perp.Dot(pK_perp.Unit())*pK_perp.Unit() );
+    ROOT::Math::XYZVector tau_perp2_perpK = tau_dir2_perp - ( tau_dir2_perp.Dot(pK_perp.Unit())*pK_perp.Unit() );
+
+    Double_t tau_perp_ratio = (tau_perp1_perpK.R())/(tau_perp2_perpK.R());
+
+    Double_t pMag_tau1_perp = -1*pK_perp.R()/( cosphi1 + (cosphi2*(sin(phi1)/sin(phi2))) );
+    Double_t pMag_tau2_perp = pMag_tau1_perp*tau_perp_ratio;
+
+    ROOT::Math::XYZVector p_tau1_perp = pMag_tau1_perp*tau_dir1_perp;
+    ROOT::Math::XYZVector p_tau2_perp = pMag_tau2_perp*tau_dir2_perp;
+
+    Double_t tau_B_cos1 = (tau_dir1.Unit()).Dot(bDir.Unit());
+    Double_t tau_B_cos2 = (tau_dir2.Unit()).Dot(bDir.Unit());
+
+    Double_t pMag_tau1_long = fabs(pMag_tau1_perp)*tau_B_cos1/sqrt( 1 - pow(tau_B_cos1,2) );
+    Double_t pMag_tau2_long = fabs(pMag_tau2_perp)*tau_B_cos2/sqrt( 1 - pow(tau_B_cos2,2) );
+
+    ROOT::Math::XYZVector ptau2 = p_tau2_perp + (pMag_tau2_long*bDir);
+
+    ROOT::Math::XYZVector pnu1 = ptau1 - p3pi1;
+    ROOT::Math::XYZVector pnu2 = ptau2 - p3pi2;
+
+    Double_t Enu1 = sqrt( pnu1.Mag2() );
+    Double_t Enu2 = sqrt( pnu2.Mag2() );
+
+    Double_t Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
+    Double_t Etau2 = sqrt( pow(mtau,2) + ptau2.Mag2() );
+
+    ROOT::Math::XYZVector pB = pK + ptau1 + ptau2;
+    Double_t EB = EK + Etau1 + Etau2;
+    Double_t MB_squared = pow(EB,2) - pB.Mag2();
+
+    x0(dimM+0) = BV.x();
+    x0(dimM+1) = BV.y();
+    x0(dimM+2) = BV.z();
+    x0(dimM+3) = pB.x();
+    x0(dimM+4) = pB.y();
+    x0(dimM+5) = pB.z();
+    x0(dimM+6) = MB_squared;
+    x0(dimM+7) = ptau1.x();
+    x0(dimM+8) = ptau1.y();
+    x0(dimM+9) = ptau1.z();
+    x0(dimM+10) = pnu1.x();
+    x0(dimM+11) = pnu1.y();
+    x0(dimM+12) = pnu1.z();
+    x0(dimM+13) = ptau2.x();
+    x0(dimM+14) = ptau2.y();
+    x0(dimM+15) = ptau2.z();
+    x0(dimM+16) = pnu2.x();
+    x0(dimM+17) = pnu2.y();
+    x0(dimM+18) = pnu2.z();
+
+    // 3) Initialise lambda (to 1)
+    // for(int i = 0; i < dimC; i++)
+    // {
+    //     x0(dimM+dimX+i) = 1.;
+    // }
+
+    x0(dimM+dimX) = 1/10000; 
+    x0(dimM+dimX+1) = 1/10000;
+    x0(dimM+dimX+2) = 1/1000;
+    x0(dimM+dimX+3) = 1/1000;
+    x0(dimM+dimX+4) = 1/1000;
+    x0(dimM+dimX+5) = 1/1000;
+    x0(dimM+dimX+6) = 1/10000;
+    x0(dimM+dimX+7) = 1/10000;
+    x0(dimM+dimX+8) = 1/1000;
+    x0(dimM+dimX+9) = 1/1000;
+    x0(dimM+dimX+10) = 1/1000;
+    x0(dimM+dimX+11) = 1/1000;
+    x0(dimM+dimX+12) = 1/10000;
+    x0(dimM+dimX+13) = 1/10000;
+    x0(dimM+dimX+14) = 1/1000;
+    x0(dimM+dimX+15) = 1/1000;
+    x0(dimM+dimX+16) = 1/10000;
+    x0(dimM+dimX+17) = 1/10000;
+    x0(dimM+dimX+18) = 1/100000;
+    x0(dimM+dimX+19) = 1/100000;
+
+    return x0;
+}
+
+TVectorD x_initial_estimate_7( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes Marseille (tau-) and K* tau tau vertices (tau+)
+{  
+    TVectorD x0(dimM+dimX+dimC);
+
+    // 1) Initialise xm
+    for(int i = 0; i < dimM; i++)
+    {
+        x0(i) = m(i);
+    }
+
+    // 2) Initialise xu
+    ROOT::Math::XYZPoint PV( m(0), m(1), m(2) );
+    ROOT::Math::XYZPoint DV1( m(3), m(4), m(5) );
+    ROOT::Math::XYZVector p3pi1( m(6), m(7), m(8) ); 
+    Double_t E3pi1 = m(9);
+    ROOT::Math::XYZPoint DV2( m(10), m(11), m(12) );
+    ROOT::Math::XYZVector p3pi2( m(13), m(14), m(15) );
+    Double_t E3pi2 = m(16);
+    ROOT::Math::XYZPoint RP( m(17), m(18), RPz );
+    ROOT::Math::XYZVector pK( m(19), m(20), m(21) );  
+
+    ROOT::Math::XYZVector u1 = (DV1 - BV).Unit();
+    ROOT::Math::XYZVector u2 = (DV2 - BV).Unit();
+
+    Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
+
+    Double_t m3pi1 = sqrt( pow(E3pi1,2) - p3pi1.Mag2() );
+    Double_t m3pi2 = sqrt( pow(E3pi2,2) - p3pi2.Mag2() );
+
+    //////////////////////////////////////////////////////////////////////////////////////////// tau+ is Marseille
+    Double_t theta2 = asin( ( pow(mtau,2) - pow(m3pi2,2) )/( 2*mtau*sqrt( p3pi2.Mag2() ) ) );
+
+    Double_t ptau2_mag = ( (pow(mtau,2) + pow(m3pi2,2))*sqrt(p3pi2.Mag2())*cos(theta2) )/( 2*( pow(E3pi2,2) - p3pi2.Mag2()*pow(cos(theta2),2) ) );
+
+    ROOT::Math::XYZVector ptau2 = ptau2_mag*u2;
+
+    ////////////////////////////////////////////////////////////////////////////////////////// tau- is K*tautau vertices
+    ROOT::Math::XYZVector bDir = (BV - PV).Unit();
+
+    ROOT::Math::XYZVector pK_perp = pK - (pK.Dot(bDir))*bDir;
+
+    ROOT::Math::XYZVector tau_dir1, tau_dir2;
+    tau_dir1.SetXYZ( DV1.x() - BV.x(), DV1.y() - BV.y(), DV1.z() - BV.z() );
+    tau_dir2.SetXYZ( DV2.x() - BV.x(), DV2.y() - BV.y(), DV2.z() - BV.z() );
+
+    tau_dir1 = tau_dir1.Unit();
+    tau_dir2 = tau_dir2.Unit();
+
+    ROOT::Math::XYZVector tau_dir1_perp = ( tau_dir1 - (tau_dir1.Dot(bDir))*bDir ).Unit();
+    ROOT::Math::XYZVector tau_dir2_perp = ( tau_dir2 - (tau_dir2.Dot(bDir))*bDir ).Unit();
+
+    Double_t cosphi1 = tau_dir1_perp.Dot(pK_perp.Unit());
+    Double_t cosphi2 = tau_dir2_perp.Dot(pK_perp.Unit());
+
+    Double_t phi1 = TMath::ACos(cosphi1);
+    Double_t phi2 = TMath::ACos(cosphi2);
+
+    ROOT::Math::XYZVector tau_perp1_perpK = tau_dir1_perp - ( tau_dir1_perp.Dot(pK_perp.Unit())*pK_perp.Unit() );
+    ROOT::Math::XYZVector tau_perp2_perpK = tau_dir2_perp - ( tau_dir2_perp.Dot(pK_perp.Unit())*pK_perp.Unit() );
+
+    Double_t tau_perp_ratio = (tau_perp1_perpK.R())/(tau_perp2_perpK.R());
+
+    Double_t pMag_tau1_perp = -1*pK_perp.R()/( cosphi1 + (cosphi2*(sin(phi1)/sin(phi2))) );
+    Double_t pMag_tau2_perp = pMag_tau1_perp*tau_perp_ratio;
+
+    ROOT::Math::XYZVector p_tau1_perp = pMag_tau1_perp*tau_dir1_perp;
+    ROOT::Math::XYZVector p_tau2_perp = pMag_tau2_perp*tau_dir2_perp;
+
+    Double_t tau_B_cos1 = (tau_dir1.Unit()).Dot(bDir.Unit());
+    Double_t tau_B_cos2 = (tau_dir2.Unit()).Dot(bDir.Unit());
+
+    Double_t pMag_tau1_long = fabs(pMag_tau1_perp)*tau_B_cos1/sqrt( 1 - pow(tau_B_cos1,2) );
+    Double_t pMag_tau2_long = fabs(pMag_tau2_perp)*tau_B_cos2/sqrt( 1 - pow(tau_B_cos2,2) );
+
+    ROOT::Math::XYZVector ptau1 = p_tau1_perp + (pMag_tau1_long*bDir);
+
+    ROOT::Math::XYZVector pnu1 = ptau1 - p3pi1;
+    ROOT::Math::XYZVector pnu2 = ptau2 - p3pi2;
+
+    Double_t Enu1 = sqrt( pnu1.Mag2() );
+    Double_t Enu2 = sqrt( pnu2.Mag2() );
+
+    Double_t Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
+    Double_t Etau2 = sqrt( pow(mtau,2) + ptau2.Mag2() );
+
+    ROOT::Math::XYZVector pB = pK + ptau1 + ptau2;
+    Double_t EB = EK + Etau1 + Etau2;
+    Double_t MB_squared = pow(EB,2) - pB.Mag2();
+
+    x0(dimM+0) = BV.x();
+    x0(dimM+1) = BV.y();
+    x0(dimM+2) = BV.z();
+    x0(dimM+3) = pB.x();
+    x0(dimM+4) = pB.y();
+    x0(dimM+5) = pB.z();
+    x0(dimM+6) = MB_squared;
+    x0(dimM+7) = ptau1.x();
+    x0(dimM+8) = ptau1.y();
+    x0(dimM+9) = ptau1.z();
+    x0(dimM+10) = pnu1.x();
+    x0(dimM+11) = pnu1.y();
+    x0(dimM+12) = pnu1.z();
+    x0(dimM+13) = ptau2.x();
+    x0(dimM+14) = ptau2.y();
+    x0(dimM+15) = ptau2.z();
+    x0(dimM+16) = pnu2.x();
+    x0(dimM+17) = pnu2.y();
+    x0(dimM+18) = pnu2.z();
+
+    // 3) Initialise lambda (to 1)
+    // for(int i = 0; i < dimC; i++)
+    // {
+    //     x0(dimM+dimX+i) = 1.;
+    // }
+
+    x0(dimM+dimX) = 1/10000; 
+    x0(dimM+dimX+1) = 1/10000;
+    x0(dimM+dimX+2) = 1/1000;
+    x0(dimM+dimX+3) = 1/1000;
+    x0(dimM+dimX+4) = 1/1000;
+    x0(dimM+dimX+5) = 1/1000;
+    x0(dimM+dimX+6) = 1/10000;
+    x0(dimM+dimX+7) = 1/10000;
+    x0(dimM+dimX+8) = 1/1000;
+    x0(dimM+dimX+9) = 1/1000;
+    x0(dimM+dimX+10) = 1/1000;
+    x0(dimM+dimX+11) = 1/1000;
+    x0(dimM+dimX+12) = 1/10000;
+    x0(dimM+dimX+13) = 1/10000;
+    x0(dimM+dimX+14) = 1/1000;
+    x0(dimM+dimX+15) = 1/1000;
+    x0(dimM+dimX+16) = 1/10000;
+    x0(dimM+dimX+17) = 1/10000;
+    x0(dimM+dimX+18) = 1/100000;
+    x0(dimM+dimX+19) = 1/100000;
+
+    return x0;
+}
+
+TVectorD x_initial_estimate_8( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes Marseille (tau+) and K* tau tau pions (tau-)
+{  
+    TVectorD x0(dimM+dimX+dimC);
+
+    // 1) Initialise xm
+    for(int i = 0; i < dimM; i++)
+    {
+        x0(i) = m(i);
+    }
+
+    // 2) Initialise xu
+    ROOT::Math::XYZPoint PV( m(0), m(1), m(2) );
+    ROOT::Math::XYZPoint DV1( m(3), m(4), m(5) );
+    ROOT::Math::XYZVector p3pi1( m(6), m(7), m(8) ); 
+    Double_t E3pi1 = m(9);
+    ROOT::Math::XYZPoint DV2( m(10), m(11), m(12) );
+    ROOT::Math::XYZVector p3pi2( m(13), m(14), m(15) );
+    Double_t E3pi2 = m(16);
+    ROOT::Math::XYZPoint RP( m(17), m(18), RPz );
+    ROOT::Math::XYZVector pK( m(19), m(20), m(21) );  
+
+    ROOT::Math::XYZVector u1 = (DV1 - BV).Unit();
+    ROOT::Math::XYZVector u2 = (DV2 - BV).Unit();
+
+    Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
+
+    Double_t m3pi1 = sqrt( pow(E3pi1,2) - p3pi1.Mag2() );
+    Double_t m3pi2 = sqrt( pow(E3pi2,2) - p3pi2.Mag2() );
+
+    //////////////////////////////////////////////////////////////////////////////////////////// tau+ is Marseille
+    Double_t theta1 = asin( ( pow(mtau,2) - pow(m3pi1,2) )/( 2*mtau*sqrt( p3pi1.Mag2() ) ) );
+
+    Double_t ptau1_mag = ( (pow(mtau,2) + pow(m3pi1,2))*sqrt(p3pi1.Mag2())*cos(theta1) )/( 2*( pow(E3pi1,2) - p3pi1.Mag2()*pow(cos(theta1),2) ) );
+
+    ROOT::Math::XYZVector ptau1 = ptau1_mag*u1;
+
+    ////////////////////////////////////////////////////////////////////////////////////////// tau- is K*tautau vertices
+    ROOT::Math::XYZVector bDir = (BV - PV).Unit();
+
+    ROOT::Math::XYZVector pK_perp = pK - (pK.Dot(bDir))*bDir;
+
+    ROOT::Math::XYZVector tau_dir1, tau_dir2;
+    tau_dir1.SetXYZ( p3pi1.x(), p3pi1.y(), p3pi1.z() );
+    tau_dir2.SetXYZ( p3pi2.x(), p3pi2.y(), p3pi2.z() );
+
+    tau_dir1 = tau_dir1.Unit();
+    tau_dir2 = tau_dir2.Unit();
+
+    ROOT::Math::XYZVector tau_dir1_perp = ( tau_dir1 - (tau_dir1.Dot(bDir))*bDir ).Unit();
+    ROOT::Math::XYZVector tau_dir2_perp = ( tau_dir2 - (tau_dir2.Dot(bDir))*bDir ).Unit();
+
+    Double_t cosphi1 = tau_dir1_perp.Dot(pK_perp.Unit());
+    Double_t cosphi2 = tau_dir2_perp.Dot(pK_perp.Unit());
+
+    Double_t phi1 = TMath::ACos(cosphi1);
+    Double_t phi2 = TMath::ACos(cosphi2);
+
+    ROOT::Math::XYZVector tau_perp1_perpK = tau_dir1_perp - ( tau_dir1_perp.Dot(pK_perp.Unit())*pK_perp.Unit() );
+    ROOT::Math::XYZVector tau_perp2_perpK = tau_dir2_perp - ( tau_dir2_perp.Dot(pK_perp.Unit())*pK_perp.Unit() );
+
+    Double_t tau_perp_ratio = (tau_perp1_perpK.R())/(tau_perp2_perpK.R());
+
+    Double_t pMag_tau1_perp = -1*pK_perp.R()/( cosphi1 + (cosphi2*(sin(phi1)/sin(phi2))) );
+    Double_t pMag_tau2_perp = pMag_tau1_perp*tau_perp_ratio;
+
+    ROOT::Math::XYZVector p_tau1_perp = pMag_tau1_perp*tau_dir1_perp;
+    ROOT::Math::XYZVector p_tau2_perp = pMag_tau2_perp*tau_dir2_perp;
+
+    Double_t tau_B_cos1 = (tau_dir1.Unit()).Dot(bDir.Unit());
+    Double_t tau_B_cos2 = (tau_dir2.Unit()).Dot(bDir.Unit());
+
+    Double_t pMag_tau1_long = fabs(pMag_tau1_perp)*tau_B_cos1/sqrt( 1 - pow(tau_B_cos1,2) );
+    Double_t pMag_tau2_long = fabs(pMag_tau2_perp)*tau_B_cos2/sqrt( 1 - pow(tau_B_cos2,2) );
+
+    ROOT::Math::XYZVector ptau2 = p_tau2_perp + (pMag_tau2_long*bDir);
+
+    ROOT::Math::XYZVector pnu1 = ptau1 - p3pi1;
+    ROOT::Math::XYZVector pnu2 = ptau2 - p3pi2;
+
+    Double_t Enu1 = sqrt( pnu1.Mag2() );
+    Double_t Enu2 = sqrt( pnu2.Mag2() );
+
+    Double_t Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
+    Double_t Etau2 = sqrt( pow(mtau,2) + ptau2.Mag2() );
+
+    ROOT::Math::XYZVector pB = pK + ptau1 + ptau2;
+    Double_t EB = EK + Etau1 + Etau2;
+    Double_t MB_squared = pow(EB,2) - pB.Mag2();
+
+    x0(dimM+0) = BV.x();
+    x0(dimM+1) = BV.y();
+    x0(dimM+2) = BV.z();
+    x0(dimM+3) = pB.x();
+    x0(dimM+4) = pB.y();
+    x0(dimM+5) = pB.z();
+    x0(dimM+6) = MB_squared;
+    x0(dimM+7) = ptau1.x();
+    x0(dimM+8) = ptau1.y();
+    x0(dimM+9) = ptau1.z();
+    x0(dimM+10) = pnu1.x();
+    x0(dimM+11) = pnu1.y();
+    x0(dimM+12) = pnu1.z();
+    x0(dimM+13) = ptau2.x();
+    x0(dimM+14) = ptau2.y();
+    x0(dimM+15) = ptau2.z();
+    x0(dimM+16) = pnu2.x();
+    x0(dimM+17) = pnu2.y();
+    x0(dimM+18) = pnu2.z();
+
+    // 3) Initialise lambda (to 1)
+    // for(int i = 0; i < dimC; i++)
+    // {
+    //     x0(dimM+dimX+i) = 1.;
+    // }
+
+    x0(dimM+dimX) = 1/10000; 
+    x0(dimM+dimX+1) = 1/10000;
+    x0(dimM+dimX+2) = 1/1000;
+    x0(dimM+dimX+3) = 1/1000;
+    x0(dimM+dimX+4) = 1/1000;
+    x0(dimM+dimX+5) = 1/1000;
+    x0(dimM+dimX+6) = 1/10000;
+    x0(dimM+dimX+7) = 1/10000;
+    x0(dimM+dimX+8) = 1/1000;
+    x0(dimM+dimX+9) = 1/1000;
+    x0(dimM+dimX+10) = 1/1000;
+    x0(dimM+dimX+11) = 1/1000;
+    x0(dimM+dimX+12) = 1/10000;
+    x0(dimM+dimX+13) = 1/10000;
+    x0(dimM+dimX+14) = 1/1000;
+    x0(dimM+dimX+15) = 1/1000;
+    x0(dimM+dimX+16) = 1/10000;
+    x0(dimM+dimX+17) = 1/10000;
+    x0(dimM+dimX+18) = 1/100000;
+    x0(dimM+dimX+19) = 1/100000;
+
+    return x0;
+}
+
+TVectorD x_initial_estimate_9( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes Marseille (tau-) and K* tau tau pions (tau+)
+{  
+    TVectorD x0(dimM+dimX+dimC);
+
+    // 1) Initialise xm
+    for(int i = 0; i < dimM; i++)
+    {
+        x0(i) = m(i);
+    }
+
+    // 2) Initialise xu
+    ROOT::Math::XYZPoint PV( m(0), m(1), m(2) );
+    ROOT::Math::XYZPoint DV1( m(3), m(4), m(5) );
+    ROOT::Math::XYZVector p3pi1( m(6), m(7), m(8) ); 
+    Double_t E3pi1 = m(9);
+    ROOT::Math::XYZPoint DV2( m(10), m(11), m(12) );
+    ROOT::Math::XYZVector p3pi2( m(13), m(14), m(15) );
+    Double_t E3pi2 = m(16);
+    ROOT::Math::XYZPoint RP( m(17), m(18), RPz );
+    ROOT::Math::XYZVector pK( m(19), m(20), m(21) );  
+
+    ROOT::Math::XYZVector u1 = (DV1 - BV).Unit();
+    ROOT::Math::XYZVector u2 = (DV2 - BV).Unit();
+
+    Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
+
+    Double_t m3pi1 = sqrt( pow(E3pi1,2) - p3pi1.Mag2() );
+    Double_t m3pi2 = sqrt( pow(E3pi2,2) - p3pi2.Mag2() );
+
+    //////////////////////////////////////////////////////////////////////////////////////////// tau+ is Marseille
+    Double_t theta2 = asin( ( pow(mtau,2) - pow(m3pi2,2) )/( 2*mtau*sqrt( p3pi2.Mag2() ) ) );
+
+    Double_t ptau2_mag = ( (pow(mtau,2) + pow(m3pi2,2))*sqrt(p3pi2.Mag2())*cos(theta2) )/( 2*( pow(E3pi2,2) - p3pi2.Mag2()*pow(cos(theta2),2) ) );
+
+    ROOT::Math::XYZVector ptau2 = ptau2_mag*u2;
+
+    ////////////////////////////////////////////////////////////////////////////////////////// tau- is K*tautau vertices
+    ROOT::Math::XYZVector bDir = (BV - PV).Unit();
+
+    ROOT::Math::XYZVector pK_perp = pK - (pK.Dot(bDir))*bDir;
+
+    ROOT::Math::XYZVector tau_dir1, tau_dir2;
+    tau_dir1.SetXYZ( p3pi1.x(), p3pi1.y(), p3pi1.z() );
+    tau_dir2.SetXYZ( p3pi2.x(), p3pi2.y(), p3pi2.z() );
+
+    tau_dir1 = tau_dir1.Unit();
+    tau_dir2 = tau_dir2.Unit();
+
+    ROOT::Math::XYZVector tau_dir1_perp = ( tau_dir1 - (tau_dir1.Dot(bDir))*bDir ).Unit();
+    ROOT::Math::XYZVector tau_dir2_perp = ( tau_dir2 - (tau_dir2.Dot(bDir))*bDir ).Unit();
+
+    Double_t cosphi1 = tau_dir1_perp.Dot(pK_perp.Unit());
+    Double_t cosphi2 = tau_dir2_perp.Dot(pK_perp.Unit());
+
+    Double_t phi1 = TMath::ACos(cosphi1);
+    Double_t phi2 = TMath::ACos(cosphi2);
+
+    ROOT::Math::XYZVector tau_perp1_perpK = tau_dir1_perp - ( tau_dir1_perp.Dot(pK_perp.Unit())*pK_perp.Unit() );
+    ROOT::Math::XYZVector tau_perp2_perpK = tau_dir2_perp - ( tau_dir2_perp.Dot(pK_perp.Unit())*pK_perp.Unit() );
+
+    Double_t tau_perp_ratio = (tau_perp1_perpK.R())/(tau_perp2_perpK.R());
+
+    Double_t pMag_tau1_perp = -1*pK_perp.R()/( cosphi1 + (cosphi2*(sin(phi1)/sin(phi2))) );
+    Double_t pMag_tau2_perp = pMag_tau1_perp*tau_perp_ratio;
+
+    ROOT::Math::XYZVector p_tau1_perp = pMag_tau1_perp*tau_dir1_perp;
+    ROOT::Math::XYZVector p_tau2_perp = pMag_tau2_perp*tau_dir2_perp;
+
+    Double_t tau_B_cos1 = (tau_dir1.Unit()).Dot(bDir.Unit());
+    Double_t tau_B_cos2 = (tau_dir2.Unit()).Dot(bDir.Unit());
+
+    Double_t pMag_tau1_long = fabs(pMag_tau1_perp)*tau_B_cos1/sqrt( 1 - pow(tau_B_cos1,2) );
+    Double_t pMag_tau2_long = fabs(pMag_tau2_perp)*tau_B_cos2/sqrt( 1 - pow(tau_B_cos2,2) );
+
+    ROOT::Math::XYZVector ptau1 = p_tau1_perp + (pMag_tau1_long*bDir);
+
+    ROOT::Math::XYZVector pnu1 = ptau1 - p3pi1;
+    ROOT::Math::XYZVector pnu2 = ptau2 - p3pi2;
+
+    Double_t Enu1 = sqrt( pnu1.Mag2() );
+    Double_t Enu2 = sqrt( pnu2.Mag2() );
+
+    Double_t Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
+    Double_t Etau2 = sqrt( pow(mtau,2) + ptau2.Mag2() );
+
+    ROOT::Math::XYZVector pB = pK + ptau1 + ptau2;
+    Double_t EB = EK + Etau1 + Etau2;
+    Double_t MB_squared = pow(EB,2) - pB.Mag2();
+
+    x0(dimM+0) = BV.x();
+    x0(dimM+1) = BV.y();
+    x0(dimM+2) = BV.z();
+    x0(dimM+3) = pB.x();
+    x0(dimM+4) = pB.y();
+    x0(dimM+5) = pB.z();
+    x0(dimM+6) = MB_squared;
+    x0(dimM+7) = ptau1.x();
+    x0(dimM+8) = ptau1.y();
+    x0(dimM+9) = ptau1.z();
+    x0(dimM+10) = pnu1.x();
+    x0(dimM+11) = pnu1.y();
+    x0(dimM+12) = pnu1.z();
+    x0(dimM+13) = ptau2.x();
+    x0(dimM+14) = ptau2.y();
+    x0(dimM+15) = ptau2.z();
+    x0(dimM+16) = pnu2.x();
+    x0(dimM+17) = pnu2.y();
+    x0(dimM+18) = pnu2.z();
+
+    // 3) Initialise lambda (to 1)
+    // for(int i = 0; i < dimC; i++)
+    // {
+    //     x0(dimM+dimX+i) = 1.;
+    // }
+
+    x0(dimM+dimX) = 1/10000; 
+    x0(dimM+dimX+1) = 1/10000;
+    x0(dimM+dimX+2) = 1/1000;
+    x0(dimM+dimX+3) = 1/1000;
+    x0(dimM+dimX+4) = 1/1000;
+    x0(dimM+dimX+5) = 1/1000;
+    x0(dimM+dimX+6) = 1/10000;
+    x0(dimM+dimX+7) = 1/10000;
+    x0(dimM+dimX+8) = 1/1000;
+    x0(dimM+dimX+9) = 1/1000;
+    x0(dimM+dimX+10) = 1/1000;
+    x0(dimM+dimX+11) = 1/1000;
+    x0(dimM+dimX+12) = 1/10000;
+    x0(dimM+dimX+13) = 1/10000;
+    x0(dimM+dimX+14) = 1/1000;
+    x0(dimM+dimX+15) = 1/1000;
+    x0(dimM+dimX+16) = 1/10000;
+    x0(dimM+dimX+17) = 1/10000;
+    x0(dimM+dimX+18) = 1/100000;
+    x0(dimM+dimX+19) = 1/100000;
+
+    return x0;
+}
+
 
 ROOT::Math::XYZVector makeTransformation_vec(ROOT::Math::XYZVector Pk, ROOT::Math::XYZPoint refPoint, ROOT::Math::XYZVector theVector, bool invFlag)
 {
