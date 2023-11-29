@@ -28,7 +28,7 @@ Int_t status, init;
 // Constants
 Double_t mtau = 1776.86;
 Double_t mkaon = 493.677;
-Double_t tolerance = 0.01;
+Double_t tolerance = pow(10,-6);
 
 // Functions
 void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* solver, Double_t tolerance );
@@ -45,14 +45,15 @@ TVectorD x_initial_estimate_6( TVectorD m, ROOT::Math::XYZPoint BV );
 TVectorD x_initial_estimate_7( TVectorD m, ROOT::Math::XYZPoint BV );
 TVectorD x_initial_estimate_8( TVectorD m, ROOT::Math::XYZPoint BV );
 TVectorD x_initial_estimate_9( TVectorD m, ROOT::Math::XYZPoint BV );
-
+void sequence(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder * solver, Double_t tolerance);
+void lowest_sum(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver, Double_t tolerance);
 Double_t lagrangian( TVectorD x );
 Double_t chisquare( TVectorD xm );
 TVectorD exact_constraints( TVectorD x );
 TMatrixDSym U_matrix();
 vector<double> range(double min, double max, size_t N);
-void scan_lagrangian( TVectorD X, Int_t index, Int_t npoints, TString x_name, Int_t year, Int_t species, Int_t component, Int_t line );
-void scan_chisquare( TVectorD X, Int_t index, Int_t npoints, TString x_name, Int_t year, Int_t species, Int_t component, Int_t line);
+void scan_lagrangian( TVectorD X, Int_t index, Int_t npoints, TString x_name, Int_t year, Int_t species, Int_t line );
+void scan_chisquare( TVectorD X, Int_t index, Int_t npoints, TString x_name, Int_t year, Int_t species, Int_t line);
 
 double equations( const double* x_vars );
 double eq1( const double* x );
@@ -117,23 +118,11 @@ double eq59( const double* x );
 double eq60( const double* x );
 double eq61( const double* x );
 
-void DECAY_FIT(int year, TString MC_files, TString RS_DATA_files, TString WS_DATA_files, int species, int component, int line)
+
+void DECAY_FIT(int year, TString RECO_files, int species, int line)
 {
     // Retrieve m and V from ntuple
-    TFileCollection* fc;
-    if(species == 0)
-    { 
-        fc = new TFileCollection("MC", "MC", MC_files, 1, line);
-    }
-    else if(species == 1)
-    {
-        fc = new TFileCollection("MC", "MC", RS_DATA_files, 1, line);
-    }
-    else if(species == 2)
-    {
-        fc = new TFileCollection("MC", "MC", WS_DATA_files, 1, line);
-    }
-
+    TFileCollection* fc = new TFileCollection("fc", "fc", RECO_files, 1, line);
     TChain* t = new TChain("DecayTree");
     t->AddFileInfoList((TCollection*)fc->GetList());
 
@@ -153,9 +142,12 @@ void DECAY_FIT(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
     t->SetBranchAddress("Bp_ENDVERTEX_X", &BVx);
     t->SetBranchAddress("Bp_ENDVERTEX_Y", &BVy);
     t->SetBranchAddress("Bp_ENDVERTEX_Z", &BVz);    
+    Float_t DTF_MB, DTF_MB_err;
+    t->SetBranchAddress("Bp_dtf_12_M", &DTF_MB);
+    t->SetBranchAddress("Bp_dtf_12_MERR", &DTF_MB_err);
 
     // Save result of the fit (xm,xu) in a .root file (x = (xm,xu))
-    TFile* fout = new TFile(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/Component_%i/fit_result_%i.root",year,species,component,line), "RECREATE");
+    TFile* fout = new TFile(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/%i.root",year,species,line), "RECREATE");
     TTree* tout = new TTree("DecayTree", "DecayTree");
 
     TString name_x[] = {
@@ -372,212 +364,22 @@ void DECAY_FIT(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
         // init = 3: RD calculations (uses offline estimate for BV) (58%)
 
         ROOT::Math::XYZPoint BV( BVx, BVy, BVz );
-
-        // 310245
-
-        // Init 0
-        solve( BV, 0, solver, tolerance );
-        Int_t status0 = status;
-        Double_t MB_0 = MB;
-        Double_t MB_err0 = MB_err;
-        TVectorD X0 = X;
-        TVectorD X0_ERR = X_ERR;
-        TVectorD F0 = F;
-        Double_t F_tol_0 = F_tolerance;
-        // cout << "init = " << 0 << endl;
-        // cout << "MB = " << MB_0 << endl;
-        // cout << "F_tol = " << F_tol_0 << endl;
-
-        // Init 1
-        solve( BV, 1, solver, tolerance );
-        Int_t status1 = status;
-        Double_t MB_1 = MB;
-        Double_t MB_err1 = MB_err;
-        TVectorD X1 = X;
-        TVectorD X1_ERR = X_ERR;
-        TVectorD F1 = F;
-        Double_t F_tol_1 = F_tolerance;
-        // cout << "init = " << 1 << endl;
-        // cout << "MB = " << MB_1 << endl;
-        // cout << "F_tol = " << F_tol_1 << endl;
-
-        // Init 2
-        solve( BV, 2, solver, tolerance );
-        Int_t status2 = status;
-        Double_t MB_2 = MB;
-        Double_t MB_err2 = MB_err;
-        TVectorD X2 = X;
-        TVectorD X2_ERR = X_ERR;
-        TVectorD F2 = F;
-        Double_t F_tol_2 = F_tolerance;
-        // cout << "init = " << 2 << endl;
-        // cout << "MB = " << MB_2 << endl;
-        // cout << "F_tol = " << F_tol_2 << endl;
-
-        // Init 3
-        solve( BV, 3, solver, tolerance );
-        Int_t status3 = status;
-        Double_t MB_3 = MB;
-        Double_t MB_err3 = MB_err;
-        TVectorD X3 = X;
-        TVectorD X3_ERR = X_ERR;
-        TVectorD F3 = F; 
-        Double_t F_tol_3 = F_tolerance;  
-        // cout << "init = " << 3 << endl;
-        // cout << "MB = " << MB_3 << endl;
-        // cout << "F_tol = " << F_tol_3 << endl; 
-
-        // Init 4
-        solve( BV, 4, solver, tolerance );
-        Int_t status4 = status;
-        Double_t MB_4 = MB;
-        Double_t MB_err4 = MB_err;
-        TVectorD X4 = X;
-        TVectorD X4_ERR = X_ERR;
-        TVectorD F4 = F;
-        Double_t F_tol_4 = F_tolerance;
-        // cout << "init = " << 4 << endl;
-        // cout << "MB = " << MB_4 << endl;
-        // cout << "F_tol = " << F_tol_4 << endl;
-
-        // Init 5
-        solve( BV, 5, solver, tolerance );
-        Int_t status5 = status;
-        Double_t MB_5 = MB;
-        Double_t MB_err5 = MB_err;
-        TVectorD X5 = X;
-        TVectorD X5_ERR = X_ERR;
-        TVectorD F5 = F;
-        Double_t F_tol_5 = F_tolerance;
-        // cout << "init = " << 5 << endl;
-        // cout << "MB = " << MB_5 << endl;
-        // cout << "F_tol = " << F_tol_5 << endl;
-
-        // Init 6
-        solve( BV, 6, solver, tolerance );
-        Int_t status6 = status;
-        Double_t MB_6 = MB;
-        Double_t MB_err6 = MB_err;
-        TVectorD X6 = X;
-        TVectorD X6_ERR = X_ERR;
-        TVectorD F6 = F;
-        Double_t F_tol_6 = F_tolerance;
-        // cout << "init = " << 6 << endl;
-        // cout << "MB = " << MB_6 << endl;
-        // cout << "F_tol = " << F_tol_6 << endl;
-
-        // Init 7
-        solve( BV, 7, solver, tolerance );
-        Int_t status7 = status;
-        Double_t MB_7 = MB;
-        Double_t MB_err7 = MB_err;
-        TVectorD X7 = X;
-        TVectorD X7_ERR = X_ERR;
-        TVectorD F7 = F;
-        Double_t F_tol_7 = F_tolerance;
-        // cout << "init = " << 7 << endl;
-        // cout << "MB = " << MB_7 << endl;
-        // cout << "F_tol = " << F_tol_7 << endl;
-
-        // Init 8
-        solve( BV, 8, solver, tolerance );
-        Int_t status8 = status;
-        Double_t MB_8 = MB;
-        Double_t MB_err8 = MB_err;
-        TVectorD X8 = X;
-        TVectorD X8_ERR = X_ERR;
-        TVectorD F8 = F;
-        Double_t F_tol_8 = F_tolerance;
-        // cout << "init = " << 8 << endl;
-        // cout << "MB = " << MB_8 << endl;
-        // cout << "F_tol = " << F_tol_8 << endl;
-
-        // Init 9
-        solve( BV, 9, solver, tolerance );
-        Int_t status9 = status;
-        Double_t MB_9 = MB;
-        Double_t MB_err9 = MB_err;
-        TVectorD X9 = X;
-        TVectorD X9_ERR = X_ERR;
-        TVectorD F9 = F;
-        Double_t F_tol_9 = F_tolerance;
-        // cout << "init = " << 9 << endl;
-        // cout << "MB = " << MB_9 << endl;
-        // cout << "F_tol = " << F_tol_9 << endl;
-
-        Int_t status_vec[10] = { status0, status1, status2, status3, status4, status5, status6, status7, status8, status9 };
-        Double_t MB_vec[10] = { MB_0, MB_1, MB_2, MB_3, MB_4, MB_5, MB_6, MB_7, MB_8, MB_9 }; 
-        Double_t MB_err_vec[10] = { MB_err0, MB_err1, MB_err2, MB_err3, MB_err4, MB_err5, MB_err6, MB_err7, MB_err8, MB_err9 };
-        Double_t F_tol_vec[10] = { F_tol_0, F_tol_1, F_tol_2, F_tol_3, F_tol_4, F_tol_5, F_tol_6, F_tol_7, F_tol_8, F_tol_9 };
-
-        std::vector<TVectorD> X_vec;
-        X_vec.push_back(X0);
-        X_vec.push_back(X1);
-        X_vec.push_back(X2);
-        X_vec.push_back(X3);
-        X_vec.push_back(X4);
-        X_vec.push_back(X5);
-        X_vec.push_back(X6);
-        X_vec.push_back(X7);
-        X_vec.push_back(X8);
-        X_vec.push_back(X9);
-
-        std::vector<TVectorD> X_ERR_vec;
-        X_ERR_vec.push_back(X0_ERR);
-        X_ERR_vec.push_back(X1_ERR);
-        X_ERR_vec.push_back(X2_ERR);
-        X_ERR_vec.push_back(X3_ERR);
-        X_ERR_vec.push_back(X4_ERR);
-        X_ERR_vec.push_back(X5_ERR);
-        X_ERR_vec.push_back(X6_ERR);
-        X_ERR_vec.push_back(X7_ERR);
-        X_ERR_vec.push_back(X8_ERR);
-        X_ERR_vec.push_back(X9_ERR);
-
-        std::vector<TVectorD> F_vec;
-        F_vec.push_back(F0);
-        F_vec.push_back(F1);
-        F_vec.push_back(F2);
-        F_vec.push_back(F3);
-        F_vec.push_back(F4);
-        F_vec.push_back(F5);
-        F_vec.push_back(F6);
-        F_vec.push_back(F7);
-        F_vec.push_back(F8);
-        F_vec.push_back(F9);
-
-        Double_t F_min = 0.1;
-        Int_t i_min = 0;
-        for(int i = 0; i < 10; i++)
+        lowest_sum(BV, solver, tolerance);
+        if(status != 0)
         {
-            if( (F_tol_vec[i] < F_min) && (status_vec[i] == 0) )
-            {
-                F_min = F_tol_vec[i];
-                i_min = i;
-            }
-        }   
-
-        bool all_fail = false;
-        if( (status0 != 0) && (status1 != 0) && (status2 != 0) && (status3 != 0) && (status4 != 0) && (status5 != 0) && (status6 != 0) && (status7 != 0) && (status8 != 0) && (status9 != 0) )
-        {
-            all_fail = true;
+            solve(BV, init, solver, 1);
         }
-
-        init = i_min;
-        if(all_fail){init = -1;}
-        status = status_vec[i_min];
-        MB = MB_vec[i_min];
-        MB_err = MB_err_vec[i_min];
-        X = X_vec[i_min];
-        X_ERR = X_ERR_vec[i_min];
-        F = F_vec[i_min];
-        F_tolerance = F_tol_vec[i_min];
+        if(status != 0)
+        {
+            solve(BV, init, solver, 100);
+        }
 
         cout << "FINAL" << endl;
         cout << "init = " << init << endl;
         cout << "status == " << status << endl;
         cout << "sum_Fi = " << F_tolerance << endl;
         cout << "MB = " << MB << " +/- " << MB_err << endl;
+        cout << "DTF MB = " << DTF_MB << " +/- " << DTF_MB_err << endl;
 
         // X.Print();
         // X_ERR.Print();
@@ -667,13 +469,12 @@ void DECAY_FIT(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
 
         // for(int i = 0; i < dimM+dimX+dimC; i++)
         // {
-        //     scan_lagrangian(X, i, 100, NAME[i], year, species, component, line);
+        //     scan_lagrangian(X, i, 100, NAME[i], year, species, line);
         // }
         // for(int i = 0; i < dimM; i++)
         // {
-        //     scan_chisquare(X, i, 100, NAME[i], year, species, component, line);
+        //     scan_chisquare(X, i, 100, NAME[i], year, species, line);
         // }
-
 
         tout->Fill();
     }
@@ -682,6 +483,233 @@ void DECAY_FIT(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
     fout->cd();
     tout->Write();
     fout->Close();
+}
+
+void lowest_sum(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver, Double_t tolerance)
+{
+        // Lowest sum
+        // Init 0
+        solve( BV, 0, solver, tolerance );
+        Int_t status0 = status;
+        Double_t MB_0 = MB;
+        Double_t MB_err0 = MB_err;
+        TVectorD X0 = X;
+        TVectorD X0_ERR = X_ERR;
+        TVectorD F0 = F;
+        Double_t F_tol_0 = F_tolerance;
+
+        // Init 1
+        solve( BV, 1, solver, tolerance );
+        Int_t status1 = status;
+        Double_t MB_1 = MB;
+        Double_t MB_err1 = MB_err;
+        TVectorD X1 = X;
+        TVectorD X1_ERR = X_ERR;
+        TVectorD F1 = F;
+        Double_t F_tol_1 = F_tolerance;
+
+        // Init 2
+        solve( BV, 2, solver, tolerance );
+        Int_t status2 = status;
+        Double_t MB_2 = MB;
+        Double_t MB_err2 = MB_err;
+        TVectorD X2 = X;
+        TVectorD X2_ERR = X_ERR;
+        TVectorD F2 = F;
+        Double_t F_tol_2 = F_tolerance;
+
+        // Init 3
+        solve( BV, 3, solver, tolerance );
+        Int_t status3 = status;
+        Double_t MB_3 = MB;
+        Double_t MB_err3 = MB_err;
+        TVectorD X3 = X;
+        TVectorD X3_ERR = X_ERR;
+        TVectorD F3 = F; 
+        Double_t F_tol_3 = F_tolerance;  
+
+        // Init 4
+        solve( BV, 4, solver, tolerance );
+        Int_t status4 = status;
+        Double_t MB_4 = MB;
+        Double_t MB_err4 = MB_err;
+        TVectorD X4 = X;
+        TVectorD X4_ERR = X_ERR;
+        TVectorD F4 = F;
+        Double_t F_tol_4 = F_tolerance;
+
+        // Init 5
+        solve( BV, 5, solver, tolerance );
+        Int_t status5 = status;
+        Double_t MB_5 = MB;
+        Double_t MB_err5 = MB_err;
+        TVectorD X5 = X;
+        TVectorD X5_ERR = X_ERR;
+        TVectorD F5 = F;
+        Double_t F_tol_5 = F_tolerance;
+
+        // Init 6
+        solve( BV, 6, solver, tolerance );
+        Int_t status6 = status;
+        Double_t MB_6 = MB;
+        Double_t MB_err6 = MB_err;
+        TVectorD X6 = X;
+        TVectorD X6_ERR = X_ERR;
+        TVectorD F6 = F;
+        Double_t F_tol_6 = F_tolerance;
+
+        // Init 7
+        solve( BV, 7, solver, tolerance );
+        Int_t status7 = status;
+        Double_t MB_7 = MB;
+        Double_t MB_err7 = MB_err;
+        TVectorD X7 = X;
+        TVectorD X7_ERR = X_ERR;
+        TVectorD F7 = F;
+        Double_t F_tol_7 = F_tolerance;
+
+        // Init 8
+        solve( BV, 8, solver, tolerance );
+        Int_t status8 = status;
+        Double_t MB_8 = MB;
+        Double_t MB_err8 = MB_err;
+        TVectorD X8 = X;
+        TVectorD X8_ERR = X_ERR;
+        TVectorD F8 = F;
+        Double_t F_tol_8 = F_tolerance;
+
+        // Init 9
+        solve( BV, 9, solver, tolerance );
+        Int_t status9 = status;
+        Double_t MB_9 = MB;
+        Double_t MB_err9 = MB_err;
+        TVectorD X9 = X;
+        TVectorD X9_ERR = X_ERR;
+        TVectorD F9 = F;
+        Double_t F_tol_9 = F_tolerance;
+
+        Int_t status_vec[10] = { status0, status1, status2, status3, status4, status5, status6, status7, status8, status9 };
+        Double_t MB_vec[10] = { MB_0, MB_1, MB_2, MB_3, MB_4, MB_5, MB_6, MB_7, MB_8, MB_9 }; 
+        Double_t MB_err_vec[10] = { MB_err0, MB_err1, MB_err2, MB_err3, MB_err4, MB_err5, MB_err6, MB_err7, MB_err8, MB_err9 };
+        Double_t F_tol_vec[10] = { F_tol_0, F_tol_1, F_tol_2, F_tol_3, F_tol_4, F_tol_5, F_tol_6, F_tol_7, F_tol_8, F_tol_9 };
+
+        std::vector<TVectorD> X_vec;
+        X_vec.push_back(X0);
+        X_vec.push_back(X1);
+        X_vec.push_back(X2);
+        X_vec.push_back(X3);
+        X_vec.push_back(X4);
+        X_vec.push_back(X5);
+        X_vec.push_back(X6);
+        X_vec.push_back(X7);
+        X_vec.push_back(X8);
+        X_vec.push_back(X9);
+
+        std::vector<TVectorD> X_ERR_vec;
+        X_ERR_vec.push_back(X0_ERR);
+        X_ERR_vec.push_back(X1_ERR);
+        X_ERR_vec.push_back(X2_ERR);
+        X_ERR_vec.push_back(X3_ERR);
+        X_ERR_vec.push_back(X4_ERR);
+        X_ERR_vec.push_back(X5_ERR);
+        X_ERR_vec.push_back(X6_ERR);
+        X_ERR_vec.push_back(X7_ERR);
+        X_ERR_vec.push_back(X8_ERR);
+        X_ERR_vec.push_back(X9_ERR);
+
+        std::vector<TVectorD> F_vec;
+        F_vec.push_back(F0);
+        F_vec.push_back(F1);
+        F_vec.push_back(F2);
+        F_vec.push_back(F3);
+        F_vec.push_back(F4);
+        F_vec.push_back(F5);
+        F_vec.push_back(F6);
+        F_vec.push_back(F7);
+        F_vec.push_back(F8);
+        F_vec.push_back(F9);
+
+        Double_t F_min = 0.1;
+        Int_t i_min = 0;
+        for(int i = 0; i < 10; i++)
+        {
+            if( (F_tol_vec[i] < F_min) && (status_vec[i] == 0) )
+            {
+                F_min = F_tol_vec[i];
+                i_min = i;
+            }
+        }   
+
+        bool all_fail = false;
+        if( (status0 != 0) && (status1 != 0) && (status2 != 0) && (status3 != 0) && (status4 != 0) && (status5 != 0) && (status6 != 0) && (status7 != 0) && (status8 != 0) && (status9 != 0) )
+        {
+            all_fail = true;
+        }
+
+        init = i_min;
+        if(all_fail){init = -1;}
+        status = status_vec[i_min];
+        MB = MB_vec[i_min];
+        MB_err = MB_err_vec[i_min];
+        X = X_vec[i_min];
+        X_ERR = X_ERR_vec[i_min];
+        F = F_vec[i_min];
+        F_tolerance = F_tol_vec[i_min];
+}
+
+void sequence(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver, Double_t tolerance)
+{
+    init = 3; // Marseille
+    solve( BV, init, solver, tolerance );
+    if(status != 0)
+    {
+        init = 0; // Original
+        solve( BV, init, solver, tolerance );
+    }
+    if(status != 0)
+    {
+        init = 9; // Marseille (tau-) + K*tautau pions (tau+)
+        solve( BV, init, solver, tolerance );
+    }
+    if(status != 0)
+    {
+        init = 8; // Marseille (tau+) + K*tautau pions (tau-)
+        solve( BV, init, solver, tolerance );
+    }
+    if(status != 0)
+    {
+        init = 7; // Marseille (tau-) + K*tautau vertex (tau+)
+        solve( BV, init, solver, tolerance );
+    }
+    if(status != 0)
+    {
+        init = 6; // Marseille (tau+) + K*tautau vertex (tau-)
+        solve( BV, init, solver, tolerance );
+    }
+    if(status != 0)
+    {
+        init = 2; // K*tautau pions
+        solve( BV, init, solver, tolerance );
+    }
+    if(status != 0)
+    {
+        init = 5; // K*tautau vertex (tau-) + K*tautau pions (tau+)
+        solve( BV, init, solver, tolerance );
+    }
+    if(status != 0)
+    {
+        init = 4; // K*tautau vertex (tau+) + K*tautau pions (tau-)
+        solve( BV, init, solver, tolerance );
+    }
+    if(status != 0)
+    {
+        init = 1; // K*tautau vertex
+        solve( BV, init, solver, tolerance );
+    }
+    if(status != 0)
+    {
+        init = -1;
+    }
 }
 
 void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* solver, Double_t tolerance )
@@ -742,7 +770,7 @@ void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* 
     }
 
     // 2) Solve system of equations
-    solver->Solve(x0_vars, 10000, tolerance, tolerance/10000);
+    solver->Solve(x0_vars, 10000, tolerance);
     // status = solver->Status();
 
     // 3) Retrieve results
@@ -812,7 +840,7 @@ void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* 
 
 }
 
-void scan_chisquare( TVectorD X, Int_t index, Int_t npoints, TString x_name, Int_t year, Int_t species, Int_t component, Int_t line)
+void scan_chisquare( TVectorD X, Int_t index, Int_t npoints, TString x_name, Int_t year, Int_t species, Int_t line)
 {
     if(index > dimM)
     {
@@ -859,40 +887,17 @@ void scan_chisquare( TVectorD X, Int_t index, Int_t npoints, TString x_name, Int
     line1->SetLineWidth(2);
     line1->Draw("same");
 
-    c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/Component_%i/Plots_chisquare/%i_%i.gif",year,species,component,index,line));
-    c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/Component_%i/Plots_chisquare/%i_%i.pdf",year,species,component,index,line));
+    c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/Plots_chisquare/%i_%i.gif",year,species,index,line));
+    c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/Plots_chisquare/%i_%i.pdf",year,species,index,line));
 
     X(index) = x_val;
 }
 
-
-void scan_lagrangian( TVectorD X, Int_t index, Int_t npoints, TString x_name, Int_t year, Int_t species, Int_t component, Int_t line)
+void scan_lagrangian( TVectorD X, Int_t index, Int_t npoints, TString x_name, Int_t year, Int_t species, Int_t line)
 {
     Double_t x_val = X(index);
     Double_t x_min = x_val - X_ERR(index);
     Double_t x_max = x_val + X_ERR(index);
-
-    // if( (index == 25) || (index == 26) || (index == 27) || (index == 28) )
-    // {
-    //     x_min = x_val - 1000*X_ERR(index);
-    //     x_max = x_val + 1000*X_ERR(index);
-
-    //     if(index == 28) // MB^2
-    //     {
-    //         x_min = x_val - 20*X_ERR(index);
-    //         x_max = x_val + 20*X_ERR(index);  
-    //     }
-    //     if(index == 26) // pBy
-    //     {
-    //         x_min = x_val - 5000*X_ERR(index);
-    //         x_max = x_val + 10000*X_ERR(index);    
-    //     }
-    //     if(index == 27)
-    //     {
-    //         x_min = x_val - 200*X_ERR(index);
-    //         x_max = x_val + 200*X_ERR(index); 
-    //     }
-    // }
 
     vector<Double_t> scan_range = range(x_min, x_max, npoints);
 
@@ -923,8 +928,8 @@ void scan_lagrangian( TVectorD X, Int_t index, Int_t npoints, TString x_name, In
     line2->SetLineWidth(2);
     line2->Draw("same");
 
-    c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/Component_%i/Plots_lagrangian/%i_%i.gif",year,species,component,index,line));
-    c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/Component_%i/Plots_lagrangian/%i_%i.pdf",year,species,component,index,line));
+    c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/Plots_lagrangian/%i_%i.gif",year,species,index,line));
+    c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/Plots_lagrangian/%i_%i.pdf",year,species,index,line));
 
     X(index) = x_val;
 }

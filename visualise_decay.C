@@ -12,6 +12,8 @@ bool DTF_neutrino = true;
 bool all_true = false;
 bool isMC = false;
 
+Float_t Bmass;
+
 #define year 8
 
 // DTF_neutrino = false, all_true = false -> nuTRUE
@@ -22,16 +24,16 @@ void visualise_decay(){
     if(all_true){DTF_neutrino = false;}
     if(DTF_neutrino){all_true = false;}
 
-    TFileCollection* fc = new TFileCollection("RS_data", "RS_data", Form("data_201%i_MagUp.txt",year),1);
-    fc->AddFromFile(Form("data_201%i_MagDown.txt", year),1);
+    TFileCollection* fc_sig = new TFileCollection("fc_sig", "fc_sig", Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/Species_10/pre_sel_tree.txt",year));
+    TFileCollection* fc_bkg = new TFileCollection("fc_bkg", "fc_bkg", Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/Species_3/pre_sel_tree.txt",year));
 
-    TChain* t = new TChain("ntuple/DecayTree");
-    if(isMC){t->Add(Form("/panfs/felician/B2Ktautau/ROOT_Sim/201%i/mc_201%i_truth_matched.root",year,year));}
-    else{t->AddFileInfoList((TCollection*)fc->GetList());}
+    TChain* t = new TChain("DecayTree");
+    if(isMC){t->AddFileInfoList((TCollection*)fc_sig->GetList());}
+    else{t->AddFileInfoList((TCollection*)fc_bkg->GetList());}
 
     TString name;
-    if(isMC){name = "MC";}
-    else{name = "DATA";}
+    if(isMC){name = "SIGNAL";}
+    else{name = "BACKGROUND";}
 
     TFile* fout;
     if(DTF_neutrino){fout = new TFile("Mass_resolution_visualisation/"+name+Form("_201%i_kinematics_nuDTF.root",year),"recreate");}
@@ -71,7 +73,6 @@ void visualise_decay(){
     TH1D* h_nutau0_P_core = new TH1D("h_nutau0_P_core", "h_nutau0_P_core", n_bins, 0., 150000);
     TH1D* h_nutau0_P_tail = new TH1D("h_nutau0_P_tail", "h_nutau0_P_tail", n_bins, 0., 150000);
 
-    Float_t Bmass;
     Double_t P3pi11x, P3pi12x, P3pi13x, P3pi21x, P3pi22x, P3pi23x, P3pi11y, P3pi12y, P3pi13y, P3pi21y, P3pi22y, P3pi23y, P3pi11z, P3pi12z, P3pi13z, P3pi21z, P3pi22z, P3pi23z, P3pi2x, P3pi2y, P3pi2z, Pkx, Pky, Pkz;
     Double_t KVx, KVy, KVz, PVx, PVy, PVz, BVx, BVy, BVz;
     Double_t DV1x, DV1y, DV1z, DV2x, DV2y, DV2z, DV2xerr, DV1xerr, DV1yerr, DV1zerr, DV2yerr, DV2zerr;
@@ -83,11 +84,11 @@ void visualise_decay(){
     Float_t DTF_chi2, DTF_ndf, DTF_taup_M, DTF_taum_M, DTF_Bmass_err;
     Float_t taup_decayLenght, taum_decayLength, Bp_decayLength;
 
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_decayLength", &taum_decayLength);
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_decayLength", &taup_decayLenght);
-    t->SetBranchAddress("Bp_ConsBp_0_decayLength", &Bp_decayLength);
+    t->SetBranchAddress("Bp_dtf_12_tauminus_0_decayLength", &taum_decayLength);
+    t->SetBranchAddress("Bp_dtf_12_tauminus_decayLength", &taup_decayLenght);
+    t->SetBranchAddress("Bp_dtf_12_decayLength", &Bp_decayLength);
 
-    t->SetBranchAddress("Bp_ConsBp_0_MERR", &DTF_Bmass_err);
+    t->SetBranchAddress("Bp_dtf_12_MERR", &DTF_Bmass_err);
     t->SetBranchAddress("taup_FDCHI2_ORIVX",&taup_FD_BV_chi2);
     t->SetBranchAddress("taup_FD_ORIVX",&taup_FD_BV);
     t->SetBranchAddress("taum_FDCHI2_ORIVX",&taum_FD_BV_chi2);
@@ -96,7 +97,7 @@ void visualise_decay(){
     t->SetBranchAddress("taup_IPCHI2_OWNPV",&taup_IP_PV_chi2);
     t->SetBranchAddress("taup_IP_OWNPV",&taup_IP_PV_chi2);
 
-    t->SetBranchAddress("Bp_ConsBp_0_status",&status);
+    t->SetBranchAddress("Bp_dtf_12_status",&status);
 
     t->SetBranchAddress("Bp_ENDVERTEX_X",&BVx);
     t->SetBranchAddress("Bp_ENDVERTEX_Y",&BVy);
@@ -107,20 +108,20 @@ void visualise_decay(){
       t->SetBranchAddress("Bp_TRUEENDVERTEX_Z",&BVz_true);
     }
 
-    t->SetBranchAddress("refPoint_X",&KVx);
-    t->SetBranchAddress("refPoint_Y",&KVy);
-    t->SetBranchAddress("refPoint_Z",&KVz);
+    t->SetBranchAddress("df_RPx",&KVx);
+    t->SetBranchAddress("df_RPy",&KVy);
+    t->SetBranchAddress("df_RPz",&KVz);
 
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_M",&DTF_taup_M);
-    t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_M",&DTF_taum_M);
+    t->SetBranchAddress("Bp_dtf_12_tauminus_M",&DTF_taup_M);
+    t->SetBranchAddress("Bp_dtf_12_tauminus_0_M",&DTF_taum_M);
 
     if(DTF_neutrino){
-      t->SetBranchAddress("Bp_ConsBp_0_tauminus_nu_tau_PX",&Pnu1x);
-      t->SetBranchAddress("Bp_ConsBp_0_tauminus_nu_tau_PY",&Pnu1y);
-      t->SetBranchAddress("Bp_ConsBp_0_tauminus_nu_tau_PZ",&Pnu1z);
-      t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_nu_tau_PX",&Pnu2x);
-      t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_nu_tau_PY",&Pnu2y);
-      t->SetBranchAddress("Bp_ConsBp_0_tauminus_0_nu_tau_PZ",&Pnu2z);
+      t->SetBranchAddress("Bp_dtf_12_tauminus_nu_tau_PX",&Pnu1x);
+      t->SetBranchAddress("Bp_dtf_12_tauminus_nu_tau_PY",&Pnu1y);
+      t->SetBranchAddress("Bp_dtf_12_tauminus_nu_tau_PZ",&Pnu1z);
+      t->SetBranchAddress("Bp_dtf_12_tauminus_0_nu_tau_PX",&Pnu2x);
+      t->SetBranchAddress("Bp_dtf_12_tauminus_0_nu_tau_PY",&Pnu2y);
+      t->SetBranchAddress("Bp_dtf_12_tauminus_0_nu_tau_PZ",&Pnu2z);
     }
     else{
       t->SetBranchAddress("taup_TRUEP_X", &taup_TRUEPX);
@@ -152,9 +153,9 @@ void visualise_decay(){
       t->SetBranchAddress("taum_pi3_TRUEP_Z",&P3pi23z);  
     }
 
-    t->SetBranchAddress("Bp_ConsBp_0_M",&Bmass);
-    t->SetBranchAddress("Bp_ConsBp_0_chi2",&DTF_chi2);
-    t->SetBranchAddress("Bp_ConsBp_0_nDOF",&DTF_ndf);
+    t->SetBranchAddress("Bp_dtf_12_M",&Bmass);
+    t->SetBranchAddress("Bp_dtf_12_chi2",&DTF_chi2);
+    t->SetBranchAddress("Bp_dtf_12_nDOF",&DTF_ndf);
 
     if(all_true){
       t->SetBranchAddress("Bp_TRUEORIGINVERTEX_X",&PVx);
@@ -314,9 +315,15 @@ void visualise_decay(){
 
       if(status == 0){ // pass DTF
 
-        if((DTF_taup_M != 1776.86)){plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "pass_taup_no_PDG", fout, i, DTF_norm_chi2);}
-        if((DTF_taum_M != 1776.86)){plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "pass_taum_no_PDG", fout, i, DTF_norm_chi2);}
+        // if((DTF_taup_M != 1776.86)){plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "pass_taup_no_PDG", fout, i, DTF_norm_chi2);}
+        // if((DTF_taum_M != 1776.86)){plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "pass_taum_no_PDG", fout, i, DTF_norm_chi2);}
 
+        if( (Bmass > 4000) && (Bmass < 4500) )
+        {
+          plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "4_Bmass_4.5", fout, i, DTF_norm_chi2);
+        }
+
+        /*
         if( abs(Bmass - mpeak) < 300 ){ // core
           plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "pass_core", fout, i, DTF_norm_chi2);
           
@@ -356,8 +363,9 @@ void visualise_decay(){
         else if(abs(BVy) < 0.5){
           plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "BVy_05", fout, i, DTF_norm_chi2);
         }
-
+        */
       }
+      /*
       else{ // fail DTF
         plot(PV_t, KV_t, BV_t, BV_true_t, DV1_t, DV2_t, DV1err, DV2err, Xerr1_t, Xerr2_t, Yerr1_t, Yerr2_t, Pb_t, Pnu1_t, P3pi11_t, P3pi12_t, P3pi13_t, Pnu2_t, P3pi21_t, P3pi22_t, P3pi23_t, "fail", fout, i, DTF_norm_chi2);
         
@@ -366,17 +374,19 @@ void visualise_decay(){
         h_DV2_fail->Fill(IP2);
         h_PV_fail->Fill(IP3);
       }
+      */
     }      
 
-  plot_comparison(h_taup_FDCHI2_BV_core, h_taup_FDCHI2_BV_tail, "taup FD to BV chi2", " ", n_bins);
-  plot_comparison(h_taup_FD_BV_core, h_taup_FDCHI2_BV_tail, "taup FD to BV", "(mm)", n_bins);
-  plot_comparison(h_taum_FDCHI2_BV_core, h_taum_FDCHI2_BV_tail, "taum FD to BV chi2", " ", n_bins);
-  plot_comparison(h_taum_FD_BV_core, h_taum_FDCHI2_BV_tail, "taum FD to BV", "(mm)", n_bins);
-  plot_comparison(h_taup_sep_core, h_taup_sep_tail, "distance between tau vertices", "(mm)", n_bins);
-  plot_comparison(h_taup_DIRA_BV_core, h_taup_DIRA_BV_tail, "taup DIRA to BV", "(rad)", n_bins);
-  plot_comparison(h_nutau_P_core, h_nutau_P_tail, "antinutau momentum", "(MeV)", n_bins);
-  plot_comparison(h_nutau0_P_core, h_nutau0_P_tail, "nutau momentum", "(MeV)", n_bins);
+  // plot_comparison(h_taup_FDCHI2_BV_core, h_taup_FDCHI2_BV_tail, "taup FD to BV chi2", " ", n_bins);
+  // plot_comparison(h_taup_FD_BV_core, h_taup_FDCHI2_BV_tail, "taup FD to BV", "(mm)", n_bins);
+  // plot_comparison(h_taum_FDCHI2_BV_core, h_taum_FDCHI2_BV_tail, "taum FD to BV chi2", " ", n_bins);
+  // plot_comparison(h_taum_FD_BV_core, h_taum_FDCHI2_BV_tail, "taum FD to BV", "(mm)", n_bins);
+  // plot_comparison(h_taup_sep_core, h_taup_sep_tail, "distance between tau vertices", "(mm)", n_bins);
+  // plot_comparison(h_taup_DIRA_BV_core, h_taup_DIRA_BV_tail, "taup DIRA to BV", "(rad)", n_bins);
+  // plot_comparison(h_nutau_P_core, h_nutau_P_tail, "antinutau momentum", "(MeV)", n_bins);
+  // plot_comparison(h_nutau0_P_core, h_nutau0_P_tail, "nutau momentum", "(MeV)", n_bins);
 
+  /*
   TCanvas c2;
   c2.cd();
   gStyle->SetOptStat(0);
@@ -508,6 +518,7 @@ void visualise_decay(){
   leg3->Draw("same");
   c6.SaveAs("Mass_resolution_visualisation/PV_IP.gif");
   c6.SaveAs("Mass_resolution_visualisation/PV_IP.pdf");
+  */
 
   return;
 }
@@ -563,8 +574,8 @@ void plot(ROOT::Math::XYZPoint PV_t, ROOT::Math::XYZPoint KV_t, ROOT::Math::XYZP
         e2->SetLineStyle(7);
         e1->SetLineWidth(2);
         e2->SetLineWidth(2);
-        e1->SetFillColorAlpha(kBlue,0.5);
-        e2->SetFillColorAlpha(kRed,0.5);
+        e1->SetFillStyle(0);
+        e2->SetFillStyle(0);
 
         double r = 0.0001;
         double Pb_lineX[2] = {0., Pb_t.x()*r};
@@ -732,38 +743,42 @@ void plot(ROOT::Math::XYZPoint PV_t, ROOT::Math::XYZPoint KV_t, ROOT::Math::XYZP
         mg1->Add(DV1err_line,"L");
         mg1->Add(DV2err_line,"L");
 
-        TLatex* tex = new TLatex(0.3, 0.8, Form("DTF #chi^{2}/ndf = %.3lf",DTF_chi2));
+        TLatex* tex = new TLatex(0.2, 0.8, Form("DTF #chi^{2}/ndf = %.3lf",DTF_chi2));
         tex->SetNDC(kTRUE);
         tex->SetTextFont(42);
         tex->SetTextSize(0.045);
 
-        TLatex* tex1 = new TLatex(0.3, 0.7, Form("Anti-neutrino P_{z} = %.3lf MeV",Pnu1_t.z()));
+        TLatex* tex1 = new TLatex(0.2, 0.7, Form("Anti-neutrino P_{z} = %.3lf MeV",Pnu1_t.z()));
         tex1->SetNDC(kTRUE);
         tex1->SetTextFont(42);
         tex1->SetTextSize(0.045);
 
-        TLatex* tex2 = new TLatex(0.3, 0.6, Form("Neutrino P_{z} = %.3lf MeV",Pnu2_t.z()));
+        TLatex* tex2 = new TLatex(0.2, 0.6, Form("Neutrino P_{z} = %.3lf MeV",Pnu2_t.z()));
         tex2->SetNDC(kTRUE);
         tex2->SetTextFont(42);
         tex2->SetTextSize(0.045);
 
-        TLatex* tex3 = new TLatex(0.3, 0.95, Form("Event number : %i",i));
+        TLatex* tex3 = new TLatex(0.2, 0.95, Form("Event number : %i",i));
         tex3->SetNDC(kTRUE);
         tex3->SetTextFont(42);
         tex3->SetTextSize(0.045);
+    
+        TLatex* tex4 = new TLatex(0.2, 0.5, Form("B^{+} mass : %.1lf MeV",Bmass));
+        tex4->SetNDC(kTRUE);
+        tex4->SetTextFont(42);
+        tex4->SetTextSize(0.045);
 
-        mg1->Draw();
+        mg1->Draw("L same");
         tex->Draw("same");
         tex1->Draw("same");
         tex2->Draw("same");
         tex3->Draw("same");
+        tex4->Draw("same");
         //mg1->SetTitle("Along K^{+} trajectory");
         mg1->GetXaxis()->SetTitle("z (mm)");
 
         fout->cd();
         c.Write();
-
-        return 0;
 }
 
 ROOT::Math::XYZVector makeTransformation_vec(ROOT::Math::XYZVector p_K, ROOT::Math::XYZPoint refPoint, ROOT::Math::XYZVector theVector, bool invFlag){
