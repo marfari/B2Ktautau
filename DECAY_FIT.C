@@ -14,10 +14,10 @@ TVectorD xu(dimX);
 TVectorD lambda(dimC);
 
 TVectorD x0(dimM+dimX+dimC);
-Double_t RPz; // z-component of the RP on the K+ trajectory (fixed)
+Double_t RPz = 0.; // z-component of the RP on the K+ trajectory (fixed)
 
 // Fit results saved
-Double_t MB, MB_err, F_tolerance;
+Double_t MB, MB_err, F_tolerance, chi2;
 TVectorD X(dimM+dimX+dimC);
 TVectorD X_ERR(dimM+dimX+dimC);
 TVectorD F(dimM+dimX+dimC);
@@ -25,10 +25,13 @@ TMatrixDSym U(dimM+dimX+dimC);
 TMatrixDSym U_corr(dimM+dimX+dimC);
 Int_t status, init;
 
+// DTF variables
+Float_t DTF_MB, DTF_MB_err;
+
 // Constants
 Double_t mtau = 1776.86;
 Double_t mkaon = 493.677;
-Double_t tolerance = pow(10,-6);
+// Double_t tolerance = pow(10,-6);
 
 // Functions
 void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* solver, Double_t tolerance );
@@ -142,7 +145,8 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
     t->SetBranchAddress("Bp_ENDVERTEX_X", &BVx);
     t->SetBranchAddress("Bp_ENDVERTEX_Y", &BVy);
     t->SetBranchAddress("Bp_ENDVERTEX_Z", &BVz);    
-    Float_t DTF_MB, DTF_MB_err;
+
+    // DTF variables
     t->SetBranchAddress("Bp_dtf_12_M", &DTF_MB);
     t->SetBranchAddress("Bp_dtf_12_MERR", &DTF_MB_err);
 
@@ -241,7 +245,7 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
     for(int i = 0; i < dimM+dimX; i++)
     {
         tout->Branch(name_x[i], &X(i));
-        tout->Branch(name_x_err[i], &X_ERR[i]);
+        tout->Branch(name_x_err[i], &X_ERR(i));
     }
 
     for(int i = 0; i < dimM+dimX+dimC; i++)
@@ -254,6 +258,7 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
     tout->Branch("df_Bp_MERR", &MB_err);
     tout->Branch("df_status", &status);
     tout->Branch("df_F_tolerance", &F_tolerance);
+    tout->Branch("df_chi2", &chi2);
 
     // Loop over events
     for(int evt = 0; evt < num_entries; evt++)
@@ -291,6 +296,10 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
         // 2) Build weights matrix W = V^-1
         W = V;
         W.Invert();
+        // W.Print();
+
+        // TMatrixD identity = W*V;
+        // identity.Print();
 
         // 3) Define the system of equations
         ROOT::Math::GSLMultiRootFinder * solver = new ROOT::Math::GSLMultiRootFinder("HybridS");
@@ -364,22 +373,29 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
         // init = 3: RD calculations (uses offline estimate for BV) (58%)
 
         ROOT::Math::XYZPoint BV( BVx, BVy, BVz );
-        lowest_sum(BV, solver, tolerance);
+
+        lowest_sum(BV, solver, pow(10,-6));
         if(status != 0)
         {
-            solve(BV, init, solver, 1);
+            solve( BV, init, solver, 1. );
+        }   
+        if(status != 0)
+        {
+            solve( BV, init, solver, 61. );
         }
         if(status != 0)
         {
-            solve(BV, init, solver, 100);
+            init = -1;
         }
 
         cout << "FINAL" << endl;
         cout << "init = " << init << endl;
         cout << "status == " << status << endl;
         cout << "sum_Fi = " << F_tolerance << endl;
+        cout << "Initial MB = " << sqrt(x0(28)) << endl;
         cout << "MB = " << MB << " +/- " << MB_err << endl;
         cout << "DTF MB = " << DTF_MB << " +/- " << DTF_MB_err << endl;
+        cout << "chi2 = " << chi2 << endl;
 
         // X.Print();
         // X_ERR.Print();
@@ -483,6 +499,137 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
     fout->cd();
     tout->Write();
     fout->Close();
+}
+
+void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* solver, Double_t tolerance )
+{
+    // 1) This function initialises the vector of unkown parameters x with the result of analytical calculations
+    // 2) It sets up the minimizer: defining the initial values and bounds on the x parameters  
+    // 3) It builds the chi^2 function with x0 by calling the function chisquare 
+    // 4) It does the minimisation and updates the values of the parameters that will be saved in a TTree 
+
+    // 1) Initial values for x=(xm,xu,lambda)
+    if(init == 0)
+    {
+        x0 = x_initial_estimate_0( m ); // original calculations = Anne Keune
+    }
+    else if(init == 1)
+    {   
+        x0 = x_initial_estimate_1( m, BV ); // K*tautau calculations; tau momentum direction initialised based on vertices (uses offline estimate for BV)
+    }
+    else if(init == 2)
+    {
+        x0 = x_initial_estimate_2( m, BV ); // K*tautau calculations; tau momentum direction initialised based on 3pi visible momentum (uses offline estimate for BV) 
+    }
+    else if(init == 3)
+    {
+        x0 = x_initial_estimate_3( m, BV ); // RD calculations (uses offline estimate for BV)
+    }
+    else if(init == 4)
+    {
+        x0 = x_initial_estimate_4( m, BV ); // K*tautau; tau+ from vertices, tau- from pions
+    }
+    else if(init == 5)
+    {
+        x0 = x_initial_estimate_5( m, BV ); // K*tautau; tau- from vertices, tau+ from pions
+    }
+    else if(init == 6)
+    {
+        x0 = x_initial_estimate_6( m, BV ); // Mixes Marseille (tau+) and K*tautau vertices (tau-)
+    }
+    else if(init == 7)
+    {
+        x0 = x_initial_estimate_7( m, BV ); // Mixes Marseille (tau-) and K*tautau vertices (tau+)
+    }
+    else if(init == 8)
+    {
+        x0 = x_initial_estimate_8( m, BV ); // Mixes Marseille (tau+) and K*tautau pions (tau-)
+    }
+    else if(init == 9)
+    {
+        x0 = x_initial_estimate_9( m, BV ); // Mixes Marseille (tau-) and K*tautau pions (tau+)
+    }
+    // x0.Print();
+
+    Double_t x0_vars[dimM+dimX+dimC];
+    for(int i = 0; i < dimM+dimX+dimC; i++)
+    {
+        x0_vars[i] = x0(i); 
+    }
+
+    // 2) Solve system of equations
+    solver->Solve(x0_vars, 10000, tolerance);
+
+    // 3) Retrieve results
+    const double* x_results = solver->X();
+    const double* f_vals = solver->FVal();
+    status = solver->Status();
+
+    for(int i = 0; i < dimM+dimX+dimC; i++)
+    {
+        X(i) = x_results[i];
+        F(i) = f_vals[i];
+    }
+    // X.Print();
+    // F.Print();
+
+    U = U_matrix();
+    for(int i = 0; i < dimM+dimX+dimC; i++)
+    {
+        X_ERR(i) = sqrt(U(i,i));
+    }
+    // X_ERR.Print();
+
+    Double_t MB_squared = X(dimM+6);
+    if( MB_squared > 0 )
+    {
+        MB = sqrt( MB_squared );
+    }
+    else
+    {
+        MB = -sqrt( abs(MB_squared) );
+    }
+
+    Double_t dMB_squared = sqrt(U(28,28));
+    MB_err = dMB_squared/(2*abs(MB));
+
+    // cout << "MB = " << MB << " +/- " << MB_err << endl;
+
+    // TVectorD V_errors(dimM);
+    // for(int i = 0; i < dimM; i++)
+    // {
+    //     V_errors(i) = sqrt(V(i,i));
+    // }
+    // m.Print();
+    // V_errors.Print();
+
+    // TVectorD diff(dimM);
+    // for(int i = 0; i < dimM; i++)
+    // {
+    //     diff(i) = X(i)-m(i);
+    // }
+    // diff.Print();
+
+    // TVectorD ratio(dimM);
+    // for(int i = 0; i < dimM; i++)
+    // {
+    //     ratio(i) = X_ERR(i)/V_errors(i);
+    // }
+    // ratio.Print();
+
+    F_tolerance = 0;
+    for(int i = 0; i < dimM+dimX+dimC; i++)
+    {
+        F_tolerance += abs(F(i));
+    }
+
+    TVectorD xm(dimM);
+    for(int i = 0; i < dimM; i++)
+    {
+        xm(i) = X(i);
+    }
+    chi2 = chisquare(xm);
+
 }
 
 void lowest_sum(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver, Double_t tolerance)
@@ -629,11 +776,11 @@ void lowest_sum(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver,
         F_vec.push_back(F8);
         F_vec.push_back(F9);
 
-        Double_t F_min = 0.1;
+        Double_t F_min = 100;
         Int_t i_min = 0;
         for(int i = 0; i < 10; i++)
         {
-            if( (F_tol_vec[i] < F_min) && (status_vec[i] == 0) )
+            if( (F_tol_vec[i] < F_min) )
             {
                 F_min = F_tol_vec[i];
                 i_min = i;
@@ -647,7 +794,6 @@ void lowest_sum(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver,
         }
 
         init = i_min;
-        if(all_fail){init = -1;}
         status = status_vec[i_min];
         MB = MB_vec[i_min];
         MB_err = MB_err_vec[i_min];
@@ -710,134 +856,6 @@ void sequence(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver, D
     {
         init = -1;
     }
-}
-
-void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* solver, Double_t tolerance )
-{
-    // 1) This function initialises the vector of unkown parameters x with the result of analytical calculations
-    // 2) It sets up the minimizer: defining the initial values and bounds on the x parameters  
-    // 3) It builds the chi^2 function with x0 by calling the function chisquare 
-    // 4) It does the minimisation and updates the values of the parameters that will be saved in a TTree 
-
-    // 1) Initial values for x=(xm,xu,lambda)
-    if(init == 0)
-    {
-        x0 = x_initial_estimate_0( m ); // original calculations = Anne Keune
-    }
-    else if(init == 1)
-    {   
-        x0 = x_initial_estimate_1( m, BV ); // K*tautau calculations; tau momentum direction initialised based on vertices (uses offline estimate for BV)
-    }
-    else if(init == 2)
-    {
-        x0 = x_initial_estimate_2( m, BV ); // K*tautau calculations; tau momentum direction initialised based on 3pi visible momentum (uses offline estimate for BV) 
-    }
-    else if(init == 3)
-    {
-        x0 = x_initial_estimate_3( m, BV ); // RD calculations (uses offline estimate for BV)
-    }
-    else if(init == 4)
-    {
-        x0 = x_initial_estimate_4( m, BV ); // K*tautau; tau+ from vertices, tau- from pions
-    }
-    else if(init == 5)
-    {
-        x0 = x_initial_estimate_5( m, BV ); // K*tautau; tau- from vertices, tau+ from pions
-    }
-    else if(init == 6)
-    {
-        x0 = x_initial_estimate_6( m, BV ); // Mixes Marseille (tau+) and K*tautau vertices (tau-)
-    }
-    else if(init == 7)
-    {
-        x0 = x_initial_estimate_7( m, BV ); // Mixes Marseille (tau-) and K*tautau vertices (tau+)
-    }
-    else if(init == 8)
-    {
-        x0 = x_initial_estimate_8( m, BV ); // Mixes Marseille (tau+) and K*tautau pions (tau-)
-    }
-    else if(init == 9)
-    {
-        x0 = x_initial_estimate_9( m, BV ); // Mixes Marseille (tau-) and K*tautau pions (tau+)
-    }
-    // x0.Print();
-
-    Double_t x0_vars[dimM+dimX+dimC], x0_err[dimM+dimX+dimC];
-    for(int i = 0; i < dimM+dimX+dimC; i++)
-    {
-        x0_vars[i] = x0(i); // x0_vars is a Double_t, x0 is a TVectorD; the function to minimise must receive a Double_t as input
-        x0_err[i] = 0.1*abs(x0_vars[i]); // initial errors on x0; they are used as the first step size 
-    }
-
-    // 2) Solve system of equations
-    solver->Solve(x0_vars, 10000, tolerance);
-    // status = solver->Status();
-
-    // 3) Retrieve results
-    const double* x_results = solver->X();
-    const double* f_vals = solver->FVal();
-    status = solver->Status();
-    // cout << "status = " << status << endl;
-
-    for(int i = 0; i < dimM+dimX+dimC; i++)
-    {
-        X(i) = x_results[i];
-        F(i) = f_vals[i];
-    }
-    // X.Print();
-    // F.Print();
-
-    U = U_matrix();
-    for(int i = 0; i < dimM+dimX+dimC; i++)
-    {
-        X_ERR(i) = sqrt(U(i,i));
-    }
-    // X.Print();
-    // X_ERR.Print();
-
-    Double_t MB_squared = X(dimM+6);
-    if( MB_squared > 0 )
-    {
-        MB = sqrt( MB_squared );
-    }
-    else
-    {
-        MB = -sqrt( abs(MB_squared) );
-    }
-
-    Double_t dMB_squared = sqrt(U(28,28));
-    MB_err = dMB_squared/(2*abs(MB));
-
-    // cout << "MB = " << MB << " +/- " << MB_err << endl;
-
-    // TVectorD V_errors(dimM);
-    // for(int i = 0; i < dimM; i++)
-    // {
-    //     V_errors(i) = sqrt(V(i,i));
-    // }
-    // m.Print();
-    // V_errors.Print();
-
-    // TVectorD diff(dimM);
-    // for(int i = 0; i < dimM; i++)
-    // {
-    //     diff(i) = X(i)-m(i);
-    // }
-    // diff.Print();
-
-    // TVectorD ratio(dimM);
-    // for(int i = 0; i < dimM; i++)
-    // {
-    //     ratio(i) = X_ERR(i)/V_errors(i);
-    // }
-    // ratio.Print();
-
-    F_tolerance = 0;
-    for(int i = 0; i < dimM+dimX+dimC; i++)
-    {
-        F_tolerance += abs(F(i));
-    }
-
 }
 
 void scan_chisquare( TVectorD X, Int_t index, Int_t npoints, TString x_name, Int_t year, Int_t species, Int_t line)
@@ -1887,47 +1905,47 @@ double equations( const double* x_vars )
     // Write 61 equations:
     TVectorD eqs(dimM+dimX+dimC);
     // PV
-    eqs(0) = -2*chi2_sum(0) + ( pB.x()/pow(BV.x()-PV.x(),2) )*(l(0) + l(1));
-    eqs(1) = -2*chi2_sum(1) - ( pB.y()/pow(BV.y()-PV.y(),2) )*l(0);
-    eqs(2) = -2*chi2_sum(2) - ( pB.z()/pow(BV.z()-PV.z(),2) )*l(1);
+    eqs(0) = -2.*chi2_sum(0) + ( pB.x()/pow(BV.x()-PV.x(),2) )*(l(0) + l(1));
+    eqs(1) = -2.*chi2_sum(1) - ( pB.y()/pow(BV.y()-PV.y(),2) )*l(0);
+    eqs(2) = -2.*chi2_sum(2) - ( pB.z()/pow(BV.z()-PV.z(),2) )*l(1);
     // DV1
-    eqs(3) = -2*chi2_sum(3) - ( ptau1.x()/pow(DV1.x()-BV.x(),2) )*( l(2) + l(3) );
-    eqs(4) = -2*chi2_sum(4) + ( ptau1.y()/pow(DV1.y()-BV.y(),2) )*l(2);
-    eqs(5) = -2*chi2_sum(5) + ( ptau1.z()/pow(DV1.z()-BV.z(),2) )*l(3);
+    eqs(3) = -2.*chi2_sum(3) - ( ptau1.x()/pow(DV1.x()-BV.x(),2) )*( l(2) + l(3) );
+    eqs(4) = -2.*chi2_sum(4) + ( ptau1.y()/pow(DV1.y()-BV.y(),2) )*l(2);
+    eqs(5) = -2.*chi2_sum(5) + ( ptau1.z()/pow(DV1.z()-BV.z(),2) )*l(3);
     // P3pi1
-    eqs(6) = -2*chi2_sum(6) - l(4);
-    eqs(7) = -2*chi2_sum(7) - l(5);
-    eqs(8) = -2*chi2_sum(8) - l(6);
-    eqs(9) = -2*chi2_sum(9) - l(7);
+    eqs(6) = -2.*chi2_sum(6) - l(4);
+    eqs(7) = -2.*chi2_sum(7) - l(5);
+    eqs(8) = -2.*chi2_sum(8) - l(6);
+    eqs(9) = -2.*chi2_sum(9) - l(7);
     // DV2
-    eqs(10) = -2*chi2_sum(10) - ( ptau2.x()/pow(DV2.x()-BV.x(),2) )*(l(8) + l(9));
-    eqs(11) = -2*chi2_sum(11) + ( ptau2.y()/pow(DV2.y()-BV.y(),2) )*l(8);
-    eqs(12) = -2*chi2_sum(12) + ( ptau2.z()/pow(DV2.z()-BV.z(),2) )*l(9);
+    eqs(10) = -2.*chi2_sum(10) - ( ptau2.x()/pow(DV2.x()-BV.x(),2) )*(l(8) + l(9));
+    eqs(11) = -2.*chi2_sum(11) + ( ptau2.y()/pow(DV2.y()-BV.y(),2) )*l(8);
+    eqs(12) = -2.*chi2_sum(12) + ( ptau2.z()/pow(DV2.z()-BV.z(),2) )*l(9);
     // P3pi2
-    eqs(13) = -2*chi2_sum(13) - l(10);
-    eqs(14) = -2*chi2_sum(14) - l(11);
-    eqs(15) = -2*chi2_sum(15) - l(12);
-    eqs(16) = -2*chi2_sum(16) - l(13);
+    eqs(13) = -2.*chi2_sum(13) - l(10);
+    eqs(14) = -2.*chi2_sum(14) - l(11);
+    eqs(15) = -2.*chi2_sum(15) - l(12);
+    eqs(16) = -2.*chi2_sum(16) - l(13);
     // RP_T
-    eqs(17) = -2*chi2_sum(17) + ( pK.x()/pow(BV.x()-RP.x(),2) )*(l(14) + l(15));
-    eqs(18) = -2*chi2_sum(18) - ( pK.y()/pow(BV.y()-RP.y(),2) )*l(14);
+    eqs(17) = -2.*chi2_sum(17) + ( pK.x()/pow(BV.x()-RP.x(),2) )*(l(14) + l(15));
+    eqs(18) = -2.*chi2_sum(18) - ( pK.y()/pow(BV.y()-RP.y(),2) )*l(14);
     // pK
-    eqs(19) = -2*chi2_sum(19) + (1/(BV.x() - RP.x()))*(l(14) + l(15)) - l(16) - (pK.x()/EK)*l(19);
-    eqs(20) = -2*chi2_sum(20) - (1/(BV.y() - RP.y()))*l(14) - l(17) - (pK.y()/EK)*l(19);
-    eqs(21) = -2*chi2_sum(21) - (1/(BV.z() - RP.z()))*l(15) - l(18) - (pK.z()/EK)*l(19);
+    eqs(19) = -2.*chi2_sum(19) + (1/(BV.x() - RP.x()))*(l(14) + l(15)) - l(16) - (pK.x()/EK)*l(19);
+    eqs(20) = -2.*chi2_sum(20) - (1/(BV.y() - RP.y()))*l(14) - l(17) - (pK.y()/EK)*l(19);
+    eqs(21) = -2.*chi2_sum(21) - (1/(BV.z() - RP.z()))*l(15) - l(18) - (pK.z()/EK)*l(19);
     // BV
     eqs(dimM) = -( pB.x()/pow(BV.x()-PV.x(),2) )*(l(0) + l(1)) + ( ptau1.x()/pow(DV1.x()-BV.x(),2) )*(l(2) + l(3)) + ( ptau2.x()/pow(DV2.x()-BV.x(),2) )*(l(8) + l(9)) - ( pK.x()/pow(BV.x()-RP.x(),2) )*(l(14) + l(15));
     eqs(dimM+1) = ( pB.y()/pow(BV.y()-PV.y(),2) )*l(0) - ( ptau1.y()/pow(DV1.y()-BV.y(),2) )*l(2) - ( ptau2.y()/pow(DV2.y()-BV.y(),2) )*l(8) + ( pK.y()/pow(BV.y()-RP.y(),2) )*l(14);
     eqs(dimM+2) = ( pB.z()/pow(BV.z()-PV.z(),2) )*l(1) - ( ptau1.z()/pow(DV1.z()-BV.z(),2) )*l(3) - ( ptau2.z()/pow(DV2.z()-BV.z(),2) )*l(9) + ( pK.z()/pow(BV.z()-RP.z(),2) )*l(15);
     // pB, mB^2
-    eqs(dimM+3) = (1/(BV.x() - PV.x()))*(l(0) + l(1)) + l(16);
-    eqs(dimM+4) = -(1/(BV.y() - PV.y()))*l(0) + l(17);
-    eqs(dimM+5) = -(1/(BV.z() - PV.z()))*l(1) + l(18);
-    eqs(dimM+6) = (1/(2*EB))*l(19);
+    eqs(dimM+3) = (1./(BV.x() - PV.x()))*(l(0) + l(1)) + l(16);
+    eqs(dimM+4) = -(1./(BV.y() - PV.y()))*l(0) + l(17);
+    eqs(dimM+5) = -(1./(BV.z() - PV.z()))*l(1) + l(18);
+    eqs(dimM+6) = (1./(2.*EB))*l(19);
     // ptau1
-    eqs(dimM+7) = (1/(DV1.x() - BV.x()))*(l(2) + l(3)) + l(4) + (ptau1.x()/Etau1)*l(7) - l(16) - (ptau1.x()/Etau1)*l(19);
-    eqs(dimM+8) = -(1/(DV1.y() - BV.y()))*l(2) + l(5) + (ptau1.y()/Etau1)*l(7) - l(17) - (ptau1.y()/Etau1)*l(19);
-    eqs(dimM+9) = -(1/(DV1.z() - BV.z()))*l(3) + l(6) + (ptau1.z()/Etau1)*l(7) - l(18) - (ptau1.z()/Etau1)*l(19);
+    eqs(dimM+7) = (1./(DV1.x() - BV.x()))*(l(2) + l(3)) + l(4) + (ptau1.x()/Etau1)*l(7) - l(16) - (ptau1.x()/Etau1)*l(19);
+    eqs(dimM+8) = -(1./(DV1.y() - BV.y()))*l(2) + l(5) + (ptau1.y()/Etau1)*l(7) - l(17) - (ptau1.y()/Etau1)*l(19);
+    eqs(dimM+9) = -(1./(DV1.z() - BV.z()))*l(3) + l(6) + (ptau1.z()/Etau1)*l(7) - l(18) - (ptau1.z()/Etau1)*l(19);
     // eqs(dimM+10) = l(7) + l(8) - l(23);
     // pnu1
     eqs(dimM+10) = -l(4) - (pnu1.x()/Enu1)*l(7);
@@ -1935,9 +1953,9 @@ double equations( const double* x_vars )
     eqs(dimM+12) = -l(6) - (pnu1.z()/Enu1)*l(7);
     // eqs(dimM+14) = -l(7) + l(9);
     // ptau2
-    eqs(dimM+13) = (1/(DV2.x() - BV.x()))*(l(8) + l(9)) + l(10) + (ptau2.x()/Etau2)*l(13) - l(16) - (ptau2.x()/Etau2)*l(19);
-    eqs(dimM+14) = -(1/(DV2.y() - BV.y()))*l(8) + l(11) + (ptau2.y()/Etau2)*l(13) - l(17) - (ptau2.y()/Etau2)*l(19);
-    eqs(dimM+15) = -(1/(DV2.z() - BV.z()))*l(9) + l(12) + (ptau2.z()/Etau2)*l(13) - l(18) - (ptau2.z()/Etau2)*l(19);
+    eqs(dimM+13) = (1./(DV2.x() - BV.x()))*(l(8) + l(9)) + l(10) + (ptau2.x()/Etau2)*l(13) - l(16) - (ptau2.x()/Etau2)*l(19);
+    eqs(dimM+14) = -(1./(DV2.y() - BV.y()))*l(8) + l(11) + (ptau2.y()/Etau2)*l(13) - l(17) - (ptau2.y()/Etau2)*l(19);
+    eqs(dimM+15) = -(1./(DV2.z() - BV.z()))*l(9) + l(12) + (ptau2.z()/Etau2)*l(13) - l(18) - (ptau2.z()/Etau2)*l(19);
     // eqs(dimM+18) = l(15) + l(16) - l(23);
     // pnu2
     eqs(dimM+16) = -l(10) - (pnu2.x()/Enu2)*l(13);
@@ -2199,32 +2217,27 @@ TVectorD x_initial_estimate_0( TVectorD m ) // Original initialisation for x (ba
     x0(dimM+17) = pnu2.y();
     x0(dimM+18) = pnu2.z();
 
-    // 3) Initialise lambda (to 1)
-    // for(int i = 0; i < dimC; i++)
-    // {
-    //     x0(dimM+dimX+i) = 1.;
-    // }
-
-    x0(dimM+dimX) = 1/10000; // pBx/(BVx - PVx)
-    x0(dimM+dimX+1) = 1/10000; // pBx/(BVx - PVx)
-    x0(dimM+dimX+2) = 1/10000; // ptau1x/(DV1x - BVx)
-    x0(dimM+dimX+3) = 1/10000; // ptau1x/(DV1x - BVx)
-    x0(dimM+dimX+4) = 1/1000; // px conservation in DV1
-    x0(dimM+dimX+5) = 1/1000; // py conservation in DV1
-    x0(dimM+dimX+6) = 1/10000; // pz conservation in DV1
-    x0(dimM+dimX+7) = 1/10000; // E conservation in DV1
-    x0(dimM+dimX+8) = 1/10000; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+9) = 1/10000; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+10) = 1/1000; // px conservation in DV2
-    x0(dimM+dimX+11) = 1/1000; // py conservation in DV2
-    x0(dimM+dimX+12) = 1/10000; // pz conservation in DV2
-    x0(dimM+dimX+13) = 1/10000; // E conservation in DV2
-    x0(dimM+dimX+14) = 1/1000;
-    x0(dimM+dimX+15) = 1/1000;
-    x0(dimM+dimX+16) = 1/10000;
-    x0(dimM+dimX+17) = 1/10000;
-    x0(dimM+dimX+18) = 1/100000;
-    x0(dimM+dimX+19) = 1/100000;
+    // lambda
+    x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+1) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+2) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+3) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+4) = 1./1000.; // px conservation in DV1
+    x0(dimM+dimX+5) = 1./1000.; // py conservation in DV1
+    x0(dimM+dimX+6) = 1./10000.; // pz conservation in DV1
+    x0(dimM+dimX+7) = 1./10000.; // E conservation in DV1
+    x0(dimM+dimX+8) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+9) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+10) = 1./1000.; // px conservation in DV2
+    x0(dimM+dimX+11) = 1./1000.; // py conservation in DV2
+    x0(dimM+dimX+12) = 1./10000.; // pz conservation in DV2
+    x0(dimM+dimX+13) = 1./10000.; // E conservation in DV2
+    x0(dimM+dimX+14) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+15) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+16) = 1./10000.; // px vonservation in BV
+    x0(dimM+dimX+17) = 1./10000.; // py conservation in BV
+    x0(dimM+dimX+18) = 1./100000.; // pz conservation in BV
+    x0(dimM+dimX+19) = 1./100000.; // E conservation in BV
 
     return x0;
 }
@@ -2340,32 +2353,27 @@ TVectorD x_initial_estimate_1( TVectorD m, ROOT::Math::XYZPoint BV )
     x0(dimM+17) = pnu2.y();
     x0(dimM+18) = pnu2.z();
 
-    // 3) Initialise lambda (to 1)
-    // for(int i = 0; i < dimC; i++)
-    // {
-    //     x0(dimM+dimX+i) = 1.;
-    // }
-
-    x0(dimM+dimX) = 1/10000; 
-    x0(dimM+dimX+1) = 1/10000;
-    x0(dimM+dimX+2) = 1/1000;
-    x0(dimM+dimX+3) = 1/1000;
-    x0(dimM+dimX+4) = 1/1000;
-    x0(dimM+dimX+5) = 1/1000;
-    x0(dimM+dimX+6) = 1/10000;
-    x0(dimM+dimX+7) = 1/10000;
-    x0(dimM+dimX+8) = 1/1000;
-    x0(dimM+dimX+9) = 1/1000;
-    x0(dimM+dimX+10) = 1/1000;
-    x0(dimM+dimX+11) = 1/1000;
-    x0(dimM+dimX+12) = 1/10000;
-    x0(dimM+dimX+13) = 1/10000;
-    x0(dimM+dimX+14) = 1/1000;
-    x0(dimM+dimX+15) = 1/1000;
-    x0(dimM+dimX+16) = 1/10000;
-    x0(dimM+dimX+17) = 1/10000;
-    x0(dimM+dimX+18) = 1/100000;
-    x0(dimM+dimX+19) = 1/100000;
+    // lambda
+    x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+1) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+2) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+3) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+4) = 1./1000.; // px conservation in DV1
+    x0(dimM+dimX+5) = 1./1000.; // py conservation in DV1
+    x0(dimM+dimX+6) = 1./10000.; // pz conservation in DV1
+    x0(dimM+dimX+7) = 1./10000.; // E conservation in DV1
+    x0(dimM+dimX+8) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+9) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+10) = 1./1000.; // px conservation in DV2
+    x0(dimM+dimX+11) = 1./1000.; // py conservation in DV2
+    x0(dimM+dimX+12) = 1./10000.; // pz conservation in DV2
+    x0(dimM+dimX+13) = 1./10000.; // E conservation in DV2
+    x0(dimM+dimX+14) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+15) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+16) = 1./10000.; // px vonservation in BV
+    x0(dimM+dimX+17) = 1./10000.; // py conservation in BV
+    x0(dimM+dimX+18) = 1./100000.; // pz conservation in BV
+    x0(dimM+dimX+19) = 1./100000.; // E conservation in BV
 
     return x0;
 }
@@ -2481,32 +2489,27 @@ TVectorD x_initial_estimate_2( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B-
     x0(dimM+17) = pnu2.y();
     x0(dimM+18) = pnu2.z();
 
-    // 3) Initialise lambda (to 1)
-    // for(int i = 0; i < dimC; i++)
-    // {
-    //     x0(dimM+dimX+i) = 1.;
-    // }
-
-    x0(dimM+dimX) = 1/10000; 
-    x0(dimM+dimX+1) = 1/10000;
-    x0(dimM+dimX+2) = 1/1000;
-    x0(dimM+dimX+3) = 1/1000;
-    x0(dimM+dimX+4) = 1/1000;
-    x0(dimM+dimX+5) = 1/1000;
-    x0(dimM+dimX+6) = 1/10000;
-    x0(dimM+dimX+7) = 1/10000;
-    x0(dimM+dimX+8) = 1/1000;
-    x0(dimM+dimX+9) = 1/1000;
-    x0(dimM+dimX+10) = 1/1000;
-    x0(dimM+dimX+11) = 1/1000;
-    x0(dimM+dimX+12) = 1/10000;
-    x0(dimM+dimX+13) = 1/10000;
-    x0(dimM+dimX+14) = 1/1000;
-    x0(dimM+dimX+15) = 1/1000;
-    x0(dimM+dimX+16) = 1/10000;
-    x0(dimM+dimX+17) = 1/10000;
-    x0(dimM+dimX+18) = 1/100000;
-    x0(dimM+dimX+19) = 1/100000;
+    // lambda
+    x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+1) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+2) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+3) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+4) = 1./1000.; // px conservation in DV1
+    x0(dimM+dimX+5) = 1./1000.; // py conservation in DV1
+    x0(dimM+dimX+6) = 1./10000.; // pz conservation in DV1
+    x0(dimM+dimX+7) = 1./10000.; // E conservation in DV1
+    x0(dimM+dimX+8) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+9) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+10) = 1./1000.; // px conservation in DV2
+    x0(dimM+dimX+11) = 1./1000.; // py conservation in DV2
+    x0(dimM+dimX+12) = 1./10000.; // pz conservation in DV2
+    x0(dimM+dimX+13) = 1./10000.; // E conservation in DV2
+    x0(dimM+dimX+14) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+15) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+16) = 1./10000.; // px vonservation in BV
+    x0(dimM+dimX+17) = 1./10000.; // py conservation in BV
+    x0(dimM+dimX+18) = 1./100000.; // pz conservation in BV
+    x0(dimM+dimX+19) = 1./100000.; // E conservation in BV
 
     return x0;
 }
@@ -2554,11 +2557,14 @@ TVectorD x_initial_estimate_3( TVectorD m, ROOT::Math::XYZPoint BV )
     ROOT::Math::XYZVector pnu1 = ptau1 - p3pi1;
     ROOT::Math::XYZVector pnu2 = ptau2 - p3pi2;
 
-    Double_t Enu1 = sqrt( pnu1.Mag2() );
-    Double_t Enu2 = sqrt( pnu2.Mag2() );
-
     Double_t Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
     Double_t Etau2 = sqrt( pow(mtau,2) + ptau2.Mag2() );
+
+    Double_t Enu1 = Etau1 - E3pi1;
+    Double_t Enu2 = Etau2 - E3pi2;
+
+    // Double_t Enu1 = sqrt( pnu1.Mag2() );
+    // Double_t Enu2 = sqrt( pnu2.Mag2() );
 
     ROOT::Math::XYZVector pB = pK + ptau1 + ptau2;
     Double_t EB = EK + Etau1 + Etau2;
@@ -2584,32 +2590,27 @@ TVectorD x_initial_estimate_3( TVectorD m, ROOT::Math::XYZPoint BV )
     x0(dimM+17) = pnu2.y();
     x0(dimM+18) = pnu2.z();
 
-    // 3) Initialise lambda (to 1)
-    // for(int i = 0; i < dimC; i++)
-    // {
-    //     x0(dimM+dimX+i) = 1.;
-    // }
-
-    x0(dimM+dimX) = 1/10000; 
-    x0(dimM+dimX+1) = 1/10000;
-    x0(dimM+dimX+2) = 1/1000;
-    x0(dimM+dimX+3) = 1/1000;
-    x0(dimM+dimX+4) = 1/1000;
-    x0(dimM+dimX+5) = 1/1000;
-    x0(dimM+dimX+6) = 1/10000;
-    x0(dimM+dimX+7) = 1/10000;
-    x0(dimM+dimX+8) = 1/1000;
-    x0(dimM+dimX+9) = 1/1000;
-    x0(dimM+dimX+10) = 1/1000;
-    x0(dimM+dimX+11) = 1/1000;
-    x0(dimM+dimX+12) = 1/10000;
-    x0(dimM+dimX+13) = 1/10000;
-    x0(dimM+dimX+14) = 1/1000;
-    x0(dimM+dimX+15) = 1/1000;
-    x0(dimM+dimX+16) = 1/10000;
-    x0(dimM+dimX+17) = 1/10000;
-    x0(dimM+dimX+18) = 1/100000;
-    x0(dimM+dimX+19) = 1/100000;
+    // lambda
+    x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+1) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+2) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+3) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+4) = 1./1000.; // px conservation in DV1
+    x0(dimM+dimX+5) = 1./1000.; // py conservation in DV1
+    x0(dimM+dimX+6) = 1./10000.; // pz conservation in DV1
+    x0(dimM+dimX+7) = 1./10000.; // E conservation in DV1
+    x0(dimM+dimX+8) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+9) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+10) = 1./1000.; // px conservation in DV2
+    x0(dimM+dimX+11) = 1./1000.; // py conservation in DV2
+    x0(dimM+dimX+12) = 1./10000.; // pz conservation in DV2
+    x0(dimM+dimX+13) = 1./10000.; // E conservation in DV2
+    x0(dimM+dimX+14) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+15) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+16) = 1./10000.; // px vonservation in BV
+    x0(dimM+dimX+17) = 1./10000.; // py conservation in BV
+    x0(dimM+dimX+18) = 1./100000.; // pz conservation in BV
+    x0(dimM+dimX+19) = 1./100000.; // E conservation in BV
 
     return x0;
 }
@@ -2724,32 +2725,27 @@ TVectorD x_initial_estimate_4( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B-
     x0(dimM+17) = pnu2.y();
     x0(dimM+18) = pnu2.z();
 
-    // 3) Initialise lambda (to 1)
-    // for(int i = 0; i < dimC; i++)
-    // {
-    //     x0(dimM+dimX+i) = 1.;
-    // }
-
-    x0(dimM+dimX) = 1/10000; 
-    x0(dimM+dimX+1) = 1/10000;
-    x0(dimM+dimX+2) = 1/1000;
-    x0(dimM+dimX+3) = 1/1000;
-    x0(dimM+dimX+4) = 1/1000;
-    x0(dimM+dimX+5) = 1/1000;
-    x0(dimM+dimX+6) = 1/10000;
-    x0(dimM+dimX+7) = 1/10000;
-    x0(dimM+dimX+8) = 1/1000;
-    x0(dimM+dimX+9) = 1/1000;
-    x0(dimM+dimX+10) = 1/1000;
-    x0(dimM+dimX+11) = 1/1000;
-    x0(dimM+dimX+12) = 1/10000;
-    x0(dimM+dimX+13) = 1/10000;
-    x0(dimM+dimX+14) = 1/1000;
-    x0(dimM+dimX+15) = 1/1000;
-    x0(dimM+dimX+16) = 1/10000;
-    x0(dimM+dimX+17) = 1/10000;
-    x0(dimM+dimX+18) = 1/100000;
-    x0(dimM+dimX+19) = 1/100000;
+    // lambda
+    x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+1) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+2) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+3) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+4) = 1./1000.; // px conservation in DV1
+    x0(dimM+dimX+5) = 1./1000.; // py conservation in DV1
+    x0(dimM+dimX+6) = 1./10000.; // pz conservation in DV1
+    x0(dimM+dimX+7) = 1./10000.; // E conservation in DV1
+    x0(dimM+dimX+8) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+9) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+10) = 1./1000.; // px conservation in DV2
+    x0(dimM+dimX+11) = 1./1000.; // py conservation in DV2
+    x0(dimM+dimX+12) = 1./10000.; // pz conservation in DV2
+    x0(dimM+dimX+13) = 1./10000.; // E conservation in DV2
+    x0(dimM+dimX+14) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+15) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+16) = 1./10000.; // px vonservation in BV
+    x0(dimM+dimX+17) = 1./10000.; // py conservation in BV
+    x0(dimM+dimX+18) = 1./100000.; // pz conservation in BV
+    x0(dimM+dimX+19) = 1./100000.; // E conservation in BV
 
     return x0;
 }
@@ -2864,32 +2860,27 @@ TVectorD x_initial_estimate_5( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B-
     x0(dimM+17) = pnu2.y();
     x0(dimM+18) = pnu2.z();
 
-    // 3) Initialise lambda (to 1)
-    // for(int i = 0; i < dimC; i++)
-    // {
-    //     x0(dimM+dimX+i) = 1.;
-    // }
-
-    x0(dimM+dimX) = 1/10000; 
-    x0(dimM+dimX+1) = 1/10000;
-    x0(dimM+dimX+2) = 1/1000;
-    x0(dimM+dimX+3) = 1/1000;
-    x0(dimM+dimX+4) = 1/1000;
-    x0(dimM+dimX+5) = 1/1000;
-    x0(dimM+dimX+6) = 1/10000;
-    x0(dimM+dimX+7) = 1/10000;
-    x0(dimM+dimX+8) = 1/1000;
-    x0(dimM+dimX+9) = 1/1000;
-    x0(dimM+dimX+10) = 1/1000;
-    x0(dimM+dimX+11) = 1/1000;
-    x0(dimM+dimX+12) = 1/10000;
-    x0(dimM+dimX+13) = 1/10000;
-    x0(dimM+dimX+14) = 1/1000;
-    x0(dimM+dimX+15) = 1/1000;
-    x0(dimM+dimX+16) = 1/10000;
-    x0(dimM+dimX+17) = 1/10000;
-    x0(dimM+dimX+18) = 1/100000;
-    x0(dimM+dimX+19) = 1/100000;
+    // lambda
+    x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+1) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+2) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+3) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+4) = 1./1000.; // px conservation in DV1
+    x0(dimM+dimX+5) = 1./1000.; // py conservation in DV1
+    x0(dimM+dimX+6) = 1./10000.; // pz conservation in DV1
+    x0(dimM+dimX+7) = 1./10000.; // E conservation in DV1
+    x0(dimM+dimX+8) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+9) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+10) = 1./1000.; // px conservation in DV2
+    x0(dimM+dimX+11) = 1./1000.; // py conservation in DV2
+    x0(dimM+dimX+12) = 1./10000.; // pz conservation in DV2
+    x0(dimM+dimX+13) = 1./10000.; // E conservation in DV2
+    x0(dimM+dimX+14) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+15) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+16) = 1./10000.; // px vonservation in BV
+    x0(dimM+dimX+17) = 1./10000.; // py conservation in BV
+    x0(dimM+dimX+18) = 1./100000.; // pz conservation in BV
+    x0(dimM+dimX+19) = 1./100000.; // E conservation in BV
 
     return x0;
 }
@@ -3003,32 +2994,27 @@ TVectorD x_initial_estimate_6( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes M
     x0(dimM+17) = pnu2.y();
     x0(dimM+18) = pnu2.z();
 
-    // 3) Initialise lambda (to 1)
-    // for(int i = 0; i < dimC; i++)
-    // {
-    //     x0(dimM+dimX+i) = 1.;
-    // }
-
-    x0(dimM+dimX) = 1/10000; 
-    x0(dimM+dimX+1) = 1/10000;
-    x0(dimM+dimX+2) = 1/1000;
-    x0(dimM+dimX+3) = 1/1000;
-    x0(dimM+dimX+4) = 1/1000;
-    x0(dimM+dimX+5) = 1/1000;
-    x0(dimM+dimX+6) = 1/10000;
-    x0(dimM+dimX+7) = 1/10000;
-    x0(dimM+dimX+8) = 1/1000;
-    x0(dimM+dimX+9) = 1/1000;
-    x0(dimM+dimX+10) = 1/1000;
-    x0(dimM+dimX+11) = 1/1000;
-    x0(dimM+dimX+12) = 1/10000;
-    x0(dimM+dimX+13) = 1/10000;
-    x0(dimM+dimX+14) = 1/1000;
-    x0(dimM+dimX+15) = 1/1000;
-    x0(dimM+dimX+16) = 1/10000;
-    x0(dimM+dimX+17) = 1/10000;
-    x0(dimM+dimX+18) = 1/100000;
-    x0(dimM+dimX+19) = 1/100000;
+    // lambda
+    x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+1) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+2) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+3) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+4) = 1./1000.; // px conservation in DV1
+    x0(dimM+dimX+5) = 1./1000.; // py conservation in DV1
+    x0(dimM+dimX+6) = 1./10000.; // pz conservation in DV1
+    x0(dimM+dimX+7) = 1./10000.; // E conservation in DV1
+    x0(dimM+dimX+8) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+9) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+10) = 1./1000.; // px conservation in DV2
+    x0(dimM+dimX+11) = 1./1000.; // py conservation in DV2
+    x0(dimM+dimX+12) = 1./10000.; // pz conservation in DV2
+    x0(dimM+dimX+13) = 1./10000.; // E conservation in DV2
+    x0(dimM+dimX+14) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+15) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+16) = 1./10000.; // px vonservation in BV
+    x0(dimM+dimX+17) = 1./10000.; // py conservation in BV
+    x0(dimM+dimX+18) = 1./100000.; // pz conservation in BV
+    x0(dimM+dimX+19) = 1./100000.; // E conservation in BV
 
     return x0;
 }
@@ -3142,32 +3128,27 @@ TVectorD x_initial_estimate_7( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes M
     x0(dimM+17) = pnu2.y();
     x0(dimM+18) = pnu2.z();
 
-    // 3) Initialise lambda (to 1)
-    // for(int i = 0; i < dimC; i++)
-    // {
-    //     x0(dimM+dimX+i) = 1.;
-    // }
-
-    x0(dimM+dimX) = 1/10000; 
-    x0(dimM+dimX+1) = 1/10000;
-    x0(dimM+dimX+2) = 1/1000;
-    x0(dimM+dimX+3) = 1/1000;
-    x0(dimM+dimX+4) = 1/1000;
-    x0(dimM+dimX+5) = 1/1000;
-    x0(dimM+dimX+6) = 1/10000;
-    x0(dimM+dimX+7) = 1/10000;
-    x0(dimM+dimX+8) = 1/1000;
-    x0(dimM+dimX+9) = 1/1000;
-    x0(dimM+dimX+10) = 1/1000;
-    x0(dimM+dimX+11) = 1/1000;
-    x0(dimM+dimX+12) = 1/10000;
-    x0(dimM+dimX+13) = 1/10000;
-    x0(dimM+dimX+14) = 1/1000;
-    x0(dimM+dimX+15) = 1/1000;
-    x0(dimM+dimX+16) = 1/10000;
-    x0(dimM+dimX+17) = 1/10000;
-    x0(dimM+dimX+18) = 1/100000;
-    x0(dimM+dimX+19) = 1/100000;
+    // lambda
+    x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+1) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+2) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+3) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+4) = 1./1000.; // px conservation in DV1
+    x0(dimM+dimX+5) = 1./1000.; // py conservation in DV1
+    x0(dimM+dimX+6) = 1./10000.; // pz conservation in DV1
+    x0(dimM+dimX+7) = 1./10000.; // E conservation in DV1
+    x0(dimM+dimX+8) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+9) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+10) = 1./1000.; // px conservation in DV2
+    x0(dimM+dimX+11) = 1./1000.; // py conservation in DV2
+    x0(dimM+dimX+12) = 1./10000.; // pz conservation in DV2
+    x0(dimM+dimX+13) = 1./10000.; // E conservation in DV2
+    x0(dimM+dimX+14) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+15) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+16) = 1./10000.; // px vonservation in BV
+    x0(dimM+dimX+17) = 1./10000.; // py conservation in BV
+    x0(dimM+dimX+18) = 1./100000.; // pz conservation in BV
+    x0(dimM+dimX+19) = 1./100000.; // E conservation in BV
 
     return x0;
 }
@@ -3281,32 +3262,27 @@ TVectorD x_initial_estimate_8( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes M
     x0(dimM+17) = pnu2.y();
     x0(dimM+18) = pnu2.z();
 
-    // 3) Initialise lambda (to 1)
-    // for(int i = 0; i < dimC; i++)
-    // {
-    //     x0(dimM+dimX+i) = 1.;
-    // }
-
-    x0(dimM+dimX) = 1/10000; 
-    x0(dimM+dimX+1) = 1/10000;
-    x0(dimM+dimX+2) = 1/1000;
-    x0(dimM+dimX+3) = 1/1000;
-    x0(dimM+dimX+4) = 1/1000;
-    x0(dimM+dimX+5) = 1/1000;
-    x0(dimM+dimX+6) = 1/10000;
-    x0(dimM+dimX+7) = 1/10000;
-    x0(dimM+dimX+8) = 1/1000;
-    x0(dimM+dimX+9) = 1/1000;
-    x0(dimM+dimX+10) = 1/1000;
-    x0(dimM+dimX+11) = 1/1000;
-    x0(dimM+dimX+12) = 1/10000;
-    x0(dimM+dimX+13) = 1/10000;
-    x0(dimM+dimX+14) = 1/1000;
-    x0(dimM+dimX+15) = 1/1000;
-    x0(dimM+dimX+16) = 1/10000;
-    x0(dimM+dimX+17) = 1/10000;
-    x0(dimM+dimX+18) = 1/100000;
-    x0(dimM+dimX+19) = 1/100000;
+    // lambda
+    x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+1) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+2) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+3) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+4) = 1./1000.; // px conservation in DV1
+    x0(dimM+dimX+5) = 1./1000.; // py conservation in DV1
+    x0(dimM+dimX+6) = 1./10000.; // pz conservation in DV1
+    x0(dimM+dimX+7) = 1./10000.; // E conservation in DV1
+    x0(dimM+dimX+8) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+9) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+10) = 1./1000.; // px conservation in DV2
+    x0(dimM+dimX+11) = 1./1000.; // py conservation in DV2
+    x0(dimM+dimX+12) = 1./10000.; // pz conservation in DV2
+    x0(dimM+dimX+13) = 1./10000.; // E conservation in DV2
+    x0(dimM+dimX+14) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+15) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+16) = 1./10000.; // px vonservation in BV
+    x0(dimM+dimX+17) = 1./10000.; // py conservation in BV
+    x0(dimM+dimX+18) = 1./100000.; // pz conservation in BV
+    x0(dimM+dimX+19) = 1./100000.; // E conservation in BV
 
     return x0;
 }
@@ -3420,36 +3396,30 @@ TVectorD x_initial_estimate_9( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes M
     x0(dimM+17) = pnu2.y();
     x0(dimM+18) = pnu2.z();
 
-    // 3) Initialise lambda (to 1)
-    // for(int i = 0; i < dimC; i++)
-    // {
-    //     x0(dimM+dimX+i) = 1.;
-    // }
-
-    x0(dimM+dimX) = 1/10000; 
-    x0(dimM+dimX+1) = 1/10000;
-    x0(dimM+dimX+2) = 1/1000;
-    x0(dimM+dimX+3) = 1/1000;
-    x0(dimM+dimX+4) = 1/1000;
-    x0(dimM+dimX+5) = 1/1000;
-    x0(dimM+dimX+6) = 1/10000;
-    x0(dimM+dimX+7) = 1/10000;
-    x0(dimM+dimX+8) = 1/1000;
-    x0(dimM+dimX+9) = 1/1000;
-    x0(dimM+dimX+10) = 1/1000;
-    x0(dimM+dimX+11) = 1/1000;
-    x0(dimM+dimX+12) = 1/10000;
-    x0(dimM+dimX+13) = 1/10000;
-    x0(dimM+dimX+14) = 1/1000;
-    x0(dimM+dimX+15) = 1/1000;
-    x0(dimM+dimX+16) = 1/10000;
-    x0(dimM+dimX+17) = 1/10000;
-    x0(dimM+dimX+18) = 1/100000;
-    x0(dimM+dimX+19) = 1/100000;
+    // lambda
+    x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+1) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+2) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+3) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+4) = 1./1000.; // px conservation in DV1
+    x0(dimM+dimX+5) = 1./1000.; // py conservation in DV1
+    x0(dimM+dimX+6) = 1./10000.; // pz conservation in DV1
+    x0(dimM+dimX+7) = 1./10000.; // E conservation in DV1
+    x0(dimM+dimX+8) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+9) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+10) = 1./1000.; // px conservation in DV2
+    x0(dimM+dimX+11) = 1./1000.; // py conservation in DV2
+    x0(dimM+dimX+12) = 1./10000.; // pz conservation in DV2
+    x0(dimM+dimX+13) = 1./10000.; // E conservation in DV2
+    x0(dimM+dimX+14) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+15) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+16) = 1./10000.; // px vonservation in BV
+    x0(dimM+dimX+17) = 1./10000.; // py conservation in BV
+    x0(dimM+dimX+18) = 1./100000.; // pz conservation in BV
+    x0(dimM+dimX+19) = 1./100000.; // E conservation in BV
 
     return x0;
 }
-
 
 ROOT::Math::XYZVector makeTransformation_vec(ROOT::Math::XYZVector Pk, ROOT::Math::XYZPoint refPoint, ROOT::Math::XYZVector theVector, bool invFlag)
 {
