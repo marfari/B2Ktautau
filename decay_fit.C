@@ -3,27 +3,29 @@ using namespace std;
 ////////////////////////////////////////             m6piK^2 parametrisation from track parametrisation           ////////////////////////////////////////////////////////
 
 // Global variables
-int dimM = 23; // number of known parameters
-int dimX = 23; // number of unkown parameters
+int dimM = 22; // number of known parameters
+int dimX = 22; // number of unkown parameters
 
-int dimM_before = 32;
+TVectorD m( dimM ); // vector of measured parameters
+TMatrixDSym V( dimM ); // covariance matrix of m
 
-TVectorD m( dimM_before ); // vector of measured parameters
-TMatrixDSym V( dimM_before ); // covariance matrix of m
-
-TVectorD mprime( dimM );
-TMatrixDSym Vprime( dimM );
 TMatrixDSym W( dimM ); // weights matrix, W=V^-1
 TVectorD x0( dimX ); // initial estimate for the vector of unkown parameters
 
 Double_t RPz = 0; // z-component of the reference point in the K+ trajectory (fixed)
 // Double_t RPz_t = 0; // truth-match
 
+Bool_t scale_x = true;
+
 // Things saved from the minimisation:
 Double_t chi2, MB, MB_err, taup_PE, taum_PE, taup_M, taum_M; 
 TVectorD x_m(dimX); // vector of unkown parameters after the minimisation
+TVectorD x_err_m(dimX); // vector of x errors from minimisation
 TMatrixD C_m(dimX,dimX); // covariance matrix of the fit parameters
-Int_t status, init; // status of the fit
+TMatrixD Corr_m(dimX,dimX); /// correlation matrix of the fit parameters
+TMatrixD C_m_unscaled(dimX,dimX); // covariance matrix of the fit parameters
+TMatrixD Corr_m_unscaled(dimX,dimX); /// correlation matrix of the fit parameters
+Int_t status, init, cov_status; // status of the fit
 
 Double_t mtau = 1776.86; // MeV (PDG 2023)
 Double_t mpion = 139.57039; // MeV
@@ -33,8 +35,8 @@ Double_t mkaon = 493.677; // MeV
 ROOT::Math::XYZPoint makeTransformation_point(ROOT::Math::XYZVector Pk, ROOT::Math::XYZPoint refPoint, ROOT::Math::XYZPoint thePoint, bool invFlag);
 ROOT::Math::XYZVector makeTransformation_vec(ROOT::Math::XYZVector Pk, ROOT::Math::XYZPoint refPoint, ROOT::Math::XYZVector theVector, bool invFlag);
 TVectorD x_initial_estimate( TVectorD m ); // Original initialisation
-TVectorD x_initial_estimate0( TVectorD mprime, ROOT::Math::XYZPoint BV ); // B->K*tautau initialisation; taus direction from vertices
-TVectorD x_initial_estimate1( TVectorD mprime, ROOT::Math::XYZPoint BV ); // Using B->K* tautau initialisation; taus direction based visible 3pi momenta
+TVectorD x_initial_estimate0( TVectorD m, ROOT::Math::XYZPoint BV ); // B->K*tautau initialisation; taus direction from vertices
+TVectorD x_initial_estimate1( TVectorD m, ROOT::Math::XYZPoint BV ); // Using B->K* tautau initialisation; taus direction based visible 3pi momenta
 TVectorD x_initial_estimate2( TVectorD m, ROOT::Math::XYZPoint BV ); // Marseille's initialisation
 TVectorD model( TVectorD x );
 TMatrixD dh_dx( TVectorD x );
@@ -45,97 +47,35 @@ TMatrixDSym transform_V( TVectorD m, TMatrixDSym V );
 TMatrixDSym scale_tau_DVs_uncertainties(TMatrixDSym V, Double_t factor);
 TMatrixDSym scale_uncertainties(TMatrixDSym V, Double_t factor);
 TMatrixDSym invert_sum(TMatrixDSym V1, TMatrixDSym V2);
+Double_t factor( Int_t i );
+Double_t B_mass();
+Double_t B_mass_error();
 
-void decay_fit(int year, TString MC_files, TString RS_DATA_files, TString WS_DATA_files, int species, int component, int line)
+void decay_fit(int year, TString RECO_files, int species, int line)
 {
-  TFileCollection* fc;
-  if(species == 0)
-  { 
-    fc = new TFileCollection("MC", "MC", MC_files, 1, line);
-  }
-  else if(species == 1)
-  {
-    fc = new TFileCollection("MC", "MC", RS_DATA_files, 1, line);
-  }
-  else if(species == 2)
-  {
-    fc = new TFileCollection("MC", "MC", WS_DATA_files, 1, line);
-  }
-
+  TFileCollection* fc = new TFileCollection("fc", "fc", RECO_files, 1, line);
   TChain* t = new TChain("DecayTree");
   t->AddFileInfoList((TCollection*)fc->GetList());
 
   UInt_t num_entries = t->GetEntries();
-  Double_t m_vars[dimM_before];
-  Double_t V_vars[dimM_before][dimM_before];
+  Double_t m_vars[dimM];
+  Double_t V_vars[dimM][dimM];
   Double_t BVx, BVy, BVz;
 
-  for(int i = 1; i <= dimM_before; i++)
+  for(int i = 1; i <= dimM; i++)
   {
       t->SetBranchAddress(Form("df_m_%i",i), &m_vars[i-1] );
-      for(int j = 1; j <= dimM_before; j++)
+      for(int j = 1; j <= dimM; j++)
       {
           t->SetBranchAddress(Form("df_V_%i_%i",i,j), &V_vars[i-1][j-1]);
       }
   }
-  t->SetBranchAddress("Kp_RP_Z", &RPz);
+  t->SetBranchAddress("df_RPz", &RPz);
   t->SetBranchAddress("Bp_ENDVERTEX_X", &BVx);
   t->SetBranchAddress("Bp_ENDVERTEX_Y", &BVy);
   t->SetBranchAddress("Bp_ENDVERTEX_Z", &BVz);
 
-  // truth-matched quantities to define m /////////////////////////////////////////////////////////////////////
-  // Double_t PVx_t, PVy_t, PVz_t, DV1x_t, DV1y_t, DV1z_t, DV2x_t, DV2y_t, DV2z_t;
-  // Double_t p1x_t, p1y_t, p1z_t, E1_t, p2x_t, p2y_t, p2z_t, E2_t, p3x_t, p3y_t, p3z_t, E3_t;
-  // Double_t p4x_t, p4y_t, p4z_t, E4_t, p5x_t, p5y_t, p5z_t, E5_t, p6x_t, p6y_t, p6z_t, E6_t;
-  // Double_t pKx_t, pKy_t, pKz_t, EK_t;
-  // Double_t RPx_t, RPy_t; 
-
-  // t->SetBranchAddress("Bp_TRUEORIGINVERTEX_X", &PVx_t);
-  // t->SetBranchAddress("Bp_TRUEORIGINVERTEX_Y", &PVy_t);
-  // t->SetBranchAddress("Bp_TRUEORIGINVERTEX_Z", &PVz_t);
-  // t->SetBranchAddress("taup_TRUEENDVERTEX_X", &DV1x_t);
-  // t->SetBranchAddress("taup_TRUEENDVERTEX_Y", &DV1y_t);
-  // t->SetBranchAddress("taup_TRUEENDVERTEX_Z", &DV1z_t);
-  // t->SetBranchAddress("taum_TRUEENDVERTEX_X", &DV2x_t);
-  // t->SetBranchAddress("taum_TRUEENDVERTEX_Y", &DV2y_t);
-  // t->SetBranchAddress("taum_TRUEENDVERTEX_Z", &DV2z_t);
-
-  // t->SetBranchAddress("taup_pi1_TRUEP_X", &p1x_t);
-  // t->SetBranchAddress("taup_pi1_TRUEP_Y", &p1y_t);
-  // t->SetBranchAddress("taup_pi1_TRUEP_Z", &p1z_t);
-  // t->SetBranchAddress("taup_pi1_TRUEP_E", &E1_t);
-  // t->SetBranchAddress("taup_pi2_TRUEP_X", &p2x_t);
-  // t->SetBranchAddress("taup_pi2_TRUEP_Y", &p2y_t);
-  // t->SetBranchAddress("taup_pi2_TRUEP_Z", &p2z_t);
-  // t->SetBranchAddress("taup_pi2_TRUEP_E", &E2_t);
-  // t->SetBranchAddress("taup_pi3_TRUEP_X", &p3x_t);
-  // t->SetBranchAddress("taup_pi3_TRUEP_Y", &p3y_t);
-  // t->SetBranchAddress("taup_pi3_TRUEP_Z", &p3z_t);
-  // t->SetBranchAddress("taup_pi3_TRUEP_E", &E3_t);
-
-  // t->SetBranchAddress("taum_pi1_TRUEP_X", &p4x_t);
-  // t->SetBranchAddress("taum_pi1_TRUEP_Y", &p4y_t);
-  // t->SetBranchAddress("taum_pi1_TRUEP_Z", &p4z_t);
-  // t->SetBranchAddress("taum_pi1_TRUEP_E", &E4_t);
-  // t->SetBranchAddress("taum_pi2_TRUEP_X", &p5x_t);
-  // t->SetBranchAddress("taum_pi2_TRUEP_Y", &p5y_t);
-  // t->SetBranchAddress("taum_pi2_TRUEP_Z", &p5z_t);
-  // t->SetBranchAddress("taum_pi2_TRUEP_E", &E5_t);
-  // t->SetBranchAddress("taum_pi3_TRUEP_X", &p6x_t);
-  // t->SetBranchAddress("taum_pi3_TRUEP_Y", &p6y_t);
-  // t->SetBranchAddress("taum_pi3_TRUEP_Z", &p6z_t);
-  // t->SetBranchAddress("taum_pi3_TRUEP_E", &E6_t);
-
-  // t->SetBranchAddress("Bp_TRUEENDVERTEX_X", &RPx_t);
-  // t->SetBranchAddress("Bp_TRUEENDVERTEX_Y", &RPy_t);
-  // t->SetBranchAddress("Bp_TRUEENDVERTEX_Z", &RPz_t);
-  // t->SetBranchAddress("Kp_TRUEP_X", &pKx_t);
-  // t->SetBranchAddress("Kp_TRUEP_Y", &pKy_t);
-  // t->SetBranchAddress("Kp_TRUEP_Z", &pKz_t);
-  // t->SetBranchAddress("Kp_TRUEP_E", &EK_t);
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  TFile* fout = new TFile(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/Component_%i/fit_result_%i.root",year,species,component,line), "RECREATE");
+  TFile* fout = new TFile(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/%i.root",year,species,line), "RECREATE");
   TTree* tout = new TTree("DecayTree", "DecayTree");
 
   TString name_x[] = {
@@ -145,7 +85,6 @@ void decay_fit(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
     "df_Bp_PX",
     "df_Bp_PY",
     "df_Bp_PZ",
-    "df_Bp_M2",
     "df_taup_PX",
     "df_taup_PY",
     "df_taup_PZ",
@@ -161,12 +100,38 @@ void decay_fit(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
     "df_L1",
     "df_L2",
     "df_L",
-    "df_LK"
+    "df_LK",
+  };
+
+  TString name_x_err[] = {
+    "df_BVx_err",
+    "df_BVy_err",
+    "df_BVz_err",
+    "df_Bp_PX_err",
+    "df_Bp_PY_err",
+    "df_Bp_PZ_err",
+    "df_taup_PX_err",
+    "df_taup_PY_err",
+    "df_taup_PZ_err",
+    "df_antinutau_PX_err",
+    "df_antinutau_PY_err",
+    "df_antinutau_PZ_err",
+    "df_taum_PX_err",
+    "df_taum_PY_err",
+    "df_taum_PZ_err",
+    "df_nutau_PX_err",
+    "df_nutau_PY_err",
+    "df_nutau_PZ_err",
+    "df_L1_err",
+    "df_L2_err",
+    "df_L_err",
+    "df_LK_err"
   };
 
   for(int i = 0; i < dimX; i++)
   {
     tout->Branch(name_x[i], &x_m(i));
+    tout->Branch(name_x_err[i], &x_err_m(i));
     for(int j = 0; j < dimX; j++)
     {
       tout->Branch(Form("df_C_%i_%i",i,j), &C_m(i,j));
@@ -177,18 +142,19 @@ void decay_fit(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
   tout->Branch("df_Bp_M", &MB);
   tout->Branch("df_Bp_MERR", &MB_err);
   tout->Branch("df_status", &status);
+  tout->Branch("df_cov_status", &cov_status);
 
   // Loop over events
-  for(int evt = 0; evt < 1; evt++)
+  for(int evt = 0; evt < num_entries; evt++)
   {
     t->GetEntry(evt);
     
     // 1)  Measured parameters, m, and their covariance matrix V in the track parametrisation
     // m = (PV,DV1,p1,p2,p3,DV2,p4,p5,p6,RP_T,pK) -> 32 parameters
-    for(int i = 0; i < dimM_before; i++)
+    for(int i = 0; i < dimM; i++)
     {
         m(i) = m_vars[i];
-        for(int j = 0; j < dimM_before; j++)
+        for(int j = 0; j < dimM; j++)
         {
           V(i,j) = V_vars[i][j];
         }
@@ -196,70 +162,42 @@ void decay_fit(int year, TString MC_files, TString RS_DATA_files, TString WS_DAT
     // m.Print();
     // V.Print();
 
-    // Eigenvalues of V in track parametrisation
-    TVectorD V_eigen_values(dimM_before);  
-    TMatrixD V_eigen_vectors = V.EigenVectors(V_eigen_values);
-    V_eigen_values.Print();
+    // Eigenvalues of V
+    // TVectorD V_eigen_values(dimM);  
+    // TMatrixD V_eigen_vectors = V.EigenVectors(V_eigen_values);
+    // V_eigen_values.Print();
 
-    // 2) Make transformation from 32D track to 23D m6piK parametrisation
-    mprime = transform_m(m);
-    Vprime = transform_V(m,V);
-    // mprime.Print();
-    // Vprime.Print();
-
-    // Eigenvalues of V' 
-    TVectorD Vp_eigen_values(dimM);  
-    TMatrixD Vp_eigen_vectors = Vprime.EigenVectors(Vp_eigen_values);
-    Vp_eigen_values.Print();
-    return;
+    // Correlation matrix
+    // TMatrixDSym V_corr(dimM);
+    // for(int i = 0; i < dimM; i++)
+    // {
+    //   for(int j = 0; j < dimM; j++)
+    //   {
+    //     V_corr(i,j) = V(i,j)/sqrt( V(i,i)*V(j,j) );
+    //   }
+    // }
+    // V_corr.Print();
 
     // scale uncertainties on tau DVs
-    // Vprime = scale_uncertainties(Vprime,-0.999999999);
-
-    // truth-match ///////////////////////////////////////////////////////////
-    // ROOT::Math::PxPyPzEVector P1_t( p1x_t, p1y_t, p1z_t, E1_t );
-    // ROOT::Math::PxPyPzEVector P2_t( p2x_t, p2y_t, p2z_t, E2_t );
-    // ROOT::Math::PxPyPzEVector P3_t( p3x_t, p3y_t, p3z_t, E3_t );
-    // ROOT::Math::PxPyPzEVector P4_t( p4x_t, p4y_t, p4z_t, E4_t );
-    // ROOT::Math::PxPyPzEVector P5_t( p5x_t, p5y_t, p5z_t, E5_t );
-    // ROOT::Math::PxPyPzEVector P6_t( p6x_t, p6y_t, p6z_t, E6_t );
-
-    // ROOT::Math::PxPyPzEVector p3pi1_t = P1_t + P2_t + P3_t;
-    // ROOT::Math::PxPyPzEVector p3pi2_t = P4_t + P5_t + P6_t;
-
-    // ROOT::Math::PxPyPzEVector PK_t( pKx_t, pKy_t, pKz_t, EK_t );
-    // ROOT::Math::PxPyPzEVector p6piK_t = p3pi1_t + p3pi2_t + PK_t;
-
-    // mprime(0) = PVx_t;
-    // mprime(1) = PVy_t;
-    // mprime(2) = PVz_t;
-    // mprime(3) = DV1x_t;
-    // mprime(4) = DV1y_t;
-    // mprime(5) = DV1z_t;
-    // mprime(6) = p3pi1_t.x();
-    // mprime(7) = p3pi1_t.y();
-    // mprime(8) = p3pi1_t.z();
-    // mprime(9) = p3pi1_t.M2();
-    // mprime(10) = DV2x_t;
-    // mprime(11) = DV2y_t;
-    // mprime(12) = DV2z_t;
-    // mprime(13) = p3pi2_t.x();
-    // mprime(14) = p3pi2_t.y();
-    // mprime(15) = p3pi2_t.z();
-    // mprime(16) = p3pi2_t.M2();
-    // mprime(17) = RPx_t;
-    // mprime(18) = RPy_t;
-    // mprime(19) = p6piK_t.x();
-    // mprime(20) = p6piK_t.y();
-    // mprime(21) = p6piK_t.z();
-    // mprime(22) = p6piK_t.M2();
-    ////////////////////////////////////////////////////////////////////////
+    // V = scale_uncertainties(V,-0.999999999);
 
     // 3) Weights matrix W = V'^-1
-    W = Vprime;
+    W = V;
     W.Invert();
     // W.Print();
 
+    // cout << "Determinant of V is " << V.Determinant() << endl;
+    // cout << "Determinant of W is " << W.Determinant() << endl;
+
+    // Eigenvalues of W
+    // TVectorD W_eigen_values(dimM);  
+    // TMatrixD W_eigen_vectors = W.EigenVectors(W_eigen_values);
+    // W_eigen_values.Print();
+
+    // WV ~ I ?
+    // TMatrixD identity = W*V;
+    // identity.Print();
+    
     ROOT::Math::XYZPoint BV( BVx, BVy, BVz ); // offline estimate of BV (necessary for some initialisations)
     // ROOT::Math::XYZPoint BV( RPx_t, RPy_t, RPz_t ); // truth-match
 
@@ -324,19 +262,19 @@ void minimize( ROOT::Math::XYZPoint BV, int init )
   // Initial values for the unkown parameters x0
   if(init == 0) // B->K*tautau initialisation; taus direction from vertices
   {
-    x0 = x_initial_estimate0( mprime, BV );
+    x0 = x_initial_estimate0( m, BV );
   }
   else if(init == 1) // B->K*tautau initialisation; taus direction from 3pi momenta
   {
-    x0 = x_initial_estimate1( mprime, BV );
+    x0 = x_initial_estimate1( m, BV );
   }
   else if(init == 2) // Marseille's initialisation
   {
-     x0 = x_initial_estimate2( mprime, BV );
+     x0 = x_initial_estimate2( m, BV );
   }
   else if(init == -1) // Original initialisation, Anne Keune's
   {
-    x0 = x_initial_estimate( mprime ); 
+    x0 = x_initial_estimate( m ); 
   }
 
   Double_t x0_vars[dimX], x0_err[dimX];
@@ -350,103 +288,53 @@ void minimize( ROOT::Math::XYZPoint BV, int init )
   // x0_err[0] = 0.05; // BVx
   // x0_err[1] = 0.05; // BVy
   // x0_err[2] = 0.5; // BVz
-  // x0_err[4] = 500; // pbx
-  // x0_err[5] = 500; // pby
-  // x0_err[6] = 5000; // pbz
-  // x0_err[7] = 10000; // m2
-  // x0_err[8] = 100; // ptau1x
-  // x0_err[9] = 100; // ptau1y
-  // x0_err[10] = 1000; // ptau1z
-  // x0_err[11] = 100; // pnu1x
-  // x0_err[12] = 100; // pnu1y
-  // x0_err[13] = 1000; // pnu1z
-  // x0_err[14] = 100; // ptau2x
-  // x0_err[15] = 100; // ptau2y
-  // x0_err[16] = 1000; // ptau2z
-  // x0_err[17] = 100; // pnu2x
-  // x0_err[18] = 100; // pnu2y
-  // x0_err[19] = 1000; // pnu2z
-  // x0_err[20] = 2.5*pow(10,-7); // L1
-  // x0_err[21] = 2.5*pow(10,-7); // L2
-  // x0_err[22] = 2.5*pow(10,-5); // L
-  // x0_err[23] = 1*pow(10,-4); // LK
+  // x0_err[4] = 1000; // pbx
+  // x0_err[5] = 1000; // pby
+  // x0_err[6] = 10000; // pbz
+  // x0_err[7] = 100; // ptau1x
+  // x0_err[8] = 100; // ptau1y
+  // x0_err[9] = 1000; // ptau1z
+  // x0_err[10] = 100; // pnu1x
+  // x0_err[11] = 100; // pnu1y
+  // x0_err[12] = 1000; // pnu1z
+  // x0_err[13] = 100; // ptau2x
+  // x0_err[14] = 100; // ptau2y
+  // x0_err[15] = 1000; // ptau2z
+  // x0_err[16] = 100; // pnu2x
+  // x0_err[17] = 100; // pnu2y
+  // x0_err[18] = 1000; // pnu2z
+  // x0_err[19] = 2.5*pow(10,-7); // L1
+  // x0_err[20] = 2.5*pow(10,-7); // L2
+  // x0_err[21] = 2.5*pow(10,-5); // L
+  // x0_err[22] = 1*pow(10,-4); // LK
+
+
+  // Scale x0 and x0_err (x -> x/factor)
+  Double_t x0_vars_scaled[dimX], x0_err_scaled[dimX];
+  // TVectorD x0_vars_scaled_vec(dimX);
+  for(int i = 0; i < dimX; i++)
+  {
+    x0_vars_scaled[i] = x0_vars[i]/factor(i);
+    x0_err_scaled[i] = x0_err[i]/factor(i);
+    // x0_vars_scaled_vec(i) = x0_vars_scaled[i];
+  }
+  // x0.Print();
+  // x0_vars_scaled_vec.Print();
 
   // x0.Print();
-  // mprime.Print();
-  // TVectorD hx = model(x0);
+  // m.Print();
+  // TVectorD hx = model(x0_vars_scaled_vec);
   // hx.Print();
-  // TVectorD r = mprime-hx;
+  // TVectorD r = m-hx;
   // r.Print();
-  // cout << chisquare(x0_vars) << endl;
+  // cout << chisquare(x0_vars_scaled) << endl;
 
-  // Boundaries for x0 
-  // Double_t x0_min[] = {
-  //   -100, // BVx
-  //   -100, // BVy
-  //   -1000, // BVz
-  //   -500000, // pBx
-  //   -500000, // pBy
-  //   -1000., // pBz
-  //   0., // MB^2
-  //   -100000, // ptau1x
-  //   -100000, // ptau1y
-  //   -1000, // ptau1z
-  //   -100000, // pnu1x
-  //   -100000, // pnu1y
-  //   -1000, // pnu1z
-  //   -100000, // ptau2x
-  //   -100000, // ptau2y
-  //   -1000, // ptau2z
-  //   -100000, // pnu2x
-  //   -100000, // pnu2y
-  //   -1000, // pnu2z
-  //   -10, // L1
-  //   -10, // L2
-  //   -10, // L
-  //   -10 // LK
-  // };
-  // if( sizeof(x0_min)/sizeof(x0_min[0]) != dimX ){ 
-  //   cout << "ERROR: x0_min does not have the proper dimension" << endl;
-  //   return; 
-  // }
-
-  // Double_t x0_max[] = {
-  //   100, // BVx
-  //   100, // BVy
-  //   100, // BVz
-  //   500000, // pBx
-  //   500000, // pBy
-  //   5000000, // pBz
-  //   100000000, // MB^2
-  //   100000, // ptau1x
-  //   100000, // ptau1y
-  //   1000000, // ptau1z
-  //   100000, // pnu1x
-  //   100000, // pnu1y
-  //   1000000, // pnu1z
-  //   100000, // ptau2x
-  //   100000, // ptau2y
-  //   1000000, // ptau2z
-  //   100000, // pnu2x
-  //   100000, // pnu2y
-  //   1000000, // pnu2z
-  //   10, // L1
-  //   10, // L2
-  //   10, // L
-  //   10 // LK
-  // };
-  // if( sizeof(x0_min)/sizeof(x0_min[0]) != dimX ){ 
-  //   cout << "ERROR: x0_max does not have the proper dimension" << endl;
-  //   return; 
-  // }
-
-  ROOT::Math::Minimizer* min = ROOT::Math::Factory::CreateMinimizer("Minuit", "Migrad");    
+  ROOT::Math::Minimizer* min = ROOT::Math::Factory::CreateMinimizer("Minuit2", "MigradImproved");    
   ROOT::Math::Functor func(&chisquare, dimX);
 
   min->SetMaxIterations(10000000);  
   min->SetMaxFunctionCalls(10000000);
-  min->SetPrintLevel(2);
-  min->SetTolerance(0.000000001);
+  min->SetPrintLevel(1);
   min->SetFunction(func);
 
   string name[] = {
@@ -480,51 +368,110 @@ void minimize( ROOT::Math::XYZPoint BV, int init )
 
   for(int i = 0; i < dimX; i++)
   {
-    min->SetVariable(i, name[i], x0[i], x0_err[i]);
-    // min->SetVariableLimits(i, x0_min[i], x0_max[i]);
+    if(scale_x)
+    {
+      min->SetVariable(i, name[i], x0_vars_scaled[i], x0_err_scaled[i]);
+    }
+    else
+    {
+      min->SetVariable(i, name[i], x0[i], x0_err[i]);
+    }    
   }
+
   min->Minimize();
-  // min->PrintResults();
+  min->Hesse();
 
   // Return / save results from the fit
   chi2 = min->MinValue();
   status = min->Status();
+  cov_status = min->CovMatrixStatus();
 
   const Double_t *xMin = min->X();
+  // const Double_t *xMin_err = min->Errors();
+  TMatrixD scale_J(dimX,dimX); // scaling Jacobian
   for(int i = 0; i < dimX; i++)
   {
-    x_m(i) = xMin[i];
-    for(int j = 0; j < dimX; j++)
+    if(scale_x)
     {
-      C_m(i,j) = min->CovMatrix(i,j);
+      x_m(i) = xMin[i]*factor(i);
+      scale_J(i,i) = factor(i);
+      for(int j = 0; j < dimX; j++)
+      {
+        C_m_unscaled(i,j) = min->CovMatrix(i,j);
+        Corr_m_unscaled(i,j) = min->Correlation(i,j);
+      }
+    }
+    else
+    {
+      x_m(i) = xMin[i];
+      // x_err_m(i) = xMin_err[i];
+      for(int j = 0; j < dimX; j++)
+      {
+        C_m(i,j) = min->CovMatrix(i,j);
+        Corr_m(i,j) = min->Correlation(i,j);
+      }
     }
   }
+
+  TMatrixD scale_J_transpose = scale_J;
+  if(scale_x)
+  {
+    scale_J_transpose.T();
+    C_m = scale_J*(C_m_unscaled*scale_J_transpose);
+
+    for(int i = 0; i < dimX; i++)
+    {
+      for(int j = 0; j < dimX; j++)
+      {
+        Corr_m(i,j) = C_m(i,j)/( sqrt( C_m(i,i) )*sqrt( C_m(j,j) ) );
+      }
+    }
+
+    // for(int i = 0; i < dimX; i++)
+    // {
+    //   cout << "x = " << x_m(i) << " +/- " << sqrt(C_m(i,i)) << endl;
+    // }
+  }
+
   // x_m.Print();
+  // x_err_m.Print();
   // TVectorD hx_m = model(x_m);
   // hx_m.Print();
-  // TVectorD r_m = mprime-hx_m;
+  // TVectorD r_m = m-hx_m;
   // r_m.Print();
   // C_m.Print();
+  // Corr_m.Print();
 
-  ROOT::Math::XYZVector ptau1_m( x_m(6), x_m(7), x_m(8) );
-  ROOT::Math::XYZVector pnu1_m( x_m(9), x_m(10), x_m(11) );
-  ROOT::Math::XYZVector ptau2_m( x_m(12), x_m(13), x_m(14) );
-  ROOT::Math::XYZVector pnu2_m( x_m(15), x_m(16), x_m(17) );
-  Double_t Etau1_m = sqrt( pow(mtau,2) + ptau1_m.Mag2() );
-  Double_t Enu1_m = sqrt( pnu1_m.Mag2() );
-  Double_t Etau2_m = sqrt( pow(mtau,2) + ptau2_m.Mag2() );
-  Double_t Enu2_m = sqrt( pnu2_m.Mag2() );
+  // Eigenvalues of C
+  // TVectorD C_eigen_values(dimX);  
+  // TMatrixD C_eigen_vectors = C_m.EigenVectors(C_eigen_values);
+  // C_eigen_values.Print();
+
+  MB = B_mass();
+  MB_err = B_mass_error();
+
+  // cout << "initial chi2 = " << chisquare(x0_vars) << endl;
+  cout << "init = " << init << endl;
+  cout << "final chi2 = " << min->MinValue() << endl;
+  cout << "MB = " << MB << " +/- " << MB_err << endl;
+  cout << "Status = " << status << endl;
+  cout << "Cov matrix status = " << cov_status << endl;
+
+}
+
+Double_t B_mass()
+{
   ROOT::Math::XYZVector pB_m( x_m(3), x_m(4), x_m(5) );
+  ROOT::Math::XYZVector ptau1_m( x_m(6), x_m(7), x_m(8) );
+  ROOT::Math::XYZVector ptau2_m( x_m(12), x_m(13), x_m(14) );
+  Double_t Etau1_m = sqrt( pow(mtau,2) + ptau1_m.Mag2() );
+  Double_t Etau2_m = sqrt( pow(mtau,2) + ptau2_m.Mag2() );
+  ROOT::Math::XYZVector pK_m = pB_m - ptau1_m - ptau2_m;
+  // ROOT::Math::XYZVector pK_m( m(19), m(20), m(21) );
+  Double_t EK_m = sqrt( pow(mkaon,2) + pK_m.Mag2() );
+  Double_t EB_m = Etau1_m + Etau2_m + EK_m; // Energy convervation in BV
+  Double_t MB_squared_m = pow(EB_m,2) - pB_m.Mag2();
 
-  ROOT::Math::XYZVector pK( mprime(19), mprime(20), mprime(21) );
-  Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
-
-  // Energy convervation in BV
-  Double_t EB = Etau1_m + Etau2_m + EK;
-  Double_t MB_squared_m = pow(EB,2) - pB_m.Mag2();
-
-  // Calculate MB and its error
-  // Double_t MB_squared_m = x_m(6);
   if( MB_squared_m > 0 )
   {
     MB = sqrt( MB_squared_m );
@@ -533,102 +480,207 @@ void minimize( ROOT::Math::XYZPoint BV, int init )
   {
     MB = -sqrt( abs(MB_squared_m) );
   }
-  // Double_t dMB_squared = sqrt(C_m(6,6));
-  // MB_err = dMB_squared/(2*MB);
 
-  // B+ mass error
-  // Build covariance matrix of (ptau1, ptau2, pB, pK)
-  TMatrixDSym S(12);
-  for(int i = 0; i < 3; i++)
+  return MB;
+}
+
+Double_t B_mass_error()
+{
+  // Error on mB
+  // TVectorD x_err(dimX);
+  // if(max)
+  // {
+  //   x_err = x_err_max;
+  // }
+  // else
+  // {
+  //   x_err = x_err_min;
+  // }
+
+  // ROOT::Math::XYZVector pB( x_m(3), x_m(4), x_m(5) );
+  // ROOT::Math::XYZVector ptau1( x_m(6), x_m(7), x_m(8) );
+  // ROOT::Math::XYZVector ptau2( x_m(12), x_m(13), x_m(14) );
+  // Double_t Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
+  // Double_t Etau2 = sqrt( pow(mtau,2) + ptau2.Mag2() );
+  // ROOT::Math::XYZVector pK = pB - ptau1 - ptau2;
+  // Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
+  // Double_t EB = Etau1 + Etau2 + EK; // Energy convervation in BV
+
+  // ROOT::Math::XYZVector dpB( x_err(3), x_err(4), x_err(5) );
+  // ROOT::Math::XYZVector dptau1( x_err(6), x_err(7), x_err(8) );
+  // ROOT::Math::XYZVector dptau2( x_err(12), x_err(13), x_err(14) );
+
+  // Double_t dEtau1 = sqrt( pow(ptau1.x()/Etau1,2)*pow(dptau1.x(),2) + pow(ptau1.y()/Etau1,2)*pow(dptau1.y(),2) + pow(ptau1.z()/Etau1,2)*pow(dptau1.z(),2) );
+  // Double_t dEtau2 = sqrt( pow(ptau2.x()/Etau2,2)*pow(dptau2.x(),2) + pow(ptau2.y()/Etau2,2)*pow(dptau2.y(),2) + pow(ptau2.z()/Etau2,2)*pow(dptau2.z(),2) );
+
+  // Double_t dpKx = sqrt( pow(dpB.x(),2) + pow(dptau1.x(),2) + pow(dptau2.x(),2) );
+  // Double_t dpKy = sqrt( pow(dpB.y(),2) + pow(dptau1.y(),2) + pow(dptau2.y(),2) );
+  // Double_t dpKz = sqrt( pow(dpB.z(),2) + pow(dptau1.z(),2) + pow(dptau2.z(),2) );
+  // ROOT::Math::XYZVector dpK( dpKx, dpKy, dpKz );
+
+  // Double_t dEK = sqrt( pow(pK.x()/EK,2)*pow(dpK.x(),2) + pow(pK.y()/EK,2)*pow(dpK.y(),2) + pow(pK.z()/EK,2)*pow(dpK.z(),2) );
+
+  // Double_t dEB = sqrt( pow(dEtau1,2) + pow(dEtau2,2) + pow(dEK,2) );
+
+  // Double_t dMB = sqrt( pow(EB/MB,2)*pow(dEB,2) + pow(pB.x()/MB,2)*pow(dpB.x(),2) + pow(pB.y()/MB,2)*pow(dpB.y(),2) + pow(pB.z()/MB,2)*pow(dpB.z(),2) );
+
+  ROOT::Math::XYZVector pB_m( x_m(3), x_m(4), x_m(5) );
+  ROOT::Math::XYZVector ptau1_m( x_m(6), x_m(7), x_m(8) );
+  ROOT::Math::XYZVector ptau2_m( x_m(12), x_m(13), x_m(14) );
+  Double_t Etau1_m = sqrt( pow(mtau,2) + ptau1_m.Mag2() );
+  Double_t Etau2_m = sqrt( pow(mtau,2) + ptau2_m.Mag2() );
+  ROOT::Math::XYZVector pK_m = pB_m - ptau1_m - ptau2_m;
+  // ROOT::Math::XYZVector pK_m( m(19), m(20), m(21) );
+  Double_t EK_m = sqrt( pow(mkaon,2) + pK_m.Mag2() );
+  Double_t EB_m = Etau1_m + Etau2_m + EK_m; // Energy convervation in BV
+  
+  TMatrixD Cprime(26,26);
+  for(int i = 0; i < dimX; i++)
   {
-    for(int j = 0; j < 3; j++)
+    for(int j = 0; j < dimX; j++)
     {
-      S(i,j) = C_m(i+6,j+6);
-      S(i+3,j+3) = C_m(i+12,j+12);
-      S(i+6,j+6) = C_m(i+3,j+3);
-
-      S(i,j+3) = C_m(i+6,j+12);
-      S(i+3,j) = C_m(i+12,j+6);
-      S(i,j+6) = C_m(i+6,j+3);
-      S(i+6,j) = C_m(i+3,j+6);
-      S(i+3,j+6) = C_m(i+12,j+3);
-      S(i+6,j+3) = C_m(i+3,j+12);
-
-      S(i+9,j+9) = Vprime(i+19,j+19);
+      Cprime(i,j) = C_m(i,j);
     }
   }
-  // S.Print();
 
-  // Jacobian of transformation
-  TMatrixD J_S(13,12);
-  for(int i = 0; i < 12; i++)
+  // Add pK
+  TMatrixD J1(26,26);
+  for(int i = 0; i < dimX; i++)
   {
-    for(int j = 0; j < 12; j++)
+    for(int j = 0; j < dimX; j++)
     {
       if(i == j)
       {
-        J_S(i,j) = 1.;
+        J1(i,j) = 1.;
       }
       else
       {
-        J_S(i,i) = 1.;
+        J1(i,j) = 0.;
       }
     }
   }
-  J_S(12,0) = 2*(EB/Etau1_m)*ptau1_m.x();
-  J_S(12,1) = 2*(EB/Etau1_m)*ptau1_m.y();
-  J_S(12,2) = 2*(EB/Etau1_m)*ptau1_m.z();
-  J_S(12,3) = 2*(EB/Etau2_m)*ptau2_m.x();
-  J_S(12,4) = 2*(EB/Etau2_m)*ptau2_m.y();
-  J_S(12,5) = 2*(EB/Etau2_m)*ptau2_m.z();
-  J_S(12,6) = -2*pB_m.x();
-  J_S(12,7) = -2*pB_m.y();
-  J_S(12,8) = -2*pB_m.z();
-  J_S(12,9) = 2*(EB/EK)*pK.x();
-  J_S(12,10) = 2*(EB/EK)*pK.y();
-  J_S(12,11) = 2*(EB/EK)*pK.z();
-  // J_S.Print();
+  J1(22,3) = 1;
+  J1(23,4) = 1;
+  J1(24,5) = 1;
 
-  TMatrixD J_S_transpose = J_S;
-  J_S_transpose.T();
+  J1(22,6) = -1;
+  J1(23,7) = -1;
+  J1(24,8) = -1;
 
-  TMatrixD Sprime = J_S*(S*J_S_transpose);
-  // Sprime.Print();
+  J1(22,12) = -1;
+  J1(23,13) = -1;
+  J1(24,14) = -1;
 
-  Double_t dMB_squared = sqrt(Sprime(12,12));
-  MB_err = dMB_squared/(2*MB);
+  J1(25,25) = 1;
 
-  cout << "initial chi2 = " << chisquare(x0_vars) << endl;
-  cout << "init = " << init << endl;
-  cout << "final chi2 = " << min->MinValue() << endl;
-  cout << "MB = " << MB << " +/- " << MB_err << endl;
-  cout << "Status = " << status << endl;
+  TMatrixD J1_transpose = J1;
+  J1_transpose.T();
 
-  // Correlation matrix of fit parameters
-  // TMatrixD Corr_x(dimX,dimX);
-  // for(int i = 0; i < dimX; i++)
-  // {
-  //   for(int j = 0; j < dimX; j++)
-  //   {
-  //     Corr_x(i,j) = C_m(i,j)/( sqrt(C_m(i,i))*sqrt(C_m(j,j)) );
-  //   }
-  // }
-  // Corr_x.Print();
+  Cprime = J1*(Cprime*J1_transpose);
+  // Cprime.Print();
 
+  // add mB^2 part
+  TMatrixD J2(26,26);
+
+  for(int i = 0; i < 25; i++)
+  {
+    for(int j = 0; j < 25; j++)
+    {
+      if(i == j)
+      {
+        J2(i,j) = 1.;
+      }
+      else
+      {
+        J2(i,j) = 0.;
+      }
+    }
+  }
+
+  J2(25,3) = -2*pB_m.x();
+  J2(25,4) = -2*pB_m.y();
+  J2(25,5) = -2*pB_m.z();
+
+  J2(25,6) = 2*EB_m*(ptau1_m.x()/Etau1_m);
+  J2(25,7) = 2*EB_m*(ptau1_m.y()/Etau1_m);
+  J2(25,8) = 2*EB_m*(ptau1_m.z()/Etau1_m);
+
+  J2(25,12) = 2*EB_m*(ptau2_m.x()/Etau2_m);
+  J2(25,13) = 2*EB_m*(ptau2_m.y()/Etau2_m);
+  J2(25,14) = 2*EB_m*(ptau2_m.z()/Etau2_m);
+
+  J2(25,22) = 2*EB_m*(pK_m.x()/EK_m);
+  J2(25,23) = 2*EB_m*(pK_m.y()/EK_m);
+  J2(25,24) = 2*EB_m*(pK_m.z()/EK_m);
+
+  TMatrixD J2_transpose = J2;
+  J2_transpose.T();
+
+  Cprime = J2*(Cprime*J2_transpose);
+  // Cprime.Print();
+
+  Double_t dMB_squared = sqrt(Cprime(25,25));
+  Double_t dMB = dMB_squared/(2*abs(MB));
+  
+  return dMB;
+}
+
+Double_t factor( Int_t i )
+{
+  TVectorD factors(dimX);
+  factors(0) = 1.; // BVx
+  factors(1) = 1.; // BVy
+  factors(2) = 10.; // BVz
+  factors(3) = 10000.; // pBx
+  factors(4) = 10000.; // pBy
+  factors(5) = 100000.; // pBz
+  factors(6) = 1000.; // ptau1x
+  factors(7) = 1000.; // ptau1y
+  factors(8) = 10000.; // ptau1z
+  factors(9) = 1000.; // pnu1x
+  factors(10) = 1000.; // pnu1y
+  factors(11) = 10000.; // pnu1z
+  factors(12) = 1000.; // ptau2x
+  factors(13) = 1000.; // ptau2y
+  factors(14) = 10000.; // ptau2z
+  factors(15) = 1000.; // pnu2x
+  factors(16) = 1000.; // pnu2y
+  factors(17) = 10000.; // pnu2z
+  factors(18) = pow(10,-5); // L1
+  factors(19) = pow(10,-5); // L2
+  factors(20) = pow(10,-4); // L
+  factors(21) = pow(10,-3); // LK
+
+  return factors(i);
 }
 
 Double_t chisquare( const Double_t* x_values )
 {
   // Computes the chi^2
+
+  // Scale back x values to compare with m:
   TVectorD x(dimX);
+  TVectorD x_unscaled(dimX);
   for(int i = 0; i < dimX; i++)
   {
     x(i) = x_values[i];
+    if(scale_x)
+    {
+      x_unscaled(i) = x(i)*factor(i);
+    }
   }
 
-  TVectorD hx = model( x );
+  TVectorD hx(dimM);
+  if(scale_x)
+  {
+    hx = model( x_unscaled );
+  }
+  else
+  {
+    hx = model( x );
+  }
 
-  TVectorD r = mprime - hx;
+  TVectorD r = m - hx;
 
   Double_t chi2 = r*(W*r);
 
@@ -640,7 +692,6 @@ TVectorD model( TVectorD x )
   // The model; writes the known parameters in terms of the unkown parameters using the model constraints
   ROOT::Math::XYZPoint BV( x(0), x(1), x(2) );
   ROOT::Math::XYZVector pB( x(3), x(4), x(5) );
-  // Double_t MB_squared = x(6);
   ROOT::Math::XYZVector ptau1( x(6), x(7), x(8) );
   ROOT::Math::XYZVector pnu1( x(9), x(10), x(11) );
   ROOT::Math::XYZVector ptau2( x(12), x(13), x(14) );
@@ -649,8 +700,6 @@ TVectorD model( TVectorD x )
   Double_t L2 = x(19);
   Double_t L = x(20);
   Double_t LK = x(21);
-
-  // Double_t EB = sqrt( MB_squared + pB.Mag2() );
 
   // Tau and neutrino mass constraints (4):
   Double_t Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
@@ -662,26 +711,31 @@ TVectorD model( TVectorD x )
   ROOT::Math::PxPyPzEVector Ptau2( ptau2.x(), ptau2.y(), ptau2.z(), Etau2 );
   ROOT::Math::PxPyPzEVector Pnu1( pnu1.x(), pnu1.y(), pnu1.z(), Enu1 );
   ROOT::Math::PxPyPzEVector Pnu2( pnu2.x(), pnu2.y(), pnu2.z(), Enu2 );
-  // ROOT::Math::PxPyPzEVector PB( pB.x(), pB.y(), pB.z(), EB);
+
+  // 3-momentum conservation in BV (3):
+  ROOT::Math::XYZVector pK = pB - ptau1 - ptau2;
 
   // pB must point back to the PV (2):
   ROOT::Math::XYZPoint PV( BV.x() - L*pB.x(), BV.y() - L*pB.y(), BV.z() - L*pB.z() );
-  // ptau1 must point back to BV (2):
+
+  // ptau1 must point back to the BV (2):
   ROOT::Math::XYZPoint DV1( BV.x() + L1*ptau1.x(), BV.y() + L1*ptau1.y(), BV.z() + L1*ptau1.z() );
+
   // 4-momentum conservation in DV1 (4):
-  ROOT::Math::XYZVector p3pi1 = ptau1 - pnu1;
-  Double_t m3pi1_squared = pow(mtau,2) -2*Ptau1.Dot(Pnu1); 
+  ROOT::Math::PxPyPzEVector P3pi1 = Ptau1 - Pnu1;
+  ROOT::Math::XYZVector p3pi1( P3pi1.X(), P3pi1.Y(), P3pi1.Z() );
+  Double_t E3pi1 = P3pi1.E();
+
   // ptau2 must point back to DV2 (2):
   ROOT::Math::XYZPoint DV2( BV.x() + L2*ptau2.x(), BV.y() + L2*ptau2.y(), BV.z() + L2*ptau2.z() );
+
   // 4-momentum conservation in DV2 (4):
-  ROOT::Math::XYZVector p3pi2 = ptau2 - pnu2;
-  Double_t m3pi2_squared = pow(mtau,2) -2*Ptau2.Dot(Pnu2);  
+  ROOT::Math::PxPyPzEVector P3pi2 = Ptau2 - Pnu2;
+  ROOT::Math::XYZVector p3pi2( P3pi2.X(), P3pi2.Y(), P3pi2.Z() );
+  Double_t E3pi2 = P3pi2.E();
+
   // B+ must lie in the K+ trajectory (2):
-  ROOT::Math::XYZPoint RP( BV.x() + LK*( pB.x() - ptau1.x() - ptau2.x() ), BV.y() + LK*( pB.y() - ptau1.y() - ptau2.y() ), RPz );
-  // ROOT::Math::XYZPoint RP( BV.x() + LK*( pB.x() - ptau1.x() - ptau2.x() ), BV.y() + LK*( pB.y() - ptau1.y() - ptau2.y() ), RPz_t ); // truth-match
-  // 4-momentum conservation in BV (4):
-  ROOT::Math::XYZVector pK = pB - ptau1 - ptau2;
-  // Double_t m6piK_squared = MB_squared - 2*PB.Dot(Pnu1) - 2*PB.Dot(Pnu2) + 2*Pnu1.Dot(Pnu2);
+  ROOT::Math::XYZPoint RP( BV.x() + LK*pK.x(), BV.y() + LK*pK.y(), RPz );
 
   TVectorD h( dimM );
   h(0) = PV.x();
@@ -693,20 +747,19 @@ TVectorD model( TVectorD x )
   h(6) = p3pi1.x();
   h(7) = p3pi1.y();
   h(8) = p3pi1.z(); 
-  h(9) = m3pi1_squared;
+  h(9) = E3pi1;
   h(10) = DV2.x();
   h(11) = DV2.y();
   h(12) = DV2.z();
   h(13) = p3pi2.x();
   h(14) = p3pi2.y();
   h(15) = p3pi2.z(); 
-  h(16) = m3pi2_squared;
+  h(16) = E3pi2;
   h(17) = RP.x();
   h(18) = RP.y(); 
   h(19) = pK.x();
   h(20) = pK.y();
   h(21) = pK.z();
-  // h(22) = m6piK_squared;
 
   return h;
 }
@@ -715,25 +768,17 @@ TVectorD x_initial_estimate( TVectorD m ) // Original initialisation for x (base
 {
   // Builds an initial estimate for x based on the analytical calculations and on the known parameters in m
 
-  ROOT::Math::XYZPoint PV( mprime(0), mprime(1), mprime(2) );
-  ROOT::Math::XYZPoint DV1( mprime(3), mprime(4), mprime(5) );
-  ROOT::Math::XYZVector p3pi1( mprime(6), mprime(7), mprime(8) );
-  Double_t m3pi1_squared = mprime(9);
-  ROOT::Math::XYZPoint DV2( mprime(10), mprime(11), mprime(12) );
-  ROOT::Math::XYZVector p3pi2( mprime(13), mprime(14), mprime(15) );
-  Double_t m3pi2_squared = mprime(16);
-  ROOT::Math::XYZPoint RP( mprime(17), mprime(18), RPz );
-  // ROOT::Math::XYZPoint RP( mprime(17), mprime(18), RPz_t ); // truth-match
-  ROOT::Math::XYZVector p6piK( mprime(19), mprime(20), mprime(21) );
-  Double_t m6piK_squared = mprime(22);
+  ROOT::Math::XYZPoint PV( m(0), m(1), m(2) );
+  ROOT::Math::XYZPoint DV1( m(3), m(4), m(5) );
+  ROOT::Math::XYZVector p3pi1( m(6), m(7), m(8) );
+  Double_t E3pi1 = m(9);
+  ROOT::Math::XYZPoint DV2( m(10), m(11), m(12) );
+  ROOT::Math::XYZVector p3pi2( m(13), m(14), m(15) );
+  Double_t E3pi2 = m(16);
+  ROOT::Math::XYZPoint RP( m(17), m(18), RPz );
+  ROOT::Math::XYZVector pK( m(19), m(20), m(21) );
 
-  Double_t E3pi1 = sqrt( m3pi1_squared + p3pi1.Mag2() );
-  Double_t E3pi2 = sqrt( m3pi2_squared + p3pi2.Mag2() );
-  Double_t E6piK = sqrt( m6piK_squared + p6piK.Mag2() );
-
-  Double_t EK = E6piK - E3pi1 - E3pi2;
-  ROOT::Math::XYZVector pK = p6piK - p3pi1 - p3pi2;
-
+  Double_t EK  = sqrt( pow(mkaon,2) + pK.Mag2() );
   Double_t m3pi1 = sqrt( pow(E3pi1,2) - p3pi1.Mag2() );
   Double_t m3pi2 = sqrt( pow(E3pi2,2) - p3pi2.Mag2() );
 
@@ -811,51 +856,42 @@ TVectorD x_initial_estimate( TVectorD m ) // Original initialisation for x (base
   x0(3) = pB.x();
   x0(4) = pB.y();
   x0(5) = pB.z();
-  x0(6) = mB_squared;
-  x0(7) = ptau1.x();
-  x0(8) = ptau1.y();
-  x0(9) = ptau1.z();
-  x0(10) = pnu1.x();
-  x0(11) = pnu1.y();
-  x0(12) = pnu1.z();
-  x0(13) = ptau2.x();
-  x0(14) = ptau2.y();
-  x0(15) = ptau2.z();
-  x0(16) = pnu2.x();
-  x0(17) = pnu2.y();
-  x0(18) = pnu2.z();
-  x0(19) = L1;
-  x0(20) = L2;
-  x0(21) = L;
-  x0(22) = LK;
+  x0(6) = ptau1.x();
+  x0(7) = ptau1.y();
+  x0(8) = ptau1.z();
+  x0(9) = pnu1.x();
+  x0(10) = pnu1.y();
+  x0(11) = pnu1.z();
+  x0(12) = ptau2.x();
+  x0(13) = ptau2.y();
+  x0(14) = ptau2.z();
+  x0(15) = pnu2.x();
+  x0(16) = pnu2.y();
+  x0(17) = pnu2.z();
+  x0(18) = L1;
+  x0(19) = L2;
+  x0(20) = L;
+  x0(21) = LK;
 
   return x0;
 }
 
-TVectorD x_initial_estimate0( TVectorD mprime, ROOT::Math::XYZPoint BV ) // Using B->K* tautau initialisation; taus direction based on vertices
+TVectorD x_initial_estimate0( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B->K* tautau initialisation; taus direction based on vertices
 {
   // Builds an initial estimate for x based on the Mariseille analytical calculations; it uses the offline estimate for BV  
   // (this initialisation does not apply the constraint: pB must point back to the PV) 
 
-  ROOT::Math::XYZPoint PV( mprime(0), mprime(1), mprime(2) );
-  ROOT::Math::XYZPoint DV1( mprime(3), mprime(4), mprime(5) );
-  ROOT::Math::XYZVector p3pi1( mprime(6), mprime(7), mprime(8) ); 
-  Double_t m3pi1_squared = mprime(9); 
-  ROOT::Math::XYZPoint DV2( mprime(10), mprime(11), mprime(12) );
-  ROOT::Math::XYZVector p3pi2( mprime(13), mprime(14), mprime(15) );
-  Double_t m3pi2_squared = mprime(16); 
-  ROOT::Math::XYZPoint RP( mprime(17), mprime(18), RPz );
-  // ROOT::Math::XYZPoint RP( mprime(17), mprime(18), RPz_t ); // truth-match
-  ROOT::Math::XYZVector p6piK( mprime(19), mprime(20), mprime(21) );
-  Double_t m6piK_squared = mprime(22);
+  ROOT::Math::XYZPoint PV( m(0), m(1), m(2) );
+  ROOT::Math::XYZPoint DV1( m(3), m(4), m(5) );
+  ROOT::Math::XYZVector p3pi1( m(6), m(7), m(8) ); 
+  Double_t E3pi1 = m(9); 
+  ROOT::Math::XYZPoint DV2( m(10), m(11), m(12) );
+  ROOT::Math::XYZVector p3pi2( m(13), m(14), m(15) );
+  Double_t E3pi2 = m(16); 
+  ROOT::Math::XYZPoint RP( m(17), m(18), RPz );
+  ROOT::Math::XYZVector pK( m(19), m(20), m(21) );
 
-  Double_t E6piK = sqrt( m6piK_squared + p6piK.Mag2() );
-  Double_t E3pi1 = sqrt( m3pi1_squared + p3pi1.Mag2() );
-  Double_t E3pi2 = sqrt( m3pi2_squared + p3pi2.Mag2() );
-
-  // Get kaon momentum
-  ROOT::Math::XYZVector pK = p6piK - p3pi1 - p3pi2;
-  Double_t EK = E6piK - E3pi1 - E3pi2;
+  Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
 
   // Magnitude of 3pi momenta
   Double_t p3pi1_mag = p3pi1.r();
@@ -934,51 +970,42 @@ TVectorD x_initial_estimate0( TVectorD mprime, ROOT::Math::XYZPoint BV ) // Usin
   x0(3) = pB.x();
   x0(4) = pB.y();
   x0(5) = pB.z();
-  x0(6) = mB_squared;
-  x0(7) = ptau1.x();
-  x0(8) = ptau1.y();
-  x0(9) = ptau1.z();
-  x0(10) = pnu1.x();
-  x0(11) = pnu1.y();
-  x0(12) = pnu1.z();
-  x0(13) = ptau2.x();
-  x0(14) = ptau2.y();
-  x0(15) = ptau2.z();
-  x0(16) = pnu2.x();
-  x0(17) = pnu2.y();
-  x0(18) = pnu2.z();
-  x0(19) = L1;
-  x0(20) = L2;
-  x0(21) = L;
-  x0(22) = LK;
+  x0(6) = ptau1.x();
+  x0(7) = ptau1.y();
+  x0(8) = ptau1.z();
+  x0(9) = pnu1.x();
+  x0(10) = pnu1.y();
+  x0(11) = pnu1.z();
+  x0(12) = ptau2.x();
+  x0(13) = ptau2.y();
+  x0(14) = ptau2.z();
+  x0(15) = pnu2.x();
+  x0(16) = pnu2.y();
+  x0(17) = pnu2.z();
+  x0(18) = L1;
+  x0(19) = L2;
+  x0(20) = L;
+  x0(21) = LK;
 
   return x0;
 }
 
-TVectorD x_initial_estimate1( TVectorD mprime, ROOT::Math::XYZPoint BV ) // Using B->K* tautau initialisation; taus direction based visible 3pi momenta
+TVectorD x_initial_estimate1( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B->K* tautau initialisation; taus direction based visible 3pi momenta
 {
   // Builds an initial estimate for x based on the Mariseille analytical calculations; it uses the offline estimate for BV  
   // (this initialisation does not apply the constraint: pB must point back to the PV) 
 
-  ROOT::Math::XYZPoint PV( mprime(0), mprime(1), mprime(2) );
-  ROOT::Math::XYZPoint DV1( mprime(3), mprime(4), mprime(5) );
-  ROOT::Math::XYZVector p3pi1( mprime(6), mprime(7), mprime(8) ); 
-  Double_t m3pi1_squared = mprime(9); 
-  ROOT::Math::XYZPoint DV2( mprime(10), mprime(11), mprime(12) );
-  ROOT::Math::XYZVector p3pi2( mprime(13), mprime(14), mprime(15) );
-  Double_t m3pi2_squared = mprime(16); 
-  ROOT::Math::XYZPoint RP( mprime(17), mprime(18), RPz );
-  // ROOT::Math::XYZPoint RP( mprime(17), mprime(18), RPz_t ); // truth-match
-  ROOT::Math::XYZVector p6piK( mprime(19), mprime(20), mprime(21) );
-  Double_t m6piK_squared = mprime(22);
+  ROOT::Math::XYZPoint PV( m(0), m(1), m(2) );
+  ROOT::Math::XYZPoint DV1( m(3), m(4), m(5) );
+  ROOT::Math::XYZVector p3pi1( m(6), m(7), m(8) ); 
+  Double_t E3pi1 = m(9); 
+  ROOT::Math::XYZPoint DV2( m(10), m(11), m(12) );
+  ROOT::Math::XYZVector p3pi2( m(13), m(14), m(15) );
+  Double_t E3pi2 = m(16); 
+  ROOT::Math::XYZPoint RP( m(17), m(18), RPz );
+  ROOT::Math::XYZVector pK( m(19), m(20), m(21) );
 
-  Double_t E6piK = sqrt( m6piK_squared + p6piK.Mag2() );
-  Double_t E3pi1 = sqrt( m3pi1_squared + p3pi1.Mag2() );
-  Double_t E3pi2 = sqrt( m3pi2_squared + p3pi2.Mag2() );
-
-  // Get kaon momentum
-  ROOT::Math::XYZVector pK = p6piK - p3pi1 - p3pi2;
-  Double_t EK = E6piK - E3pi1 - E3pi2;
+  Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
 
   // Magnitude of 3pi momenta
   Double_t p3pi1_mag = p3pi1.r();
@@ -1057,49 +1084,44 @@ TVectorD x_initial_estimate1( TVectorD mprime, ROOT::Math::XYZPoint BV ) // Usin
   x0(3) = pB.x();
   x0(4) = pB.y();
   x0(5) = pB.z();
-  x0(6) = mB_squared;
-  x0(7) = ptau1.x();
-  x0(8) = ptau1.y();
-  x0(9) = ptau1.z();
-  x0(10) = pnu1.x();
-  x0(11) = pnu1.y();
-  x0(12) = pnu1.z();
-  x0(13) = ptau2.x();
-  x0(14) = ptau2.y();
-  x0(15) = ptau2.z();
-  x0(16) = pnu2.x();
-  x0(17) = pnu2.y();
-  x0(18) = pnu2.z();
-  x0(19) = L1;
-  x0(20) = L2;
-  x0(21) = L;
-  x0(22) = LK;
+  x0(6) = ptau1.x();
+  x0(7) = ptau1.y();
+  x0(8) = ptau1.z();
+  x0(9) = pnu1.x();
+  x0(10) = pnu1.y();
+  x0(11) = pnu1.z();
+  x0(12) = ptau2.x();
+  x0(13) = ptau2.y();
+  x0(14) = ptau2.z();
+  x0(15) = pnu2.x();
+  x0(16) = pnu2.y();
+  x0(17) = pnu2.z();
+  x0(18) = L1;
+  x0(19) = L2;
+  x0(20) = L;
+  x0(21) = LK;
 
   return x0;
 }
 
-TVectorD x_initial_estimate2( TVectorD mprime, ROOT::Math::XYZPoint BV ) 
+TVectorD x_initial_estimate2( TVectorD m, ROOT::Math::XYZPoint BV ) 
 {
   // Builds an initial estimate for x based on the Mariseille analytical calculations; it uses the offline estimate for BV  
   // (this initialisation does not apply the constraint: pB must point back to the PV) 
 
-  ROOT::Math::XYZPoint PV( mprime(0), mprime(1), mprime(2) );
-  ROOT::Math::XYZPoint DV1( mprime(3), mprime(4), mprime(5) );
-  ROOT::Math::XYZVector p3pi1( mprime(6), mprime(7), mprime(8) ); 
-  Double_t m3pi1_squared = mprime(9); 
-  ROOT::Math::XYZPoint DV2( mprime(10), mprime(11), mprime(12) );
-  ROOT::Math::XYZVector p3pi2( mprime(13), mprime(14), mprime(15) );
-  Double_t m3pi2_squared = mprime(16); 
-  ROOT::Math::XYZPoint RP( mprime(17), mprime(18), RPz );
-  // ROOT::Math::XYZPoint RP( mprime(17), mprime(18), RPz_t ); // truth-match
-  ROOT::Math::XYZVector pK( mprime(19), mprime(20), mprime(21) );
-  // Double_t m6piK_squared = mprime(22);
+  ROOT::Math::XYZPoint PV( m(0), m(1), m(2) );
+  ROOT::Math::XYZPoint DV1( m(3), m(4), m(5) );
+  ROOT::Math::XYZVector p3pi1( m(6), m(7), m(8) ); 
+  Double_t E3pi1 = m(9);
+  ROOT::Math::XYZPoint DV2( m(10), m(11), m(12) );
+  ROOT::Math::XYZVector p3pi2( m(13), m(14), m(15) );
+  Double_t E3pi2 = m(16);
+  ROOT::Math::XYZPoint RP( m(17), m(18), RPz );
+  ROOT::Math::XYZVector pK( m(19), m(20), m(21) );    
 
   ROOT::Math::XYZVector u1 = (DV1 - BV).Unit();
   ROOT::Math::XYZVector u2 = (DV2 - BV).Unit();
 
-  Double_t E3pi1 = sqrt( m3pi1_squared + p3pi1.Mag2() );
-  Double_t E3pi2 = sqrt( m3pi2_squared + p3pi2.Mag2() );
   Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
 
   Double_t m3pi1 = sqrt( pow(E3pi1,2) - p3pi1.Mag2() );
@@ -1128,7 +1150,6 @@ TVectorD x_initial_estimate2( TVectorD mprime, ROOT::Math::XYZPoint BV )
   Double_t EB = EK + Etau1 + Etau2;
   Double_t MB_squared = pow(EB,2) - pB.Mag2();
 
-  // ROOT::Math::XYZVector pK = p6piK - p3pi1 - p3pi2;
   Double_t L1 = sqrt( (DV1 - BV).Mag2() )/sqrt( ptau1.Mag2() );
   Double_t L2 = sqrt( (DV2 - BV).Mag2() )/sqrt( ptau2.Mag2() );
   Double_t LK = sqrt( (RP - BV).Mag2() )/sqrt( pK.Mag2() );
@@ -1141,7 +1162,6 @@ TVectorD x_initial_estimate2( TVectorD mprime, ROOT::Math::XYZPoint BV )
   x0(3) = pB.x();
   x0(4) = pB.y();
   x0(5) = pB.z();
-  // x0(6) = MB_squared;
   x0(6) = ptau1.x();
   x0(7) = ptau1.y();
   x0(8) = ptau1.z();
@@ -1232,68 +1252,21 @@ TVectorD transform_m( TVectorD m )
 {
   TVectorD mp( dimM );
 
-  mp(0) = m(0); // PVx
-  mp(1) = m(1); // PVy
-  mp(2) = m(2); // PVz
-  mp(3) = m(3); // DV1x
-  mp(4) = m(4); // DV1y
-  mp(5) = m(5); // DV1z
+  for(int i = 0; i < dimM; i++)
+  {
+    mp(i) = m(i);
+  }
 
-  ROOT::Math::XYZVector p1( m(6), m(7), m(8) );
-  ROOT::Math::XYZVector p2( m(9), m(10), m(11) );
-  ROOT::Math::XYZVector p3( m(12), m(13), m(14) );
+  ROOT::Math::XYZVector p3pi1( m(6), m(7), m(8) );
+  ROOT::Math::XYZVector p3pi2( m(13), m(14), m(15) );
+  Double_t E3pi1 = m(9);
+  Double_t E3pi2 = m(16);
 
-  mp(6) = p1.x() + p2.x() + p3.x(); // p3pi1x
-  mp(7) = p1.y() + p2.y() + p3.y(); // p3pi1y
-  mp(8) = p1.z() + p2.z() + p3.z(); // p3pi1z
+  mp(9) = pow(E3pi1,2) - p3pi1.Mag2();
+  mp(16) = pow(E3pi2,2) - p3pi2.Mag2();
 
-  Double_t E1 = sqrt( pow(mpion,2) + p1.Mag2() );
-  Double_t E2 = sqrt( pow(mpion,2) + p2.Mag2() );
-  Double_t E3 = sqrt( pow(mpion,2) + p3.Mag2() );
-  
-  ROOT::Math::PxPyPzEVector P1( p1.x(), p1.y(), p1.z(), E1 );
-  ROOT::Math::PxPyPzEVector P2( p2.x(), p2.y(), p2.z(), E2 );
-  ROOT::Math::PxPyPzEVector P3( p3.x(), p3.y(), p3.z(), E3 );
-
-  mp(9) = 3*pow(mpion,2) + 2*P1.Dot(P2) + 2*P1.Dot(P3) + 2*P2.Dot(P3) ; // m3pi1^2
-
-  mp(10) = m(15); // DV2x
-  mp(11) = m(16); // DV2y
-  mp(12) = m(17); // DV2z
-
-  ROOT::Math::XYZVector p4( m(18), m(19), m(20) );
-  ROOT::Math::XYZVector p5( m(21), m(22), m(23) );
-  ROOT::Math::XYZVector p6( m(24), m(25), m(26) );
-
-  mp(13) = p4.x() + p5.x() + p6.x(); // p3pi2x
-  mp(14) = p4.y() + p5.y() + p6.y(); // p3pi2y
-  mp(15) = p4.z() + p5.z() + p6.z(); // p3pi2z
-
-  Double_t E4 = sqrt( pow(mpion,2) + p4.Mag2() );
-  Double_t E5 = sqrt( pow(mpion,2) + p5.Mag2() );
-  Double_t E6 = sqrt( pow(mpion,2) + p6.Mag2() );
-
-  ROOT::Math::PxPyPzEVector P4( p4.x(), p4.y(), p4.z(), E4 );
-  ROOT::Math::PxPyPzEVector P5( p5.x(), p5.y(), p5.z(), E5 );
-  ROOT::Math::PxPyPzEVector P6( p6.x(), p6.y(), p6.z(), E6 );
-
-  mp(16) = 3*pow(mpion,2) + 2*P4.Dot(P5) + 2*P4.Dot(P6) + 2*P5.Dot(P6); // m3pi2^2
-
-  mp(17) = m(27); // RPx
-  mp(18) = m(28); // RPy
-  mp(19) = m(29); // pKx
-  mp(20) = m(30); // pKy
-  mp(21) = m(31); // pKz
-
-  ROOT::Math::XYZVector pK( m(29), m(30), m(31) );
-
-  // mp(19) = p1.x() + p2.x() + p3.x() + p4.x() + p5.x() + p6.x() + pK.x(); // p6piKx
-  // mp(20) = p1.y() + p2.y() + p3.y() + p4.y() + p5.y() + p6.y() + pK.y(); // p6piKy
-  // mp(21) = p1.z() + p2.z() + p3.z() + p4.z() + p5.z() + p6.z() + pK.z(); // p6piKz
-
-  Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
-  ROOT::Math::PxPyPzEVector PK( pK.x(), pK.y(), pK.z(), EK );
-  mp(22) = pow(mkaon,2) + 6*pow(mpion,2) + 2*( P1.Dot(P2) + P1.Dot(P3) + P2.Dot(P3) + P4.Dot(P5) + P4.Dot(P6) + P5.Dot(P6) + P1.Dot(P4) + P1.Dot(P5) + P1.Dot(P6) + P2.Dot(P4) + P2.Dot(P5) + P2.Dot(P6) + P3.Dot(P4) + P3.Dot(P5) + P3.Dot(P6) + P1.Dot(PK) + P2.Dot(PK) + P3.Dot(PK) + P4.Dot(PK) + P5.Dot(PK) + P6.Dot(PK) )  ; // m6piK^2
+  ROOT::Math::XYZVector pK( m(19), m(20), m(21) );
+  mp(21) = pow(pK.x(), 2) + pow( pK.y(), 2) + pow( pK.z(), 2);
 
   return mp;
 
@@ -1303,159 +1276,47 @@ TMatrixDSym transform_V( TVectorD m, TMatrixDSym V )
 {
   TMatrixD Vp( dimM, dimM );
 
-  ROOT::Math::XYZVector p1( m(6), m(7), m(8) );
-  ROOT::Math::XYZVector p2( m(9), m(10), m(11) );
-  ROOT::Math::XYZVector p3( m(12), m(13), m(14) );
-
-  ROOT::Math::XYZVector p4( m(18), m(19), m(20) );
-  ROOT::Math::XYZVector p5( m(21), m(22), m(23) );
-  ROOT::Math::XYZVector p6( m(24), m(25), m(26) );
-
-  ROOT::Math::XYZVector pK( m(29), m(30), m(31) );
-
-  Double_t E1 = sqrt( pow(mpion,2) + p1.Mag2() );
-  Double_t E2 = sqrt( pow(mpion,2) + p2.Mag2() );
-  Double_t E3 = sqrt( pow(mpion,2) + p3.Mag2() );
-  Double_t E4 = sqrt( pow(mpion,2) + p4.Mag2() );
-  Double_t E5 = sqrt( pow(mpion,2) + p5.Mag2() );
-  Double_t E6 = sqrt( pow(mpion,2) + p6.Mag2() );
-  Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
 
   // Jacobian matrix
-  TMatrixD J( dimM, dimM_before );
+  TMatrixD J( dimM, dimM );
   for(int i = 0; i < dimM; i++)
   {
-    for(int j = 0; j < dimM_before; j++)
+    for(int j = 0; j < dimM; j++)
     {
-      J(i,j) = 0.;
+      if(i == j)
+      {
+        J(i,j) = 1.;
+      }
+      else
+      {
+        J(i,j) = 0.;
+      }
     }
   }
 
-  // PV
-  J(0,0) = 1.; // PVx
-  J(1,1) = 1.; // PVy
-  J(2,2) = 1.; // PVz
-
-  // DV1
-  J(3,3) = 1.; // DV1x
-  J(4,4) = 1.; // DV1y
-  J(5,5) = 1.; // DV1z
-
-  // DV2
-  J(10,15) = 1.; // DV2x
-  J(11,16) = 1.; // DV2y
-  J(12,17) = 1.; // DV2z
-
-  // RP
-  J(17,27) = 1.; // RPx
-  J(18,28) = 1.; // RPy
-
-  // p3pi1x
-  J(6,6) = 1.; // p1x
-  J(6,9) = 1.; // p2x
-  J(6,12) = 1.; // p3x
-
-  // p3pi1y
-  J(7,7) = 1.; // p1y
-  J(7,10) = 1.; // p2y
-  J(7,13) = 1.; // p3y
-
-  // p3pi1z
-  J(8,8) = 1.; // p1z
-  J(8,11) = 1.; // p3y
-  J(8,14) = 1.; // p3z
+  ROOT::Math::XYZVector p3pi1( m(6), m(7), m(8) );
+  ROOT::Math::XYZVector p3pi2( m(13), m(14), m(15) );
+  Double_t E3pi1 = m(9);
+  Double_t E3pi2 = m(16);
 
   // m3pi1^2
-  J(9,6) = 2*( ((E2+E3)/E1)*p1.x() - p2.x() - p3.x() ); // p1x
-  J(9,7) = 2*( ((E2+E3)/E1)*p1.y() - p2.y() - p3.y() ); // p1y
-  J(9,8) = 2*( ((E2+E3)/E1)*p1.z() - p2.z() - p3.z() ); // p1z
-  J(9,9) = 2*( ((E1+E3)/E2)*p2.x() - p1.x() - p3.x() ); // p2x
-  J(9,10) = 2*( ((E1+E3)/E2)*p2.y() - p1.y() - p3.y() ); // p2y
-  J(9,11) = 2*( ((E1+E3)/E2)*p2.z() - p1.z() - p3.z() ); // p2z
-  J(9,12) = 2*( ((E1+E2)/E3)*p3.x() - p1.x() - p2.x() ); // p3x
-  J(9,13) = 2*( ((E1+E2)/E3)*p3.y() - p1.y() - p2.y() ); // p3y
-  J(9,14) = 2*( ((E1+E2)/E3)*p3.z() - p1.z() - p2.z() ); // p3z
-
-  // p3pi2x
-  J(13,18) = 1.; // p4x
-  J(13,21) = 1.; // p5x
-  J(13,24) = 1.; // p6x
-
-  // p3pi1y
-  J(14,19) = 1.; // p4y
-  J(14,22) = 1.; // p5y
-  J(14,25) = 1.; // p6y
-
-  // p3pi1z
-  J(15,20) = 1.; // p4z
-  J(15,23) = 1.; // p5z
-  J(15,26) = 1.; // p6z
+  J(9,6) = -2*p3pi1.x();
+  J(9,7) = -2*p3pi1.y();
+  J(9,8) = -2*p3pi1.z();
+  J(9,9) = 2*E3pi1;
 
   // m3pi2^2
-  J(16,18) = 2*( ((E5+E6)/E4)*p4.x() - p5.x() - p6.x() ); // p4x
-  J(16,19) = 2*( ((E5+E6)/E4)*p4.y() - p5.y() - p6.y() ); // p4y
-  J(16,20) = 2*( ((E5+E6)/E4)*p4.z() - p5.z() - p6.z() ); // p4z
-  J(16,21) = 2*( ((E4+E6)/E5)*p5.x() - p4.x() - p6.x() ); // p5x
-  J(16,22) = 2*( ((E4+E6)/E5)*p5.y() - p4.y() - p6.y() ); // p5y
-  J(16,23) = 2*( ((E4+E6)/E5)*p5.z() - p4.z() - p6.z() ); // p5z
-  J(16,24) = 2*( ((E4+E5)/E6)*p6.x() - p4.x() - p5.x() ); // p6x
-  J(16,25) = 2*( ((E4+E5)/E6)*p6.y() - p4.y() - p5.y() ); // p6y
-  J(16,26) = 2*( ((E4+E5)/E6)*p6.z() - p4.z() - p5.z() ); // p6z
+  J(16,13) = -2*p3pi2.x();
+  J(16,14) = -2*p3pi2.y();
+  J(16,15) = -2*p3pi2.z();
+  J(16,16) = 2*E3pi2;
 
-  // pK (29,30,31)
-  J(19,29) = 1.;
-  J(20,30) = 1.;
-  J(21,31) = 1.;
+  ROOT::Math::XYZVector pK( m(19), m(20), m(21) );
 
-  // p6piKx
-  J(19,6) = 1.; // p1x
-  J(19,9) = 1.; // p2x
-  J(19,12) = 1.; // p3x
-  J(19,18) = 1.; // p4x 
-  J(19,21) = 1.; // p5x
-  J(19,24) = 1.; // p6x
-  J(19,29) = 1.; // pKx
-
-  // p6piKy
-  J(20,7) = 1.; // p1y
-  J(20,10) = 1.; // p2y
-  J(20,13) = 1.; // p3y
-  J(20,19) = 1.; // p4y
-  J(20,22) = 1.; // p5y
-  J(20,25) = 1.; // p6y
-  J(20,30) = 1.; // pKy
-
-  // p6piKz
-  J(21,8) = 1.; // p1z
-  J(21,11) = 1.; // p2z
-  J(21,14) = 1.; // p3z
-  J(21,20) = 1.; // p4z
-  J(21,23) = 1.; // p5z
-  J(21,26) = 1.; // p6z
-  J(21,31) = 1.; // pKz
-
-  // m6piK^2
-  J(22,6) = 2*( ((E2+E3+E4+E5+E6+EK)/E1)*p1.x() - p2.x() - p3.x() - p4.x() - p5.x() - p6.x() - pK.x() ); // p1x
-  J(22,7) = 2*( ((E2+E3+E4+E5+E6+EK)/E1)*p1.y() - p2.y() - p3.y() - p4.y() - p5.y() - p6.y() - pK.y() ); // p1y
-  J(22,8) = 2*( ((E2+E3+E4+E5+E6+EK)/E1)*p1.z() - p2.z() - p3.z() - p4.z() - p5.z() - p6.z() - pK.z() ); // p1z
-  J(22,9) = 2*( ((E1+E3+E4+E5+E6+EK)/E2)*p2.x() - p1.x() - p3.x() - p4.x() - p5.x() - p6.x() - pK.x() ); // p2x
-  J(22,10) = 2*( ((E1+E3+E4+E5+E6+EK)/E2)*p2.y() - p1.y() - p3.y() - p4.y() - p5.y() - p6.y() - pK.y() ); // p2y
-  J(22,11) = 2*( ((E1+E3+E4+E5+E6+EK)/E2)*p2.z() - p1.z() - p3.z() - p4.z() - p5.z() - p6.z() - pK.z() ); // p2z
-  J(22,12) = 2*( ((E1+E2+E4+E5+E6+EK)/E3)*p3.x() - p1.x() - p2.x() - p4.x() - p5.x() - p6.x() - pK.x() ); // p3x
-  J(22,13) = 2*( ((E1+E2+E4+E5+E6+EK)/E3)*p3.y() - p1.y() - p2.y() - p4.y() - p5.y() - p6.y() - pK.y() ); // p3y
-  J(22,14) = 2*( ((E1+E2+E4+E5+E6+EK)/E3)*p3.z() - p1.z() - p2.z() - p4.z() - p5.z() - p6.z() - pK.z() ); // p3z
-  J(22,18) = 2*( ((E1+E2+E3+E5+E6+EK)/E4)*p4.x() - p1.x() - p2.x() - p3.x() - p5.x() - p6.x() - pK.x() ); // p4x
-  J(22,19) = 2*( ((E1+E2+E3+E5+E6+EK)/E4)*p4.y() - p1.y() - p2.y() - p3.y() - p5.y() - p6.y() - pK.y() ); // p4y
-  J(22,20) = 2*( ((E1+E2+E3+E5+E6+EK)/E4)*p4.z() - p1.z() - p2.z() - p3.z() - p5.z() - p6.z() - pK.z() ); // p4z
-  J(22,21) = 2*( ((E1+E2+E3+E4+E6+EK)/E5)*p5.x() - p1.x() - p2.x() - p3.x() - p4.x() - p6.x() - pK.x() ); // p5x
-  J(22,22) = 2*( ((E1+E2+E3+E4+E6+EK)/E5)*p5.y() - p1.y() - p2.y() - p3.y() - p4.y() - p6.y() - pK.y() ); // p5y
-  J(22,23) = 2*( ((E1+E2+E3+E4+E6+EK)/E5)*p5.z() - p1.z() - p2.z() - p3.z() - p4.z() - p6.z() - pK.z() ); // p5z
-  J(22,24) = 2*( ((E1+E2+E3+E4+E5+EK)/E6)*p6.x() - p1.x() - p2.x() - p3.x() - p4.x() - p5.x() - pK.x() ); // p6x
-  J(22,25) = 2*( ((E1+E2+E3+E4+E5+EK)/E6)*p6.y() - p1.y() - p2.y() - p3.y() - p4.y() - p5.y() - pK.y() ); // p6y
-  J(22,26) = 2*( ((E1+E2+E3+E4+E5+EK)/E6)*p6.z() - p1.z() - p2.z() - p3.z() - p4.z() - p5.z() - pK.z() ); // p6z
-  J(22,29) = 2*( ((E1+E2+E3+E4+E5+E6)/EK)*pK.x() - p1.x() - p2.x() - p3.x() - p4.x() - p5.x() - p6.x() ); // pKx
-  J(22,30) = 2*( ((E1+E2+E3+E4+E5+E6)/EK)*pK.y() - p1.y() - p2.y() - p3.y() - p4.y() - p5.y() - p6.y() ); // pKy
-  J(22,31) = 2*( ((E1+E2+E3+E4+E5+E6)/EK)*pK.z() - p1.z() - p2.z() - p3.z() - p4.z() - p5.z() - p6.z() ); // pKz
+  // pK^2
+  J(21,19) = 2*pK.x();
+  J(21,20) = 2*pK.y();
+  J(21,21) = 2*pK.z();
 
   // J.Print();
 
@@ -1473,6 +1334,8 @@ TMatrixDSym transform_V( TVectorD m, TMatrixDSym V )
       Vp_sym(i,j) = Vp(i,j);
     }
   }
+
+  // Vp_sym(22,22) = pow(10,-12);
 
   return Vp_sym;
 }
