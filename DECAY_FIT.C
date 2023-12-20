@@ -15,9 +15,10 @@ TVectorD lambda(dimC);
 
 TVectorD x0(dimM+dimX+dimC);
 Double_t RPz = 0.; // z-component of the RP on the K+ trajectory (fixed)
+TVectorD x_current(dimM+dimX+dimC);
 
 // Fit results saved
-Double_t MB, MB_err, F_tolerance, chi2;
+Double_t MB, MB_err, F_tolerance, chi2, L;
 TVectorD X(dimM+dimX+dimC);
 TVectorD X_ERR(dimM+dimX+dimC);
 TVectorD F(dimM+dimX+dimC);
@@ -259,6 +260,7 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
     tout->Branch("df_status", &status);
     tout->Branch("df_F_tolerance", &F_tolerance);
     tout->Branch("df_chi2", &chi2);
+    tout->Branch("df_L", &L);
 
     // Loop over events
     for(int evt = 0; evt < num_entries; evt++)
@@ -373,29 +375,60 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
         // init = 3: RD calculations (uses offline estimate for BV) (58%)
 
         ROOT::Math::XYZPoint BV( BVx, BVy, BVz );
+        lowest_sum(BV, solver, pow(10,-9));
+        if(status != 0)
+        {
+            x_current = X;
+            solve( BV, -1, solver, pow(10,-6) );        
+        }
+        if(status != 0)
+        {
+            x_current = X;
+            solve( BV, -1, solver, pow(10,-3) );        
+        }
+        if(status != 0)
+        {
+            x_current = X;
+            solve( BV, -1, solver, pow(10,0.1) );
+        }
+        if(status != 0)
+        {
+            x_current = X;
+            solve( BV, -1, solver, 1. );
+        }
+        if(status != 0)
+        {
+            x_current = X;
+            solve( BV, -1, solver, 10. );
+        }
+        if(status != 0)
+        {
+            x_current = X;
+            solve( BV, -1, solver, 100. );
+        }
 
-        lowest_sum(BV, solver, pow(10,-6));
-        if(status != 0)
-        {
-            solve( BV, init, solver, 1. );
-        }   
-        if(status != 0)
-        {
-            solve( BV, init, solver, 61. );
-        }
-        if(status != 0)
-        {
-            init = -1;
-        }
+        // if(status != 0)
+        // {
+        //     solve( BV, init, solver, 1. );
+        // }   
+        // if(status != 0)
+        // {
+        //     solve( BV, init, solver, 61. );
+        // }
+        // if(status != 0)
+        // {
+        //     init = -1;
+        // }
 
         cout << "FINAL" << endl;
         cout << "init = " << init << endl;
         cout << "status == " << status << endl;
         cout << "sum_Fi = " << F_tolerance << endl;
-        cout << "Initial MB = " << sqrt(x0(28)) << endl;
+        // cout << "Initial MB = " << sqrt(x0(28)) << endl;
         cout << "MB = " << MB << " +/- " << MB_err << endl;
-        cout << "DTF MB = " << DTF_MB << " +/- " << DTF_MB_err << endl;
+        // cout << "DTF MB = " << DTF_MB << " +/- " << DTF_MB_err << endl;
         cout << "chi2 = " << chi2 << endl;
+        cout << "L = " << L << endl;
 
         // X.Print();
         // X_ERR.Print();
@@ -549,6 +582,10 @@ void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* 
     {
         x0 = x_initial_estimate_9( m, BV ); // Mixes Marseille (tau-) and K*tautau pions (tau+)
     }
+    else if(init == -1)
+    {
+        x0 = x_current; // Mixes Marseille (tau-) and K*tautau pions (tau+)
+    }
     // x0.Print();
 
     Double_t x0_vars[dimM+dimX+dimC];
@@ -629,6 +666,7 @@ void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* 
         xm(i) = X(i);
     }
     chi2 = chisquare(xm);
+    L = lagrangian(X);
 
 }
 
