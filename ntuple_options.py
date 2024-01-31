@@ -7,8 +7,9 @@ from PhysConf.Selections import FilterSelection
 from PhysSelPython.Wrappers import AutomaticData
 
 isMC = True
-year = '2018'
+year = '2016'
 pol = 'MagUp'
+applySel = False
 
 # redefine addBranches and setDescriptorTemplate because of weird bug in DV
 def addBranches(self, branches):
@@ -102,12 +103,6 @@ def addIsoInfo(branch, stream, line, year):
 			"VTXISODCHI2MASSONETRACK_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_VertexIsoInfo', 'VTXISODCHI2MASSONETRACK', -100)".format(stream,line),
 			"VTXISODCHI2TWOTRACK_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_VertexIsoInfo', 'VTXISODCHI2TWOTRACK', -100)".format(stream,line),
 			"VTXISODCHI2MASSTWOTRACK_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_VertexIsoInfo', 'VTXISODCHI2MASSTWOTRACK', -100)".format(stream,line),
-
-			"VTXISONUMVTX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_VertexIsoInfo', 'VTXISONUMVTX', -100)".format(stream,line),
-			"VTXISODCHI2ONETRACK_K" : "RELINFO('/Event/{0}/Phys/{1}/H_VertexIsoInfo', 'VTXISODCHI2ONETRACK', -100)".format(stream,line),
-			"VTXISODCHI2MASSONETRACK_K" : "RELINFO('/Event/{0}/Phys/{1}/H_VertexIsoInfo', 'VTXISODCHI2MASSONETRACK', -100)".format(stream,line),
-			"VTXISODCHI2TWOTRACK_K" : "RELINFO('/Event/{0}/Phys/{1}/H_VertexIsoInfo', 'VTXISODCHI2TWOTRACK', -100)".format(stream,line),
-			"VTXISODCHI2MASSTWOTRACK_K" : "RELINFO('/Event/{0}/Phys/{1}/H_VertexIsoInfo', 'VTXISODCHI2MASSTWOTRACK', -100)".format(stream,line),
 
 			"VTXISONUMVTX_tau1" : "RELINFO('/Event/{0}/Phys/{1}/Tau1_VertexIsoInfo', 'VTXISONUMVTX', -100)".format(stream,line),
 			"VTXISODCHI2ONETRACK_tau1" : "RELINFO('/Event/{0}/Phys/{1}/Tau1_VertexIsoInfo', 'VTXISODCHI2ONETRACK', -100)".format(stream,line),
@@ -341,7 +336,7 @@ def addTopInfo( branch ):
         "BPVLTIME":"BPVLTIME()",
         "BPVZ":"BPV(VZ)",
     	"VCHI2PDOF":"VFASPF(VCHI2PDOF)",
-        "AM" : "PFUNA(AM)",
+        # "AM" : "PFUNA(AM)",
     }
 
 def addTrkInfo( branch ):
@@ -357,7 +352,7 @@ def addTrkInfo( branch ):
 # DecayTreeFitter / standalone fitter input branches
 def addKTTDTF(branch):
 	# my decay fit
-	df = branch.addTupleTool("TupleToolDecayFit1/df")
+	df = branch.addTupleTool("TupleToolDecayFit/df")
 	df.constrainToOriginVertex = True
 
 	# original initialisation
@@ -474,11 +469,11 @@ def addTISTOS( branch ):
 		"Hlt1TrackMVALooseDecision",
 		"Hlt1TwoTrackMVADecision",
 		"Hlt1TwoTrackMVALooseDecision",
-		"Hlt1CalibHighPTLowMultTrksDecision",
-		"Hlt1IncPhiDecision",
+		# "Hlt1CalibHighPTLowMultTrksDecision",
+		# "Hlt1IncPhiDecision",
 		# HLT2
 		"Hlt2ForwardDecision",
-		"Hlt2XcMuXForTauB2XcFakeMuDecision",
+		# "Hlt2XcMuXForTauB2XcFakeMuDecision",
 		"Hlt2Topo2BodyDecision",
 		"Hlt2Topo3BodyDecision",
 		"Hlt2Topo4BodyDecision"
@@ -507,14 +502,68 @@ def addTools( DecayTreeTuple, stream, line, year ):
     # add trigger information
     addTISTOS(DecayTreeTuple.Bp)
 
+# Configure DaVinci
+if isMC:
+	DaVinci().TupleFile = 'DVntuple_MC_'+year+'_'+pol+'.root'
+	# DaVinci().TupleFile = '/panfs/felician/B2Ktautau/ROOT_Sim/2018/DVntuple_MC_'+year+'_'+pol+'.root'
+else:
+	DaVinci().TupleFile = 'DVntuple_data_'+year+'_'+pol+'.root'
+
 # Stream and stripping line we want to use
 if isMC:
-	#stream = 'AllStreams'
 	stream = 'B2KTauTau.Strip' # for filtered MC
 else:	
 	stream = 'Bhadron'
 line = 'B2KTauTauLine'
 line_SS = 'B2KTauTauSSLine'
+
+if isMC:
+	DaVinci().Simulation = True
+	DaVinci().InputType = 'DST'
+
+	# CondDBtag / DDDBtag specify the exact detector conditions with which the MC was generated. They are specified in the downloaded DST file.
+	if year == '2016':
+		DaVinci().DDDBtag = "dddb-20210528-6"
+		if pol == 'MagUp':
+			DaVinci().CondDBtag = "sim-20201113-6-vc-mu100-Sim10"
+		elif pol == 'MagDown':
+			DaVinci().CondDBtag = "sim-20201113-6-vc-md100-Sim10"
+	elif year == '2017':
+		DaVinci().DDDBtag = "dddb-20210528-7"
+		if pol == 'MagUp':
+			DaVinci().CondDBtag = "sim-20201113-7-vc-mu100-Sim10"
+		elif pol == 'MagDown':
+			DaVinci().CondDBtag = "sim-20201113-7-vc-md100-Sim10"
+	elif year == '2018':
+		DaVinci().DDDBtag = "dddb-20210528-8"
+		if pol == 'MagUp':
+			DaVinci().CondDBtag = "sim-20201113-8-vc-mu100-Sim10" 
+		elif pol == 'MagDown':
+			DaVinci().CondDBtag = "sim-20201113-8-vc-md100-Sim10"
+else:
+	DaVinci().Simulation = False
+	DaVinci().InputType = 'MDST'
+	DaVinci().RootInTES = '/Event/{0}'.format(stream) # for MDST only
+
+DaVinci().PrintFreq = 1000
+DaVinci().DataType = year 
+
+DaVinci().Lumi = not DaVinci().Simulation # Only ask for luminosity information when not using simulated data
+DaVinci().EvtMax = -1 # how many events to run over (-1 = runs over all events)
+
+# Add smearing to MC and momentum scaling to data
+if isMC:
+	# Apply momentum smearing
+	from Configurables import TrackSmearState as SMEAR
+	smear = SMEAR('StateSmear')
+	DaVinci().UserAlgorithms += [smear]
+else:
+	# Apply momentum scaling to data
+	from Configurables import TrackScaleState as SCALE
+	from Configurables import CondDB
+	CondDB(LatestGlobalTagByDataType=year) # sets the DDDB and CondDB for data to the latest recommended tags for that year
+	scaler = SCALE('StateScale')
+	DaVinci().UserAlgorithms += [scaler]
 
 # Create an ntuple to capture B+ decays from the StrippingLine line
 dtt = DecayTreeTuple('ntuple')
@@ -526,26 +575,33 @@ mcdtt_3pipi0_3pipi0 = MCDecayTreeTuple('mc_ntuple_3pipi0_3pipi0')
 
 # Loose preselections to reduce the size of the tuples (in data)
 # These (rectangular) selections are applied to MC offline
-
 # filter code (will be updated)
 filtercode = " (NINGENERATION( (M < 3400) & (ABSID=='B+') , 0) == 0)  "\
 			 "& (NINGENERATION( (M > 5000) & (ABSID=='B+') , 0) == 0) "\
 			 "& (NINGENERATION( (M < 800) & (ABSID=='tau+') , 1) == 0) "\
 			 "& (NINGENERATION( (M > 1600) & (ABSID=='tau+') , 1) == 0) "
 
-if not isMC:
-	b_strip    = AutomaticData('/Phys/{0}/Particles'.format(line)) # microDST 
-	b_strip_SS = AutomaticData('/Phys/{0}/Particles'.format(line_SS)) # microDST 
+if applySel:
+	if isMC:
+		b_strip = AutomaticData('/Event/{0}/Phys/{1}/Particles'.format(stream, line))
+	if not isMC:
+		b_strip    = AutomaticData('/Phys/{0}/Particles'.format(line)) 
+		b_strip_SS = AutomaticData('/Phys/{0}/Particles'.format(line_SS)) 
 
 	b_Filter    = FilterSelection("b_Filter", b_strip, Code = filtercode)
-	b_Filter_SS = FilterSelection("b_Filter_SS", b_strip_SS, Code = filtercode)
-
 	dtt.Inputs = [b_Filter.outputLocation()]
-	dtt_SS.Inputs = [b_Filter_SS.outputLocation()]
+
+	if not isMC:
+		b_Filter_SS = FilterSelection("b_Filter_SS", b_strip_SS, Code = filtercode)
+		dtt_SS.Inputs = [b_Filter_SS.outputLocation()]
 
 # Do not apply rectangular cuts to MC @ DaVinci stage:
-if isMC:
-	dtt.Inputs = ['/Event/{0}/Phys/{1}/Particles'.format(stream, line)] # DST
+if not applySel:
+	if isMC:
+		dtt.Inputs = ['/Event/{0}/Phys/{1}/Particles'.format(stream, line)] 
+	if not isMC:
+		dtt.Inputs = ['/Phys/{0}/Particles'.format(line)]
+		dtt_SS.Inputs = ['/Phys/{0}/Particles'.format(line_SS)]
 
 dtt.setDescriptorTemplate('${Bp}[B+ -> ${taup}(tau+ -> ${taup_pi1}pi+ ${taup_pi2}pi- ${taup_pi3}pi+) ${taum}(tau- -> ${taum_pi1}pi- ${taum_pi2}pi+ ${taum_pi3}pi-) ${Kp}K+]CC')
 dtt_SS.setDescriptorTemplate('(${Bp}[B+ -> ${taup}(tau+ -> ${taup_pi1}pi+ ${taup_pi2}pi- ${taup_pi3}pi+) ${taum}(tau+ -> ${taum_pi1}pi+ ${taum_pi2}pi- ${taum_pi3}pi+) ${Kp}K+]CC)'
@@ -588,9 +644,10 @@ if not isMC:
 # PV checker -> TupleToolPrimaries requires there to be a PV in the event, otherwise it throws an error
 DaVinci().UserAlgorithms += [CheckPV()]
 
-if not isMC:
+if applySel:
 	DaVinci().UserAlgorithms += [b_Filter]
-	DaVinci().UserAlgorithms += [b_Filter_SS]
+	if not isMC:
+		DaVinci().UserAlgorithms += [b_Filter_SS]
 
 DaVinci().UserAlgorithms += [dtt]
 if isMC:
@@ -601,63 +658,8 @@ if isMC:
 if not isMC:
 	DaVinci().UserAlgorithms += [dtt_SS]
 
-if isMC:
-	# Apply momentum smearing to MC
-	from Configurables import TrackSmearState as SMEAR
-	smear = SMEAR('StateSmear')
-	DaVinci().UserAlgorithms += [smear]
-else:
-	# Apply momentum scaling to data
-	from Configurables import TrackScaleState as SCALE
-	from Configurables import CondDB
-	CondDB(LatestGlobalTagByDataType=year) # sets the DDDB and CondDB for data to the latest recommended tags for that year
-	scaler = SCALE('StateScale')
-	DaVinci().UserAlgorithms += [scaler]
-
-# Configure DaVinci
-if isMC:
-	# DaVinci().TupleFile = 'DVntuple_MC_'+year+'_'+pol+'.root'
-	DaVinci().TupleFile = '/panfs/felician/B2Ktautau/ROOT_Sim/2018/DVntuple_MC_'+year+'_'+pol+'.root'
-else:
-	DaVinci().TupleFile = 'DVntuple_data_'+year+'_'+pol+'.root'
-
-DaVinci().PrintFreq = 1000
-DaVinci().DataType = year 
-
-if isMC:
-	DaVinci().Simulation = True
-	DaVinci().InputType = 'DST'
-
-	# CondDBtag / DDDBtag specify the exact detector conditions with which the MC was generated. They are specified in the downloaded DST file.
-	if year == '2016':
-		DaVinci().DDDBtag = "dddb-20210528-6"
-		if pol == 'MagUp':
-			DaVinci().CondDBtag = "sim-20201113-6-vc-mu100-Sim10"
-		elif pol == 'MagDown':
-			DaVinci().CondDBtag = "sim-20201113-6-vc-md100-Sim10"
-	elif year == '2017':
-		DaVinci().DDDBtag = "dddb-20210528-7"
-		if pol == 'MagUp':
-			DaVinci().CondDBtag = "sim-20201113-7-vc-mu100-Sim10"
-		elif pol == 'MagDown':
-			DaVinci().CondDBtag = "sim-20201113-7-vc-md100-Sim10"
-	elif year == '2018':
-		DaVinci().DDDBtag = "dddb-20210528-8"
-		if pol == 'MagUp':
-			DaVinci().CondDBtag = "sim-20201113-8-vc-mu100-Sim10" 
-		elif pol == 'MagDown':
-			DaVinci().CondDBtag = "sim-20201113-8-vc-md100-Sim10"
-
-else:
-	DaVinci().Simulation = False
-	DaVinci().InputType = 'MDST'
-	DaVinci().RootInTES = '/Event/{0}'.format(stream) # for MDST only
-
-DaVinci().Lumi = not DaVinci().Simulation # Only ask for luminosity information when not using simulated data
-DaVinci().EvtMax = -1 # how many events to run over (-1 = runs over all events)
-
 # Use the local input data
-from GaudiConf import IOHelper
-IOHelper().inputFiles([
-	'/panfs/felician/B2Ktautau/ROOT_Sim/2018/DST/00175275_00000033_1.b2ktautau.strip.dst'
-	], clear=True)
+# from GaudiConf import IOHelper
+# IOHelper().inputFiles([
+# 	'/panfs/felician/B2Ktautau/ROOT_Sim/2018/DST/00175275_00000033_1.b2ktautau.strip.dst'
+# 	], clear=True)
