@@ -1,12 +1,13 @@
-// Decay fit with 20 constraints to 19 unknowns
+// Decay fit with 24 constraints to 23 unknowns
 
 using namespace std;
 
 // Global variables 
 int dimM = 22; // number of measured parameters
-int dimX = 19; // number of unknown parameters
-int dimC = 20; // number of exact constraints
+int dimX = 23; // number of unknown parameters
+int dimC = 24; // number of exact constraints
 int eq_flag = 0; // index of the equation
+Double_t initial_tolerance = pow(10,-10);
 
 TVectorD m(dimM);
 TMatrixDSym V(dimM);
@@ -17,29 +18,26 @@ TVectorD lambda(dimC);
 
 TVectorD x0(dimM+dimX+dimC);
 Double_t RPz = 0.; // z-component of the RP on the K+ trajectory (fixed)
-TVectorD x_current(dimM+dimX+dimC);
+TVectorD x0_current(dimM+dimX+dimC), x1_current(dimM+dimX+dimC), x2_current(dimM+dimX+dimC), x3_current(dimM+dimX+dimC), x4_current(dimM+dimX+dimC), x5_current(dimM+dimX+dimC), x6_current(dimM+dimX+dimC), x7_current(dimM+dimX+dimC), x8_current(dimM+dimX+dimC), x9_current(dimM+dimX+dimC), x_true_current(dimM+dimX+dimC), x_MLP_current(dimM+dimX+dimC);
 
 // Fit results saved
-Double_t MB, MB_err, F_tolerance, chi2, L;
+Double_t MB, MB_err, F_tolerance, chi2, deltaT;
 TVectorD X(dimM+dimX+dimC);
 TVectorD X_ERR(dimM+dimX+dimC);
 TVectorD F(dimM+dimX+dimC);
 TMatrixDSym U(dimM+dimX+dimC);
 TMatrixDSym U_corr(dimM+dimX+dimC);
-TMatrixDSym D(dimM+dimX+dimC);
-TMatrixDSym D_inverse(dimM+dimX+dimC);
 Int_t status, init, nIter;
-
-// DTF variables
-Float_t DTF_MB, DTF_MB_err;
+ULong64_t eventNumber;
+// Bool_t saddle_point = false;
+TVectorD meas_ratio(dimM);
 
 // Constants
-Double_t mtau = 1776.86;
+Double_t mtau;
 Double_t mkaon = 493.677;
-// Double_t tolerance = pow(10,-6);
 
 // Functions
-void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* solver, Double_t tolerance );
+void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* solver, Double_t tolerance, Int_t species );
 ROOT::Math::XYZVector makeTransformation_vec(ROOT::Math::XYZVector Pk, ROOT::Math::XYZPoint refPoint, ROOT::Math::XYZVector theVector, bool invFlag);
 ROOT::Math::XYZPoint makeTransformation_point(ROOT::Math::XYZVector Pk, ROOT::Math::XYZPoint refPoint, ROOT::Math::XYZPoint thePoint, bool invFlag);
 
@@ -53,17 +51,19 @@ TVectorD x_initial_estimate_6( TVectorD m, ROOT::Math::XYZPoint BV );
 TVectorD x_initial_estimate_7( TVectorD m, ROOT::Math::XYZPoint BV );
 TVectorD x_initial_estimate_8( TVectorD m, ROOT::Math::XYZPoint BV );
 TVectorD x_initial_estimate_9( TVectorD m, ROOT::Math::XYZPoint BV );
-void sequence(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder * solver, Double_t tolerance);
-void lowest_sum(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver, Double_t tolerance);
+TVectorD x_initial_estimate_true( TVectorD m );
+TVectorD x_initial_estimate_MLP( TVectorD m, ROOT::Math::XYZPoint BV, Int_t species );
+
+void sequence(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder * solver, Double_t tolerance, Int_t species);
+void lowest_chi2(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver, Double_t tolerance, Int_t species);
+
 Double_t lagrangian( TVectorD x );
 Double_t chisquare( TVectorD xm );
 TVectorD exact_constraints( TVectorD x );
 TMatrixDSym U_matrix();
-TMatrixDSym D_matrix();
 vector<double> range(double min, double max, size_t N);
 void scan_lagrangian( TVectorD X, Int_t index, Int_t npoints, TString x_name, Int_t year, Int_t species, Int_t line );
 void scan_chisquare( TVectorD X, Int_t index, Int_t npoints, TString x_name, Int_t year, Int_t species, Int_t line);
-TVectorD normalise( TVectorD a, bool norm );
 
 double equations( const double* x_vars );
 double eq1( const double* x );
@@ -127,35 +127,44 @@ double eq58( const double* x );
 double eq59( const double* x );
 double eq60( const double* x );
 double eq61( const double* x );
-
+double eq62( const double* x );
+double eq63( const double* x );
+double eq64( const double* x );
+double eq65( const double* x );
+double eq66( const double* x );
+double eq67( const double* x );
+double eq68( const double* x );
+double eq69( const double* x );
 
 void DECAY_FIT(int year, TString RECO_files, int species, int line)
 {   
+    gErrorIgnoreLevel = 2000; // Used to remove "The iteration has converged" comments from ROOT finder
+
+    if( (species == 4) || (species == 5) )
+    {
+        mtau = 1869.66; // D meson 
+    }
+    else
+    {
+        mtau = 1776.86; // tau lepton
+    }
+
     // Retrieve m and V from ntuple
     TFileCollection* fc = new TFileCollection("fc", "fc", RECO_files, 1, line);
     TChain* t = new TChain("DecayTree");
     t->AddFileInfoList((TCollection*)fc->GetList());
 
-    UInt_t num_entries = t->GetEntries();
-    Double_t m_vars[dimM];
-    Double_t V_vars[dimM][dimM];
+    Float_t m_vars[dimM];
+    Float_t V_vars[dimM][dimM];
     Double_t BVx, BVy, BVz; // offline estimate for the BV is needed to have a first estimate for the unknown parameters using some of the initialisations
-    for(int i = 1; i <= dimM; i++)
-    {
-        t->SetBranchAddress(Form("df_m_%i",i), &m_vars[i-1] );
-        for(int j = 1; j <= dimM; j++)
-        {
-            t->SetBranchAddress(Form("df_V_%i_%i",i,j), &V_vars[i-1][j-1]);
-        }
-    }
-    t->SetBranchAddress("df_RPz", &RPz);
+
+    t->SetBranchAddress("df_m", m_vars);
+    t->SetBranchAddress("df_V", V_vars);
+    t->SetBranchAddress("Kp_RP_Z", &RPz); 
+    t->SetBranchAddress("eventNumber", &eventNumber);
     t->SetBranchAddress("Bp_ENDVERTEX_X", &BVx);
     t->SetBranchAddress("Bp_ENDVERTEX_Y", &BVy);
     t->SetBranchAddress("Bp_ENDVERTEX_Z", &BVz);    
-
-    // DTF variables
-    t->SetBranchAddress("Bp_dtf_12_M", &DTF_MB);
-    t->SetBranchAddress("Bp_dtf_12_MERR", &DTF_MB_err);
 
     // Save result of the fit (xm,xu) in a .root file (x = (xm,xu))
     TFile* fout = new TFile(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/%i.root",year,species,line), "RECREATE");
@@ -194,15 +203,19 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
         "df_taup_PX",
         "df_taup_PY",
         "df_taup_PZ",
+        "df_taup_PE",
         "df_antinutau_PX",
         "df_antinutau_PY",
         "df_antinutau_PZ",
+        "df_antinutau_PE",
         "df_taum_PX",
         "df_taum_PY",
         "df_taum_PZ",
+        "df_taum_PE",
         "df_nutau_PX",
         "df_nutau_PY",
-        "df_nutau_PZ"
+        "df_nutau_PZ",
+        "df_nutau_PE"
     };
 
     TString name_x_err[] = {
@@ -212,10 +225,10 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
         "df_DV1x_err",
         "df_DV1y_err",
         "df_DV1z_err",
-        "df_3p1_PX_err",
-        "df_3p1_PY_err",
-        "df_3p1_PZ_err",
-        "df_3p1_PE_err",
+        "df_3pi1_PX_err",
+        "df_3pi1_PY_err",
+        "df_3pi1_PZ_err",
+        "df_3pi1_PE_err",
         "df_DV2x_err",
         "df_DV2y_err",
         "df_DV2z_err",
@@ -238,15 +251,19 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
         "df_taup_PX_err",
         "df_taup_PY_err",
         "df_taup_PZ_err",
+        "df_taup_PE_err",
         "df_antinutau_PX_err",
         "df_antinutau_PY_err",
         "df_antinutau_PZ_err",
+        "df_antinutau_PE_err",
         "df_taum_PX_err",
         "df_taum_PY_err",
         "df_taum_PZ_err",
+        "df_taum_PE_err",
         "df_nutau_PX_err",
         "df_nutau_PY_err",
-        "df_nutau_PZ_err"
+        "df_nutau_PZ_err",
+        "df_nutau_PE_err"
     };
 
     for(int i = 0; i < dimM+dimX; i++)
@@ -255,9 +272,81 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
         tout->Branch(name_x_err[i], &X_ERR(i));
     }
 
+    TString name_F[] = {
+        "df_dL_dPVx",
+        "df_dL_dPVy",
+        "df_dL_dPVz",
+        "df_dL_dDV1x",
+        "df_dL_dDV1y",
+        "df_dL_DV1z",
+        "df_dL_dp3pi1x",
+        "df_dL_dp3pi1y",
+        "df_dL_dp3pi1z",
+        "df_dL_dE3pi1",
+        "df_dL_dDV2x",
+        "df_dL_dDV2y",
+        "df_dL_dDV2z",
+        "df_dL_dp3pi2x",
+        "df_dL_dp3pi2y",
+        "df_dL_dp3pi2z",
+        "df_dL_dE3pi2",
+        "df_dL_dRPx",
+        "df_dL_dRPy",
+        "df_dL_dpKx",
+        "df_dL_dpKy",
+        "df_dL_dpKz",
+        "df_dL_dBVx",
+        "df_dL_dBVy",
+        "df_dL_dBVz",
+        "df_dL_dpBx",
+        "df_dL_dpBy",
+        "df_dL_dpBz",
+        "df_dL_dMB2",
+        "df_dL_dptau1x",
+        "df_dL_dptau1y",
+        "df_dL_dptau1z",
+        "df_dL_dEtau1",
+        "df_dL_dpnu1x",
+        "df_dL_dpnu1y",
+        "df_dL_dpnu1z",
+        "df_dL_dEnu1",
+        "df_dL_dptau2x",
+        "df_dL_dptau2y",
+        "df_dL_dptau2z",
+        "df_dL_dEtau2",
+        "df_dL_dpnu2x",
+        "df_dL_dpnu2y",
+        "df_dL_dpnu2z",
+        "df_dL_dEnu2",
+        "df_pB_pointing_to_PV_XZ",
+        "df_pB_pointing_to_PV_YZ",
+        "df_ptau1_pointing_to_BV_XZ",
+        "df_ptau1_pointing_to_BV_YZ",
+        "df_px_conservation_in_DV1",
+        "df_py_conservation_in_DV1",
+        "df_pz_conservation_in_DV1",
+        "df_E_conservation_in_DV1",
+        "df_taup_mass_constraint",
+        "df_antinu_mass_constraint",
+        "df_ptau2_pointing_to_BV_XZ",
+        "df_ptau2_pointing_to_BV_YZ",
+        "df_px_conservation_in_DV2",
+        "df_py_conservation_in_DV2",
+        "df_pz_conservation_in_DV2",
+        "df_E_conservation_in_DV2",
+        "df_taum_mass_constraint",
+        "df_nu_mass_constraint",
+        "df_BV_in_K_trajectory_XZ",
+        "df_BV_in_K_trajectory_YZ",
+        "df_px_conservation_in_BV",
+        "df_py_conservation_in_BV",
+        "df_pz_conservation_in_BV",
+        "df_E_conservation_in_BV"
+    };
+
     for(int i = 0; i < dimM+dimX+dimC; i++)
     {
-        tout->Branch(Form("df_F_%i",i), &F(i));
+        tout->Branch(name_F[i], &F(i));
     }
 
     tout->Branch("df_init", &init);
@@ -266,12 +355,18 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
     tout->Branch("df_status", &status);
     tout->Branch("df_F_tolerance", &F_tolerance);
     tout->Branch("df_chi2", &chi2);
-    tout->Branch("df_L", &L);
     tout->Branch("df_nIter", &nIter);
+    tout->Branch("df_time", &deltaT);
+    // tout->Branch("df_isSaddlePoint", &saddle_point);
+
+    UInt_t num_entries = t->GetEntries();
+    
+    TStopwatch watch_total;
 
     // Loop over events
     for(int evt = 0; evt < 10; evt++)
     {
+        TStopwatch watch;
         t->GetEntry(evt);
 
         // 1) Fill m and V
@@ -287,19 +382,19 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
         // V.Print();
 
         // Eigenvalues of V
-        // TVectorD V_eigen_values(dimM);  
-        // TMatrixD V_eigen_vectors = V.EigenVectors(V_eigen_values);
+        TVectorD V_eigen_values(dimM);  
+        TMatrixD V_eigen_vectors = V.EigenVectors(V_eigen_values);
         // V_eigen_values.Print();
 
         // Correlation matrix
-        // TMatrixDSym V_corr(dimM);
-        // for(int i = 0; i < dimM; i++)
-        // {
-        //   for(int j = 0; j < dimM; j++)
-        //   {
-        //     V_corr(i,j) = V(i,j)/sqrt( V(i,i)*V(j,j) );
-        //   }
-        // }
+        TMatrixDSym V_corr(dimM);
+        for(int i = 0; i < dimM; i++)
+        {
+          for(int j = 0; j < dimM; j++)
+          {
+            V_corr(i,j) = V(i,j)/sqrt( V(i,i)*V(j,j) );
+          }
+        }
         // V_corr.Print();
 
         // 2) Build weights matrix W = V^-1
@@ -309,11 +404,6 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
 
         // TMatrixD identity = W*V;
         // identity.Print();
-
-        // Matrix D for normalisation
-        D = D_matrix();
-        D_inverse = D;
-        D_inverse.Invert();
 
         // 3) Define the system of equations
         ROOT::Math::GSLMultiRootFinder * solver = new ROOT::Math::GSLMultiRootFinder("HybridS");
@@ -378,49 +468,73 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
         solver->AddFunction(eq59,dimM+dimX+dimC);
         solver->AddFunction(eq60,dimM+dimX+dimC);
         solver->AddFunction(eq61,dimM+dimX+dimC);  
+        solver->AddFunction(eq62,dimM+dimX+dimC);  
+        solver->AddFunction(eq63,dimM+dimX+dimC);  
+        solver->AddFunction(eq64,dimM+dimX+dimC);  
+        solver->AddFunction(eq65,dimM+dimX+dimC);  
+        solver->AddFunction(eq66,dimM+dimX+dimC);  
+        solver->AddFunction(eq67,dimM+dimX+dimC);  
+        solver->AddFunction(eq68,dimM+dimX+dimC);  
+        solver->AddFunction(eq69,dimM+dimX+dimC);  
         solver->SetPrintLevel(0);
 
-        // 4) Solve the system of euqations (61)
-        // init = 0:  original calculations = Anne Keune (29%)
-        // init = 1: K*tautau calculations; tau momentum direction initialised based on vertices (uses offline estimate for BV) (13%)
-        // init = 2: // K*tautau calculations; tau momentum direction initialised based on 3pi visible momentum (uses offline estimate for BV) (8%)
-        // init = 3: RD calculations (uses offline estimate for BV) (58%)
-
+        // 4) Solve the system of equations (69)
         ROOT::Math::XYZPoint BV( BVx, BVy, BVz );
-        // init = 3;
-        // solve( BV, init, solver, pow(10,-6) );
 
-        lowest_sum(BV, solver, pow(10,-6));
+        // Lowest chi^2 approach (with 10 different initialisations)
+        // lowest_chi2(BV, solver, initial_tolerance, species);
         // if(status != 0)
         // {
-        //     x_current = X;
-        //     solve( BV, -1, solver, pow(10,-6) );        
+        //     lowest_chi2(BV, solver, pow(10,-6), species);       
         // }
         // if(status != 0)
         // {
-        //     x_current = X;
-        //     solve( BV, -1, solver, pow(10,-3) );        
+        //     lowest_chi2(BV, solver, pow(10,-3), species);
         // }
         // if(status != 0)
         // {
-        //     x_current = X;
-        //     solve( BV, -1, solver, pow(10,0.1) );
+        //     lowest_chi2(BV, solver, 1, species);
         // }
         // if(status != 0)
         // {
-        //     x_current = X;
-        //     solve( BV, -1, solver, 1. );
+        //     lowest_chi2(BV, solver, 100, species);
         // }
-        // if(status != 0)
-        // {
-        //     x_current = X;
-        //     solve( BV, -1, solver, 10. );
-        // }
-        // if(status != 0)
-        // {
-        //     x_current = X;
-        //     solve( BV, -1, solver, 100. );
-        // }
+
+        // MLP approach
+        solve( BV, -2, solver, initial_tolerance, species );
+        if(status != 0)
+        {
+            x_MLP_current = X;
+            solve( BV, -2, solver, pow(10,-6), species );
+        }
+        if(status != 0)
+        {
+            x_MLP_current = X;
+            solve( BV, -2, solver, pow(10,-3), species );
+        }
+        if(status != 0)
+        {
+            x_MLP_current = X;
+            solve( BV, -2, solver, 1, species );
+        }
+        if(status != 0)
+        {
+            x_MLP_current = X;
+            solve( BV, -2, solver, 100, species );
+        }
+
+        // 5) Error estimation
+        U = U_matrix();
+        for(int i = 0; i < dimM+dimX+dimC; i++)
+        {
+            X_ERR(i) = sqrt(U(i,i));
+        }
+
+        cout << "final nu PZ = " << X(dimM+13) << endl; 
+
+
+        Double_t dMB_squared = sqrt(U(28,28));
+        MB_err = dMB_squared/(2*abs(MB));    
 
         cout << "FINAL" << endl;
         cout << "init = " << init << endl;
@@ -428,10 +542,24 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
         cout << "sum_Fi = " << F_tolerance << endl;
         cout << "MB = " << MB << " +/- " << MB_err << endl;
         cout << "chi2 = " << chi2 << endl;
-        cout << "#iterations = " << nIter << endl;        
+        cout << "#iterations = " << nIter << endl;  
 
         // X.Print();
         // X_ERR.Print();
+    
+        // TVectorD V_errors(dimM);
+        // for(int i = 0; i < dimM; i++)
+        // {
+        //     V_errors(i) = sqrt(V(i,i));
+        // }
+        // m.Print();
+        // V_errors.Print();
+
+        // for(int i = 0; i < dimM; i++)
+        // {
+        //     meas_ratio(i) = X_ERR(i)/V_errors(i);
+        // }
+        // meas_ratio.Print();
 
         // TMatrixDSym U_corr(dimM+dimX+dimC);
         // for(int i = 0; i < dimM+dimX+dimC; i++)
@@ -447,6 +575,7 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
         // TMatrixD U_eigen_vectors = U.EigenVectors(U_eigen_values);
         // U_eigen_values.Print();
 
+        /*
         TString NAME[] = {
             "PVx (mm)",
             "PVy (mm)",
@@ -516,25 +645,30 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
             return;
         }
 
-        // for(int i = 0; i < dimM+dimX+dimC; i++)
-        // {
-        //     scan_lagrangian(X, i, 100, NAME[i], year, species, line);
-        // }
-        // for(int i = 0; i < dimM; i++)
-        // {
-        //     scan_chisquare(X, i, 100, NAME[i], year, species, line);
-        // }
+        for(int i = 0; i < dimM+dimX+dimC; i++)
+        {
+            scan_lagrangian(X, i, 100, NAME[i], year, species, line);
+        }
+        for(int i = 0; i < dimM; i++)
+        {
+            scan_chisquare(X, i, 100, NAME[i], year, species, line);
+        }
+        */
 
+        watch.Stop();
+        deltaT = watch.RealTime();
         tout->Fill();
     }
-    cout << "FINISHED" << endl;
+    watch_total.Stop();
+
+    cout << "FINISHED in " << watch_total.RealTime() << " seconds." << endl;
 
     fout->cd();
     tout->Write();
     fout->Close();
 }
 
-void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* solver, Double_t tolerance )
+void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* solver, Double_t tolerance, Int_t species )
 {
     // 1) This function initialises the vector of unkown parameters x with the result of analytical calculations
     // 2) It sets up the minimizer: defining the initial values and bounds on the x parameters  
@@ -544,47 +678,138 @@ void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* 
     // 1) Initial values for x=(xm,xu,lambda)
     if(init == 0)
     {
-        x0 = x_initial_estimate_0( m ); // original calculations = Anne Keune
+        if(tolerance == initial_tolerance)
+        {
+            x0 = x_initial_estimate_0( m ); // original calculations = Anne Keune
+        }
+        else
+        {       
+            x0 = x0_current; // where it left 
+        }
     }
     else if(init == 1)
     {   
-        x0 = x_initial_estimate_1( m, BV ); // K*tautau calculations; tau momentum direction initialised based on vertices (uses offline estimate for BV)
+        if(tolerance == initial_tolerance)
+        {
+            x0 = x_initial_estimate_1( m, BV ); // K*tautau calculations; tau momentum direction initialised based on vertices (uses offline estimate for BV)
+        }
+        else
+        {
+            x0 = x1_current; // where it left 
+        }
     }
     else if(init == 2)
-    {
-        x0 = x_initial_estimate_2( m, BV ); // K*tautau calculations; tau momentum direction initialised based on 3pi visible momentum (uses offline estimate for BV) 
+    {   
+        if(tolerance == initial_tolerance)
+        {
+            x0 = x_initial_estimate_2( m, BV ); // K*tautau calculations; tau momentum direction initialised based on 3pi visible momentum (uses offline estimate for BV) 
+        }
+        else
+        {
+            x0 = x2_current; // where it left 
+        }
     }
     else if(init == 3)
     {
-        x0 = x_initial_estimate_3( m, BV ); // RD calculations (uses offline estimate for BV)
+        if(tolerance == initial_tolerance)
+        {
+            x0 = x_initial_estimate_3( m, BV ); // RD calculations (uses offline estimate for BV)
+        }
+        else
+        {
+            x0 = x3_current; // where it left 
+        }
     }
     else if(init == 4)
     {
-        x0 = x_initial_estimate_4( m, BV ); // K*tautau; tau+ from vertices, tau- from pions
+        if(tolerance == initial_tolerance)
+        {
+            x0 = x_initial_estimate_4( m, BV ); // K*tautau; tau+ from vertices, tau- from pions
+        }
+        else
+        {
+            x0 = x4_current; // where it left 
+        }
     }
     else if(init == 5)
     {
-        x0 = x_initial_estimate_5( m, BV ); // K*tautau; tau- from vertices, tau+ from pions
+        if(tolerance == initial_tolerance)
+        {
+            x0 = x_initial_estimate_5( m, BV ); // K*tautau; tau- from vertices, tau+ from pions
+        }
+        else
+        {
+            x0 = x5_current; // where it left
+        }
     }
     else if(init == 6)
     {
-        x0 = x_initial_estimate_6( m, BV ); // Mixes Marseille (tau+) and K*tautau vertices (tau-)
+        if(tolerance == initial_tolerance)
+        {
+            x0 = x_initial_estimate_6( m, BV ); // Mixes Marseille (tau+) and K*tautau vertices (tau-)
+        }
+        else
+        {
+            x0 = x6_current; // where it left 
+        }
     }
     else if(init == 7)
     {
-        x0 = x_initial_estimate_7( m, BV ); // Mixes Marseille (tau-) and K*tautau vertices (tau+)
+        if(tolerance == initial_tolerance)
+        {
+            x0 = x_initial_estimate_7( m, BV ); // Mixes Marseille (tau-) and K*tautau vertices (tau+)
+        }
+        else
+        {
+            x0 = x7_current; // where it left 
+        }
     }
     else if(init == 8)
     {
-        x0 = x_initial_estimate_8( m, BV ); // Mixes Marseille (tau+) and K*tautau pions (tau-)
+        if(tolerance == initial_tolerance)
+        {
+            x0 = x_initial_estimate_8( m, BV ); // Mixes Marseille (tau+) and K*tautau pions (tau-)
+        }
+        else
+        {
+            x0 = x8_current; // where it left 
+        }
     }
     else if(init == 9)
     {
-        x0 = x_initial_estimate_9( m, BV ); // Mixes Marseille (tau-) and K*tautau pions (tau+)
+        if(tolerance == initial_tolerance)
+        {
+            x0 = x_initial_estimate_9( m, BV ); // Mixes Marseille (tau-) and K*tautau pions (tau+)
+        }
+        else
+        {
+            x0 = x9_current; // where it left 
+        }
     }
     else if(init == -1)
     {
-        x0 = x_current; // Mixes Marseille (tau-) and K*tautau pions (tau+)
+        if(tolerance == initial_tolerance)
+        {
+            x0 = x_initial_estimate_true( m );
+        }
+        else
+        {
+            x0 = x_true_current;
+        }
+        
+    }
+    else if(init == -2)
+    {
+        if(tolerance == initial_tolerance)
+        {
+            x0 = x_initial_estimate_MLP( m, BV, species );
+
+            cout << "initial nu PZ = " << x0(dimM+13) << endl; 
+        }
+        else
+        {
+            x0 = x_MLP_current;
+        }
     }
     // x0.Print();
 
@@ -601,7 +826,14 @@ void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* 
     const double* x_results = solver->X();
     const double* f_vals = solver->FVal();
     status = solver->Status();
-    nIter = solver->Iterations();
+    if(tolerance == initial_tolerance)
+    { 
+        nIter = solver->Iterations();
+    }
+    else
+    {
+        nIter += solver->Iterations();
+    }
 
     for(int i = 0; i < dimM+dimX+dimC; i++)
     {
@@ -610,16 +842,6 @@ void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* 
     }
     // X.Print();
     // F.Print();
-
-    // X = D*X;
-    // F = D_inverse*F;
-
-    U = U_matrix();
-    for(int i = 0; i < dimM+dimX+dimC; i++)
-    {
-        X_ERR(i) = sqrt(U(i,i));
-    }
-    // X_ERR.Print();
 
     Double_t MB_squared = X(dimM+6);
     if( MB_squared > 0 )
@@ -630,33 +852,6 @@ void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* 
     {
         MB = -sqrt( abs(MB_squared) );
     }
-
-    Double_t dMB_squared = sqrt(U(28,28));
-    MB_err = dMB_squared/(2*abs(MB));
-
-    // cout << "MB = " << MB << " +/- " << MB_err << endl;
-
-    // TVectorD V_errors(dimM);
-    // for(int i = 0; i < dimM; i++)
-    // {
-    //     V_errors(i) = sqrt(V(i,i));
-    // }
-    // m.Print();
-    // V_errors.Print();
-
-    // TVectorD diff(dimM);
-    // for(int i = 0; i < dimM; i++)
-    // {
-    //     diff(i) = X(i)-m(i);
-    // }
-    // diff.Print();
-
-    // TVectorD ratio(dimM);
-    // for(int i = 0; i < dimM; i++)
-    // {
-    //     ratio(i) = X_ERR(i)/V_errors(i);
-    // }
-    // ratio.Print();
 
     F_tolerance = 0;
     for(int i = 0; i < dimM+dimX+dimC; i++)
@@ -670,15 +865,15 @@ void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* 
         xm(i) = X(i);
     }
     chi2 = chisquare(xm);
-    L = lagrangian(X);
 
 }
 
-void lowest_sum(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver, Double_t tolerance)
+void lowest_chi2(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver, Double_t tolerance, Int_t species)
 {
         // Lowest sum
         // Init 0
-        solve( BV, 0, solver, tolerance );
+        solve( BV, 0, solver, tolerance, species );
+        x0_current = X;
         Int_t status0 = status;
         Double_t MB_0 = MB;
         Double_t MB_err0 = MB_err;
@@ -686,9 +881,18 @@ void lowest_sum(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver,
         TVectorD X0_ERR = X_ERR;
         TVectorD F0 = F;
         Double_t F_tol_0 = F_tolerance;
+        Double_t chi2_0 = chi2;
+        Int_t nIter_0 = nIter;
+
+        // cout << "MB_0 = " << MB_0 << endl;
+        // cout << "sum_0 = " << F_tol_0 << endl;
+        // cout << "chi2_0 = " << chi2_0 << endl;
+        // cout << "status_0 = " << status0 << endl;
+        // cout << "nIter_0 = " << nIter_0 << endl;
 
         // Init 1
-        solve( BV, 1, solver, tolerance );
+        solve( BV, 1, solver, tolerance, species );
+        x1_current = X;
         Int_t status1 = status;
         Double_t MB_1 = MB;
         Double_t MB_err1 = MB_err;
@@ -696,9 +900,18 @@ void lowest_sum(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver,
         TVectorD X1_ERR = X_ERR;
         TVectorD F1 = F;
         Double_t F_tol_1 = F_tolerance;
+        Double_t chi2_1 = chi2;
+        Int_t nIter_1 = nIter;
+    
+        // cout << "MB_1 = " << MB_1 << endl;
+        // cout << "sum_1 = " << F_tol_1 << endl;
+        // cout << "chi2_1 = " << chi2_1 << endl;
+        // cout << "status_1 = " << status1 << endl;
+        // cout << "nIter_1 = " << nIter_1 << endl;
 
         // Init 2
-        solve( BV, 2, solver, tolerance );
+        solve( BV, 2, solver, tolerance, species );
+        x2_current = X;
         Int_t status2 = status;
         Double_t MB_2 = MB;
         Double_t MB_err2 = MB_err;
@@ -706,19 +919,37 @@ void lowest_sum(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver,
         TVectorD X2_ERR = X_ERR;
         TVectorD F2 = F;
         Double_t F_tol_2 = F_tolerance;
+        Double_t chi2_2 = chi2;
+        Int_t nIter_2 = nIter;
+
+        // cout << "MB_2 = " << MB_2 << endl;
+        // cout << "sum_2 = " << F_tol_2 << endl;
+        // cout << "chi2_2 = " << chi2_2 << endl;
+        // cout << "status_2 = " << status2 << endl;
+        // cout << "nIter_2 = " << nIter_2 << endl;
 
         // Init 3
-        solve( BV, 3, solver, tolerance );
+        solve( BV, 3, solver, tolerance, species );
+        x3_current = X;
         Int_t status3 = status;
         Double_t MB_3 = MB;
         Double_t MB_err3 = MB_err;
         TVectorD X3 = X;
         TVectorD X3_ERR = X_ERR;
         TVectorD F3 = F; 
-        Double_t F_tol_3 = F_tolerance;  
+        Double_t F_tol_3 = F_tolerance; 
+        Double_t chi2_3 = chi2; 
+        Int_t nIter_3 = nIter;
+
+        // cout << "MB_3 = " << MB_3 << endl;
+        // cout << "sum_3 = " << F_tol_3 << endl;
+        // cout << "chi2_3 = " << chi2_3 << endl;
+        // cout << "status_3 = " << status3 << endl;
+        // cout << "nIter_3 = " << nIter_3 << endl;
 
         // Init 4
-        solve( BV, 4, solver, tolerance );
+        solve( BV, 4, solver, tolerance, species );
+        x4_current = X;
         Int_t status4 = status;
         Double_t MB_4 = MB;
         Double_t MB_err4 = MB_err;
@@ -726,9 +957,18 @@ void lowest_sum(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver,
         TVectorD X4_ERR = X_ERR;
         TVectorD F4 = F;
         Double_t F_tol_4 = F_tolerance;
+        Double_t chi2_4 = chi2;
+        Int_t nIter_4 = nIter;
+
+        // cout << "MB_4 = " << MB_4 << endl;
+        // cout << "sum_4 = " << F_tol_4 << endl;
+        // cout << "chi2_4 = " << chi2_4 << endl;
+        // cout << "status_4 = " << status4 << endl;
+        // cout << "nIter_4 = " << nIter_4 << endl;
 
         // Init 5
-        solve( BV, 5, solver, tolerance );
+        solve( BV, 5, solver, tolerance, species );
+        x5_current = X;
         Int_t status5 = status;
         Double_t MB_5 = MB;
         Double_t MB_err5 = MB_err;
@@ -736,9 +976,18 @@ void lowest_sum(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver,
         TVectorD X5_ERR = X_ERR;
         TVectorD F5 = F;
         Double_t F_tol_5 = F_tolerance;
+        Double_t chi2_5 = chi2;
+        Int_t nIter_5 = nIter;
+
+        // cout << "MB_5 = " << MB_5 << endl;
+        // cout << "sum_5 = " << F_tol_5 << endl;
+        // cout << "chi2_5 = " << chi2_5 << endl;
+        // cout << "status_5 = " << status5 << endl;
+        // cout << "nIter_5 = " << nIter_5 << endl;
 
         // Init 6
-        solve( BV, 6, solver, tolerance );
+        solve( BV, 6, solver, tolerance, species );
+        x6_current = X;
         Int_t status6 = status;
         Double_t MB_6 = MB;
         Double_t MB_err6 = MB_err;
@@ -746,9 +995,18 @@ void lowest_sum(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver,
         TVectorD X6_ERR = X_ERR;
         TVectorD F6 = F;
         Double_t F_tol_6 = F_tolerance;
+        Double_t chi2_6 = chi2;
+        Int_t nIter_6 = nIter;
+
+        // cout << "MB_6 = " << MB_6 << endl;
+        // cout << "sum_6 = " << F_tol_6 << endl;
+        // cout << "chi2_6 = " << chi2_6 << endl;
+        // cout << "status_6 = " << status6 << endl;
+        // cout << "nIter_6 = " << nIter_6 << endl;
 
         // Init 7
-        solve( BV, 7, solver, tolerance );
+        solve( BV, 7, solver, tolerance, species );
+        x7_current = X;
         Int_t status7 = status;
         Double_t MB_7 = MB;
         Double_t MB_err7 = MB_err;
@@ -756,9 +1014,18 @@ void lowest_sum(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver,
         TVectorD X7_ERR = X_ERR;
         TVectorD F7 = F;
         Double_t F_tol_7 = F_tolerance;
+        Double_t chi2_7 = chi2;
+        Int_t nIter_7 = nIter;
+
+        // cout << "MB_7 = " << MB_7 << endl;
+        // cout << "sum_7 = " << F_tol_7 << endl;
+        // cout << "chi2_7 = " << chi2_7 << endl;
+        // cout << "status_7 = " << status7 << endl;
+        // cout << "nIter_7 = " << nIter_7 << endl;
 
         // Init 8
-        solve( BV, 8, solver, tolerance );
+        solve( BV, 8, solver, tolerance, species );
+        x8_current = X;
         Int_t status8 = status;
         Double_t MB_8 = MB;
         Double_t MB_err8 = MB_err;
@@ -766,9 +1033,18 @@ void lowest_sum(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver,
         TVectorD X8_ERR = X_ERR;
         TVectorD F8 = F;
         Double_t F_tol_8 = F_tolerance;
+        Double_t chi2_8 = chi2;
+        Int_t nIter_8 = nIter;
+
+        // cout << "MB_8 = " << MB_8 << endl;
+        // cout << "sum_8 = " << F_tol_8 << endl;
+        // cout << "chi2_8 = " << chi2_8 << endl;
+        // cout << "status_8 = " << status8 << endl;
+        // cout << "nIter_8 = " << nIter_8 << endl;
 
         // Init 9
-        solve( BV, 9, solver, tolerance );
+        solve( BV, 9, solver, tolerance, species );
+        x9_current = X;
         Int_t status9 = status;
         Double_t MB_9 = MB;
         Double_t MB_err9 = MB_err;
@@ -776,11 +1052,21 @@ void lowest_sum(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver,
         TVectorD X9_ERR = X_ERR;
         TVectorD F9 = F;
         Double_t F_tol_9 = F_tolerance;
+        Double_t chi2_9 = chi2;
+        Int_t nIter_9 = nIter;
+
+        // cout << "MB_9 = " << MB_9 << endl;
+        // cout << "sum_9 = " << F_tol_9 << endl;
+        // cout << "chi2_9 = " << chi2_9 << endl;
+        // cout << "status_9 = " << status9 << endl;
+        // cout << "nIter_9 = " << nIter_9 << endl;
 
         Int_t status_vec[10] = { status0, status1, status2, status3, status4, status5, status6, status7, status8, status9 };
         Double_t MB_vec[10] = { MB_0, MB_1, MB_2, MB_3, MB_4, MB_5, MB_6, MB_7, MB_8, MB_9 }; 
         Double_t MB_err_vec[10] = { MB_err0, MB_err1, MB_err2, MB_err3, MB_err4, MB_err5, MB_err6, MB_err7, MB_err8, MB_err9 };
         Double_t F_tol_vec[10] = { F_tol_0, F_tol_1, F_tol_2, F_tol_3, F_tol_4, F_tol_5, F_tol_6, F_tol_7, F_tol_8, F_tol_9 };
+        Double_t chi2_vec[10] = { chi2_0, chi2_1, chi2_2, chi2_3, chi2_4, chi2_5, chi2_6, chi2_7, chi2_8, chi2_9 };
+        Int_t nIter_vec[10] = { nIter_0, nIter_1, nIter_2, nIter_3, nIter_4, nIter_5, nIter_6, nIter_7, nIter_8, nIter_9 };
 
         std::vector<TVectorD> X_vec;
         X_vec.push_back(X0);
@@ -818,7 +1104,7 @@ void lowest_sum(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver,
         F_vec.push_back(F8);
         F_vec.push_back(F9);
 
-        Double_t F_min = 100;
+/*         Double_t F_min = 100;
         Int_t i_min = 0;
         for(int i = 0; i < 10; i++)
         {
@@ -827,13 +1113,42 @@ void lowest_sum(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver,
                 F_min = F_tol_vec[i];
                 i_min = i;
             }
-        }   
+        }   */ 
 
         bool all_fail = false;
         if( (status0 != 0) && (status1 != 0) && (status2 != 0) && (status3 != 0) && (status4 != 0) && (status5 != 0) && (status6 != 0) && (status7 != 0) && (status8 != 0) && (status9 != 0) )
         {
             all_fail = true;
         }
+
+        
+        Double_t chi2_min = 100000000000000000;
+        Double_t F_min = 100;
+        Int_t i_min = 0;
+
+        if(all_fail) // If all fail, returns the one with the lowest value for the sum
+        {
+            for(int i = 0; i < 10; i++)
+            {
+                if( (F_tol_vec[i] < F_min) )
+                {
+                    F_min = F_tol_vec[i];
+                    i_min = i;
+                }
+            }   
+        }
+        else // if one or more passes, from the ones that pass return the one that gives the lowest value for the chi^2
+        {
+            for(int i = 0; i < 10; i++)
+            {
+                if( (status_vec[i] == 0) && (chi2_vec[i] < chi2_min) )
+                {
+                    chi2_min = chi2_vec[i];
+                    i_min = i;
+                }
+            }   
+        }
+        
 
         init = i_min;
         status = status_vec[i_min];
@@ -843,119 +1158,64 @@ void lowest_sum(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver,
         X_ERR = X_ERR_vec[i_min];
         F = F_vec[i_min];
         F_tolerance = F_tol_vec[i_min];
+        nIter = nIter_vec[i_min];
+        chi2 = chi2_vec[i_min];
+
 }
 
-void sequence(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver, Double_t tolerance)
+void sequence(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver, Double_t tolerance, Int_t species)
 {
     init = 3; // Marseille
-    solve( BV, init, solver, tolerance );
+    solve( BV, init, solver, tolerance, species );
     if(status != 0)
     {
         init = 0; // Original
-        solve( BV, init, solver, tolerance );
+        solve( BV, init, solver, tolerance, species );
     }
     if(status != 0)
     {
         init = 9; // Marseille (tau-) + K*tautau pions (tau+)
-        solve( BV, init, solver, tolerance );
+        solve( BV, init, solver, tolerance, species );
     }
     if(status != 0)
     {
         init = 8; // Marseille (tau+) + K*tautau pions (tau-)
-        solve( BV, init, solver, tolerance );
+        solve( BV, init, solver, tolerance, species );
     }
     if(status != 0)
     {
         init = 7; // Marseille (tau-) + K*tautau vertex (tau+)
-        solve( BV, init, solver, tolerance );
+        solve( BV, init, solver, tolerance, species );
     }
     if(status != 0)
     {
         init = 6; // Marseille (tau+) + K*tautau vertex (tau-)
-        solve( BV, init, solver, tolerance );
+        solve( BV, init, solver, tolerance, species );
     }
     if(status != 0)
     {
         init = 2; // K*tautau pions
-        solve( BV, init, solver, tolerance );
+        solve( BV, init, solver, tolerance, species );
     }
     if(status != 0)
     {
         init = 5; // K*tautau vertex (tau-) + K*tautau pions (tau+)
-        solve( BV, init, solver, tolerance );
+        solve( BV, init, solver, tolerance, species );
     }
     if(status != 0)
     {
         init = 4; // K*tautau vertex (tau+) + K*tautau pions (tau-)
-        solve( BV, init, solver, tolerance );
+        solve( BV, init, solver, tolerance, species );
     }
     if(status != 0)
     {
         init = 1; // K*tautau vertex
-        solve( BV, init, solver, tolerance );
+        solve( BV, init, solver, tolerance, species );
     }
     if(status != 0)
     {
         init = -1;
     }
-}
-
-TMatrixDSym D_matrix()
-{
-    TVectorD d(dimM+dimX+dimC);
-    for(int i = 0; i < dimM; i++)
-    {
-        d(i) = sqrt(V(i,i));
-    }
-
-    d(dimM) = 0.5*pow(10,-3); // BVx
-    d(dimM+1) = 0.5*pow(10,-3); // BVy
-    d(dimM+2) = 50*pow(10,-3); // BVz
-    d(dimM+3) = 0.005*10000; // pBx
-    d(dimM+4) = 0.005*10000; // pBy
-    d(dimM+5) = 0.005*100000; // pBz
-    d(dimM+6) = 2*1000*100; // mB^2
-    d(dimM+7) = 0.005*1000; // ptau1x
-    d(dimM+8) = 0.005*1000; // ptau1y
-    d(dimM+9) = 0.005*10000; // ptau1z
-    d(dimM+10) = 0.005*1000; // pnu1x
-    d(dimM+11) = 0.005*1000; // pnu1y
-    d(dimM+12) = 0.005*10000; // pnu1z
-    d(dimM+13) = 0.005*1000; // ptau2x
-    d(dimM+14) = 0.005*1000; // ptau2y
-    d(dimM+15) = 0.005*10000; // ptau2z
-    d(dimM+16) = 0.005*1000; // pnu2x
-    d(dimM+17) = 0.005*1000; // pnu2y
-    d(dimM+18) = 0.005*10000; // pnu2z
-
-    d(dimM+dimX) = 1./1000; // pBx/(BVx - PVx)
-    d(dimM+dimX+1) = 1./1000.; // pBx/(BVx - PVx)
-    d(dimM+dimX+2) = 1./1000; // ptau1x/(DV1x - BVx)
-    d(dimM+dimX+3) = 1./1000; // ptau1x/(DV1x - BVx)
-    d(dimM+dimX+4) = 1./100; // px conservation in DV1
-    d(dimM+dimX+5) = 1./100; // py conservation in DV1
-    d(dimM+dimX+6) = 1./1000; // pz conservation in DV1
-    d(dimM+dimX+7) = 1./1000; // E conservation in DV1
-    d(dimM+dimX+8) = 1./1000; // ptau2x/(DV2x - BVx)
-    d(dimM+dimX+9) = 1./1000; // ptau2x/(DV2x - BVx)
-    d(dimM+dimX+10) = 1./100; // px conservation in DV2
-    d(dimM+dimX+11) = 1./100; // py conservation in DV2
-    d(dimM+dimX+12) = 1./1000; // pz conservation in DV2
-    d(dimM+dimX+13) = 1./1000; // E conservation in DV2
-    d(dimM+dimX+14) = 1./100; // pKx/(BVx - RPx)
-    d(dimM+dimX+15) = 1./100; // pKx/(BVx - RPx)
-    d(dimM+dimX+16) = 1./1000; // px vonservation in BV
-    d(dimM+dimX+17) = 1./1000; // py conservation in BV
-    d(dimM+dimX+18) = 1./10000; // pz conservation in BV
-    d(dimM+dimX+19) = 1./10000; // E conservation in BV
-    // d.Print();
-
-    TMatrixDSym Dmatrix(dimM+dimX+dimC);
-    for(int i = 0; i < dimM+dimX+dimC; i++)
-    {
-        Dmatrix(i,i) = d(i);
-    }
-    return Dmatrix;
 }
 
 void scan_chisquare( TVectorD X, Int_t index, Int_t npoints, TString x_name, Int_t year, Int_t species, Int_t line)
@@ -1102,99 +1362,77 @@ TMatrixDSym U_matrix()
     ROOT::Math::XYZVector pB( X(dimM+3), X(dimM+4), X(dimM+5) );
     Double_t MB_squared = X(dimM+6);
     ROOT::Math::XYZVector ptau1( X(dimM+7), X(dimM+8), X(dimM+9) );
-    ROOT::Math::XYZVector pnu1( X(dimM+10), X(dimM+11), X(dimM+12) );
-    ROOT::Math::XYZVector ptau2( X(dimM+13), X(dimM+14), X(dimM+15) );
-    ROOT::Math::XYZVector pnu2( X(dimM+16), X(dimM+17), X(dimM+18) );
-
+    Double_t Etau1 = X(dimM+10);
+    ROOT::Math::XYZVector pnu1( X(dimM+11), X(dimM+12), X(dimM+13) );
+    Double_t Enu1 = X(dimM+14);
+    ROOT::Math::XYZVector ptau2( X(dimM+15), X(dimM+16), X(dimM+17) );
+    Double_t Etau2 = X(dimM+18);
+    ROOT::Math::XYZVector pnu2( X(dimM+19), X(dimM+20), X(dimM+21) );
+    Double_t Enu2 = X(dimM+22);
     Double_t EB = sqrt( MB_squared + pB.Mag2() );
-    // tau and neutrino mass constraints are applied by simple parameter substitution
-    Double_t Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
-    Double_t Etau2 = sqrt( pow(mtau,2) + ptau2.Mag2() );
-    Double_t Enu1 = sqrt( pnu1.Mag2() );
-    Double_t Enu2 = sqrt( pnu2.Mag2() );
 
     // Lagrange multipliers (20)
     TVectorD l(dimC);
-    for(int i = 0; i < dimC;i++)
+    for(int i = 0; i < dimC; i++)
     {
         l(i) = X(dimM+dimX+i);
     }
-
     int L = dimM+dimX;
 
     ///////////////////////////// xm ///////////////////////////
-    A(0,0) = 2*W(0,0) + (2*pB.x()/pow(BV.x()-PV.x(),3))*(l(0)+l(1));
+    // F0 (PVx)
     for(int i = 0; i < dimM; i++)
     {
-        if(i != 0)
-        {
-            A(0,i) = 2*W(0,i);
-        }
+        A(0,i) = 2*W(0,i);
     }
-    A(0,22) = -(2*pB.x()/pow(BV.x()-PV.x(),3))*(l(0)+l(1));
-    A(0,25) = (l(0) + l(1))/pow(BV.x()-PV.x(),2);
-    A(0,L) = pB.x()/pow(BV.x()-pB.x(),2);
-    A(0,L+1) = pB.x()/pow(BV.x()-pB.x(),2);
+    A(0,dimM+5) = l(0);
+    A(0,L) = pB.z();
 
-    A(1,1) = 2*W(1,1) - (2*pB.y()/pow(BV.y()-PV.y(),3))*l(0);
+    // F1 (PVy)
     for(int i = 0; i < dimM; i++)
     {
-        if(i != 1)
-        {
-            A(1,i) = 2*W(1,i);
-        }
+        A(1,i) = 2*W(1,i);
     }
-    A(1,23) = (2*pB.y()/pow(BV.y()-PV.y(),3))*l(0);
-    A(1,L) = -pB.y()/pow(BV.y()-pB.y(),2);
+    A(1,dimM+5) = l(1);
+    A(1,L+1) = pB.z();
 
-    A(2,2) = 2*W(2,2) - (2*pB.z()/pow(BV.z()-PV.z(),3))*l(1);
+    // F2 (PVz)
     for(int i = 0; i < dimM; i++)
     {
-        if(i != 2)
-        {
-            A(2,i) = 2*W(2,i);
-        }
+        A(2,i) = 2*W(2,i);
     }
-    A(2,24) = (2*pB.z()/pow(BV.z()-PV.z(),3))*l(1);
-    A(2,L+1) = -pB.z()/pow(BV.z()-PV.z(),2);
+    A(2,dimM+3) = -l(0);
+    A(2,dimM+4) = -l(1);
+    A(2,L) = -pB.x();
+    A(2,L+1) = -pB.y();
 
-    A(3,3) = 2*W(3,3) + (2*ptau1.x()/pow(DV1.x()-BV.x(),3))*(l(2) + l(3));
+    // F3 (DV1x)
     for(int i = 0; i < dimM; i++)
     {
-        if(i != 3)
-        {
-            A(3,i) = 2*W(3,i);
-        }
+        A(3,i) = 2*W(3,i);
     }
-    A(3,22) = -(2*ptau1.x()/pow(DV1.x()-BV.x(),3))*(l(2) + l(3));
-    A(3,29) = -(l(2) + l(3))/pow(DV1.x()-BV.x(),2);
-    A(3,L+2) = -ptau1.x()/pow(DV1.x()-BV.x(),2);
-    A(3,L+3) = -ptau1.x()/pow(DV1.x()-BV.x(),2);
+    A(3,dimM+9) = -l(2);
+    A(3,L+2) = -ptau1.z();
 
-    A(4,4) = 2*W(4,4) - (2*ptau1.y()/pow(DV1.y()-BV.y(),3))*l(2);
+    // F4 (DV1y)
     for(int i = 0; i < dimM; i++)
     {
-        if(i != 4)
-        {
-            A(4,i) = 2*W(4,i);
-        }
+        A(4,i) = 2*W(4,i);
     }
-    A(4,23) = (2*ptau1.y()/pow(DV1.y()-BV.y(),3))*l(2);
-    A(4,30) = l(2)/pow(DV1.y()-BV.y(),2);
-    A(4,L+2) = ptau1.y()/pow(DV1.y()-BV.y(),2);
+    A(4,dimM+9) = -l(3);
+    A(4,L+3) = -ptau1.z();
 
-    A(5,5) = 2*W(5,5) - (2*ptau1.z()/pow(DV1.z()-BV.z(),3))*l(3);
+    // F5 (DV1z)
     for(int i = 0; i < dimM; i++)
     {
-        if(i != 5)
-        {
             A(5,i) = 2*W(5,i);
-        }
     }
-    A(5,24) = (2*ptau1.z()/pow(DV1.z()-BV.z(),3))*l(3);
-    A(5,31) = l(3)/pow(DV1.z()-BV.z(),2);
-    A(5,L+3) = ptau1.z()/pow(DV1.z()-BV.z(),2);
+    A(5,dimM+7) = l(2);
+    A(5,dimM+8) = l(3);
+    A(5,L+2) = ptau1.x();
+    A(5,L+3) = ptau1.y();
 
+    // F6,7,8,9 (P3pi1)
     for(int i = 0; i < dimM; i++)
     {
         A(6,i) = 2*W(6,i);
@@ -1207,43 +1445,34 @@ TMatrixDSym U_matrix()
     A(8,L+6) = -1;
     A(9,L+7) = -1;
 
-    A(10,10) = 2*W(10,10) + (2*ptau2.x()/pow(DV2.x()-BV.x(),3))*(l(8)+l(9));
+    // F10 (DV2x)
     for(int i = 0; i < dimM; i++)
     {
-        if(i != 10)
-        {
-            A(10,i) = 2*W(10,i);
-        }
-    }
-    A(10,22) = -(2*ptau2.x()/pow(DV2.x()-BV.x(),3))*(l(8)+l(9));
-    A(10,35) = -(l(8)+l(9))/pow(DV2.x()-BV.x(),2);
-    A(10,L+8) = -ptau2.x()/pow(DV2.x()-BV.x(),2);
-    A(10,L+9) = -ptau2.x()/pow(DV2.x()-BV.x(),2);
 
-    A(11,11) = 2*W(11,11) - (2*ptau2.y()/pow(DV2.y()-BV.y(),3))*l(8);
+        A(10,i) = 2*W(10,i);
+    }
+    A(10,dimM+17) = -l(10);
+    A(10,L+10) = -ptau2.z();
+
+    // F11 (DV2y)
     for(int i = 0; i < dimM; i++)
     {
-        if(i != 11)
-        {
-            A(11,i) = 2*W(11,i);
-        }
+        A(11,i) = 2*W(11,i);
     }
-    A(11,23) = (2*ptau2.y()/pow(DV2.y()-BV.y(),3))*l(8);
-    A(11,36) = l(8)/pow(DV2.y()-BV.y(),2);
-    A(11,L+8) = ptau2.y()/pow(DV2.y()-BV.y(),2);
+    A(11,dimM+17) = -l(11);
+    A(11,L+11) = -ptau2.z();
 
-    A(12,12) = 2*W(12,12) - (2*ptau2.z()/pow(DV2.z()-BV.z(),3))*l(9);
+    // F12 (DV2z)
     for(int i = 0; i < dimM; i++)
     {
-        if(i != 12)
-        {
-            A(12,i) = 2*W(12,i);
-        }
+        A(12,i) = 2*W(12,i);
     }
-    A(12,24) = (2*ptau2.z()/pow(DV2.z()-BV.z(),3))*l(9);
-    A(12,37) = l(9)/pow(DV2.z()-BV.z(),2);
-    A(12,L+9) = ptau2.z()/pow(DV2.z()-BV.z(),2);
+    A(12,dimM+15) = l(10);
+    A(12,dimM+16) = l(11);
+    A(12,L+10) = ptau2.x();
+    A(12,L+11) = ptau2.y();
 
+    // F13,14,15,16 (P3pi2)
     for(int i = 0; i < dimM; i++)
     {
         A(13,i) = 2*W(13,i);
@@ -1251,369 +1480,486 @@ TMatrixDSym U_matrix()
         A(15,i) = 2*W(15,i);
         A(16,i) = 2*W(16,i);
     }
-    A(13,L+10) = -1;
-    A(14,L+11) = -1;
-    A(15,L+12) = -1;
-    A(16,L+13) = -1;
+    A(13,L+12) = -1;
+    A(14,L+13) = -1;
+    A(15,L+14) = -1;
+    A(16,L+15) = -1;
 
-    A(17,17) = 2*W(17,17) + (2*pK.x()/pow(BV.x()-RP.x(),3))*(l(14)+l(15));
-    for(int i = 0; i < dimM; i++)
-    {
-        if((i != 17) && (i != 19))
-        {
-            A(17,i) = 2*W(17,i);
-        }
-    }
-    A(17,22) = -(2*pK.x()/pow(BV.x()-RP.x(),3))*(l(14)+l(15));
-    A(17,19) = 2*W(17,19) + (l(14)+l(15))/pow(BV.x()-RP.x(),2);
-    A(17,L+14) = pK.x()/pow(BV.x()-RP.x(),2);
-    A(17,L+15) = pK.x()/pow(BV.x()-RP.x(),2);
-
-    A(18,18) = 2*W(18,18) - (2*pK.y()/pow(BV.y()-RP.y(),3))*l(14);
-    for(int i = 0; i < dimM; i++)
-    {
-        if((i != 18) && (i != 20))
-        {
-            A(18,i) = 2*W(18,i);
-        }
-    }
-    A(18,23) = (2*pK.y()/pow(BV.y()-RP.y(),3))*l(14);
-    A(18,20) = 2*W(18,20) - l(14)/pow(BV.y()-RP.y(),2);
-    A(18,L+14) = pK.y()/pow(BV.y()-RP.y(),2);
-
-    A(19,19) = 2*W(19,19) - ((pow(EK,2) - pow(pK.x(),2))/pow(EK,3))*l(19);
-    for(int i = 0; i < dimM; i++)
-    {
-        if((i != 19) && (i != 17))
-        {
-            A(19,i) = 2*W(19,i);
-        }
-    }
-    A(19,17) = 2*W(19,17) + (l(14)+l(15))/pow(BV.x()-RP.x(),2);
-    A(19,22) = -(l(14)+l(15))/pow(BV.x()-RP.x(),2);
-    A(19,L+14) = 1./(BV.x()-RP.x());
-    A(19,L+15) = 1./(BV.x()-RP.x());
-    A(19,L+16) = -1;
-    A(19,L+19) = -pK.x()/EK;
-
-    A(20,20) = 2*W(20,20) - ((pow(EK,2) - pow(pK.y(),2))/pow(EK,3))*l(19);
-    for(int i = 0; i < dimM; i++)
-    {
-        if((i != 20) && (i != 18))
-        {
-            A(20,i) = 2*W(20,i);
-        }
-    }
-    A(20,18) = 2*W(20,18) - l(14)/pow(BV.y()-RP.y(),2);
-    A(20,23) = l(14)/pow(BV.y()-RP.y(),2);
-    A(20,L+14) = -1./(BV.y()-RP.y());
-    A(20,L+17) = -1;
-    A(20,L+19) = -pK.y()/EK;
-
-    A(21,21) = 2*W(21,21) - ((pow(EK,2) - pow(pK.z(),2))/pow(EK,3))*l(19);
+    // F17 (RPx)
+    A(17,21) = 2*W(17,21) + l(18);
     for(int i = 0; i < dimM; i++)
     {
         if(i != 21)
         {
+            A(17,i) = 2*W(17,i);
+        }
+    }
+    A(17,L+18) = pK.z();
+
+    // F18 (RPy)
+    A(18,21) = 2*W(18,21) + l(19);
+    for(int i = 0; i < dimM; i++)
+    {
+        if(i != 21)
+        {
+            A(18,i) = 2*W(18,i);
+        }
+    }
+    A(18,L+19) = pK.z();
+
+    // F19 (pKx)
+    A(19,19) = 2*W(19,19) - ((pow(EK,2) - pow(pK.x(),2))/pow(EK,3))*l(23);
+    A(19,20) = 2*W(19,20) + ((pK.x()*pK.y()/pow(EK,3)))*l(23);
+    A(19,21) = 2*W(19,21) + ((pK.x()*pK.z()/pow(EK,3)))*l(23);
+    for(int i = 0; i < dimM; i++)
+    {
+        if((i!=19) && (i!=20) && (i!=21))
+        {
+            A(19,i) = 2*W(19,i);
+        }
+    }
+    A(19,dimM+2) = l(18);
+    A(19,L+18) = BV.z()-RP.z();
+    A(19,L+20) = -1;
+    A(19,L+23) = -pK.x()/EK;
+
+    // F20 (pKy)
+    A(20,19) = 2*W(20,19) + ((pK.x()*pK.y())/pow(EK,3))*l(23);
+    A(20,20) = 2*W(20,20) - ((pow(EK,2) - pow(pK.y(),2))/pow(EK,3))*l(23);
+    A(20,21) = 2*W(20,21) + ((pK.y()*pK.z())/pow(EK,3))*l(23);
+    for(int i = 0; i < dimM; i++)
+    {
+        if((i!=19) && (i!=20) && (i!=21))
+        {
+            A(20,i) = 2*W(20,i);
+        }
+    }
+    A(20,dimM+2) = l(19);
+    A(20,L+19) = BV.z()-RP.z();
+    A(20,L+21) = -1;
+    A(20,L+23) = -pK.y()/EK;
+
+    // F21 (pKz)
+    A(21,17) = 2*W(21,17) + l(18);
+    A(21,18) = 2*W(21,18) + l(19);
+    A(21,19) = 2*W(21,19) + ((pK.x()*pK.z())/pow(EK,3))*l(23);
+    A(21,20) = 2*W(21,20) + ((pK.y()*pK.z())/pow(EK,3))*l(23);
+    A(21,21) = 2*W(21,21) - ((pow(EK,2) - pow(pK.z(),2))/pow(EK,3))*l(23);
+    for(int i = 0; i < dimM; i++)
+    {
+        if((i!=17) && (i!=18) && (i!=19) && (i!=20) && (i!=21))
+        {
             A(21,i) = 2*W(21,i);
         }
     }
-    A(21,24) = l(15)/pow(BV.z()-RP.z(),2);
-    A(21,L+15) = -1./(BV.z()-RP.z());
-    A(21,L+18) = -1;
-    A(21,L+19) = -pK.z()/EK;
+    A(21,dimM) = -l(18);
+    A(21,dimM+1) = -l(19);
+    A(21,L+18) = -(BV.x()-RP.x());
+    A(21,L+19) = -(BV.y()-RP.y());
+    A(21,L+22) = -1;
+    A(21,L+23) = -pK.z()/EK;
 
     //////////////////////////////// xu /////////////////////////
-    A(22,0) = -(2*pB.x()/pow(BV.x()-PV.x(),3))*(l(0)+l(1));
-    A(22,3) = -(2*ptau1.x()/pow(DV1.x()-BV.x(),3))*(l(2)+l(3));
-    A(22,10) = -(2*ptau2.x()/pow(DV2.x()-BV.x(),3))*(l(8)+l(9));
-    A(22,17) = -(2*pK.x()/pow(BV.x()-RP.x(),3))*(l(14)+l(15));
-    A(22,19) = -(l(14)+l(15))/pow(BV.x()-RP.x(),2);
-    A(22,22) = (2*pB.x()/pow(BV.x()-PV.x(),3))*(l(0)+l(1)) + (2*ptau1.x()/pow(DV1.x()-BV.x(),3))*(l(2)+l(3)) + (2*ptau2.x()/pow(DV2.x()-BV.x(),3))*(l(8)+l(9)) + (2*pK.x()/pow(BV.x()-RP.x(),3))*(l(14)+l(15));
-    A(22,25) = -(l(0)+l(1))/pow(BV.x()-PV.x(),2);
-    A(22,29) = (l(2)+l(3))/pow(DV1.x()-BV.x(),2);
-    A(22,35) = (l(8)+l(9))/pow(DV2.x()-BV.x(),2);
-    A(22,L) = -pB.x()/pow(BV.x()-PV.x(),2);
-    A(22,L+1) = -pB.x()/pow(BV.x()-PV.x(),2);
-    A(22,L+2) = ptau1.x()/pow(DV1.x()-BV.x(),2);
-    A(22,L+3) = ptau1.x()/pow(DV1.x()-BV.x(),2);
-    A(22,L+8) = ptau2.x()/pow(DV2.x()-BV.x(),2);
-    A(22,L+9) = ptau2.x()/pow(DV2.x()-BV.x(),2);
-    A(22,L+14) = -pK.x()/pow(BV.x()-RP.x(),2);
-    A(22,L+15) = -pK.x()/pow(BV.x()-RP.x(),2);
+    // F22 (BVx)
+    A(22,21) = -l(18);
+    A(22,dimM+5) = -l(0);
+    A(22,dimM+9) = l(2);
+    A(22,dimM+17) = l(10);
+    A(22,L) = -pB.z();
+    A(22,L+2) = ptau1.z();
+    A(22,L+10) = ptau2.z();
+    A(22,L+18) = -pK.z();
 
-    A(23,1) = (2*pB.y()/pow(BV.y()-PV.y(),3))*l(0);
-    A(23,4) = (2*ptau1.y()/pow(DV1.y()-BV.y(),3))*l(2);
-    A(23,11) = (2*ptau2.y()/pow(DV2.y()-BV.y(),3))*l(8);
-    A(23,18) = (2*pK.y()/pow(BV.y()-RP.y(),3))*l(14);
-    A(23,20) = l(14)/pow(BV.y()-RP.y(),2);
-    A(23,23) = -(2*pB.y()/pow(BV.y()-PV.y(),3))*l(0) - (2*ptau1.y()/pow(DV1.y()-BV.y(),3))*l(2) - (2*ptau2.y()/pow(DV2.y()-BV.y(),3))*l(8) - (2*pK.y()/pow(BV.y()-RP.y(),3))*l(14);
-    A(23,26) = l(0)/pow(BV.y()-PV.y(),2);
-    A(23,30) = -l(2)/pow(DV1.y()-BV.y(),2);
-    A(23,36) = -l(8)/pow(DV2.y()-BV.y(),2);
-    A(23,L) = pB.y()/pow(BV.y()-PV.y(),2);
-    A(23,L+2) = -ptau1.y()/pow(DV1.y()-BV.y(),2);
-    A(23,L+8) = -ptau2.y()/pow(DV2.y()-BV.y(),2);
-    A(23,L+14) = pK.y()/pow(BV.y()-RP.y(),2);
+    // F23 (BVy)
+    A(23,21) = -l(19);
+    A(23,dimM+5) = -l(1);
+    A(23,dimM+9) = l(3);
+    A(23,dimM+17) = l(11);
+    A(23,L+1) = -pB.z();
+    A(23,L+3) = ptau1.z();
+    A(23,L+11) = ptau2.z();
+    A(23,L+19) = -pK.z();
 
-    A(24,2) = (2*pB.z()/pow(BV.z()-PV.z(),3))*l(1);
-    A(24,5) = (2*ptau1.z()/pow(DV1.z()-BV.z(),3))*l(3);
-    A(24,12) = (2*ptau2.z()/pow(DV2.z()-BV.z(),3))*l(9);
-    A(24,21) = l(15)/pow(BV.z()-RP.z(),2);
-    A(24,24) = -(2*pB.z()/pow(BV.z()-PV.z(),3))*l(1) - (2*ptau1.z()/pow(DV1.z()-BV.z(),3))*l(3) - (2*ptau2.z()/pow(DV2.z()-BV.z(),3))*l(9) - (2*pK.z()/pow(BV.z()-RP.z(),3))*l(15);
-    A(24,27) = l(1)/pow(BV.z()-PV.z(),2);
-    A(24,31) = -l(3)/pow(DV1.z()-BV.z(),2);
-    A(24,37) = -l(9)/pow(DV2.z()-BV.z(),2);
-    A(24,L+1) = pB.z()/pow(BV.z()-PV.z(),2);
-    A(24,L+3) = -ptau1.z()/pow(DV1.z()-BV.z(),2);
-    A(24,L+9) = -ptau2.z()/pow(DV2.z()-BV.z(),2);
-    A(24,L+15) = pK.z()/pow(BV.z()-RP.z(),2);
+    // F24 (BVz)
+    A(24,19) = l(18);
+    A(24,20) = l(19);
+    A(24,dimM+3) = l(0);
+    A(24,dimM+4) = l(1);
+    A(24,dimM+7) = -l(2);
+    A(24,dimM+8) = -l(3);
+    A(24,dimM+15) = -l(10);
+    A(24,dimM+16) = -l(11);
+    A(24,L) = pB.x();
+    A(24,L+1) = pB.y();
+    A(24,L+2) = -ptau1.x();
+    A(24,L+3) = -ptau1.y();
+    A(24,L+10) = -ptau2.x();
+    A(24,L+11) = -ptau2.y();
+    A(24,L+18) = pK.x();
+    A(24,L+19) = pK.y();
 
-    A(25,0) = (l(0)+l(1))/pow(BV.x()-PV.x(),2);
-    A(25,22) = -(l(0)+l(1))/pow(BV.x()-PV.x(),2);
-    A(25,L) = 1./(BV.x()-PV.x());
-    A(25,L+1) = 1./(BV.x()-PV.x());
-    A(25,L+16) = 1;
+    // F25 (pBx)
+    A(25,2) = -l(0);
+    A(25,dimM+2) = l(0);
+    A(25,dimM+3) = ((pow(EB,2) - pow(pB.x(),2))/pow(EB,3))*l(23);
+    A(25,dimM+4) = -((pB.x()*pB.y())/pow(EB,3))*l(23);
+    A(25,dimM+5) = -((pB.x()*pB.z())/pow(EB,3))*l(23);
+    A(25,dimM+6) = -(pB.x()/(2*pow(EB,3)))*l(23);
+    A(25,L) = BV.z()-PV.z();
+    A(25,L+20) = 1;
+    A(25,L+23) = pB.x()/EB;
 
-    A(26,1) = -l(0)/pow(BV.y()-PV.y(),2);
-    A(26,23) = l(0)/pow(BV.y()-PV.y(),2);
-    A(26,L) = -1./(BV.y()-PV.y());
-    A(26,L+17) = 1;
+    // F26 (pBy)
+    A(26,2) = -l(1);
+    A(26,dimM+2) = l(1);
+    A(26,dimM+3) = -((pB.x()*pB.y())/pow(EB,3))*l(23);
+    A(26,dimM+4) = ((pow(EB,2) - pow(pB.y(),2))/pow(EB,3))*l(23);
+    A(26,dimM+5) = -((pB.y()*pB.z())/pow(EB,3))*l(23);
+    A(26,dimM+6) = -(pB.y()/(2*pow(EB,3)))*l(23);
+    A(26,L+1) = BV.z()-PV.z();
+    A(26,L+21) = 1;
+    A(26,L+23) = pB.y()/EB;
 
-    A(27,2) = -l(1)/pow(BV.z()-PV.z(),2);
-    A(27,24) = l(1)/pow(BV.z()-PV.z(),2);
-    A(27,L+1) = -1./(BV.z()-PV.z());
-    A(27,L+18) = 1;
+    // F27 (pBz)
+    A(27,0) = l(0);
+    A(27,1) = l(1);
+    A(27,dimM) = -l(0);
+    A(27,dimM+1) = -l(1);
+    A(27,dimM+3) = -((pB.x()*pB.z())/pow(EB,3))*l(23);
+    A(27,dimM+4) = -((pB.y()*pB.z())/pow(EB,3))*l(23);
+    A(27,dimM+5) = ((pow(EB,2) - pow(pB.z(),2))/pow(EB,3))*l(23);
+    A(27,dimM+6) = -(pB.z()/(2*pow(EB,3)))*l(23);
+    A(27,L) = -(BV.x()-PV.x());
+    A(27,L+1) = -(BV.y()-PV.y());
+    A(27,L+22) = 1;
+    A(27,L+23) = pB.z()/EB;
 
-    A(28,25) = (pB.x()/EB)*l(19);
-    A(28,26) = (pB.y()/EB)*l(19);
-    A(28,27) = (pB.z()/EB)*l(19);
-    A(28,28) = -l(19)/(4*pow(EB,3));
-    A(28,L+19) = 1./(2*EB);
+    // F28 (MB_squared)
+    A(28,dimM+3) = -(pB.x()/(2*pow(EB,3)))*l(23);
+    A(28,dimM+4) = -(pB.y()/(2*pow(EB,3)))*l(23);
+    A(28,dimM+5) = -(pB.z()/(2*pow(EB,3)))*l(23);
+    A(28,dimM+6) = -(1./(4*pow(EB,3)))*l(23);
+    A(28,L+23) = 1./(2*EB);
 
-    A(29,3) = -(l(2)+l(3))/pow(DV1.x()-BV.x(),2);
-    A(29,22) = (l(2)+l(3))/pow(DV1.x()-BV.x(),2);
-    A(29,29) = ((pow(Etau1,2) - pow(ptau1.x(),2))/pow(Etau1,3))*(l(7)-l(19));
-    A(29,L+2) = 1./(DV1.x()-BV.x());
-    A(29,L+3) = 1./(DV1.x()-BV.x());
+    // F29 (ptau1x)
+    A(29,5) = l(2);
+    A(29,dimM+2) = -l(2);
+    A(29,dimM+7) = -(( pow(mtau,2) + pow(ptau1.y(),2) + pow(ptau1.z(),2) )/pow( pow(mtau,2) + ptau1.Mag2(), 1.5))*l(8);
+    A(29,dimM+8) = ((ptau1.x()*ptau1.y())/pow( pow(mtau,2) + ptau1.Mag2(), 1.5))*l(8);
+    A(29,dimM+9) = ((ptau1.x()*ptau1.z())/pow( pow(mtau,2) + ptau1.Mag2(), 1.5))*l(8);
+    A(29,L+2) = DV1.z()-BV.z();
     A(29,L+4) = 1;
-    A(29,L+7) = ptau1.x()/Etau1;
-    A(29,L+16) = -1;
-    A(29,L+19) = -ptau1.x()/Etau1;
+    A(29,L+8) = - ptau1.x()/sqrt(pow(mtau,2) + ptau1.Mag2());
+    A(29,L+20) = -1;
 
-    A(30,4) = l(2)/pow(DV1.y()-BV.y(),2);
-    A(30,23) = -l(2)/pow(DV1.y()-BV.y(),2);
-    A(30,30) = ((pow(Etau1,2) - pow(ptau1.y(),2))/pow(Etau1,3))*(l(7)-l(19));
-    A(30,L+2) = -1./(DV1.y()-BV.y());
+    // F30 (ptau1y)
+    A(30,5) = l(3);
+    A(30,dimM+2) = -l(3);
+    A(30,dimM+7) = ((ptau1.x()*ptau1.y())/pow( pow(mtau,2) + ptau1.Mag2(), 1.5))*l(8);
+    A(30,dimM+8) = -(( pow(mtau,2) + pow(ptau1.x(),2) + pow(ptau1.z(),2) )/pow( pow(mtau,2) + ptau1.Mag2(), 1.5))*l(8);
+    A(30,dimM+9) = ((ptau1.y()*ptau1.z())/pow( pow(mtau,2) + ptau1.Mag2(), 1.5))*l(8);
+    A(30,L+3) = DV1.z()-BV.z();
     A(30,L+5) = 1;
-    A(30,L+7) = ptau1.y()/Etau1;
-    A(30,L+17) = -1;
-    A(30,L+19) = -ptau1.y()/Etau1;
+    A(30,L+8) = -ptau1.y()/sqrt(pow(mtau,2) + ptau1.Mag2());
+    A(30,L+21) = -1;
 
-    A(31,5) = l(3)/pow(DV1.z()-BV.z(),2);
-    A(31,24) = -l(3)/pow(DV1.z()-BV.z(),2);
-    A(31,31) = ((pow(Etau1,2) - pow(ptau1.z(),2))/pow(Etau1,3))*(l(7)-l(19));
-    A(31,L+3) = -1./(DV1.z()-BV.z());
+    // F31 (ptau1z)
+    A(31,3) = -l(2);
+    A(31,4) = -l(3);
+    A(31,dimM) = l(2);
+    A(31,dimM+1) = l(3);
+    A(31,dimM+7) = ((ptau1.x()*ptau1.z())/pow( pow(mtau,2) + ptau1.Mag2(), 1.5))*l(8);
+    A(31,dimM+8) = ((ptau1.y()*ptau1.z())/pow( pow(mtau,2) + ptau1.Mag2(), 1.5))*l(8);
+    A(31,dimM+9) = -(( pow(mtau,2) + pow(ptau1.x(),2) + pow(ptau1.y(),2) )/pow( pow(mtau,2) + ptau1.Mag2(), 1.5))*l(8);
+    A(31,L+2) = -(DV1.x()-BV.x());
+    A(31,L+3) = -(DV1.y()-BV.y());
     A(31,L+6) = 1;
-    A(31,L+7) = ptau1.z()/Etau1;
-    A(31,L+18) = -1;
-    A(31,L+19) = -ptau1.z()/Etau1;
+    A(31,L+8) = -ptau1.z()/sqrt(pow(mtau,2) + ptau1.Mag2());
+    A(31,L+22) = -1;
 
-    A(32,32) = -((pow(Enu1,2) - pow(pnu1.x(),2))/pow(Enu1,3))*l(7);
-    A(32,L+4) = -1;
-    A(32,L+7) = -pnu1.x()/Enu1;
+    // F32 (Etau1)
+    A(32,L+7) = 1.;
+    A(32,L+8) = 1.;
+    A(32,L+23) = -1;
 
-    A(33,33) = -((pow(Enu1,2) - pow(pnu1.y(),2))/pow(Enu1,3))*l(7);
-    A(33,L+5) = -1;
-    A(33,L+7) = -pnu1.y()/Enu1;
+    // F33 (pnu1x)
+    A(33,dimM+11) = -(( pow(pnu1.y(),2) + pow(pnu1.z(),2) )/pow( pnu1.Mag2(), 1.5))*l(9);
+    A(33,dimM+12) = ((pnu1.x()*pnu1.y())/pow( pnu1.Mag2(), 1.5))*l(9);
+    A(33,dimM+13) = ((pnu1.x()*pnu1.z())/pow( pnu1.Mag2(), 1.5))*l(9);
+    A(33,L+4) = -1;
+    A(33,L+9) = -pnu1.x()/sqrt(pnu1.Mag2());
 
-    A(34,34) = -((pow(Enu1,2) - pow(pnu1.z(),2))/pow(Enu1,3))*l(7);
-    A(34,L+6) = -1;
-    A(34,L+7) = -pnu1.z()/Enu1;
+    // F34 (pnu1y)
+    A(34,dimM+11) = ((pnu1.x()*pnu1.y())/pow( pnu1.Mag2(), 1.5))*l(9);
+    A(34,dimM+12) = -(( pow(pnu1.x(),2) + pow(pnu1.z(),2) )/pow( pnu1.Mag2(), 1.5))*l(9);
+    A(34,dimM+13) = ((pnu1.y()*pnu1.z())/pow( pnu1.Mag2(), 1.5))*l(9);
+    A(34,L+5) = -1;
+    A(34,L+9) = -pnu1.y()/sqrt(pnu1.Mag2());
 
-    A(35,10) = -(l(8)+l(9))/pow(DV2.x()-BV.x(),2);
-    A(35,22) = (l(8)+l(9))/pow(DV2.x()-BV.x(),2);
-    A(35,35) = ((pow(Etau2,2) - pow(ptau2.x(),2))/pow(Etau2,3))*(l(13)-l(19));
-    A(35,L+8) = 1./(DV2.x()-BV.x());
-    A(35,L+9) = 1./(DV2.x()-BV.x());
-    A(35,L+10) = 1;
-    A(35,L+13) = ptau2.x()/Etau2;
-    A(35,L+16) = -1;
-    A(35,L+19) = -ptau2.x()/Etau2;
+    // F35 (pnu1z)
+    A(35,dimM+11) = ((pnu1.x()*pnu1.z())/pow( pnu1.Mag2(), 1.5))*l(9);
+    A(35,dimM+12) = ((pnu1.y()*pnu1.z())/pow( pnu1.Mag2(), 1.5))*l(9);
+    A(35,dimM+13) = -((pow(pnu1.x(),2) + pow(pnu1.y(),2))/pow( pnu1.Mag2(), 1.5))*l(9);
+    A(35,L+6) = -1;
+    A(35,L+9) = -pnu1.z()/sqrt(pnu1.Mag2());
 
-    A(36,11) = l(8)/pow(DV2.y()-BV.y(),2);
-    A(36,23) = -l(8)/pow(DV2.y()-BV.y(),2);
-    A(36,36) = ((pow(Etau2,2) - pow(ptau2.y(),2))/pow(Etau2,3))*(l(13)-l(19));
-    A(36,L+8) = -1./(DV2.y()-BV.y());
-    A(36,L+11) = 1;
-    A(36,L+13) = ptau2.y()/Etau2;
-    A(36,L+17) = -1;
-    A(36,L+19) = -ptau2.y()/Etau2;
+    // F36 (Enu1)
+    A(36,L+7) = -1;
+    A(36,L+9) = 1;
 
-    A(37,12) = l(9)/pow(DV2.z()-BV.z(),2);
-    A(37,24) = -l(9)/pow(DV2.z()-BV.z(),2);
-    A(37,37) = ((pow(Etau2,2) - pow(ptau2.z(),2))/pow(Etau2,3))*(l(13)-l(19));
-    A(37,L+9) = -1./(DV2.z()-BV.z());
+    // F37 (ptau2x)
+    A(37,12) = l(10);
+    A(37,dimM+2) = -l(10);
+    A(37,dimM+15) = -((pow(mtau,2) + pow(ptau2.y(),2) + pow(ptau2.z(),2))/pow( pow(mtau,2) + ptau2.Mag2(), 1.5))*l(16);
+    A(37,dimM+16) = ((ptau2.x()*ptau2.y())/pow( pow(mtau,2) + ptau2.Mag2(), 1.5))*l(16);
+    A(37,dimM+17) = ((ptau2.x()*ptau2.z())/pow( pow(mtau,2) + ptau2.Mag2(), 1.5))*l(16);
+    A(37,L+10) = DV2.z()-BV.z();
     A(37,L+12) = 1;
-    A(37,L+13) = ptau2.z()/Etau2;
-    A(37,L+18) = -1;
-    A(37,L+19) = -ptau2.z()/Etau2;
+    A(37,L+16) = -ptau2.x()/sqrt( pow(mtau,2) + ptau2.Mag2() );
+    A(37,L+20) = -1;
 
-    A(38,38) = -((pow(Enu2,2) - pow(pnu2.x(),2))/pow(Enu2,3))*l(13);
-    A(38,L+10) = -1;
-    A(38,L+13) = -pnu2.x()/Enu2;
+    // F38 (ptau2y)
+    A(38,12) = l(11);
+    A(38,dimM+2) = -l(11);
+    A(38,dimM+15) = ((ptau2.x()*ptau2.y())/pow( pow(mtau,2) + ptau2.Mag2(), 1.5))*l(16);
+    A(38,dimM+16) = -(( pow(mtau,2) + pow(ptau2.x(),2) + pow(ptau2.z(),2) )/pow( pow(mtau,2) + ptau2.Mag2(), 1.5))*l(16);
+    A(38,dimM+17) = ((ptau2.y()*ptau2.z())/pow( pow(mtau,2) + ptau2.Mag2(), 1.5))*l(16);
+    A(38,L+11) = DV2.z()-BV.z();
+    A(38,L+13) = 1;
+    A(38,L+16) = -ptau2.y()/sqrt( pow(mtau,2) + ptau2.Mag2() );
+    A(38,L+21) = -1;
 
-    A(39,39) = -((pow(Enu2,2) - pow(pnu2.y(),2))/pow(Enu2,3))*l(13);
-    A(39,L+11) = -1;
-    A(39,L+13) = -pnu2.y()/Enu2;
+    // F39 (ptau2z)
+    A(39,10) = -l(10);
+    A(39,11) = -l(11);
+    A(39,dimM) = l(10);
+    A(39,dimM+1) = l(11);
+    A(39,dimM+15) = ((ptau2.x()*ptau2.z())/pow( pow(mtau,2) + ptau2.Mag2(), 1.5))*l(16);
+    A(39,dimM+16) = ((ptau2.y()*ptau2.z())/pow( pow(mtau,2) + ptau2.Mag2(), 1.5))*l(16);
+    A(39,dimM+17) = -((pow(mtau,2) + pow(ptau2.x(),2) + pow(ptau2.y(),2))/pow( pow(mtau,2) + ptau2.Mag2(), 1.5))*l(16);
+    A(39,L+10) = -(DV2.x()-BV.x());
+    A(39,L+11) = -(DV2.y()-BV.y());
+    A(39,L+14) = 1;
+    A(39,L+16) = -ptau2.z()/sqrt( pow(mtau,2) + ptau2.Mag2() );
+    A(39,L+22) = -1;
 
-    A(40,40) = -((pow(Enu2,2) - pow(pnu2.z(),2))/pow(Enu2,3))*l(13);
-    A(40,L+12) = -1;
-    A(40,L+13) = -pnu2.z()/Enu2;
+    // F40 (Etau2)
+    A(40,L+15) = 1;
+    A(40,L+16) = 1;
+    A(40,L+23) = -1;
+
+    // F41 (pnu2x)
+    A(41,dimM+19) = -((pow(pnu2.y(),2) + pow(pnu2.z(),2))/pow( pnu2.Mag2(), 1.5))*l(17);
+    A(41,dimM+20) = ((pnu2.x()*pnu2.y())/pow( pnu2.Mag2(), 1.5))*l(17);
+    A(41,dimM+21) = ((pnu2.x()*pnu2.z())/pow( pnu2.Mag2(), 1.5))*l(17);
+    A(41,L+12) = -1;
+    A(41,L+17) = -pnu2.x()/sqrt( pnu2.Mag2() );
+
+    // F42 (pnu2y)
+    A(42,dimM+19) = ((pnu2.x()*pnu2.y())/pow( pnu2.Mag2(), 1.5))*l(17);
+    A(42,dimM+20) = -(( pow(pnu2.x(),2) + pow(pnu2.z(),2) )/pow( pnu2.Mag2(), 1.5))*l(17);
+    A(42,dimM+21) = ((pnu2.y()*pnu2.z())/pow( pnu2.Mag2(), 1.5))*l(17);
+    A(42,L+13) = -1;
+    A(42,L+17) = -pnu2.y()/sqrt( pnu2.Mag2() );
+
+    // F43 (pnu2z)
+    A(43,dimM+19) = ((pnu2.x()*pnu2.z())/pow( pnu2.Mag2(), 1.5))*l(17);
+    A(43,dimM+20) = ((pnu2.y()*pnu2.z())/pow( pnu2.Mag2(), 1.5))*l(17);
+    A(43,dimM+21) = -(( pow(pnu2.x(),2) + pow(pnu2.y(),2) )/pow( pnu2.Mag2(), 1.5))*l(17);
+    A(43,L+14) = -1;
+    A(43,L+17) = -pnu2.z()/sqrt( pnu2.Mag2() );
+
+    // F44 (Enu2)
+    A(44,L+15) = -1;
+    A(44,L+17) = 1;
 
     ///////////////////////////// lambda /////////////////////////
-    A(41,0) = pB.x()/pow(BV.x()-PV.x(),2);
-    A(41,1) = -pB.y()/pow(BV.y()-PV.y(),2);
-    A(41,22) = -pB.x()/pow(BV.x()-PV.x(),2);
-    A(41,23) = pB.y()/pow(BV.y()-PV.y(),2);
-    A(41,25) = 1./(BV.x()-PV.x());
-    A(41,26) = -1./(BV.y()-PV.y());
+    // F45 (l0)
+    A(45,0) = pB.z();
+    A(45,2) = -pB.x();
+    A(45,dimM) = -pB.z();
+    A(45,dimM+2) = pB.x();
+    A(45,dimM+3) = BV.z()-PV.z();
+    A(45,dimM+5) = -(BV.x()-PV.x());
 
-    A(42,0) = pB.x()/pow(BV.x()-PV.x(),2);
-    A(42,2) = -pB.z()/pow(BV.z()-PV.z(),2);
-    A(42,22) = -pB.x()/pow(BV.x()-PV.x(),2);
-    A(42,24) = pB.z()/pow(BV.z()-PV.z(),2);
-    A(42,25) = 1./(BV.x()-PV.x());
-    A(42,27) = -1./(BV.z()-PV.z());
+    // F46 (l1)
+    A(46,1) = pB.z();
+    A(46,2) = -pB.y();
+    A(46,dimM+1) = -pB.z();
+    A(46,dimM+2) = pB.y();
+    A(46,dimM+4) = BV.z()-PV.z();
+    A(46,dimM+5) = -(BV.y()-PV.y());
 
-    A(43,3) = -ptau1.x()/pow(DV1.x()-BV.x(),2);
-    A(43,4) = ptau1.y()/pow(DV1.y()-BV.y(),2);
-    A(43,22) = ptau1.x()/pow(DV1.x()-BV.x(),2);
-    A(43,23) = -ptau1.y()/pow(DV1.y()-BV.y(),2);
-    A(43,29) = 1./(DV1.x()-BV.x());
-    A(43,30) = -1./(DV1.y()-BV.y());
+    // F47 (l2)
+    A(47,3) = -ptau1.z();
+    A(47,5) = ptau1.x();
+    A(47,dimM) = ptau1.z();
+    A(47,dimM+2) = -ptau1.x();
+    A(47,dimM+7) = DV1.z()-BV.z();
+    A(47,dimM+9) = -(DV1.x()-BV.x());
 
-    A(44,3) = -ptau1.x()/pow(DV1.x()-BV.x(),2);
-    A(44,5) = ptau1.z()/pow(DV1.z()-BV.z(),2);
-    A(44,22) = ptau1.x()/pow(DV1.x()-BV.x(),2);
-    A(44,24) = -ptau1.z()/pow(DV1.z()-BV.z(),2);
-    A(44,29) = 1./(DV1.x()-BV.x());
-    A(44,31) = -1./(DV1.z()-BV.z());
+    // F48 (l3)
+    A(48,4) = -ptau1.z();
+    A(48,5) = ptau1.y();
+    A(48,dimM+1) = ptau1.z();
+    A(48,dimM+2) = -ptau1.y();
+    A(48,dimM+8) = DV1.z()-BV.z();
+    A(48,dimM+9) = -(DV1.y()-BV.y());
 
-    A(45,29) = 1;
-    A(45,6) = -1;
-    A(45,32) = -1;
+    // F49 (l4)
+    A(49,dimM+7) = 1;
+    A(49,6) = -1;
+    A(49,dimM+11) = -1;
 
-    A(46,30) = 1;
-    A(46,7) = -1;
-    A(46,33) = -1;
+    // F50 (l5)
+    A(50,dimM+8) = 1;
+    A(50,7) = -1;
+    A(50,dimM+12) = -1;
 
-    A(47,31) = 1;
-    A(47,8) = -1;
-    A(47,34) = -1;
+    // F51 (l6)
+    A(51,dimM+9) = 1;
+    A(51,8) = -1;
+    A(51,dimM+13) = -1;
 
-    A(48,29) = ptau1.x()/Etau1;
-    A(48,30) = ptau1.y()/Etau1;
-    A(48,31) = ptau1.z()/Etau1;
-    A(48,9) = -1;
-    A(48,32) = -pnu1.x()/Enu1;
-    A(48,33) = -pnu1.y()/Enu1;
-    A(48,34) = -pnu1.z()/Enu1;
+    // F52 (l7)
+    A(52,dimM+10) = 1;
+    A(52,9) = -1;
+    A(52,dimM+14) = -1;
 
-    A(49,10) = -ptau2.x()/pow(DV2.x()-BV.x(),2);
-    A(49,11) = ptau2.y()/pow(DV2.y()-BV.y(),2);
-    A(49,22) = ptau2.x()/pow(DV2.x()-BV.x(),2);
-    A(49,23) = -ptau2.y()/pow(DV2.y()-BV.y(),2);
-    A(49,35) = 1./(DV2.x()-BV.x());
-    A(49,36) = -1./(DV2.y()-BV.y());
+    // F53 (l8)
+    A(53,dimM+7) = -ptau1.x()/Etau1; 
+    A(53,dimM+8) = -ptau1.y()/Etau1; 
+    A(53,dimM+9) = -ptau1.z()/Etau1; 
+    A(53,dimM+10) = 1;
 
-    A(50,10) = -ptau2.x()/pow(DV2.x()-BV.x(),2);
-    A(50,12) = ptau2.z()/pow(DV2.z()-BV.z(),2);
-    A(50,22) = ptau2.x()/pow(DV2.x()-BV.x(),2);
-    A(50,24) = -ptau2.z()/pow(DV2.z()-BV.z(),2);
-    A(50,35) = 1./(DV2.x()-BV.x());
-    A(50,37) = -1./(DV2.z()-BV.z());
+    // F54 (l9)
+    A(54,dimM+11) = -pnu1.x()/Enu1;
+    A(54,dimM+12) = -pnu1.y()/Enu1;
+    A(54,dimM+13) = -pnu1.z()/Enu1;
+    A(54,dimM+14) = 1;
 
-    A(51,35) = 1;
-    A(51,13) = -1;
-    A(51,38) = -1;
+    // F55 (l10)
+    A(55,10) = -ptau2.z();
+    A(55,12) = ptau2.x();
+    A(55,dimM) = ptau2.z();
+    A(55,dimM+2) = -ptau2.x();
+    A(55,dimM+15) = DV2.z()-BV.z();
+    A(55,dimM+17) = -(DV2.x()-BV.x());
 
-    A(52,36) = 1;
-    A(52,14) = -1;
-    A(52,39) = -1;
+    // F56 (l11)
+    A(56,11) = -ptau2.z();
+    A(56,12) = ptau2.y();
+    A(56,dimM+1) = ptau2.z();
+    A(56,dimM+2) = -ptau2.y();
+    A(56,dimM+16) = DV2.z()-BV.z();
+    A(56,dimM+17) = -(DV2.y()-BV.y());
 
-    A(53,37) = 1;
-    A(53,15) = -1;
-    A(53,40) = -1;
+    // F57 (l12)
+    A(57,dimM+15) = 1;
+    A(57,13) = -1;
+    A(57,dimM+19) = -1;
 
-    A(54,35) = ptau2.x()/Etau2;
-    A(54,36) = ptau2.y()/Etau2;
-    A(54,37) = ptau2.z()/Etau2;
-    A(54,16) = -1;
-    A(54,38) = -pnu2.x()/Enu2;
-    A(54,39) = -pnu2.y()/Enu2;
-    A(54,40) = -pnu2.z()/Enu2;
+    // F58 (l13)
+    A(58,dimM+16) = 1;
+    A(58,14) = -1;
+    A(58,dimM+20) = -1;
 
-    A(55,17) = pK.x()/pow(BV.x()-RP.x(),2);
-    A(55,18) = -pK.y()/pow(BV.y()-RP.y(),2);
-    A(55,22) = -pK.x()/pow(BV.x()-RP.x(),2);
-    A(55,23) = pK.y()/pow(BV.y()-RP.y(),2);
-    A(55,19) = 1./(BV.x()-RP.x());
-    A(55,20) = -1./(BV.y()-RP.y());
+    // F59 (l14)
+    A(59,dimM+17) = 1;
+    A(59,15) = -1;
+    A(59,dimM+21) = -1;
 
-    A(56,17) = pK.x()/pow(BV.x()-RP.x(),2);
-    A(56,22) = -pK.x()/pow(BV.x()-RP.x(),2);
-    A(56,24) = pK.z()/pow(BV.z()-RP.z(),2);
-    A(56,19) = 1./(BV.x()-RP.x());
-    A(56,21) = -1./(BV.z()-RP.z());
+    // F60 (l15)
+    A(60,dimM+18) = 1;
+    A(60,16) = -1;
+    A(60,dimM+22) = -1;
 
-    A(57,25) = 1;
-    A(57,29) = -1;
-    A(57,35) = -1;
-    A(57,19) = -1;
+    // F61 (l16)
+    A(61,dimM+15) = -ptau2.x()/Etau2;
+    A(61,dimM+16) = -ptau2.y()/Etau2;
+    A(61,dimM+17) = -ptau2.z()/Etau2;
+    A(61,dimM+18) = 1;
 
-    A(58,26) = 1;
-    A(58,30) = -1;
-    A(58,36) = -1;
-    A(58,20) = -1;
+    // F62 (l17)
+    A(62,dimM+19) = -pnu2.x()/Enu2;
+    A(62,dimM+20) = -pnu2.y()/Enu2;
+    A(62,dimM+21) = -pnu2.z()/Enu2;
+    A(62,dimM+22) = 1;
 
-    A(59,27) = 1;
-    A(59,31) = -1;
-    A(59,37) = -1;
-    A(59,21) = -1;
+    // F63 (l18)
+    A(63,17) = pK.z();
+    A(63,19) = BV.z()-RP.z();
+    A(63,21) = -(BV.x()-RP.x());
+    A(63,dimM) = -pK.z();
+    A(63,dimM+2) = pK.x();
 
-    A(60,25) = pB.x()/EB;
-    A(60,26) = pB.y()/EB;
-    A(60,27) = pB.z()/EB;
-    A(60,28) = 1./(2*EB);
-    A(60,29) = -ptau1.x()/Etau1;
-    A(60,30) = -ptau1.y()/Etau1;
-    A(60,31) = -ptau1.z()/Etau1;
-    A(60,35) = -ptau2.x()/Etau2;
-    A(60,36) = -ptau2.y()/Etau2;
-    A(60,37) = -ptau2.z()/Etau2;
-    A(60,19) = -pK.x()/EK;
-    A(60,20) = -pK.y()/EK;
-    A(60,21) = -pK.z()/EK;
+    // F64 (l19)
+    A(64,18) = pK.z();
+    A(64,20) = BV.z()-RP.z();
+    A(64,21) = -(BV.y()-RP.y());
+    A(64,dimM+1) = -pK.z();
+    A(64,dimM+2) = pK.y(); 
 
+    // F65 (l20)
+    A(65,dimM+3) = 1;
+    A(65,dimM+7) = -1;
+    A(65,dimM+15) = -1;
+    A(65,19) = -1;
+
+    // F66 (l21)
+    A(66,dimM+4) = 1;
+    A(66,dimM+8) = -1;
+    A(66,dimM+16) = -1;
+    A(66,20) = -1;
+
+    // F67 (l22)
+    A(67,dimM+5) = 1;
+    A(67,dimM+9) = -1;
+    A(67,dimM+17) = -1;
+    A(67,21) = -1;
+
+    // F68 (l23)
+    A(68,19) = -pK.x()/EK;
+    A(68,20) = -pK.y()/EK;
+    A(68,21) = -pK.z()/EK;
+    A(68,dimM+3) = pB.x()/EB;
+    A(68,dimM+4) = pB.y()/EB;
+    A(68,dimM+5) = pB.z()/EB;
+    A(68,dimM+6) = 1./(2*EB);
+    A(68,dimM+10) = -1;
+    A(68,dimM+18) = -1;
     // A.Print();
 
-    TMatrixDSym A_sym(dimM+dimX+dimC);
-    for(int i = 0; i < dimM+dimX+dimC; i++)
-    {
-        for(int j = 0; j < dimM+dimX+dimC; j++)
-        {
-            A_sym(i,j) = A(i,j);
-        }
-    }
+    // TMatrixDSym A_sym(dimM+dimX+dimC);
+    // for(int i = 0; i < dimM+dimX+dimC; i++)
+    // {
+    //     for(int j = 0; j < dimM+dimX+dimC; j++)
+    //     {
+    //         A_sym(i,j) = A(i,j);
+    //     }
+    // }
 
     // cout << "|A| = " << A_sym.Determinant() << endl;
 
     // TVectorD A_eigen_values(dimM+dimX+dimC);  
-    // TMatrixD A_eigen_vectors = A_sym.EigenVectors(A_eigen_values);
+    // TMatrixD A_eigen_vectors = A.EigenVectors(A_eigen_values);
     // A_eigen_values.Print();
 
-    TMatrixD A_inverse = A_sym;
+    // Double_t value = 1;
+    // Double_t value_before = 1;
+    // for(int i = 0; i < dimM+dimX+dimC; i++)
+    // {
+    //     value_before = value;
+    //     value *= A_eigen_values(i);
+
+    //     // if there are at least 2 consecutive entries with different sign, there are positive and negative eigenvalues -> it's a saddle point
+    //     if((i!=0) && (TMath::Sign(1,value_before) != TMath::Sign(1,value)))
+    //     {
+    //         saddle_point = true;
+    //     }
+    // }
+
+    TMatrixD A_inverse = A;
     A_inverse.Invert();
 
     // TMatrixD identity = A_inverse*A_sym;
@@ -1947,6 +2293,46 @@ double eq61( const double* x_vars )
     eq_flag = 60;
     return equations(x_vars);
 }
+double eq62( const double* x_vars )
+{
+    eq_flag = 61;
+    return equations(x_vars);
+}
+double eq63( const double* x_vars )
+{
+    eq_flag = 62;
+    return equations(x_vars);
+}
+double eq64( const double* x_vars )
+{
+    eq_flag = 63;
+    return equations(x_vars);
+}
+double eq65( const double* x_vars )
+{
+    eq_flag = 64;
+    return equations(x_vars);
+}
+double eq66( const double* x_vars )
+{
+    eq_flag = 65;
+    return equations(x_vars);
+}
+double eq67( const double* x_vars )
+{
+    eq_flag = 66;
+    return equations(x_vars);
+}
+double eq68( const double* x_vars )
+{
+    eq_flag = 67;
+    return equations(x_vars);
+}
+double eq69( const double* x_vars )
+{
+    eq_flag = 68;
+    return equations(x_vars);
+}
 
 double equations( const double* x_vars )
 {
@@ -1974,16 +2360,14 @@ double equations( const double* x_vars )
     ROOT::Math::XYZVector pB( x(dimM+3), x(dimM+4), x(dimM+5) );
     Double_t MB_squared = x(dimM+6);
     ROOT::Math::XYZVector ptau1( x(dimM+7), x(dimM+8), x(dimM+9) );
-    ROOT::Math::XYZVector pnu1( x(dimM+10), x(dimM+11), x(dimM+12) );
-    ROOT::Math::XYZVector ptau2( x(dimM+13), x(dimM+14), x(dimM+15) );
-    ROOT::Math::XYZVector pnu2( x(dimM+16), x(dimM+17), x(dimM+18) );
-
+    Double_t Etau1 = x(dimM+10);
+    ROOT::Math::XYZVector pnu1( x(dimM+11), x(dimM+12), x(dimM+13) );
+    Double_t Enu1 = x(dimM+14);
+    ROOT::Math::XYZVector ptau2( x(dimM+15), x(dimM+16), x(dimM+17) );
+    Double_t Etau2 = x(dimM+18);
+    ROOT::Math::XYZVector pnu2( x(dimM+19), x(dimM+20), x(dimM+21) );
+    Double_t Enu2 = x(dimM+22);
     Double_t EB = sqrt( MB_squared + pB.Mag2() );
-    // tau and neutrino mass constraints are applied by simple parameter substitution
-    Double_t Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
-    Double_t Etau2 = sqrt( pow(mtau,2) + ptau2.Mag2() );
-    Double_t Enu1 = sqrt( pnu1.Mag2() );
-    Double_t Enu2 = sqrt( pnu2.Mag2() );
 
     // Lagrange multipliers (20)
     TVectorD l(dimC);
@@ -2005,101 +2389,96 @@ double equations( const double* x_vars )
     // Write 61 equations:
     TVectorD eqs(dimM+dimX+dimC);
     // PV
-    eqs(0) = -2.*chi2_sum(0) + ( pB.x()/pow(BV.x()-PV.x(),2) )*(l(0) + l(1));
-    eqs(1) = -2.*chi2_sum(1) - ( pB.y()/pow(BV.y()-PV.y(),2) )*l(0);
-    eqs(2) = -2.*chi2_sum(2) - ( pB.z()/pow(BV.z()-PV.z(),2) )*l(1);
+    eqs(0) = -2.*chi2_sum(0) + pB.z()*l(0);
+    eqs(1) = -2.*chi2_sum(1) + pB.z()*l(1);
+    eqs(2) = -2.*chi2_sum(2) - pB.x()*l(0) - pB.y()*l(1);
     // DV1
-    eqs(3) = -2.*chi2_sum(3) - ( ptau1.x()/pow(DV1.x()-BV.x(),2) )*( l(2) + l(3) );
-    eqs(4) = -2.*chi2_sum(4) + ( ptau1.y()/pow(DV1.y()-BV.y(),2) )*l(2);
-    eqs(5) = -2.*chi2_sum(5) + ( ptau1.z()/pow(DV1.z()-BV.z(),2) )*l(3);
+    eqs(3) = -2.*chi2_sum(3) - ptau1.z()*l(2);
+    eqs(4) = -2.*chi2_sum(4) - ptau1.z()*l(3);
+    eqs(5) = -2.*chi2_sum(5) + ptau1.x()*l(2) + ptau1.y()*l(3);
     // P3pi1
     eqs(6) = -2.*chi2_sum(6) - l(4);
     eqs(7) = -2.*chi2_sum(7) - l(5);
     eqs(8) = -2.*chi2_sum(8) - l(6);
     eqs(9) = -2.*chi2_sum(9) - l(7);
     // DV2
-    eqs(10) = -2.*chi2_sum(10) - ( ptau2.x()/pow(DV2.x()-BV.x(),2) )*(l(8) + l(9));
-    eqs(11) = -2.*chi2_sum(11) + ( ptau2.y()/pow(DV2.y()-BV.y(),2) )*l(8);
-    eqs(12) = -2.*chi2_sum(12) + ( ptau2.z()/pow(DV2.z()-BV.z(),2) )*l(9);
+    eqs(10) = -2.*chi2_sum(10) - ptau2.z()*l(10);
+    eqs(11) = -2.*chi2_sum(11) - ptau2.z()*l(11);
+    eqs(12) = -2.*chi2_sum(12) + ptau2.x()*l(10) + ptau2.y()*l(11);
     // P3pi2
-    eqs(13) = -2.*chi2_sum(13) - l(10);
-    eqs(14) = -2.*chi2_sum(14) - l(11);
-    eqs(15) = -2.*chi2_sum(15) - l(12);
-    eqs(16) = -2.*chi2_sum(16) - l(13);
+    eqs(13) = -2.*chi2_sum(13) - l(12);
+    eqs(14) = -2.*chi2_sum(14) - l(13);
+    eqs(15) = -2.*chi2_sum(15) - l(14);
+    eqs(16) = -2.*chi2_sum(16) - l(15);
     // RP_T
-    eqs(17) = -2.*chi2_sum(17) + ( pK.x()/pow(BV.x()-RP.x(),2) )*(l(14) + l(15));
-    eqs(18) = -2.*chi2_sum(18) - ( pK.y()/pow(BV.y()-RP.y(),2) )*l(14);
+    eqs(17) = -2.*chi2_sum(17) + pK.z()*l(18);
+    eqs(18) = -2.*chi2_sum(18) + pK.z()*l(19);
     // pK
-    eqs(19) = -2.*chi2_sum(19) + (1./(BV.x() - RP.x()))*(l(14) + l(15)) - l(16) - (pK.x()/EK)*l(19);
-    eqs(20) = -2.*chi2_sum(20) - (1./(BV.y() - RP.y()))*l(14) - l(17) - (pK.y()/EK)*l(19);
-    eqs(21) = -2.*chi2_sum(21) - (1./(BV.z() - RP.z()))*l(15) - l(18) - (pK.z()/EK)*l(19);
+    eqs(19) = -2.*chi2_sum(19) - l(20) - (pK.x()/EK)*l(23) + (BV.z()-RP.z())*l(18);
+    eqs(20) = -2.*chi2_sum(20) - l(21) - (pK.y()/EK)*l(23) + (BV.z()-RP.z())*l(19);
+    eqs(21) = -2.*chi2_sum(21) - l(22) - (pK.z()/EK)*l(23) - (BV.x()-RP.x())*l(18) - (BV.y()-RP.y())*l(19);
     // BV
-    eqs(dimM) = -( pB.x()/pow(BV.x()-PV.x(),2) )*(l(0) + l(1)) + ( ptau1.x()/pow(DV1.x()-BV.x(),2) )*(l(2) + l(3)) + ( ptau2.x()/pow(DV2.x()-BV.x(),2) )*(l(8) + l(9)) - ( pK.x()/pow(BV.x()-RP.x(),2) )*(l(14) + l(15));
-    eqs(dimM+1) = ( pB.y()/pow(BV.y()-PV.y(),2) )*l(0) - ( ptau1.y()/pow(DV1.y()-BV.y(),2) )*l(2) - ( ptau2.y()/pow(DV2.y()-BV.y(),2) )*l(8) + ( pK.y()/pow(BV.y()-RP.y(),2) )*l(14);
-    eqs(dimM+2) = ( pB.z()/pow(BV.z()-PV.z(),2) )*l(1) - ( ptau1.z()/pow(DV1.z()-BV.z(),2) )*l(3) - ( ptau2.z()/pow(DV2.z()-BV.z(),2) )*l(9) + ( pK.z()/pow(BV.z()-RP.z(),2) )*l(15);
+    eqs(dimM) = -pB.z()*l(0) + ptau1.z()*l(2) + ptau2.z()*l(10) - pK.z()*l(18);
+    eqs(dimM+1) = -pB.z()*l(1) + ptau1.z()*l(3) + ptau2.z()*l(11) -pK.z()*l(19);
+    eqs(dimM+2) = pB.x()*l(0) + pB.y()*l(1) - ptau1.x()*l(2) - ptau1.y()*l(3) - ptau2.x()*l(10) - ptau2.y()*l(11) + pK.x()*l(18) + pK.y()*l(19);
     // pB, mB^2
-    eqs(dimM+3) = (1./(BV.x() - PV.x()))*(l(0) + l(1)) + l(16);
-    eqs(dimM+4) = -(1./(BV.y() - PV.y()))*l(0) + l(17);
-    eqs(dimM+5) = -(1./(BV.z() - PV.z()))*l(1) + l(18);
-    eqs(dimM+6) = (1./(2.*EB))*l(19);
+    eqs(dimM+3) = (BV.z()-PV.z())*l(0) + l(20) + (pB.x()/EB)*l(23);
+    eqs(dimM+4) = (BV.z()-PV.z())*l(1) + l(21) + (pB.y()/EB)*l(23);
+    eqs(dimM+5) = -(BV.x()-PV.x())*l(0) - (BV.y()-PV.y())*l(1) + l(22) + (pB.z()/EB)*l(23);
+    eqs(dimM+6) = (1./(2.*EB))*l(23);
     // ptau1
-    eqs(dimM+7) = (1./(DV1.x() - BV.x()))*(l(2) + l(3)) + l(4) + (ptau1.x()/Etau1)*l(7) - l(16) - (ptau1.x()/Etau1)*l(19);
-    eqs(dimM+8) = -(1./(DV1.y() - BV.y()))*l(2) + l(5) + (ptau1.y()/Etau1)*l(7) - l(17) - (ptau1.y()/Etau1)*l(19);
-    eqs(dimM+9) = -(1./(DV1.z() - BV.z()))*l(3) + l(6) + (ptau1.z()/Etau1)*l(7) - l(18) - (ptau1.z()/Etau1)*l(19);
-    // eqs(dimM+10) = l(7) + l(8) - l(23);
+    eqs(dimM+7) = (DV1.z()-BV.z())*l(2) + l(4) - (ptau1.x()/sqrt(pow(mtau,2) + ptau1.Mag2()))*l(8)  - l(20);
+    eqs(dimM+8) = (DV1.z()-BV.z())*l(3) + l(5) - (ptau1.y()/sqrt(pow(mtau,2) + ptau1.Mag2()))*l(8) - l(21);
+    eqs(dimM+9) = -(DV1.x()-BV.x())*l(2) - (DV1.y()-BV.y())*l(3) + l(6) - (ptau1.z()/sqrt(pow(mtau,2) + ptau1.Mag2()))*l(8) - l(22);
+    eqs(dimM+10) = l(7) + l(8) - l(23);
     // pnu1
-    eqs(dimM+10) = -l(4) - (pnu1.x()/Enu1)*l(7);
-    eqs(dimM+11) = -l(5) - (pnu1.y()/Enu1)*l(7);
-    eqs(dimM+12) = -l(6) - (pnu1.z()/Enu1)*l(7);
-    // eqs(dimM+14) = -l(7) + l(9);
+    eqs(dimM+11) = -l(4) - (pnu1.x()/sqrt(pnu1.Mag2()))*l(9);
+    eqs(dimM+12) = -l(5) - (pnu1.y()/sqrt(pnu1.Mag2()))*l(9);
+    eqs(dimM+13) = -l(6) - (pnu1.z()/sqrt(pnu1.Mag2()))*l(9);
+    eqs(dimM+14) = -l(7) + l(9);
     // ptau2
-    eqs(dimM+13) = (1./(DV2.x() - BV.x()))*(l(8) + l(9)) + l(10) + (ptau2.x()/Etau2)*l(13) - l(16) - (ptau2.x()/Etau2)*l(19);
-    eqs(dimM+14) = -(1./(DV2.y() - BV.y()))*l(8) + l(11) + (ptau2.y()/Etau2)*l(13) - l(17) - (ptau2.y()/Etau2)*l(19);
-    eqs(dimM+15) = -(1./(DV2.z() - BV.z()))*l(9) + l(12) + (ptau2.z()/Etau2)*l(13) - l(18) - (ptau2.z()/Etau2)*l(19);
-    // eqs(dimM+18) = l(15) + l(16) - l(23);
+    eqs(dimM+15) = (DV2.z()-BV.z())*l(10) + l(12) - (ptau2.x()/sqrt(pow(mtau,2) + ptau2.Mag2()))*l(16) - l(20);
+    eqs(dimM+16) = (DV2.z()-BV.z())*l(11) + l(13) - (ptau2.y()/sqrt(pow(mtau,2) + ptau2.Mag2()))*l(16) - l(21);
+    eqs(dimM+17) = -(DV2.x()-BV.x())*l(10) - (DV2.y()-BV.y())*l(11) + l(14) - (ptau2.z()/sqrt(pow(mtau,2) + ptau2.Mag2()))*l(16) - l(22);
+    eqs(dimM+18) = l(15) + l(16) - l(23);
     // pnu2
-    eqs(dimM+16) = -l(10) - (pnu2.x()/Enu2)*l(13);
-    eqs(dimM+17) = -l(11) - (pnu2.y()/Enu2)*l(13);
-    eqs(dimM+18) = -l(12) - (pnu2.z()/Enu2)*l(13);
-    // eqs(dimM+22) = -l(15) + l(17);
+    eqs(dimM+19) = -l(12) - (pnu2.x()/sqrt(pnu2.Mag2()))*l(17);
+    eqs(dimM+20) = -l(13) - (pnu2.y()/sqrt(pnu2.Mag2()))*l(17);
+    eqs(dimM+21) = -l(14) - (pnu2.z()/sqrt(pnu2.Mag2()))*l(17);
+    eqs(dimM+22) = -l(15) + l(17);
     // pB must point back to the PV (2)
-    eqs(dimM+dimX) = pB.x()/( BV.x() - PV.x() ) - pB.y()/( BV.y() - PV.y() );
-    eqs(dimM+dimX+1) = pB.x()/( BV.x() - PV.x() ) - pB.z()/( BV.z() - PV.z() );
+    eqs(dimM+dimX) = pB.x()*(BV.z() - PV.z()) - pB.z()*(BV.x() - PV.x());
+    eqs(dimM+dimX+1) = pB.y()*(BV.z() - PV.z()) - pB.z()*(BV.y() - PV.y());
     // ptau1 must point back to the BV (2)
-    eqs(dimM+dimX+2) = ptau1.x()/( DV1.x() - BV.x() ) - ptau1.y()/( DV1.y() - BV.y() );
-    eqs(dimM+dimX+3) = ptau1.x()/( DV1.x() - BV.x() ) - ptau1.z()/( DV1.z() - BV.z() );
+    eqs(dimM+dimX+2) = ptau1.x()*(DV1.z() - BV.z()) - ptau1.z()*(DV1.x() - BV.x());
+    eqs(dimM+dimX+3) = ptau1.y()*(DV1.z() - BV.z()) - ptau1.z()*(DV1.y() - BV.y());
     // 4-momentum conservation in DV1 (4)
     eqs(dimM+dimX+4) = ptau1.x() - p3pi1.x() - pnu1.x();
     eqs(dimM+dimX+5) = ptau1.y() - p3pi1.y() - pnu1.y();
     eqs(dimM+dimX+6) = ptau1.z() - p3pi1.z() - pnu1.z();
     eqs(dimM+dimX+7) = Etau1 - E3pi1 - Enu1;
     // tau+ and anti-nu mass constraints (2)
-    // eqs(dimM+dimX+8) = Etau1 - sqrt( pow(mtau,2) + ptau1.Mag2() );
-    // eqs(dimM+dimX+9) = Enu1 - sqrt( pnu1.Mag2() );
+    eqs(dimM+dimX+8) = Etau1 - sqrt(pow(mtau,2) + ptau1.Mag2());
+    eqs(dimM+dimX+9) = Enu1 - sqrt(pnu1.Mag2());
     // ptau2 must point back to the BV (2)
-    eqs(dimM+dimX+8) = ptau2.x()/( DV2.x() - BV.x() ) - ptau2.y()/( DV2.y() - BV.y() );
-    eqs(dimM+dimX+9) = ptau2.x()/( DV2.x() - BV.x() ) - ptau2.z()/( DV2.z() - BV.z() );
+    eqs(dimM+dimX+10) = ptau2.x()*(DV2.z() - BV.z()) - ptau2.z()*(DV2.x() - BV.x());
+    eqs(dimM+dimX+11) = ptau2.y()*(DV2.z() - BV.z()) - ptau2.z()*(DV2.y() - BV.y());
     // 4-momentum conservation in DV2 (4)
-    eqs(dimM+dimX+10) = ptau2.x() - p3pi2.x() - pnu2.x();
-    eqs(dimM+dimX+11) = ptau2.y() - p3pi2.y() - pnu2.y();
-    eqs(dimM+dimX+12) = ptau2.z() - p3pi2.z() - pnu2.z();
-    eqs(dimM+dimX+13) = Etau2 - E3pi2 - Enu2;
+    eqs(dimM+dimX+12) = ptau2.x() - p3pi2.x() - pnu2.x();
+    eqs(dimM+dimX+13) = ptau2.y() - p3pi2.y() - pnu2.y();
+    eqs(dimM+dimX+14) = ptau2.z() - p3pi2.z() - pnu2.z();
+    eqs(dimM+dimX+15) = Etau2 - E3pi2 - Enu2;
     // tau- and nu mass constraints (2)
-    // eqs(dimM+dimX+16) = Etau2 - sqrt( pow(mtau,2) + ptau2.Mag2() );
-    // eqs(dimM+dimX+17) = Enu2 - sqrt( pnu2.Mag2() );
+    eqs(dimM+dimX+16) = Etau2 - sqrt(pow(mtau,2) + ptau2.Mag2());
+    eqs(dimM+dimX+17) = Enu2 - sqrt(pnu2.Mag2());
     // BV must lie in K+ trajectory (2)
-    eqs(dimM+dimX+14) = pK.x()/( BV.x() - RP.x() ) - pK.y()/( BV.y() - RP.y() );
-    eqs(dimM+dimX+15) = pK.x()/( BV.x() - RP.x() ) - pK.z()/( BV.z() - RP.z() );
+    eqs(dimM+dimX+18) = pK.x()*(BV.z() - RP.z()) - pK.z()*(BV.x() - RP.x());
+    eqs(dimM+dimX+19) = pK.y()*(BV.z() - RP.z()) - pK.z()*(BV.y() - RP.y());
     // 4-momentum conservation in BV (4)
-    eqs(dimM+dimX+16) = pB.x() - ptau1.x() - ptau2.x() - pK.x();
-    eqs(dimM+dimX+17) = pB.y() - ptau1.y() - ptau2.y() - pK.y();
-    eqs(dimM+dimX+18) = pB.z() - ptau1.z() - ptau2.z() - pK.z();
-    eqs(dimM+dimX+19) = EB - Etau1 - Etau2 - EK;
-
-    // normalise equations
-    // eqs = normalise(eqs, true);
-    // eqs = D*eqs;
-    // eqs.Print();
+    eqs(dimM+dimX+20) = pB.x() - ptau1.x() - ptau2.x() - pK.x();
+    eqs(dimM+dimX+21) = pB.y() - ptau1.y() - ptau2.y() - pK.y();
+    eqs(dimM+dimX+22) = pB.z() - ptau1.z() - ptau2.z() - pK.z();
+    eqs(dimM+dimX+23) = EB - Etau1 - Etau2 - EK;
  
     if( (eq_flag < 0) || (eq_flag > dimM+dimX+dimC))
     {
@@ -2110,25 +2489,6 @@ double equations( const double* x_vars )
     {
         return eqs(eq_flag);
     }
-}
-
-TVectorD normalise( TVectorD a, bool norm )
-{
-    if(norm) // normalise
-    {
-        for(int i = 0; i < dimM+dimX+dimC; i++)
-        {
-            a(i) = a(i)/pow(10,int(log10(abs(a(i)))));
-        }
-    }
-    else // un-normalise
-    {
-        for(int i = 0; i < dimM+dimX+dimC; i++)
-        {
-            a(i) = a(i)*pow(10,int(log10(abs(a(i)))));
-        }
-    }
-    return a;
 }
 
 Double_t lagrangian( TVectorD x )
@@ -2192,32 +2552,38 @@ TVectorD exact_constraints( TVectorD x )
 
     TVectorD g(dimC);
     // pB must point back to the PV (2)
-    g(0) = pB.x()/( BV.x() - PV.x() ) - pB.y()/( BV.y() - PV.y() );
-    g(1) = pB.x()/( BV.x() - PV.x() ) - pB.z()/( BV.z() - PV.z() );
+    g(0) = pB.x()*( BV.z() - PV.z() ) - pB.z()*( BV.x() - PV.x() );
+    g(1) = pB.y()*( BV.z() - PV.z() ) - pB.z()*( BV.y() - PV.y() );
     // ptau1 must point back to the BV (2)
-    g(2) = ptau1.x()/( DV1.x() - BV.x() ) - ptau1.y()/( DV1.y() - BV.y() );
-    g(3) = ptau1.x()/( DV1.x() - BV.x() ) - ptau1.z()/( DV1.z() - BV.z() );
+    g(2) = ptau1.x()*( DV1.z() - BV.z() ) - ptau1.z()*( DV1.x() - BV.x() );
+    g(3) = ptau1.y()*( DV1.z() - BV.z() ) - ptau1.z()*( DV1.y() - BV.y() );
     // 4-momentum conservation in DV1 (4)
     g(4) = ptau1.x() - p3pi1.x() - pnu1.x();
     g(5) = ptau1.y() - p3pi1.y() - pnu1.y();
     g(6) = ptau1.z() - p3pi1.z() - pnu1.z();
     g(7) = Etau1 - E3pi1 - Enu1;
+    // tau+ and anti-nu mass constraints (2)
+    g(8) = Etau1 - sqrt( pow(mtau,2) + ptau1.Mag2() );
+    g(9) = Enu1 - sqrt( pnu1.Mag2() );
     // ptau2 must point back to the BV (2)
-    g(8) = ptau2.x()/( DV2.x() - BV.x() ) - ptau2.y()/( DV2.y() - BV.y() );
-    g(9) = ptau2.x()/( DV2.x() - BV.x() ) - ptau2.z()/( DV2.z() - BV.z() );
+    g(10) = ptau2.x()*( DV2.z() - BV.z() ) - ptau2.z()*( DV2.x() - BV.x() );
+    g(11) = ptau2.y()*( DV2.z() - BV.z() ) - ptau2.z()*( DV2.y() - BV.y() );
     // 4-momentum conservation in DV2 (4)
-    g(10) = ptau2.x() - p3pi2.x() - pnu2.x();
-    g(11) = ptau2.y() - p3pi2.y() - pnu2.y();
-    g(12) = ptau2.z() - p3pi2.z() - pnu2.z();
-    g(13) = Etau2 - E3pi2 - Enu2;
+    g(12) = ptau2.x() - p3pi2.x() - pnu2.x();
+    g(13) = ptau2.y() - p3pi2.y() - pnu2.y();
+    g(14) = ptau2.z() - p3pi2.z() - pnu2.z();
+    g(15) = Etau2 - E3pi2 - Enu2;
+    // tau- and nu mass constraints (2)
+    g(16) = Etau2 - sqrt( pow(mtau,2) + ptau2.Mag2() );
+    g(17) = Enu2 - sqrt( pnu2.Mag2() );
     // BV must lie in K+ trajectory (2)
-    g(14) = pK.x()/( BV.x() - RP.x() ) - pK.y()/( BV.y() - RP.y() );
-    g(15) = pK.x()/( BV.x() - RP.x() ) - pK.z()/( BV.z() - RP.z() );
+    g(18) = pK.x()*( BV.z() - RP.z() ) - pK.z()*( BV.x() - RP.x() );
+    g(19) = pK.y()*( BV.z() - RP.z() ) - pK.z()*( BV.y() - RP.y() );
     // 4-momentum conservation in BV (4)
-    g(16) = pB.x() - ptau1.x() - ptau2.x() - pK.x();
-    g(17) = pB.y() - ptau1.y() - ptau2.y() - pK.y();
-    g(18) = pB.z() - ptau1.z() - ptau2.z() - pK.z();
-    g(19) = EB - Etau1 - Etau2 - EK;
+    g(20) = pB.x() - ptau1.x() - ptau2.x() - pK.x();
+    g(21) = pB.y() - ptau1.y() - ptau2.y() - pK.y();
+    g(22) = pB.z() - ptau1.z() - ptau2.z() - pK.z();
+    g(23) = EB - Etau1 - Etau2 - EK;
 
     return g;
 }
@@ -2331,15 +2697,19 @@ TVectorD x_initial_estimate_0( TVectorD m ) // Original initialisation for x (ba
     x0(dimM+7) = ptau1.x();
     x0(dimM+8) = ptau1.y();
     x0(dimM+9) = ptau1.z();
-    x0(dimM+10) = pnu1.x();
-    x0(dimM+11) = pnu1.y();
-    x0(dimM+12) = pnu1.z();
-    x0(dimM+13) = ptau2.x();
-    x0(dimM+14) = ptau2.y();
-    x0(dimM+15) = ptau2.z();
-    x0(dimM+16) = pnu2.x();
-    x0(dimM+17) = pnu2.y();
-    x0(dimM+18) = pnu2.z();
+    x0(dimM+10) = Etau1;
+    x0(dimM+11) = pnu1.x();
+    x0(dimM+12) = pnu1.y();
+    x0(dimM+13) = pnu1.z();
+    x0(dimM+14) = Enu1;
+    x0(dimM+15) = ptau2.x();
+    x0(dimM+16) = ptau2.y();
+    x0(dimM+17) = ptau2.z();
+    x0(dimM+18) = Etau2;
+    x0(dimM+19) = pnu2.x();
+    x0(dimM+20) = pnu2.y();
+    x0(dimM+21) = pnu2.z();
+    x0(dimM+22) = Enu2;
 
     // lambda
     x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
@@ -2350,18 +2720,22 @@ TVectorD x_initial_estimate_0( TVectorD m ) // Original initialisation for x (ba
     x0(dimM+dimX+5) = 1./1000.; // py conservation in DV1
     x0(dimM+dimX+6) = 1./10000.; // pz conservation in DV1
     x0(dimM+dimX+7) = 1./10000.; // E conservation in DV1
-    x0(dimM+dimX+8) = 1./10000.; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+9) = 1./10000.; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+10) = 1./1000.; // px conservation in DV2
-    x0(dimM+dimX+11) = 1./1000.; // py conservation in DV2
-    x0(dimM+dimX+12) = 1./10000.; // pz conservation in DV2
-    x0(dimM+dimX+13) = 1./10000.; // E conservation in DV2
-    x0(dimM+dimX+14) = 1./1000.; // pKx/(BVx - RPx)
-    x0(dimM+dimX+15) = 1./1000.; // pKx/(BVx - RPx)
-    x0(dimM+dimX+16) = 1./10000.; // px vonservation in BV
-    x0(dimM+dimX+17) = 1./10000.; // py conservation in BV
-    x0(dimM+dimX+18) = 1./100000.; // pz conservation in BV
-    x0(dimM+dimX+19) = 1./100000.; // E conservation in BV
+    x0(dimM+dimX+8) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+9) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+10) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+11) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+12) = 1./1000.; // px conservation in DV2
+    x0(dimM+dimX+13) = 1./1000.; // py conservation in DV2
+    x0(dimM+dimX+14) = 1./10000.; // pz conservation in DV2
+    x0(dimM+dimX+15) = 1./10000.; // E conservation in DV2
+    x0(dimM+dimX+16) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+17) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+18) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+19) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+20) = 1./10000.; // px vonservation in BV
+    x0(dimM+dimX+21) = 1./10000.; // py conservation in BV
+    x0(dimM+dimX+22) = 1./100000.; // pz conservation in BV
+    x0(dimM+dimX+23) = 1./100000.; // E conservation in BV
 
     return x0;
 }
@@ -2467,15 +2841,19 @@ TVectorD x_initial_estimate_1( TVectorD m, ROOT::Math::XYZPoint BV )
     x0(dimM+7) = ptau1.x();
     x0(dimM+8) = ptau1.y();
     x0(dimM+9) = ptau1.z();
-    x0(dimM+10) = pnu1.x();
-    x0(dimM+11) = pnu1.y();
-    x0(dimM+12) = pnu1.z();
-    x0(dimM+13) = ptau2.x();
-    x0(dimM+14) = ptau2.y();
-    x0(dimM+15) = ptau2.z();
-    x0(dimM+16) = pnu2.x();
-    x0(dimM+17) = pnu2.y();
-    x0(dimM+18) = pnu2.z();
+    x0(dimM+10) = Etau1;
+    x0(dimM+11) = pnu1.x();
+    x0(dimM+12) = pnu1.y();
+    x0(dimM+13) = pnu1.z();
+    x0(dimM+14) = Enu1;
+    x0(dimM+15) = ptau2.x();
+    x0(dimM+16) = ptau2.y();
+    x0(dimM+17) = ptau2.z();
+    x0(dimM+18) = Etau2;
+    x0(dimM+19) = pnu2.x();
+    x0(dimM+20) = pnu2.y();
+    x0(dimM+21) = pnu2.z();
+    x0(dimM+22) = Enu2;
 
     // lambda
     x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
@@ -2486,18 +2864,22 @@ TVectorD x_initial_estimate_1( TVectorD m, ROOT::Math::XYZPoint BV )
     x0(dimM+dimX+5) = 1./1000.; // py conservation in DV1
     x0(dimM+dimX+6) = 1./10000.; // pz conservation in DV1
     x0(dimM+dimX+7) = 1./10000.; // E conservation in DV1
-    x0(dimM+dimX+8) = 1./10000.; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+9) = 1./10000.; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+10) = 1./1000.; // px conservation in DV2
-    x0(dimM+dimX+11) = 1./1000.; // py conservation in DV2
-    x0(dimM+dimX+12) = 1./10000.; // pz conservation in DV2
-    x0(dimM+dimX+13) = 1./10000.; // E conservation in DV2
-    x0(dimM+dimX+14) = 1./1000.; // pKx/(BVx - RPx)
-    x0(dimM+dimX+15) = 1./1000.; // pKx/(BVx - RPx)
-    x0(dimM+dimX+16) = 1./10000.; // px vonservation in BV
-    x0(dimM+dimX+17) = 1./10000.; // py conservation in BV
-    x0(dimM+dimX+18) = 1./100000.; // pz conservation in BV
-    x0(dimM+dimX+19) = 1./100000.; // E conservation in BV
+    x0(dimM+dimX+8) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+9) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+10) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+11) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+12) = 1./1000.; // px conservation in DV2
+    x0(dimM+dimX+13) = 1./1000.; // py conservation in DV2
+    x0(dimM+dimX+14) = 1./10000.; // pz conservation in DV2
+    x0(dimM+dimX+15) = 1./10000.; // E conservation in DV2
+    x0(dimM+dimX+16) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+17) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+18) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+19) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+20) = 1./10000.; // px vonservation in BV
+    x0(dimM+dimX+21) = 1./10000.; // py conservation in BV
+    x0(dimM+dimX+22) = 1./100000.; // pz conservation in BV
+    x0(dimM+dimX+23) = 1./100000.; // E conservation in BV
 
     return x0;
 }
@@ -2603,15 +2985,19 @@ TVectorD x_initial_estimate_2( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B-
     x0(dimM+7) = ptau1.x();
     x0(dimM+8) = ptau1.y();
     x0(dimM+9) = ptau1.z();
-    x0(dimM+10) = pnu1.x();
-    x0(dimM+11) = pnu1.y();
-    x0(dimM+12) = pnu1.z();
-    x0(dimM+13) = ptau2.x();
-    x0(dimM+14) = ptau2.y();
-    x0(dimM+15) = ptau2.z();
-    x0(dimM+16) = pnu2.x();
-    x0(dimM+17) = pnu2.y();
-    x0(dimM+18) = pnu2.z();
+    x0(dimM+10) = Etau1;
+    x0(dimM+11) = pnu1.x();
+    x0(dimM+12) = pnu1.y();
+    x0(dimM+13) = pnu1.z();
+    x0(dimM+14) = Enu1;
+    x0(dimM+15) = ptau2.x();
+    x0(dimM+16) = ptau2.y();
+    x0(dimM+17) = ptau2.z();
+    x0(dimM+18) = Etau2;
+    x0(dimM+19) = pnu2.x();
+    x0(dimM+20) = pnu2.y();
+    x0(dimM+21) = pnu2.z();
+    x0(dimM+22) = Enu2;
 
     // lambda
     x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
@@ -2622,18 +3008,22 @@ TVectorD x_initial_estimate_2( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B-
     x0(dimM+dimX+5) = 1./1000.; // py conservation in DV1
     x0(dimM+dimX+6) = 1./10000.; // pz conservation in DV1
     x0(dimM+dimX+7) = 1./10000.; // E conservation in DV1
-    x0(dimM+dimX+8) = 1./10000.; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+9) = 1./10000.; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+10) = 1./1000.; // px conservation in DV2
-    x0(dimM+dimX+11) = 1./1000.; // py conservation in DV2
-    x0(dimM+dimX+12) = 1./10000.; // pz conservation in DV2
-    x0(dimM+dimX+13) = 1./10000.; // E conservation in DV2
-    x0(dimM+dimX+14) = 1./1000.; // pKx/(BVx - RPx)
-    x0(dimM+dimX+15) = 1./1000.; // pKx/(BVx - RPx)
-    x0(dimM+dimX+16) = 1./10000.; // px vonservation in BV
-    x0(dimM+dimX+17) = 1./10000.; // py conservation in BV
-    x0(dimM+dimX+18) = 1./100000.; // pz conservation in BV
-    x0(dimM+dimX+19) = 1./100000.; // E conservation in BV
+    x0(dimM+dimX+8) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+9) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+10) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+11) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+12) = 1./1000.; // px conservation in DV2
+    x0(dimM+dimX+13) = 1./1000.; // py conservation in DV2
+    x0(dimM+dimX+14) = 1./10000.; // pz conservation in DV2
+    x0(dimM+dimX+15) = 1./10000.; // E conservation in DV2
+    x0(dimM+dimX+16) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+17) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+18) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+19) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+20) = 1./10000.; // px vonservation in BV
+    x0(dimM+dimX+21) = 1./10000.; // py conservation in BV
+    x0(dimM+dimX+22) = 1./100000.; // pz conservation in BV
+    x0(dimM+dimX+23) = 1./100000.; // E conservation in BV
 
     return x0;
 }
@@ -2694,7 +3084,7 @@ TVectorD x_initial_estimate_3( TVectorD m, ROOT::Math::XYZPoint BV )
     Double_t EB = EK + Etau1 + Etau2;
     Double_t MB_squared = pow(EB,2) - pB.Mag2();
 
-    x0(dimM+0) = BV.x();
+    x0(dimM) = BV.x();
     x0(dimM+1) = BV.y();
     x0(dimM+2) = BV.z();
     x0(dimM+3) = pB.x();
@@ -2704,17 +3094,20 @@ TVectorD x_initial_estimate_3( TVectorD m, ROOT::Math::XYZPoint BV )
     x0(dimM+7) = ptau1.x();
     x0(dimM+8) = ptau1.y();
     x0(dimM+9) = ptau1.z();
-    x0(dimM+10) = pnu1.x();
-    x0(dimM+11) = pnu1.y();
-    x0(dimM+12) = pnu1.z();
-    x0(dimM+13) = ptau2.x();
-    x0(dimM+14) = ptau2.y();
-    x0(dimM+15) = ptau2.z();
-    x0(dimM+16) = pnu2.x();
-    x0(dimM+17) = pnu2.y();
-    x0(dimM+18) = pnu2.z();
+    x0(dimM+10) = Etau1;
+    x0(dimM+11) = pnu1.x();
+    x0(dimM+12) = pnu1.y();
+    x0(dimM+13) = pnu1.z();
+    x0(dimM+14) = Enu1;
+    x0(dimM+15) = ptau2.x();
+    x0(dimM+16) = ptau2.y();
+    x0(dimM+17) = ptau2.z();
+    x0(dimM+18) = Etau2;
+    x0(dimM+19) = pnu2.x();
+    x0(dimM+20) = pnu2.y();
+    x0(dimM+21) = pnu2.z();
+    x0(dimM+22) = Enu2;
 
-    // lambda
     // lambda
     x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
     x0(dimM+dimX+1) = 1./10000.; // pBx/(BVx - PVx)
@@ -2724,27 +3117,22 @@ TVectorD x_initial_estimate_3( TVectorD m, ROOT::Math::XYZPoint BV )
     x0(dimM+dimX+5) = 1./1000.; // py conservation in DV1
     x0(dimM+dimX+6) = 1./10000.; // pz conservation in DV1
     x0(dimM+dimX+7) = 1./10000.; // E conservation in DV1
-    x0(dimM+dimX+8) = 1./10000.; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+9) = 1./10000.; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+10) = 1./1000.; // px conservation in DV2
-    x0(dimM+dimX+11) = 1./1000.; // py conservation in DV2
-    x0(dimM+dimX+12) = 1./10000.; // pz conservation in DV2
-    x0(dimM+dimX+13) = 1./10000.; // E conservation in DV2
-    x0(dimM+dimX+14) = 1./1000.; // pKx/(BVx - RPx)
-    x0(dimM+dimX+15) = 1./1000.; // pKx/(BVx - RPx)
-    x0(dimM+dimX+16) = 1./10000.; // px vonservation in BV
-    x0(dimM+dimX+17) = 1./10000.; // py conservation in BV
-    x0(dimM+dimX+18) = 1./100000.; // pz conservation in BV
-    x0(dimM+dimX+19) = 1./100000.; // E conservation in BV
-
-    // for(int i = 0; i < dimC; i++)
-    // {
-    //     x0(dimM+dimX+i) = 0.1;
-    // }
-
-    // normalise X
-    // x0 = normalise(x0, true);
-    // x0 = D_inverse*x0;
+    x0(dimM+dimX+8) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+9) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+10) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+11) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+12) = 1./1000.; // px conservation in DV2
+    x0(dimM+dimX+13) = 1./1000.; // py conservation in DV2
+    x0(dimM+dimX+14) = 1./10000.; // pz conservation in DV2
+    x0(dimM+dimX+15) = 1./10000.; // E conservation in DV2
+    x0(dimM+dimX+16) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+17) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+18) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+19) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+20) = 1./10000.; // px vonservation in BV
+    x0(dimM+dimX+21) = 1./10000.; // py conservation in BV
+    x0(dimM+dimX+22) = 1./100000.; // pz conservation in BV
+    x0(dimM+dimX+23) = 1./100000.; // E conservation in BV
 
     return x0;
 }
@@ -2849,15 +3237,19 @@ TVectorD x_initial_estimate_4( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B-
     x0(dimM+7) = ptau1.x();
     x0(dimM+8) = ptau1.y();
     x0(dimM+9) = ptau1.z();
-    x0(dimM+10) = pnu1.x();
-    x0(dimM+11) = pnu1.y();
-    x0(dimM+12) = pnu1.z();
-    x0(dimM+13) = ptau2.x();
-    x0(dimM+14) = ptau2.y();
-    x0(dimM+15) = ptau2.z();
-    x0(dimM+16) = pnu2.x();
-    x0(dimM+17) = pnu2.y();
-    x0(dimM+18) = pnu2.z();
+    x0(dimM+10) = Etau1;
+    x0(dimM+11) = pnu1.x();
+    x0(dimM+12) = pnu1.y();
+    x0(dimM+13) = pnu1.z();
+    x0(dimM+14) = Enu1;
+    x0(dimM+15) = ptau2.x();
+    x0(dimM+16) = ptau2.y();
+    x0(dimM+17) = ptau2.z();
+    x0(dimM+18) = Etau2;
+    x0(dimM+19) = pnu2.x();
+    x0(dimM+20) = pnu2.y();
+    x0(dimM+21) = pnu2.z();
+    x0(dimM+22) = Enu2;
 
     // lambda
     x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
@@ -2868,18 +3260,22 @@ TVectorD x_initial_estimate_4( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B-
     x0(dimM+dimX+5) = 1./1000.; // py conservation in DV1
     x0(dimM+dimX+6) = 1./10000.; // pz conservation in DV1
     x0(dimM+dimX+7) = 1./10000.; // E conservation in DV1
-    x0(dimM+dimX+8) = 1./10000.; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+9) = 1./10000.; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+10) = 1./1000.; // px conservation in DV2
-    x0(dimM+dimX+11) = 1./1000.; // py conservation in DV2
-    x0(dimM+dimX+12) = 1./10000.; // pz conservation in DV2
-    x0(dimM+dimX+13) = 1./10000.; // E conservation in DV2
-    x0(dimM+dimX+14) = 1./1000.; // pKx/(BVx - RPx)
-    x0(dimM+dimX+15) = 1./1000.; // pKx/(BVx - RPx)
-    x0(dimM+dimX+16) = 1./10000.; // px vonservation in BV
-    x0(dimM+dimX+17) = 1./10000.; // py conservation in BV
-    x0(dimM+dimX+18) = 1./100000.; // pz conservation in BV
-    x0(dimM+dimX+19) = 1./100000.; // E conservation in BV
+    x0(dimM+dimX+8) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+9) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+10) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+11) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+12) = 1./1000.; // px conservation in DV2
+    x0(dimM+dimX+13) = 1./1000.; // py conservation in DV2
+    x0(dimM+dimX+14) = 1./10000.; // pz conservation in DV2
+    x0(dimM+dimX+15) = 1./10000.; // E conservation in DV2
+    x0(dimM+dimX+16) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+17) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+18) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+19) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+20) = 1./10000.; // px vonservation in BV
+    x0(dimM+dimX+21) = 1./10000.; // py conservation in BV
+    x0(dimM+dimX+22) = 1./100000.; // pz conservation in BV
+    x0(dimM+dimX+23) = 1./100000.; // E conservation in BV
 
     return x0;
 }
@@ -2984,15 +3380,19 @@ TVectorD x_initial_estimate_5( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B-
     x0(dimM+7) = ptau1.x();
     x0(dimM+8) = ptau1.y();
     x0(dimM+9) = ptau1.z();
-    x0(dimM+10) = pnu1.x();
-    x0(dimM+11) = pnu1.y();
-    x0(dimM+12) = pnu1.z();
-    x0(dimM+13) = ptau2.x();
-    x0(dimM+14) = ptau2.y();
-    x0(dimM+15) = ptau2.z();
-    x0(dimM+16) = pnu2.x();
-    x0(dimM+17) = pnu2.y();
-    x0(dimM+18) = pnu2.z();
+    x0(dimM+10) = Etau1;
+    x0(dimM+11) = pnu1.x();
+    x0(dimM+12) = pnu1.y();
+    x0(dimM+13) = pnu1.z();
+    x0(dimM+14) = Enu1;
+    x0(dimM+15) = ptau2.x();
+    x0(dimM+16) = ptau2.y();
+    x0(dimM+17) = ptau2.z();
+    x0(dimM+18) = Etau2;
+    x0(dimM+19) = pnu2.x();
+    x0(dimM+20) = pnu2.y();
+    x0(dimM+21) = pnu2.z();
+    x0(dimM+22) = Enu2;
 
     // lambda
     x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
@@ -3003,18 +3403,22 @@ TVectorD x_initial_estimate_5( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B-
     x0(dimM+dimX+5) = 1./1000.; // py conservation in DV1
     x0(dimM+dimX+6) = 1./10000.; // pz conservation in DV1
     x0(dimM+dimX+7) = 1./10000.; // E conservation in DV1
-    x0(dimM+dimX+8) = 1./10000.; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+9) = 1./10000.; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+10) = 1./1000.; // px conservation in DV2
-    x0(dimM+dimX+11) = 1./1000.; // py conservation in DV2
-    x0(dimM+dimX+12) = 1./10000.; // pz conservation in DV2
-    x0(dimM+dimX+13) = 1./10000.; // E conservation in DV2
-    x0(dimM+dimX+14) = 1./1000.; // pKx/(BVx - RPx)
-    x0(dimM+dimX+15) = 1./1000.; // pKx/(BVx - RPx)
-    x0(dimM+dimX+16) = 1./10000.; // px vonservation in BV
-    x0(dimM+dimX+17) = 1./10000.; // py conservation in BV
-    x0(dimM+dimX+18) = 1./100000.; // pz conservation in BV
-    x0(dimM+dimX+19) = 1./100000.; // E conservation in BV
+    x0(dimM+dimX+8) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+9) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+10) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+11) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+12) = 1./1000.; // px conservation in DV2
+    x0(dimM+dimX+13) = 1./1000.; // py conservation in DV2
+    x0(dimM+dimX+14) = 1./10000.; // pz conservation in DV2
+    x0(dimM+dimX+15) = 1./10000.; // E conservation in DV2
+    x0(dimM+dimX+16) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+17) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+18) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+19) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+20) = 1./10000.; // px vonservation in BV
+    x0(dimM+dimX+21) = 1./10000.; // py conservation in BV
+    x0(dimM+dimX+22) = 1./100000.; // pz conservation in BV
+    x0(dimM+dimX+23) = 1./100000.; // E conservation in BV
 
     return x0;
 }
@@ -3108,7 +3512,7 @@ TVectorD x_initial_estimate_6( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes M
     Double_t EB = EK + Etau1 + Etau2;
     Double_t MB_squared = pow(EB,2) - pB.Mag2();
 
-    x0(dimM+0) = BV.x();
+    x0(dimM) = BV.x();
     x0(dimM+1) = BV.y();
     x0(dimM+2) = BV.z();
     x0(dimM+3) = pB.x();
@@ -3118,15 +3522,19 @@ TVectorD x_initial_estimate_6( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes M
     x0(dimM+7) = ptau1.x();
     x0(dimM+8) = ptau1.y();
     x0(dimM+9) = ptau1.z();
-    x0(dimM+10) = pnu1.x();
-    x0(dimM+11) = pnu1.y();
-    x0(dimM+12) = pnu1.z();
-    x0(dimM+13) = ptau2.x();
-    x0(dimM+14) = ptau2.y();
-    x0(dimM+15) = ptau2.z();
-    x0(dimM+16) = pnu2.x();
-    x0(dimM+17) = pnu2.y();
-    x0(dimM+18) = pnu2.z();
+    x0(dimM+10) = Etau1;
+    x0(dimM+11) = pnu1.x();
+    x0(dimM+12) = pnu1.y();
+    x0(dimM+13) = pnu1.z();
+    x0(dimM+14) = Enu1;
+    x0(dimM+15) = ptau2.x();
+    x0(dimM+16) = ptau2.y();
+    x0(dimM+17) = ptau2.z();
+    x0(dimM+18) = Etau2;
+    x0(dimM+19) = pnu2.x();
+    x0(dimM+20) = pnu2.y();
+    x0(dimM+21) = pnu2.z();
+    x0(dimM+22) = Enu2;
 
     // lambda
     x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
@@ -3137,18 +3545,22 @@ TVectorD x_initial_estimate_6( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes M
     x0(dimM+dimX+5) = 1./1000.; // py conservation in DV1
     x0(dimM+dimX+6) = 1./10000.; // pz conservation in DV1
     x0(dimM+dimX+7) = 1./10000.; // E conservation in DV1
-    x0(dimM+dimX+8) = 1./10000.; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+9) = 1./10000.; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+10) = 1./1000.; // px conservation in DV2
-    x0(dimM+dimX+11) = 1./1000.; // py conservation in DV2
-    x0(dimM+dimX+12) = 1./10000.; // pz conservation in DV2
-    x0(dimM+dimX+13) = 1./10000.; // E conservation in DV2
-    x0(dimM+dimX+14) = 1./1000.; // pKx/(BVx - RPx)
-    x0(dimM+dimX+15) = 1./1000.; // pKx/(BVx - RPx)
-    x0(dimM+dimX+16) = 1./10000.; // px vonservation in BV
-    x0(dimM+dimX+17) = 1./10000.; // py conservation in BV
-    x0(dimM+dimX+18) = 1./100000.; // pz conservation in BV
-    x0(dimM+dimX+19) = 1./100000.; // E conservation in BV
+    x0(dimM+dimX+8) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+9) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+10) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+11) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+12) = 1./1000.; // px conservation in DV2
+    x0(dimM+dimX+13) = 1./1000.; // py conservation in DV2
+    x0(dimM+dimX+14) = 1./10000.; // pz conservation in DV2
+    x0(dimM+dimX+15) = 1./10000.; // E conservation in DV2
+    x0(dimM+dimX+16) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+17) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+18) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+19) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+20) = 1./10000.; // px vonservation in BV
+    x0(dimM+dimX+21) = 1./10000.; // py conservation in BV
+    x0(dimM+dimX+22) = 1./100000.; // pz conservation in BV
+    x0(dimM+dimX+23) = 1./100000.; // E conservation in BV
 
     return x0;
 }
@@ -3242,7 +3654,7 @@ TVectorD x_initial_estimate_7( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes M
     Double_t EB = EK + Etau1 + Etau2;
     Double_t MB_squared = pow(EB,2) - pB.Mag2();
 
-    x0(dimM+0) = BV.x();
+    x0(dimM) = BV.x();
     x0(dimM+1) = BV.y();
     x0(dimM+2) = BV.z();
     x0(dimM+3) = pB.x();
@@ -3252,15 +3664,19 @@ TVectorD x_initial_estimate_7( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes M
     x0(dimM+7) = ptau1.x();
     x0(dimM+8) = ptau1.y();
     x0(dimM+9) = ptau1.z();
-    x0(dimM+10) = pnu1.x();
-    x0(dimM+11) = pnu1.y();
-    x0(dimM+12) = pnu1.z();
-    x0(dimM+13) = ptau2.x();
-    x0(dimM+14) = ptau2.y();
-    x0(dimM+15) = ptau2.z();
-    x0(dimM+16) = pnu2.x();
-    x0(dimM+17) = pnu2.y();
-    x0(dimM+18) = pnu2.z();
+    x0(dimM+10) = Etau1;
+    x0(dimM+11) = pnu1.x();
+    x0(dimM+12) = pnu1.y();
+    x0(dimM+13) = pnu1.z();
+    x0(dimM+14) = Enu1;
+    x0(dimM+15) = ptau2.x();
+    x0(dimM+16) = ptau2.y();
+    x0(dimM+17) = ptau2.z();
+    x0(dimM+18) = Etau2;
+    x0(dimM+19) = pnu2.x();
+    x0(dimM+20) = pnu2.y();
+    x0(dimM+21) = pnu2.z();
+    x0(dimM+22) = Enu2;
 
     // lambda
     x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
@@ -3271,18 +3687,22 @@ TVectorD x_initial_estimate_7( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes M
     x0(dimM+dimX+5) = 1./1000.; // py conservation in DV1
     x0(dimM+dimX+6) = 1./10000.; // pz conservation in DV1
     x0(dimM+dimX+7) = 1./10000.; // E conservation in DV1
-    x0(dimM+dimX+8) = 1./10000.; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+9) = 1./10000.; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+10) = 1./1000.; // px conservation in DV2
-    x0(dimM+dimX+11) = 1./1000.; // py conservation in DV2
-    x0(dimM+dimX+12) = 1./10000.; // pz conservation in DV2
-    x0(dimM+dimX+13) = 1./10000.; // E conservation in DV2
-    x0(dimM+dimX+14) = 1./1000.; // pKx/(BVx - RPx)
-    x0(dimM+dimX+15) = 1./1000.; // pKx/(BVx - RPx)
-    x0(dimM+dimX+16) = 1./10000.; // px vonservation in BV
-    x0(dimM+dimX+17) = 1./10000.; // py conservation in BV
-    x0(dimM+dimX+18) = 1./100000.; // pz conservation in BV
-    x0(dimM+dimX+19) = 1./100000.; // E conservation in BV
+    x0(dimM+dimX+8) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+9) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+10) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+11) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+12) = 1./1000.; // px conservation in DV2
+    x0(dimM+dimX+13) = 1./1000.; // py conservation in DV2
+    x0(dimM+dimX+14) = 1./10000.; // pz conservation in DV2
+    x0(dimM+dimX+15) = 1./10000.; // E conservation in DV2
+    x0(dimM+dimX+16) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+17) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+18) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+19) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+20) = 1./10000.; // px vonservation in BV
+    x0(dimM+dimX+21) = 1./10000.; // py conservation in BV
+    x0(dimM+dimX+22) = 1./100000.; // pz conservation in BV
+    x0(dimM+dimX+23) = 1./100000.; // E conservation in BV
 
     return x0;
 }
@@ -3376,7 +3796,7 @@ TVectorD x_initial_estimate_8( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes M
     Double_t EB = EK + Etau1 + Etau2;
     Double_t MB_squared = pow(EB,2) - pB.Mag2();
 
-    x0(dimM+0) = BV.x();
+    x0(dimM) = BV.x();
     x0(dimM+1) = BV.y();
     x0(dimM+2) = BV.z();
     x0(dimM+3) = pB.x();
@@ -3386,15 +3806,19 @@ TVectorD x_initial_estimate_8( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes M
     x0(dimM+7) = ptau1.x();
     x0(dimM+8) = ptau1.y();
     x0(dimM+9) = ptau1.z();
-    x0(dimM+10) = pnu1.x();
-    x0(dimM+11) = pnu1.y();
-    x0(dimM+12) = pnu1.z();
-    x0(dimM+13) = ptau2.x();
-    x0(dimM+14) = ptau2.y();
-    x0(dimM+15) = ptau2.z();
-    x0(dimM+16) = pnu2.x();
-    x0(dimM+17) = pnu2.y();
-    x0(dimM+18) = pnu2.z();
+    x0(dimM+10) = Etau1;
+    x0(dimM+11) = pnu1.x();
+    x0(dimM+12) = pnu1.y();
+    x0(dimM+13) = pnu1.z();
+    x0(dimM+14) = Enu1;
+    x0(dimM+15) = ptau2.x();
+    x0(dimM+16) = ptau2.y();
+    x0(dimM+17) = ptau2.z();
+    x0(dimM+18) = Etau2;
+    x0(dimM+19) = pnu2.x();
+    x0(dimM+20) = pnu2.y();
+    x0(dimM+21) = pnu2.z();
+    x0(dimM+22) = Enu2;
 
     // lambda
     x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
@@ -3405,18 +3829,22 @@ TVectorD x_initial_estimate_8( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes M
     x0(dimM+dimX+5) = 1./1000.; // py conservation in DV1
     x0(dimM+dimX+6) = 1./10000.; // pz conservation in DV1
     x0(dimM+dimX+7) = 1./10000.; // E conservation in DV1
-    x0(dimM+dimX+8) = 1./10000.; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+9) = 1./10000.; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+10) = 1./1000.; // px conservation in DV2
-    x0(dimM+dimX+11) = 1./1000.; // py conservation in DV2
-    x0(dimM+dimX+12) = 1./10000.; // pz conservation in DV2
-    x0(dimM+dimX+13) = 1./10000.; // E conservation in DV2
-    x0(dimM+dimX+14) = 1./1000.; // pKx/(BVx - RPx)
-    x0(dimM+dimX+15) = 1./1000.; // pKx/(BVx - RPx)
-    x0(dimM+dimX+16) = 1./10000.; // px vonservation in BV
-    x0(dimM+dimX+17) = 1./10000.; // py conservation in BV
-    x0(dimM+dimX+18) = 1./100000.; // pz conservation in BV
-    x0(dimM+dimX+19) = 1./100000.; // E conservation in BV
+    x0(dimM+dimX+8) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+9) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+10) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+11) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+12) = 1./1000.; // px conservation in DV2
+    x0(dimM+dimX+13) = 1./1000.; // py conservation in DV2
+    x0(dimM+dimX+14) = 1./10000.; // pz conservation in DV2
+    x0(dimM+dimX+15) = 1./10000.; // E conservation in DV2
+    x0(dimM+dimX+16) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+17) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+18) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+19) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+20) = 1./10000.; // px vonservation in BV
+    x0(dimM+dimX+21) = 1./10000.; // py conservation in BV
+    x0(dimM+dimX+22) = 1./100000.; // pz conservation in BV
+    x0(dimM+dimX+23) = 1./100000.; // E conservation in BV
 
     return x0;
 }
@@ -3510,7 +3938,7 @@ TVectorD x_initial_estimate_9( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes M
     Double_t EB = EK + Etau1 + Etau2;
     Double_t MB_squared = pow(EB,2) - pB.Mag2();
 
-    x0(dimM+0) = BV.x();
+    x0(dimM) = BV.x();
     x0(dimM+1) = BV.y();
     x0(dimM+2) = BV.z();
     x0(dimM+3) = pB.x();
@@ -3520,15 +3948,19 @@ TVectorD x_initial_estimate_9( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes M
     x0(dimM+7) = ptau1.x();
     x0(dimM+8) = ptau1.y();
     x0(dimM+9) = ptau1.z();
-    x0(dimM+10) = pnu1.x();
-    x0(dimM+11) = pnu1.y();
-    x0(dimM+12) = pnu1.z();
-    x0(dimM+13) = ptau2.x();
-    x0(dimM+14) = ptau2.y();
-    x0(dimM+15) = ptau2.z();
-    x0(dimM+16) = pnu2.x();
-    x0(dimM+17) = pnu2.y();
-    x0(dimM+18) = pnu2.z();
+    x0(dimM+10) = Etau1;
+    x0(dimM+11) = pnu1.x();
+    x0(dimM+12) = pnu1.y();
+    x0(dimM+13) = pnu1.z();
+    x0(dimM+14) = Enu1;
+    x0(dimM+15) = ptau2.x();
+    x0(dimM+16) = ptau2.y();
+    x0(dimM+17) = ptau2.z();
+    x0(dimM+18) = Etau2;
+    x0(dimM+19) = pnu2.x();
+    x0(dimM+20) = pnu2.y();
+    x0(dimM+21) = pnu2.z();
+    x0(dimM+22) = Enu2;
 
     // lambda
     x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
@@ -3539,18 +3971,360 @@ TVectorD x_initial_estimate_9( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes M
     x0(dimM+dimX+5) = 1./1000.; // py conservation in DV1
     x0(dimM+dimX+6) = 1./10000.; // pz conservation in DV1
     x0(dimM+dimX+7) = 1./10000.; // E conservation in DV1
-    x0(dimM+dimX+8) = 1./10000.; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+9) = 1./10000.; // ptau2x/(DV2x - BVx)
-    x0(dimM+dimX+10) = 1./1000.; // px conservation in DV2
-    x0(dimM+dimX+11) = 1./1000.; // py conservation in DV2
-    x0(dimM+dimX+12) = 1./10000.; // pz conservation in DV2
-    x0(dimM+dimX+13) = 1./10000.; // E conservation in DV2
-    x0(dimM+dimX+14) = 1./1000.; // pKx/(BVx - RPx)
-    x0(dimM+dimX+15) = 1./1000.; // pKx/(BVx - RPx)
-    x0(dimM+dimX+16) = 1./10000.; // px vonservation in BV
-    x0(dimM+dimX+17) = 1./10000.; // py conservation in BV
-    x0(dimM+dimX+18) = 1./100000.; // pz conservation in BV
-    x0(dimM+dimX+19) = 1./100000.; // E conservation in BV
+    x0(dimM+dimX+8) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+9) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+10) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+11) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+12) = 1./1000.; // px conservation in DV2
+    x0(dimM+dimX+13) = 1./1000.; // py conservation in DV2
+    x0(dimM+dimX+14) = 1./10000.; // pz conservation in DV2
+    x0(dimM+dimX+15) = 1./10000.; // E conservation in DV2
+    x0(dimM+dimX+16) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+17) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+18) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+19) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+20) = 1./10000.; // px vonservation in BV
+    x0(dimM+dimX+21) = 1./10000.; // py conservation in BV
+    x0(dimM+dimX+22) = 1./100000.; // pz conservation in BV
+    x0(dimM+dimX+23) = 1./100000.; // E conservation in BV
+
+    return x0;
+}
+
+TVectorD x_initial_estimate_true( TVectorD m )
+{  
+    TVectorD x0(dimM+dimX+dimC);
+
+    // 1) Initialise xm
+    for(int i = 0; i < dimM; i++)
+    {
+        x0(i) = m(i);
+    }
+
+    // 2) Initialise xu
+    x0(dimM) = 0;
+    x0(dimM+1) = 0;
+    x0(dimM+2) = 0;
+
+    // lambda
+    x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+1) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+2) = 1./10000.; // E conservation in DV1
+    x0(dimM+dimX+3) = 1./10000.; // E conservation in DV2
+
+    return x0;
+}
+
+TVectorD x_initial_estimate_MLP( TVectorD m, ROOT::Math::XYZPoint BV, Int_t species )
+{
+    TVectorD x0(dimM+dimX+dimC);
+
+    // 1) Initialise xm
+    for(int i = 0; i < dimM; i++)
+    {
+        x0(i) = m(i);
+    }
+
+    // 2) Initialise xu 
+    TMVA::Tools::Instance();
+    TMVA::Reader *reader_taup_PX = new TMVA::Reader( "V:Color:Silent" ); 
+    TMVA::Reader *reader_taup_PY = new TMVA::Reader( "V:Color:Silent" ); 
+    TMVA::Reader *reader_taup_PZ = new TMVA::Reader( "V:Color:Silent" ); 
+    TMVA::Reader *reader_taum_PX = new TMVA::Reader( "V:Color:Silent" ); 
+    TMVA::Reader *reader_taum_PY = new TMVA::Reader( "V:Color:Silent" ); 
+    TMVA::Reader *reader_taum_PZ = new TMVA::Reader( "V:Color:Silent" ); 
+    
+    TString weightfile_taup_PX;
+    TString weightfile_taup_PY;
+    TString weightfile_taup_PZ;
+    TString weightfile_taum_PX;
+    TString weightfile_taum_PY;
+    TString weightfile_taum_PZ;
+
+    if(species == 10)
+    {
+        weightfile_taup_PX = "/home/avenkate/jobs/KTauTau_MLP_Train_taup_PX/dataset/weights/TMVARegression_taup_TRUEP_X_MLP.weights.xml";
+        weightfile_taup_PY = "/home/avenkate/jobs/KTauTau_MLP_Train_taup_PY/dataset/weights/TMVARegression_taup_TRUEP_Y_MLP.weights.xml";
+        weightfile_taup_PZ = "/home/avenkate/jobs/KTauTau_MLP_Train_taup_PZ/dataset/weights/TMVARegression_taup_TRUEP_Z_MLP.weights.xml";
+        weightfile_taum_PX = "/home/avenkate/jobs/KTauTau_MLP_Train_taum_PX/dataset/weights/TMVARegression_taum_TRUEP_X_MLP.weights.xml";
+        weightfile_taum_PY = "/home/avenkate/jobs/KTauTau_MLP_Train_taum_PY/dataset/weights/TMVARegression_taum_TRUEP_Y_MLP.weights.xml";
+        weightfile_taum_PZ = "/home/avenkate/jobs/KTauTau_MLP_Train_taum_PZ/dataset/weights/TMVARegression_taum_TRUEP_Z_MLP.weights.xml";
+    }
+    else if(species == 4)
+    {
+        weightfile_taup_PX = "/home/avenkate/jobs/DDK_MLP_Train_taup_PX/dataset/weights/TMVARegression_Dp_TRUEP_X_MLP.weights.xml";
+        weightfile_taup_PY = "/home/avenkate/jobs/DDK_MLP_Train_taup_PY/dataset/weights/TMVARegression_Dp_TRUEP_Y_MLP.weights.xml";
+        weightfile_taup_PZ = "/home/avenkate/jobs/DDK_MLP_Train_taup_PZ/dataset/weights/TMVARegression_Dp_TRUEP_Z_MLP.weights.xml";
+        weightfile_taum_PX = "/home/avenkate/jobs/DDK_MLP_Train_taum_PX/dataset/weights/TMVARegression_Dm_TRUEP_X_MLP.weights.xml";
+        weightfile_taum_PY = "/home/avenkate/jobs/DDK_MLP_Train_taum_PY/dataset/weights/TMVARegression_Dm_TRUEP_Y_MLP.weights.xml";
+        weightfile_taum_PZ = "/home/avenkate/jobs/DDK_MLP_Train_taum_PZ/dataset/weights/TMVARegression_Dm_TRUEP_Z_MLP.weights.xml";
+    }
+
+    Float_t MLP_m_vars[dimM];
+    Float_t MLP_RPz;
+    Float_t MLP_eventNumber;
+
+    reader_taup_PX->AddVariable("df_m_1", &MLP_m_vars[0]);
+    reader_taup_PX->AddVariable("df_m_2", &MLP_m_vars[1]);
+    reader_taup_PX->AddVariable("df_m_3", &MLP_m_vars[2]);
+    reader_taup_PX->AddVariable("df_m_4", &MLP_m_vars[3]);
+    reader_taup_PX->AddVariable("df_m_5", &MLP_m_vars[4]);
+    reader_taup_PX->AddVariable("df_m_6", &MLP_m_vars[5]);
+    reader_taup_PX->AddVariable("df_m_7", &MLP_m_vars[6]);
+    reader_taup_PX->AddVariable("df_m_8", &MLP_m_vars[7]);
+    reader_taup_PX->AddVariable("df_m_9", &MLP_m_vars[8]);
+    reader_taup_PX->AddVariable("df_m_10", &MLP_m_vars[9]);
+    reader_taup_PX->AddVariable("df_m_11", &MLP_m_vars[10]);
+    reader_taup_PX->AddVariable("df_m_12", &MLP_m_vars[11]);
+    reader_taup_PX->AddVariable("df_m_13", &MLP_m_vars[12]);
+    reader_taup_PX->AddVariable("df_m_14", &MLP_m_vars[13]);
+    reader_taup_PX->AddVariable("df_m_15", &MLP_m_vars[14]);
+    reader_taup_PX->AddVariable("df_m_16", &MLP_m_vars[15]);
+    reader_taup_PX->AddVariable("df_m_17", &MLP_m_vars[16]);
+    reader_taup_PX->AddVariable("df_m_18", &MLP_m_vars[17]);
+    reader_taup_PX->AddVariable("df_m_19", &MLP_m_vars[18]);
+    reader_taup_PX->AddVariable("df_m_20", &MLP_m_vars[19]);
+    reader_taup_PX->AddVariable("df_m_21", &MLP_m_vars[20]);
+    reader_taup_PX->AddVariable("df_m_22", &MLP_m_vars[21]);
+    reader_taup_PX->AddVariable("Kp_RP_Z", &MLP_RPz);
+    reader_taup_PX->AddSpectator("eventNumber", &MLP_eventNumber);
+
+    reader_taup_PY->AddVariable("df_m_1", &MLP_m_vars[0]);
+    reader_taup_PY->AddVariable("df_m_2", &MLP_m_vars[1]);
+    reader_taup_PY->AddVariable("df_m_3", &MLP_m_vars[2]);
+    reader_taup_PY->AddVariable("df_m_4", &MLP_m_vars[3]);
+    reader_taup_PY->AddVariable("df_m_5", &MLP_m_vars[4]);
+    reader_taup_PY->AddVariable("df_m_6", &MLP_m_vars[5]);
+    reader_taup_PY->AddVariable("df_m_7", &MLP_m_vars[6]);
+    reader_taup_PY->AddVariable("df_m_8", &MLP_m_vars[7]);
+    reader_taup_PY->AddVariable("df_m_9", &MLP_m_vars[8]);
+    reader_taup_PY->AddVariable("df_m_10", &MLP_m_vars[9]);
+    reader_taup_PY->AddVariable("df_m_11", &MLP_m_vars[10]);
+    reader_taup_PY->AddVariable("df_m_12", &MLP_m_vars[11]);
+    reader_taup_PY->AddVariable("df_m_13", &MLP_m_vars[12]);
+    reader_taup_PY->AddVariable("df_m_14", &MLP_m_vars[13]);
+    reader_taup_PY->AddVariable("df_m_15", &MLP_m_vars[14]);
+    reader_taup_PY->AddVariable("df_m_16", &MLP_m_vars[15]);
+    reader_taup_PY->AddVariable("df_m_17", &MLP_m_vars[16]);
+    reader_taup_PY->AddVariable("df_m_18", &MLP_m_vars[17]);
+    reader_taup_PY->AddVariable("df_m_19", &MLP_m_vars[18]);
+    reader_taup_PY->AddVariable("df_m_20", &MLP_m_vars[19]);
+    reader_taup_PY->AddVariable("df_m_21", &MLP_m_vars[20]);
+    reader_taup_PY->AddVariable("df_m_22", &MLP_m_vars[21]);
+    reader_taup_PY->AddVariable("Kp_RP_Z", &MLP_RPz);
+    reader_taup_PY->AddSpectator("eventNumber", &MLP_eventNumber);
+
+    reader_taup_PZ->AddVariable("df_m_1", &MLP_m_vars[0]);
+    reader_taup_PZ->AddVariable("df_m_2", &MLP_m_vars[1]);
+    reader_taup_PZ->AddVariable("df_m_3", &MLP_m_vars[2]);
+    reader_taup_PZ->AddVariable("df_m_4", &MLP_m_vars[3]);
+    reader_taup_PZ->AddVariable("df_m_5", &MLP_m_vars[4]);
+    reader_taup_PZ->AddVariable("df_m_6", &MLP_m_vars[5]);
+    reader_taup_PZ->AddVariable("df_m_7", &MLP_m_vars[6]);
+    reader_taup_PZ->AddVariable("df_m_8", &MLP_m_vars[7]);
+    reader_taup_PZ->AddVariable("df_m_9", &MLP_m_vars[8]);
+    reader_taup_PZ->AddVariable("df_m_10", &MLP_m_vars[9]);
+    reader_taup_PZ->AddVariable("df_m_11", &MLP_m_vars[10]);
+    reader_taup_PZ->AddVariable("df_m_12", &MLP_m_vars[11]);
+    reader_taup_PZ->AddVariable("df_m_13", &MLP_m_vars[12]);
+    reader_taup_PZ->AddVariable("df_m_14", &MLP_m_vars[13]);
+    reader_taup_PZ->AddVariable("df_m_15", &MLP_m_vars[14]);
+    reader_taup_PZ->AddVariable("df_m_16", &MLP_m_vars[15]);
+    reader_taup_PZ->AddVariable("df_m_17", &MLP_m_vars[16]);
+    reader_taup_PZ->AddVariable("df_m_18", &MLP_m_vars[17]);
+    reader_taup_PZ->AddVariable("df_m_19", &MLP_m_vars[18]);
+    reader_taup_PZ->AddVariable("df_m_20", &MLP_m_vars[19]);
+    reader_taup_PZ->AddVariable("df_m_21", &MLP_m_vars[20]);
+    reader_taup_PZ->AddVariable("df_m_22", &MLP_m_vars[21]);
+    reader_taup_PZ->AddVariable("Kp_RP_Z", &MLP_RPz);
+    reader_taup_PZ->AddSpectator("eventNumber", &MLP_eventNumber);
+
+    reader_taum_PX->AddVariable("df_m_1", &MLP_m_vars[0]);
+    reader_taum_PX->AddVariable("df_m_2", &MLP_m_vars[1]);
+    reader_taum_PX->AddVariable("df_m_3", &MLP_m_vars[2]);
+    reader_taum_PX->AddVariable("df_m_4", &MLP_m_vars[3]);
+    reader_taum_PX->AddVariable("df_m_5", &MLP_m_vars[4]);
+    reader_taum_PX->AddVariable("df_m_6", &MLP_m_vars[5]);
+    reader_taum_PX->AddVariable("df_m_7", &MLP_m_vars[6]);
+    reader_taum_PX->AddVariable("df_m_8", &MLP_m_vars[7]);
+    reader_taum_PX->AddVariable("df_m_9", &MLP_m_vars[8]);
+    reader_taum_PX->AddVariable("df_m_10", &MLP_m_vars[9]);
+    reader_taum_PX->AddVariable("df_m_11", &MLP_m_vars[10]);
+    reader_taum_PX->AddVariable("df_m_12", &MLP_m_vars[11]);
+    reader_taum_PX->AddVariable("df_m_13", &MLP_m_vars[12]);
+    reader_taum_PX->AddVariable("df_m_14", &MLP_m_vars[13]);
+    reader_taum_PX->AddVariable("df_m_15", &MLP_m_vars[14]);
+    reader_taum_PX->AddVariable("df_m_16", &MLP_m_vars[15]);
+    reader_taum_PX->AddVariable("df_m_17", &MLP_m_vars[16]);
+    reader_taum_PX->AddVariable("df_m_18", &MLP_m_vars[17]);
+    reader_taum_PX->AddVariable("df_m_19", &MLP_m_vars[18]);
+    reader_taum_PX->AddVariable("df_m_20", &MLP_m_vars[19]);
+    reader_taum_PX->AddVariable("df_m_21", &MLP_m_vars[20]);
+    reader_taum_PX->AddVariable("df_m_22", &MLP_m_vars[21]);
+    reader_taum_PX->AddVariable("Kp_RP_Z", &MLP_RPz);
+    reader_taum_PX->AddSpectator("eventNumber", &MLP_eventNumber);
+
+    reader_taum_PY->AddVariable("df_m_1", &MLP_m_vars[0]);
+    reader_taum_PY->AddVariable("df_m_2", &MLP_m_vars[1]);
+    reader_taum_PY->AddVariable("df_m_3", &MLP_m_vars[2]);
+    reader_taum_PY->AddVariable("df_m_4", &MLP_m_vars[3]);
+    reader_taum_PY->AddVariable("df_m_5", &MLP_m_vars[4]);
+    reader_taum_PY->AddVariable("df_m_6", &MLP_m_vars[5]);
+    reader_taum_PY->AddVariable("df_m_7", &MLP_m_vars[6]);
+    reader_taum_PY->AddVariable("df_m_8", &MLP_m_vars[7]);
+    reader_taum_PY->AddVariable("df_m_9", &MLP_m_vars[8]);
+    reader_taum_PY->AddVariable("df_m_10", &MLP_m_vars[9]);
+    reader_taum_PY->AddVariable("df_m_11", &MLP_m_vars[10]);
+    reader_taum_PY->AddVariable("df_m_12", &MLP_m_vars[11]);
+    reader_taum_PY->AddVariable("df_m_13", &MLP_m_vars[12]);
+    reader_taum_PY->AddVariable("df_m_14", &MLP_m_vars[13]);
+    reader_taum_PY->AddVariable("df_m_15", &MLP_m_vars[14]);
+    reader_taum_PY->AddVariable("df_m_16", &MLP_m_vars[15]);
+    reader_taum_PY->AddVariable("df_m_17", &MLP_m_vars[16]);
+    reader_taum_PY->AddVariable("df_m_18", &MLP_m_vars[17]);
+    reader_taum_PY->AddVariable("df_m_19", &MLP_m_vars[18]);
+    reader_taum_PY->AddVariable("df_m_20", &MLP_m_vars[19]);
+    reader_taum_PY->AddVariable("df_m_21", &MLP_m_vars[20]);
+    reader_taum_PY->AddVariable("df_m_22", &MLP_m_vars[21]);
+    reader_taum_PY->AddVariable("Kp_RP_Z", &MLP_RPz);
+    reader_taum_PY->AddSpectator("eventNumber", &MLP_eventNumber);
+
+    reader_taum_PZ->AddVariable("df_m_1", &MLP_m_vars[0]);
+    reader_taum_PZ->AddVariable("df_m_2", &MLP_m_vars[1]);
+    reader_taum_PZ->AddVariable("df_m_3", &MLP_m_vars[2]);
+    reader_taum_PZ->AddVariable("df_m_4", &MLP_m_vars[3]);
+    reader_taum_PZ->AddVariable("df_m_5", &MLP_m_vars[4]);
+    reader_taum_PZ->AddVariable("df_m_6", &MLP_m_vars[5]);
+    reader_taum_PZ->AddVariable("df_m_7", &MLP_m_vars[6]);
+    reader_taum_PZ->AddVariable("df_m_8", &MLP_m_vars[7]);
+    reader_taum_PZ->AddVariable("df_m_9", &MLP_m_vars[8]);
+    reader_taum_PZ->AddVariable("df_m_10", &MLP_m_vars[9]);
+    reader_taum_PZ->AddVariable("df_m_11", &MLP_m_vars[10]);
+    reader_taum_PZ->AddVariable("df_m_12", &MLP_m_vars[11]);
+    reader_taum_PZ->AddVariable("df_m_13", &MLP_m_vars[12]);
+    reader_taum_PZ->AddVariable("df_m_14", &MLP_m_vars[13]);
+    reader_taum_PZ->AddVariable("df_m_15", &MLP_m_vars[14]);
+    reader_taum_PZ->AddVariable("df_m_16", &MLP_m_vars[15]);
+    reader_taum_PZ->AddVariable("df_m_17", &MLP_m_vars[16]);
+    reader_taum_PZ->AddVariable("df_m_18", &MLP_m_vars[17]);
+    reader_taum_PZ->AddVariable("df_m_19", &MLP_m_vars[18]);
+    reader_taum_PZ->AddVariable("df_m_20", &MLP_m_vars[19]);
+    reader_taum_PZ->AddVariable("df_m_21", &MLP_m_vars[20]);
+    reader_taum_PZ->AddVariable("df_m_22", &MLP_m_vars[21]);
+    reader_taum_PZ->AddVariable("Kp_RP_Z", &MLP_RPz);
+    reader_taum_PZ->AddSpectator("eventNumber", &MLP_eventNumber);
+
+    reader_taup_PX->BookMVA("MLP", weightfile_taup_PX);
+    reader_taup_PY->BookMVA("MLP", weightfile_taup_PY);
+    reader_taup_PZ->BookMVA("MLP", weightfile_taup_PZ);
+    reader_taum_PX->BookMVA("MLP", weightfile_taum_PX);
+    reader_taum_PY->BookMVA("MLP", weightfile_taum_PY);
+    reader_taum_PZ->BookMVA("MLP", weightfile_taum_PZ);
+
+    MLP_m_vars[0] = m(0);
+    MLP_m_vars[1] = m(1);
+    MLP_m_vars[2] = m(2);
+    MLP_m_vars[3] = m(3);
+    MLP_m_vars[4] = m(4);
+    MLP_m_vars[5] = m(5);
+    MLP_m_vars[6] = m(6);
+    MLP_m_vars[7] = m(7);
+    MLP_m_vars[8] = m(8);
+    MLP_m_vars[9] = m(9);
+    MLP_m_vars[10] = m(10);
+    MLP_m_vars[11] = m(11);
+    MLP_m_vars[12] = m(12);
+    MLP_m_vars[13] = m(13);
+    MLP_m_vars[14] = m(14);
+    MLP_m_vars[15] = m(15);
+    MLP_m_vars[16] = m(16);
+    MLP_m_vars[17] = m(17);
+    MLP_m_vars[18] = m(18);
+    MLP_m_vars[19] = m(19);
+    MLP_m_vars[20] = m(20);
+    MLP_m_vars[21] = m(21);
+    MLP_RPz = RPz;
+    MLP_eventNumber = eventNumber;
+
+    Float_t MLP_taup_PX = reader_taup_PX->EvaluateRegression("MLP")[0];
+    Float_t MLP_taup_PY = reader_taup_PY->EvaluateRegression("MLP")[0];
+    Float_t MLP_taup_PZ = reader_taup_PZ->EvaluateRegression("MLP")[0];
+    Float_t MLP_taum_PX = reader_taum_PX->EvaluateRegression("MLP")[0];
+    Float_t MLP_taum_PY = reader_taum_PY->EvaluateRegression("MLP")[0];
+    Float_t MLP_taum_PZ = reader_taum_PZ->EvaluateRegression("MLP")[0];
+
+    ROOT::Math::XYZPoint PV( m(0), m(1), m(2) );
+    ROOT::Math::XYZPoint DV1( m(3), m(4), m(5) );
+    ROOT::Math::XYZVector p3pi1( m(6), m(7), m(8) ); 
+    Double_t E3pi1 = m(9);
+    ROOT::Math::XYZPoint DV2( m(10), m(11), m(12) );
+    ROOT::Math::XYZVector p3pi2( m(13), m(14), m(15) );
+    Double_t E3pi2 = m(16);
+    ROOT::Math::XYZPoint RP( m(17), m(18), RPz );
+    ROOT::Math::XYZVector pK( m(19), m(20), m(21) );  
+    Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
+
+    ROOT::Math::XYZVector ptau1( MLP_taup_PX, MLP_taup_PY, MLP_taup_PZ );
+    ROOT::Math::XYZVector ptau2( MLP_taum_PX, MLP_taum_PY, MLP_taum_PZ );
+    ROOT::Math::XYZVector pnu1 = ptau1 - p3pi1;
+    ROOT::Math::XYZVector pnu2 = ptau2 - p3pi2;
+    Double_t Etau1 = sqrt( pow(mtau,2) + ptau1.Mag2() );
+    Double_t Etau2 = sqrt( pow(mtau,2) + ptau2.Mag2() );
+    Double_t Enu1 = sqrt( pnu1.Mag2() );
+    Double_t Enu2 = sqrt( pnu2.Mag2() );
+    ROOT::Math::XYZVector pB = ptau1 + ptau2 + pK;
+    Double_t EB = Etau1 + Etau2 + EK;
+    Double_t MB_squared = pow(EB,2) - pB.Mag2();
+
+    x0(dimM) = BV.x(); 
+    x0(dimM+1) = BV.y(); 
+    x0(dimM+2) = BV.z() ; // -0.26
+    x0(dimM+3) = pB.x();
+    x0(dimM+4) = pB.y();
+    x0(dimM+5) = pB.z();
+    x0(dimM+6) = MB_squared;
+    x0(dimM+7) = ptau1.x();
+    x0(dimM+8) = ptau1.y();
+    x0(dimM+9) = ptau1.z();
+    x0(dimM+10) = Etau1;
+    x0(dimM+11) = pnu1.x();
+    x0(dimM+12) = pnu1.y();
+    x0(dimM+13) = pnu1.z();
+    x0(dimM+14) = Enu1;
+    x0(dimM+15) = ptau2.x();
+    x0(dimM+16) = ptau2.y();
+    x0(dimM+17) = ptau2.z();
+    x0(dimM+18) = Etau2;
+    x0(dimM+19) = pnu2.x();
+    x0(dimM+20) = pnu2.y();
+    x0(dimM+21) = pnu2.z();
+    x0(dimM+22) = Enu2;
+
+    // lambda
+    x0(dimM+dimX) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+1) = 1./10000.; // pBx/(BVx - PVx)
+    x0(dimM+dimX+2) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+3) = 1./10000.; // ptau1x/(DV1x - BVx)
+    x0(dimM+dimX+4) = 1./1000.; // px conservation in DV1
+    x0(dimM+dimX+5) = 1./1000.; // py conservation in DV1
+    x0(dimM+dimX+6) = 1./10000.; // pz conservation in DV1
+    x0(dimM+dimX+7) = 1./10000.; // E conservation in DV1
+    x0(dimM+dimX+8) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+9) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+10) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+11) = 1./10000.; // ptau2x/(DV2x - BVx)
+    x0(dimM+dimX+12) = 1./1000.; // px conservation in DV2
+    x0(dimM+dimX+13) = 1./1000.; // py conservation in DV2
+    x0(dimM+dimX+14) = 1./10000.; // pz conservation in DV2
+    x0(dimM+dimX+15) = 1./10000.; // E conservation in DV2
+    x0(dimM+dimX+16) = 1./10000.; // Tau mass constraint
+    x0(dimM+dimX+17) = 1./10000.; // Nu mass constraint
+    x0(dimM+dimX+18) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+19) = 1./1000.; // pKx/(BVx - RPx)
+    x0(dimM+dimX+20) = 1./10000.; // px vonservation in BV
+    x0(dimM+dimX+21) = 1./10000.; // py conservation in BV
+    x0(dimM+dimX+22) = 1./100000.; // pz conservation in BV
+    x0(dimM+dimX+23) = 1./100000.; // E conservation in BV
 
     return x0;
 }
