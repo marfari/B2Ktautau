@@ -28,7 +28,6 @@ gaudi_depends_on_subdirs(Phys/DecayTreeFitter
                          Phys/LoKiPhys)
 
 find_package(HepMC)
-
 find_package(Boost)
 find_package(ROOT)
 find_package(ROOT COMPONENTS Physics)

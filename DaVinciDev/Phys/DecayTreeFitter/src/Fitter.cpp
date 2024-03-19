@@ -170,6 +170,7 @@ namespace DecayTreeFitter {
 
     // std::cout<<"After initialization printing params "<<std::endl;
     // m_fitparams->print();
+    
     int posindex_Taup = 0;
     int posindex_Taum = 0;
     if(fillArrays)
@@ -187,20 +188,20 @@ namespace DecayTreeFitter {
 
       if((Kplus->particleID()).pid() == 321)
       {
-        LHCb::DecayTree::findInTree( P, LHCb::ParticleID(-15), tauList);
-        LHCb::DecayTree::findInTree( P, LHCb::ParticleID(15), tauList);
+        LHCb::DecayTree::findInTree( P, LHCb::ParticleID(-15), tauList); // -15, 411
+        LHCb::DecayTree::findInTree( P, LHCb::ParticleID(15), tauList); // 15, -411
       }
       else if((Kplus->particleID()).pid() == -321)
       {
-        LHCb::DecayTree::findInTree( P, LHCb::ParticleID(15), tauList);
-        LHCb::DecayTree::findInTree( P, LHCb::ParticleID(-15), tauList);
+        LHCb::DecayTree::findInTree( P, LHCb::ParticleID(15), tauList); // 15, -411
+        LHCb::DecayTree::findInTree( P, LHCb::ParticleID(-15), tauList); // -15, 411
       }
 
       const ParticleBase* pb_Taup = m_decaychain->locate( *(tauList[0]) );
       const ParticleBase* pb_Taum = m_decaychain->locate( *(tauList[1]) );
 
-      posindex_Taup = pb_Taup->posIndex() - 1; 
-      posindex_Taum = pb_Taum->posIndex() - 2;
+      posindex_Taup = pb_Taup->posIndex(); 
+      posindex_Taum = pb_Taum->posIndex();
       //NB: The numbering in the fitparams array starts from 1
       BV.push_back(Gaudi::XYZPoint( m_fitparams->par()(posindex+1), m_fitparams->par()(posindex+2), m_fitparams->par()(posindex+3) ));
       DV1.push_back(Gaudi::XYZPoint( m_fitparams->par()(posindex_Taup+1), m_fitparams->par()(posindex_Taup+2), m_fitparams->par()(posindex_Taup+3) ));
@@ -223,6 +224,7 @@ namespace DecayTreeFitter {
       chisq_iters.push_back(m_fitparams->chiSquare()); //Pushing back anyway to have a same length array as the vertices
       //std::cout<<"After initialization Pushing back "<<m_fitparams->chiSquare()<<std::endl;
     }
+
     
     // if(m_errCode.failure()) {
     if ( 0 != m_errCode ) {
@@ -299,6 +301,7 @@ namespace DecayTreeFitter {
           std::cout << "press a key ...." << std::endl;
           getchar();
         }
+        
         if(fillArrays)
         {
           chisq_iters.push_back(chisq);
@@ -323,7 +326,7 @@ namespace DecayTreeFitter {
         // std::cout<<"Iteration "<<m_niter<<" pushing back BV_X = "<<BV_X.back()<<" BV_Y = "<<BV_Y.back()<<" BV_Z = "<<BV_Z.back()<<std::endl;
 
       }
-
+    
       if ( m_niter == nitermax && m_status != Success ) { 
         m_status = NonConverged; 
       }
@@ -339,6 +342,7 @@ namespace DecayTreeFitter {
         }
         m_status = Failed;
       }
+
     }
   }
 

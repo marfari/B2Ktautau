@@ -59,19 +59,19 @@ namespace LHCb
 
 struct IDVAlgorithm;
 
-class TupleToolDecayFit1 : public TupleToolBase, virtual public IParticleTupleTool
+class TupleToolDecayFit_DDK : public TupleToolBase, virtual public IParticleTupleTool
 {
     private:
         typedef std::map<std::string,std::string> SubstitutionMap;
         typedef std::map< std::string, std::vector<double> > TupleMap;
     public:
         // Standard constructor
-        TupleToolDecayFit1( const std::string& type,
+        TupleToolDecayFit_DDK( const std::string& type,
                            const std::string& name,
                            const IInterface* parent );
 
         // Destructor
-        ~TupleToolDecayFit1() = default;
+        ~TupleToolDecayFit_DDK() = default;
 
         StatusCode initialize() override;
 

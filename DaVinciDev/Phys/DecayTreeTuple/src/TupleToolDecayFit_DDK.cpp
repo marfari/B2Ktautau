@@ -1,7 +1,8 @@
 
-#include "TupleToolDecayFit.h"
+#include "TupleToolDecayFit_DDK.h"
 #include "TMath.h"
 #include <algorithm>
+#include "TMinuit.h"
 
 #include "Kernel/IVertexFit.h"
 #include "TrackInterfaces/ITrackFitter.h"
@@ -9,7 +10,7 @@
 using namespace LHCb;
 using namespace std;
 
-TupleToolDecayFit::TupleToolDecayFit( const std::string& type, const std::string& name, const IInterface* parent ):TupleToolBase( type, name, parent )
+TupleToolDecayFit_DDK::TupleToolDecayFit_DDK( const std::string& type, const std::string& name, const IInterface* parent ):TupleToolBase( type, name, parent )
 {
     declareProperty( "StateProvider", m_stateprovider ) ;
     declareProperty( "constrainToOriginVertex", m_constrainToOriginVertex = false,
@@ -18,7 +19,7 @@ TupleToolDecayFit::TupleToolDecayFit( const std::string& type, const std::string
     declareInterface<IParticleTupleTool>(this);
 }
 
-StatusCode TupleToolDecayFit::initialize()
+StatusCode TupleToolDecayFit_DDK::initialize()
 {
     StatusCode sc = TupleToolBase::initialize();
     if( sc.isFailure() ) return sc;
@@ -29,13 +30,13 @@ StatusCode TupleToolDecayFit::initialize()
     return sc;
 }
 
-StatusCode TupleToolDecayFit::finalize()
+StatusCode TupleToolDecayFit_DDK::finalize()
 {
     StatusCode sc = StatusCode::SUCCESS;
     return StatusCode{ TupleToolBase::finalize() && sc };
 }
 
-StatusCode TupleToolDecayFit::fill( const LHCb::Particle* mother, const LHCb::Particle* P,
+StatusCode TupleToolDecayFit_DDK::fill( const LHCb::Particle* mother, const LHCb::Particle* P,
                                     const std::string& head, Tuples::Tuple& tuple )
 {
     LHCb::DecayTree tree(*P);
@@ -50,60 +51,54 @@ StatusCode TupleToolDecayFit::fill( const LHCb::Particle* mother, const LHCb::Pa
     if( originVtx.empty() ){return Error("Can't get an origin vertex");}
     ROOT::Math::XYZPoint PV( originVtx[0]->position().X(), originVtx[0]->position().Y(), originVtx[0]->position().Z() ); // originVtx[0] is the best PV in the event
  
-    // Get taus and their daughters
-    LHCb::Particle::ConstVector tauList;
-    if(mother->charge() > 0) // B+ -> tau+ tau- K+
+    // Get Ds and their daughters
+    LHCb::Particle::ConstVector DsList;
+    LHCb::DecayTree::findInTree( treeHead, LHCb::ParticleID(411), DsList); // D+
+    LHCb::DecayTree::findInTree( treeHead, LHCb::ParticleID(-411), DsList); // D-
+    if ( DsList.size() != 2 ) 
     {
-        LHCb::DecayTree::findInTree( treeHead, LHCb::ParticleID(-15), tauList); // tau+
-        LHCb::DecayTree::findInTree( treeHead, LHCb::ParticleID(15), tauList); // tau-
-    }
-    else // B- -> tau- tau+ K-
-    {
-        LHCb::DecayTree::findInTree( treeHead, LHCb::ParticleID(15), tauList); // tau-
-        LHCb::DecayTree::findInTree( treeHead, LHCb::ParticleID(-15), tauList); // tau+
-    }
-    if ( tauList.size() != 2 ) 
-    {
-        return Error("Can't find two tau decays");
+        return Error("Can't find two D decays");
     }
 
-    LHCb::Particle::ConstVector taup_daus = tauList[0]->daughtersVector();
-    LHCb::Particle::ConstVector taum_daus = tauList[1]->daughtersVector();
+    LHCb::Particle::ConstVector Dp_daus = DsList[0]->daughtersVector();
+    LHCb::Particle::ConstVector Dm_daus = DsList[1]->daughtersVector();
 
     // Get K+
     const LHCb::Particle* Kp = LHCb::DecayTree::findFirstInTree( treeHead, LHCb::ParticleID(321) );
+    bool Kp_flag = true;
     if( Kp == 0 )
     {
         Kp = LHCb::DecayTree::findFirstInTree( treeHead, LHCb::ParticleID(-321) );
+        Kp_flag = false;
     }
     if( Kp == 0 )
     {
         return Error("Can't find a K meson in decay tree");
     }
 
-    // Refit tau+ decay vertex
-    const IVertexFit* vtxFitter_taup = tool<IVertexFit>( "LoKi::VertexFitter" );
-    LHCb::Vertex taup_refittedVertex;
-    LHCb::Particle taup_refitted;
-    taup_refitted.setParticleID(tauList[0]->particleID()); // tau+ (B+) or tau- (B-)
+    // Refit D+ decay vertex
+    const IVertexFit* vtxFitter_Dp = tool<IVertexFit>( "LoKi::VertexFitter" );
+    LHCb::Vertex Dp_refittedVertex;
+    LHCb::Particle Dp_refitted;
+    Dp_refitted.setParticleID(LHCb::ParticleID(411));
 
-    vtxFitter_taup->fit(taup_daus, taup_refittedVertex, taup_refitted);
+    vtxFitter_Dp->fit(Dp_daus, Dp_refittedVertex, Dp_refitted);
 
-    // Refit tau- decay vertex
-    const IVertexFit* vtxFitter_taum = tool<IVertexFit>( "LoKi::VertexFitter" );
-    LHCb::Vertex taum_refittedVertex;
-    LHCb::Particle taum_refitted;
-    taum_refitted.setParticleID(tauList[1]->particleID()); // tau- (B+) pr tau+ (B-)
+    // Refit D- decay vertex
+    const IVertexFit* vtxFitter_Dm = tool<IVertexFit>( "LoKi::VertexFitter" );
+    LHCb::Vertex Dm_refittedVertex;
+    LHCb::Particle Dm_refitted;
+    Dm_refitted.setParticleID(LHCb::ParticleID(-411));
 
-    vtxFitter_taum->fit(taum_daus, taum_refittedVertex, taum_refitted);
+    vtxFitter_Dm->fit(Dm_daus, Dm_refittedVertex, Dm_refitted);
 
-    // Get tau+ refitted decay vertex and visible 4-momentum (3pi)+ 
-    ROOT::Math::XYZPoint DV1( taup_refitted.endVertex()->position().X(), taup_refitted.endVertex()->position().Y(), taup_refitted.endVertex()->position().Z() );
-    Gaudi::LorentzVector P3pi1( taup_refitted.momentum().X(), taup_refitted.momentum().Y(), taup_refitted.momentum().Z(), taup_refitted.momentum().E() );
+    // Get D+ refitted decay vertex and visible 4-momentum (K2pi)+ 
+    ROOT::Math::XYZPoint DV1( Dp_refitted.endVertex()->position().X(), Dp_refitted.endVertex()->position().Y(), Dp_refitted.endVertex()->position().Z() );
+    Gaudi::LorentzVector PK2pi1( Dp_refitted.momentum().X(), Dp_refitted.momentum().Y(), Dp_refitted.momentum().Z(), Dp_refitted.momentum().E() );
 
-    // Get tau- refitted decay vertex and visible 4-momentum (3pi)-
-    ROOT::Math::XYZPoint DV2( taum_refitted.endVertex()->position().X(), taum_refitted.endVertex()->position().Y(), taum_refitted.endVertex()->position().Z() );
-    Gaudi::LorentzVector P3pi2( taum_refitted.momentum().X(), taum_refitted.momentum().Y(), taum_refitted.momentum().Z(), taum_refitted.momentum().E() );
+    // Get D- refitted decay vertex and visible 4-momentum (3pi)-
+    ROOT::Math::XYZPoint DV2( Dm_refitted.endVertex()->position().X(), Dm_refitted.endVertex()->position().Y(), Dm_refitted.endVertex()->position().Z() );
+    Gaudi::LorentzVector PK2pi2( Dm_refitted.momentum().X(), Dm_refitted.momentum().Y(), Dm_refitted.momentum().Z(), Dm_refitted.momentum().E() );
 
     // Get K+ reference point and 4-momentum
     ROOT::Math::XYZPoint refPoint_Kp = Kp->referencePoint();
@@ -124,17 +119,17 @@ StatusCode TupleToolDecayFit::fill( const LHCb::Particle* mother, const LHCb::Pa
     m(4) = DV1.x();
     m(5) = DV1.y();
     m(6) = DV1.z();
-    m(7) = P3pi1.x();
-    m(8) = P3pi1.y();
-    m(9) = P3pi1.z();
-    m(10) = P3pi1.t();
+    m(7) = PK2pi1.x();
+    m(8) = PK2pi1.y();
+    m(9) = PK2pi1.z();
+    m(10) = PK2pi1.t();
     m(11) = DV2.x();
     m(12) = DV2.y();
     m(13) = DV2.z();
-    m(14) = P3pi2.x();
-    m(15) = P3pi2.y();
-    m(16) = P3pi2.z();
-    m(17) = P3pi2.t();
+    m(14) = PK2pi2.x();
+    m(15) = PK2pi2.y();
+    m(16) = PK2pi2.z();
+    m(17) = PK2pi2.t();
     m(18) = refPoint_Kp.x();
     m(19) = refPoint_Kp.y();
     m(20) = pK.x();
@@ -145,15 +140,15 @@ StatusCode TupleToolDecayFit::fill( const LHCb::Particle* mother, const LHCb::Pa
     // Get PV covariance matrix
     // auto pv = m_dva->bestVertex( P );
     Gaudi::SymMatrix3x3 PV_cov = originVtx[0]->covMatrix(); // pv[0] is the best PV
-    // Get DV1 + P3pi1 covariance matrix
-    Gaudi::SymMatrix7x7 taup_cov = taup_refitted.covMatrix();
-    // Get DV2 + P3pi2 covariance matrix
-    Gaudi::SymMatrix7x7 taum_cov = taum_refitted.covMatrix();
+    // Get DV1 + PK2pi1 covariance matrix
+    Gaudi::SymMatrix7x7 Dp_cov = Dp_refitted.covMatrix();
+    // Get DV2 + PK2pi2 covariance matrix
+    Gaudi::SymMatrix7x7 Dm_cov = Dm_refitted.covMatrix();
     // Get RP + PK covariance matrix
     Gaudi::SymMatrix7x7 Kp_cov = Kp->covMatrix();
     // Gaudi::SymMatrix6x6 Kp_cov = Kp_state->posMomCovariance();
 
-    CLHEP::HepSymMatrix V(dimM); // covariance matrix of measured quantities (PV,tau+,tau-,K+ RP_T, B+ P4)
+    CLHEP::HepSymMatrix V(dimM); // covariance matrix of measured quantities (PV,D+,D-,K+ RP_T, B+ P4)
     for(int i = 1; i <= dimM; i++)
     {
         for(int j = 1; j <= dimM; j++)
@@ -169,20 +164,20 @@ StatusCode TupleToolDecayFit::fill( const LHCb::Particle* mother, const LHCb::Pa
             V(i, j) = PV_cov(i-1,j-1);
         }
     }
-    // DV1 and P3pi1 (4,5,6, 7,8,9,10)
+    // DV1 and PK2pi1 (4,5,6, 7,8,9,10)
     for(int i = 4; i <= 10; i++)
     {
         for(int j = 4; j <= 10; j++)
         {
-            V(i, j) = taup_cov(i-4,j-4);
+            V(i, j) = Dp_cov(i-4,j-4);
         }
     }
-    // DV2 and p3pi2 (11,12,13 ,14,15,16,17)
+    // DV2 and PK2pi2 (11,12,13 ,14,15,16,17)
     for(int i = 11; i <= 17; i++)
     {
         for(int j = 11; j <= 17; j++)
         {
-            V(i, j) = taum_cov(i-11,j-11);
+            V(i, j) = Dm_cov(i-11,j-11);
         }
     }
     // RP and pK (18,19, 20,21,22)
@@ -231,7 +226,6 @@ StatusCode TupleToolDecayFit::fill( const LHCb::Particle* mother, const LHCb::Pa
             tuple->column(Form("df_V_%i_%i",i,j), V(i,j));
         }
     }
-
     // std::vector< std::vector<Double_t> > V_data;
     // for(int i = 0; i < dimM; i++)
     // {
@@ -252,7 +246,7 @@ StatusCode TupleToolDecayFit::fill( const LHCb::Particle* mother, const LHCb::Pa
     return StatusCode(true);
 }
 
-std::vector<const VertexBase*> TupleToolDecayFit::originVertex( const Particle* mother, const Particle* P ) const
+std::vector<const VertexBase*> TupleToolDecayFit_DDK::originVertex( const Particle* mother, const Particle* P ) const
 {
     std::vector<const VertexBase*> oriVx;
 
@@ -304,4 +298,4 @@ std::vector<const VertexBase*> TupleToolDecayFit::originVertex( const Particle* 
 }
 
 // Declaration of the Tool Factory
-DECLARE_COMPONENT( TupleToolDecayFit )
+DECLARE_COMPONENT( TupleToolDecayFit_DDK )

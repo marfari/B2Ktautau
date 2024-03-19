@@ -10,7 +10,7 @@
 \*****************************************************************************/
 
 // local
-#include "TupleToolKTauTauDTFSequential.h"
+#include "TupleToolKTauTauDTFSequential_DDK.h"
 #include "TMath.h"
 #include <algorithm>
 
@@ -27,7 +27,7 @@ using namespace LHCb;
 //=============================================================================
 // Standard constructor, initializes variables
 //=============================================================================
-TupleToolKTauTauDTFSequential::TupleToolKTauTauDTFSequential( const std::string& type,
+TupleToolKTauTauDTFSequential_DDK::TupleToolKTauTauDTFSequential_DDK( const std::string& type,
                                                     const std::string& name,
                                                     const IInterface* parent )
   : TupleToolBase ( type, name, parent )
@@ -56,14 +56,14 @@ TupleToolKTauTauDTFSequential::TupleToolKTauTauDTFSequential( const std::string&
   declareProperty( "maxndiverging", m_maxndiverging = 30, "Maximum number of diverging iterations during fitting." );
   declareProperty( "dChisqQuit", m_dChisqQuit = 2e5, "Maximum number of diverging iterations during fitting." ); //currently not used by code
   declareProperty( "doNuPZFix", m_doNuPZFix = true, "if true, initialize nuPZ to 0 if calculated -ve");
-  declareProperty( "tauMass", m_tauMass = 1776.86, "tau mass used in initialization calculation. 1776.8199 MeV is the number used in LHCb MC, 1776.86 is the PDG average");
+  declareProperty( "DMass", m_tauMass = 1869.66, "D mass used in initialization calculation.");
   declareProperty( "sequenceOrder", m_order = 0.12, "Order in which the initialisation methods in the sequential DTF are applied.");
 
   declareInterface<IParticleTupleTool>(this);
 }
 
 //=============================================================================
-StatusCode TupleToolKTauTauDTFSequential::initialize()
+StatusCode TupleToolKTauTauDTFSequential_DDK::initialize()
 {
   StatusCode sc = TupleToolBase::initialize();
   if ( sc.isFailure() ) return sc;
@@ -93,14 +93,14 @@ StatusCode TupleToolKTauTauDTFSequential::initialize()
     const auto en = name() ; // use tool name as prepended name
     const auto d = en.find_last_of(".");
     m_extraName = en.substr(d+1,en.size()-1); // from d to end
-    if ( "TupleToolKTauTauDTFSequential" == m_extraName )  m_extraName = ""; // user has not chanegd instance name
+    if ( "TupleToolKTauTauDTFSequential_DDK" == m_extraName )  m_extraName = ""; // user has not chanegd instance name
     info() << "All fields will be prepended with ``" << m_extraName << "''" <<endmsg;
   }
 
   if ( m_extraName.empty() )
   {
     return Error( "Extraname is empty. Always give an instance name "
-                  "to TupleToolKTauTauDTFSequential! See doxygen." );
+                  "to TupleToolKTauTauDTFSequential_DDK! See doxygen." );
   }
 
   if ( !m_map.empty() )
@@ -122,7 +122,7 @@ StatusCode TupleToolKTauTauDTFSequential::initialize()
   return sc;
 }
 
-StatusCode TupleToolKTauTauDTFSequential::finalize()
+StatusCode TupleToolKTauTauDTFSequential_DDK::finalize()
 {
   StatusCode sc = StatusCode::SUCCESS;
   if ( !m_stateprovider.empty() ) { sc = m_stateprovider.release(); }
@@ -132,14 +132,13 @@ StatusCode TupleToolKTauTauDTFSequential::finalize()
 //=============================================================================
 //  The fill method implementation. This is where our modifications are happening
 //=============================================================================
-StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, const LHCb::Particle* P, const std::string& head, Tuples::Tuple& tuple ){
+StatusCode TupleToolKTauTauDTFSequential_DDK::fill( const LHCb::Particle* mother, const LHCb::Particle* P, const std::string& head, Tuples::Tuple& tuple ){
 
-//  bool runningOnMC = true;
-
+  //  bool runningOnMC = true;
   if( !P ) return StatusCode::FAILURE;
   if ( P->isBasicParticle() )
   {
-    return Error("Do not call TupleToolKTauTauDTFSequential for basic particles. Use Branches. See doxygen.");
+    return Error("Do not call TupleToolKTauTauDTFSequential_DDK for basic particles. Use Branches. See doxygen.");
   }
   const std::string prefix = fullName(head);
   if (msgLevel(MSG::DEBUG)) debug() << "head ''" << head << "'' prefix ''" << prefix
@@ -179,7 +178,7 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
     debug() << "   cov = " << Kplus->endVertex()->covMatrix() << endmsg;
   }
   
-  // Get K+ track reference point
+  // //Get K+ track reference point
   Gaudi::XYZPoint refPoint_Kplus = Kplus->referencePoint(); //ostensibly a point on the K+ trajectory
 
   // //Other method of getting reference point
@@ -192,42 +191,36 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
   Gaudi::XYZVector p_K = Kplus->momentum().Vect(); //Kplus->momentum() gives 4-momentum
 
   //Get taus
-  //If kplusFlag is true then we want Taup with ID = -15, otherwise Taup with ID = 15
+  //If kplusFlag is true then we want Dp with ID = 411, otherwise Dp with ID = -411
 
-  LHCb::Particle::ConstVector tauList;
-  if(mother->charge() > 0) // B+ -> tau+ tau- K+
+  LHCb::Particle::ConstVector DList;
+  LHCb::DecayTree::findInTree( treeHead, LHCb::ParticleID(411), DList);
+  LHCb::DecayTree::findInTree( treeHead, LHCb::ParticleID(-411), DList);
+
+  if ( DList.size() != 2 ) 
   {
-    LHCb::DecayTree::findInTree( treeHead, LHCb::ParticleID(-15), tauList); // tau+
-    LHCb::DecayTree::findInTree( treeHead, LHCb::ParticleID(15), tauList); // tau-
-  }
-  else // B- -> tau- tau+ K-
-  {
-    LHCb::DecayTree::findInTree( treeHead, LHCb::ParticleID(15), tauList); // tau-
-    LHCb::DecayTree::findInTree( treeHead, LHCb::ParticleID(-15), tauList); // tau+
-  }
-  if ( tauList.size() != 2 ) 
-  {
-    return Error("Can't find two tau decays");
+    return Error("Can't find two D decays");
   }
 
-  //Get the energy and momentum of the 3pi
-  double E_3pi1 = tauList[0]->momentum().E();
-  double E_3pi2 = tauList[1]->momentum().E();
+  //Get the energy and momentum of the K2pi
+
+  double E_K2pi1 = DList[0]->momentum().E();
+  double E_K2pi2 = DList[1]->momentum().E();
 
   double E_K    = Kplus->momentum().E();
 
-  Gaudi::XYZVector p_3pi1 = tauList[0]->momentum().Vect();
-  Gaudi::XYZVector p_3pi2 = tauList[1]->momentum().Vect();
+  Gaudi::XYZVector p_K2pi1 = DList[0]->momentum().Vect();
+  Gaudi::XYZVector p_K2pi2 = DList[1]->momentum().Vect();
 
-  Gaudi::LorentzVector p4_3pi1 = tauList[0]->momentum();
-  Gaudi::LorentzVector p4_3pi2 = tauList[1]->momentum();
+  Gaudi::LorentzVector p4_K2pi1 = DList[0]->momentum();
+  Gaudi::LorentzVector p4_K2pi2 = DList[1]->momentum();
 
-  double pmag_3pi1 = p_3pi1.r();
-  double pmag_3pi2 = p_3pi2.r();  
+  double pmag_K2pi1 = p_K2pi1.r();
+  double pmag_K2pi2 = p_K2pi2.r();  
 
-  // Get tau1 and tau2 end vertices
-  Gaudi::XYZVector DV1(tauList[0]->endVertex()->position().X(), tauList[0]->endVertex()->position().Y(), tauList[0]->endVertex()->position().Z());
-  Gaudi::XYZVector DV2(tauList[1]->endVertex()->position().X(), tauList[1]->endVertex()->position().Y(), tauList[1]->endVertex()->position().Z());
+  // Get D1 and D2 end vertices
+  Gaudi::XYZVector DV1(DList[0]->endVertex()->position().X(), DList[0]->endVertex()->position().Y(), DList[0]->endVertex()->position().Z());
+  Gaudi::XYZVector DV2(DList[1]->endVertex()->position().X(), DList[1]->endVertex()->position().Y(), DList[1]->endVertex()->position().Z());
 
   //Get vertex fitters estimate of B decay vertex
   Gaudi::XYZVector BV(treeHead->endVertex()->position().X(), treeHead->endVertex()->position().Y(), treeHead->endVertex()->position().Z());
@@ -239,67 +232,67 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
   Gaudi::XYZVector p_K_perp = p_K - (p_K.Dot(bDir))*bDir;
 
   //Get tau flight directions
-  Gaudi::XYZVector tau_dir1_strat0, tau_dir2_strat0; // both taus' directions are initialised based on vertices
-  Gaudi::XYZVector tau_dir1_strat1, tau_dir2_strat1; // both taus' directions are initialised based on visible 3pi momenta
-  Gaudi::XYZVector tau_dir1_strat2, tau_dir2_strat2; // both taus' directions are initialised based on vertices, using Marseille's solution for the tau momentum
-  Gaudi::XYZVector tau_dir1_strat3, tau_dir2_strat3; // tau1 direction is initialised based on vertices and tau2 direction is initialised based on visible 3pi momenta
-  Gaudi::XYZVector tau_dir1_strat4, tau_dir2_strat4; // tau1 direction is initialised based on visible 3pi momenta and tau2 direction is initialised based on vertices
+  Gaudi::XYZVector D_dir1_strat0, D_dir2_strat0; // both taus' directions are initialised based on vertices
+  Gaudi::XYZVector D_dir1_strat1, D_dir2_strat1; // both taus' directions are initialised based on visible 3pi momenta
+  Gaudi::XYZVector D_dir1_strat2, D_dir2_strat2; // both taus' directions are initialised based on vertices, using Marseille's solution for the tau momentum
+  Gaudi::XYZVector D_dir1_strat3, D_dir2_strat3; // D1 direction is initialised based on vertices and D2 direction is initialised based on visible 3pi momenta
+  Gaudi::XYZVector D_dir1_strat4, D_dir2_strat4; // D1 direction is initialised based on visible 3pi momenta and D2 direction is initialised based on vertices
 
-  tau_dir1_strat0.SetXYZ(DV1.X() - BV.X(), DV1.Y() - BV.Y(), DV1.Z() - BV.Z());
-  tau_dir2_strat0.SetXYZ(DV2.X() - BV.X(), DV2.Y() - BV.Y(), DV2.Z() - BV.Z());
+  D_dir1_strat0.SetXYZ(DV1.X() - BV.X(), DV1.Y() - BV.Y(), DV1.Z() - BV.Z());
+  D_dir2_strat0.SetXYZ(DV2.X() - BV.X(), DV2.Y() - BV.Y(), DV2.Z() - BV.Z());
  
-  tau_dir1_strat1.SetXYZ( p_3pi1.X(), p_3pi1.Y(), p_3pi1.Z() );
-  tau_dir2_strat1.SetXYZ( p_3pi2.X(), p_3pi2.Y(), p_3pi2.Z() );
+  D_dir1_strat1.SetXYZ( p_K2pi1.X(), p_K2pi1.Y(), p_K2pi1.Z() );
+  D_dir2_strat1.SetXYZ( p_K2pi2.X(), p_K2pi2.Y(), p_K2pi2.Z() );
 
-  tau_dir1_strat2.SetXYZ(DV1.X() - BV.X(), DV1.Y() - BV.Y(), DV1.Z() - BV.Z());
-  tau_dir2_strat2.SetXYZ(DV2.X() - BV.X(), DV2.Y() - BV.Y(), DV2.Z() - BV.Z());
+  D_dir1_strat2.SetXYZ(DV1.X() - BV.X(), DV1.Y() - BV.Y(), DV1.Z() - BV.Z());
+  D_dir2_strat2.SetXYZ(DV2.X() - BV.X(), DV2.Y() - BV.Y(), DV2.Z() - BV.Z());
 
-  tau_dir1_strat3.SetXYZ(DV1.X() - BV.X(), DV1.Y() - BV.Y(), DV1.Z() - BV.Z());
-  tau_dir2_strat3.SetXYZ(p_3pi2.X(), p_3pi2.Y(), p_3pi2.Z());
+  D_dir1_strat3.SetXYZ(DV1.X() - BV.X(), DV1.Y() - BV.Y(), DV1.Z() - BV.Z());
+  D_dir2_strat3.SetXYZ(p_K2pi2.X(), p_K2pi2.Y(), p_K2pi2.Z());
 
-  tau_dir1_strat4.SetXYZ(p_3pi1.X(), p_3pi1.Y(), p_3pi1.Z());
-  tau_dir2_strat4.SetXYZ(DV2.X() - BV.X(), DV2.Y() - BV.Y(), DV2.Z() - BV.Z());
+  D_dir1_strat4.SetXYZ(p_K2pi1.X(), p_K2pi1.Y(), p_K2pi1.Z());
+  D_dir2_strat4.SetXYZ(DV2.X() - BV.X(), DV2.Y() - BV.Y(), DV2.Z() - BV.Z());
 
-  tau_dir1_strat0 = tau_dir1_strat0.Unit();
-  tau_dir2_strat0 = tau_dir2_strat0.Unit();
+  D_dir1_strat0 = D_dir1_strat0.Unit();
+  D_dir2_strat0 = D_dir2_strat0.Unit();
 
-  tau_dir1_strat1 = tau_dir1_strat1.Unit();
-  tau_dir2_strat1 = tau_dir2_strat1.Unit();
+  D_dir1_strat1 = D_dir1_strat1.Unit();
+  D_dir2_strat1 = D_dir2_strat1.Unit();
 
-  tau_dir1_strat2 = tau_dir1_strat2.Unit();
-  tau_dir2_strat2 = tau_dir2_strat2.Unit();
+  D_dir1_strat2 = D_dir1_strat2.Unit();
+  D_dir2_strat2 = D_dir2_strat2.Unit();
 
-  tau_dir1_strat3 = tau_dir1_strat3.Unit();
-  tau_dir2_strat3 = tau_dir2_strat3.Unit();
+  D_dir1_strat3 = D_dir1_strat3.Unit();
+  D_dir2_strat3 = D_dir2_strat3.Unit();
 
-  tau_dir1_strat4 = tau_dir1_strat4.Unit();
-  tau_dir2_strat4 = tau_dir2_strat4.Unit();
+  D_dir1_strat4 = D_dir1_strat4.Unit();
+  D_dir2_strat4 = D_dir2_strat4.Unit();
 
-  //Get tau direction unit vectors perpendicular to B flight direction
-  Gaudi::XYZVector tau_dir1_perp_strat0 = (tau_dir1_strat0 - (tau_dir1_strat0.Dot(bDir))*bDir).Unit();
-  Gaudi::XYZVector tau_dir2_perp_strat0 = (tau_dir2_strat0 - (tau_dir2_strat0.Dot(bDir))*bDir).Unit();
+  //Get D direction unit vectors perpendicular to B flight direction
+  Gaudi::XYZVector D_dir1_perp_strat0 = (D_dir1_strat0 - (D_dir1_strat0.Dot(bDir))*bDir).Unit();
+  Gaudi::XYZVector D_dir2_perp_strat0 = (D_dir2_strat0 - (D_dir2_strat0.Dot(bDir))*bDir).Unit();
 
-  Gaudi::XYZVector tau_dir1_perp_strat1 = (tau_dir1_strat1 - (tau_dir1_strat1.Dot(bDir))*bDir).Unit();
-  Gaudi::XYZVector tau_dir2_perp_strat1 = (tau_dir2_strat1 - (tau_dir2_strat1.Dot(bDir))*bDir).Unit();
+  Gaudi::XYZVector D_dir1_perp_strat1 = (D_dir1_strat1 - (D_dir1_strat1.Dot(bDir))*bDir).Unit();
+  Gaudi::XYZVector D_dir2_perp_strat1 = (D_dir2_strat1 - (D_dir2_strat1.Dot(bDir))*bDir).Unit();
 
-  Gaudi::XYZVector tau_dir1_perp_strat3 = (tau_dir1_strat3 - (tau_dir1_strat3.Dot(bDir))*bDir).Unit();
-  Gaudi::XYZVector tau_dir2_perp_strat3 = (tau_dir2_strat3 - (tau_dir2_strat3.Dot(bDir))*bDir).Unit();
+  Gaudi::XYZVector D_dir1_perp_strat3 = (D_dir1_strat3 - (D_dir1_strat3.Dot(bDir))*bDir).Unit();
+  Gaudi::XYZVector D_dir2_perp_strat3 = (D_dir2_strat3 - (D_dir2_strat3.Dot(bDir))*bDir).Unit();
 
-  Gaudi::XYZVector tau_dir1_perp_strat4 = (tau_dir1_strat4 - (tau_dir1_strat4.Dot(bDir))*bDir).Unit();
-  Gaudi::XYZVector tau_dir2_perp_strat4 = (tau_dir2_strat4 - (tau_dir2_strat4.Dot(bDir))*bDir).Unit();
+  Gaudi::XYZVector D_dir1_perp_strat4 = (D_dir1_strat4 - (D_dir1_strat4.Dot(bDir))*bDir).Unit();
+  Gaudi::XYZVector D_dir2_perp_strat4 = (D_dir2_strat4 - (D_dir2_strat4.Dot(bDir))*bDir).Unit();
 
   //In plane perpendicular to B flight direction, get angles between tau momenta and K+ momentum
-  double cosphi1_strat0 = tau_dir1_perp_strat0.Dot(p_K_perp.Unit());
-  double cosphi2_strat0 = tau_dir2_perp_strat0.Dot(p_K_perp.Unit());
+  double cosphi1_strat0 = D_dir1_perp_strat0.Dot(p_K_perp.Unit());
+  double cosphi2_strat0 = D_dir2_perp_strat0.Dot(p_K_perp.Unit());
 
-  double cosphi1_strat1 = tau_dir1_perp_strat1.Dot(p_K_perp.Unit());
-  double cosphi2_strat1 = tau_dir2_perp_strat1.Dot(p_K_perp.Unit());
+  double cosphi1_strat1 = D_dir1_perp_strat1.Dot(p_K_perp.Unit());
+  double cosphi2_strat1 = D_dir2_perp_strat1.Dot(p_K_perp.Unit());
 
-  double cosphi1_strat3 = tau_dir1_perp_strat3.Dot(p_K_perp.Unit());
-  double cosphi2_strat3 = tau_dir2_perp_strat3.Dot(p_K_perp.Unit());
+  double cosphi1_strat3 = D_dir1_perp_strat3.Dot(p_K_perp.Unit());
+  double cosphi2_strat3 = D_dir2_perp_strat3.Dot(p_K_perp.Unit());
 
-  double cosphi1_strat4 = tau_dir1_perp_strat4.Dot(p_K_perp.Unit());
-  double cosphi2_strat4 = tau_dir2_perp_strat4.Dot(p_K_perp.Unit());
+  double cosphi1_strat4 = D_dir1_perp_strat4.Dot(p_K_perp.Unit());
+  double cosphi2_strat4 = D_dir2_perp_strat4.Dot(p_K_perp.Unit());
 
   double phi1_strat0 = TMath::ACos(cosphi1_strat0);
   double phi2_strat0 = TMath::ACos(cosphi2_strat0);
@@ -315,17 +308,17 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
 
   //In this plane, get directions of tau momenta perpendicular to K+ momentum
 
-  Gaudi::XYZVector tau_perp1_perpK_strat0 = tau_dir1_perp_strat0 - (tau_dir1_perp_strat0.Dot(p_K_perp.Unit())*p_K_perp.Unit());
-  Gaudi::XYZVector tau_perp2_perpK_strat0 = tau_dir2_perp_strat0 - (tau_dir2_perp_strat0.Dot(p_K_perp.Unit())*p_K_perp.Unit());
+  Gaudi::XYZVector tau_perp1_perpK_strat0 = D_dir1_perp_strat0 - (D_dir1_perp_strat0.Dot(p_K_perp.Unit())*p_K_perp.Unit());
+  Gaudi::XYZVector tau_perp2_perpK_strat0 = D_dir2_perp_strat0 - (D_dir2_perp_strat0.Dot(p_K_perp.Unit())*p_K_perp.Unit());
 
-  Gaudi::XYZVector tau_perp1_perpK_strat1 = tau_dir1_perp_strat1 - (tau_dir1_perp_strat1.Dot(p_K_perp.Unit())*p_K_perp.Unit());
-  Gaudi::XYZVector tau_perp2_perpK_strat1 = tau_dir2_perp_strat1 - (tau_dir2_perp_strat1.Dot(p_K_perp.Unit())*p_K_perp.Unit());
+  Gaudi::XYZVector tau_perp1_perpK_strat1 = D_dir1_perp_strat1 - (D_dir1_perp_strat1.Dot(p_K_perp.Unit())*p_K_perp.Unit());
+  Gaudi::XYZVector tau_perp2_perpK_strat1 = D_dir2_perp_strat1 - (D_dir2_perp_strat1.Dot(p_K_perp.Unit())*p_K_perp.Unit());
 
-  Gaudi::XYZVector tau_perp1_perpK_strat3 = tau_dir1_perp_strat3 - (tau_dir1_perp_strat3.Dot(p_K_perp.Unit())*p_K_perp.Unit());
-  Gaudi::XYZVector tau_perp2_perpK_strat3 = tau_dir2_perp_strat3 - (tau_dir2_perp_strat3.Dot(p_K_perp.Unit())*p_K_perp.Unit());
+  Gaudi::XYZVector tau_perp1_perpK_strat3 = D_dir1_perp_strat3 - (D_dir1_perp_strat3.Dot(p_K_perp.Unit())*p_K_perp.Unit());
+  Gaudi::XYZVector tau_perp2_perpK_strat3 = D_dir2_perp_strat3 - (D_dir2_perp_strat3.Dot(p_K_perp.Unit())*p_K_perp.Unit());
 
-  Gaudi::XYZVector tau_perp1_perpK_strat4 = tau_dir1_perp_strat4 - (tau_dir1_perp_strat4.Dot(p_K_perp.Unit())*p_K_perp.Unit());
-  Gaudi::XYZVector tau_perp2_perpK_strat4 = tau_dir2_perp_strat4 - (tau_dir2_perp_strat4.Dot(p_K_perp.Unit())*p_K_perp.Unit());
+  Gaudi::XYZVector tau_perp1_perpK_strat4 = D_dir1_perp_strat4 - (D_dir1_perp_strat4.Dot(p_K_perp.Unit())*p_K_perp.Unit());
+  Gaudi::XYZVector tau_perp2_perpK_strat4 = D_dir2_perp_strat4 - (D_dir2_perp_strat4.Dot(p_K_perp.Unit())*p_K_perp.Unit());
 
   double tau_pPerp_ratio_strat0 = tau_perp1_perpK_strat0.R()/tau_perp2_perpK_strat0.R();
   double tau_pPerp_ratio_strat1 = tau_perp1_perpK_strat1.R()/tau_perp2_perpK_strat1.R();
@@ -333,239 +326,238 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
   double tau_pPerp_ratio_strat4 = tau_perp1_perpK_strat4.R()/tau_perp2_perpK_strat4.R();
 
   //Calculate momentum component of taus in this plane
-  double pMag_tau1_perp_strat0 = -1*p_K_perp.R()/(cosphi1_strat0 + (cosphi2_strat0*(sin(phi1_strat0)/sin(phi2_strat0))));
-  double pMag_tau2_perp_strat0 = pMag_tau1_perp_strat0*tau_pPerp_ratio_strat0;
+  double pMag_D1_perp_strat0 = -1*p_K_perp.R()/(cosphi1_strat0 + (cosphi2_strat0*(sin(phi1_strat0)/sin(phi2_strat0))));
+  double pMag_D2_perp_strat0 = pMag_D1_perp_strat0*tau_pPerp_ratio_strat0;
 
-  double pMag_tau1_perp_strat1 = -1*p_K_perp.R()/(cosphi1_strat1 + (cosphi2_strat1*(sin(phi1_strat1)/sin(phi2_strat1))));
-  double pMag_tau2_perp_strat1 = pMag_tau1_perp_strat1*tau_pPerp_ratio_strat1;
+  double pMag_D1_perp_strat1 = -1*p_K_perp.R()/(cosphi1_strat1 + (cosphi2_strat1*(sin(phi1_strat1)/sin(phi2_strat1))));
+  double pMag_D2_perp_strat1 = pMag_D1_perp_strat1*tau_pPerp_ratio_strat1;
   
-  double pMag_tau1_perp_strat3 = -1*p_K_perp.R()/(cosphi1_strat3 + (cosphi2_strat3*(sin(phi1_strat3)/sin(phi2_strat3))));
-  double pMag_tau2_perp_strat3 = pMag_tau1_perp_strat3*tau_pPerp_ratio_strat3;
+  double pMag_D1_perp_strat3 = -1*p_K_perp.R()/(cosphi1_strat3 + (cosphi2_strat3*(sin(phi1_strat3)/sin(phi2_strat3))));
+  double pMag_D2_perp_strat3 = pMag_D1_perp_strat3*tau_pPerp_ratio_strat3;
 
-  double pMag_tau1_perp_strat4 = -1*p_K_perp.R()/(cosphi1_strat4 + (cosphi2_strat4*(sin(phi1_strat4)/sin(phi2_strat4))));
-  double pMag_tau2_perp_strat4 = pMag_tau1_perp_strat4*tau_pPerp_ratio_strat4;
+  double pMag_D1_perp_strat4 = -1*p_K_perp.R()/(cosphi1_strat4 + (cosphi2_strat4*(sin(phi1_strat4)/sin(phi2_strat4))));
+  double pMag_D2_perp_strat4 = pMag_D1_perp_strat4*tau_pPerp_ratio_strat4;
   
-  Gaudi::XYZVector p_tau1_perp_strat0 = pMag_tau1_perp_strat0*tau_dir1_perp_strat0;
-  Gaudi::XYZVector p_tau2_perp_strat0 = pMag_tau2_perp_strat0*tau_dir2_perp_strat0;
+  Gaudi::XYZVector p_D1_perp_strat0 = pMag_D1_perp_strat0*D_dir1_perp_strat0;
+  Gaudi::XYZVector p_D2_perp_strat0 = pMag_D2_perp_strat0*D_dir2_perp_strat0;
 
-  Gaudi::XYZVector p_tau1_perp_strat1 = pMag_tau1_perp_strat1*tau_dir1_perp_strat1;
-  Gaudi::XYZVector p_tau2_perp_strat1 = pMag_tau2_perp_strat1*tau_dir2_perp_strat1;
+  Gaudi::XYZVector p_D1_perp_strat1 = pMag_D1_perp_strat1*D_dir1_perp_strat1;
+  Gaudi::XYZVector p_D2_perp_strat1 = pMag_D2_perp_strat1*D_dir2_perp_strat1;
 
-  Gaudi::XYZVector p_tau1_perp_strat3 = pMag_tau1_perp_strat3*tau_dir1_perp_strat3;
-  Gaudi::XYZVector p_tau2_perp_strat3 = pMag_tau2_perp_strat3*tau_dir2_perp_strat3;
+  Gaudi::XYZVector p_D1_perp_strat3 = pMag_D1_perp_strat3*D_dir1_perp_strat3;
+  Gaudi::XYZVector p_D2_perp_strat3 = pMag_D2_perp_strat3*D_dir2_perp_strat3;
 
-  Gaudi::XYZVector p_tau1_perp_strat4 = pMag_tau1_perp_strat4*tau_dir1_perp_strat4;
-  Gaudi::XYZVector p_tau2_perp_strat4 = pMag_tau2_perp_strat4*tau_dir2_perp_strat4;
+  Gaudi::XYZVector p_D1_perp_strat4 = pMag_D1_perp_strat4*D_dir1_perp_strat4;
+  Gaudi::XYZVector p_D2_perp_strat4 = pMag_D2_perp_strat4*D_dir2_perp_strat4;
 
   //Get angles made by tau directions with B flight direction
-  double tau_B_cos1_strat0 = (tau_dir1_strat0.Unit()).Dot(bDir.Unit());
-  double tau_B_cos2_strat0 = (tau_dir2_strat0.Unit()).Dot(bDir.Unit());
+  double tau_B_cos1_strat0 = (D_dir1_strat0.Unit()).Dot(bDir.Unit());
+  double tau_B_cos2_strat0 = (D_dir2_strat0.Unit()).Dot(bDir.Unit());
 
-  double tau_B_cos1_strat1 = (tau_dir1_strat1.Unit()).Dot(bDir.Unit());
-  double tau_B_cos2_strat1 = (tau_dir2_strat1.Unit()).Dot(bDir.Unit());
+  double tau_B_cos1_strat1 = (D_dir1_strat1.Unit()).Dot(bDir.Unit());
+  double tau_B_cos2_strat1 = (D_dir2_strat1.Unit()).Dot(bDir.Unit());
 
-  double tau_B_cos1_strat3 = (tau_dir1_strat3.Unit()).Dot(bDir.Unit());
-  double tau_B_cos2_strat3 = (tau_dir2_strat3.Unit()).Dot(bDir.Unit());
+  double tau_B_cos1_strat3 = (D_dir1_strat3.Unit()).Dot(bDir.Unit());
+  double tau_B_cos2_strat3 = (D_dir2_strat3.Unit()).Dot(bDir.Unit());
 
-  double tau_B_cos1_strat4 = (tau_dir1_strat4.Unit()).Dot(bDir.Unit());
-  double tau_B_cos2_strat4 = (tau_dir2_strat4.Unit()).Dot(bDir.Unit());
+  double tau_B_cos1_strat4 = (D_dir1_strat4.Unit()).Dot(bDir.Unit());
+  double tau_B_cos2_strat4 = (D_dir2_strat4.Unit()).Dot(bDir.Unit());
 
   //Get tau momenta parallel to B flight direction
-  double pMag_tau1_long_strat0 = fabs(pMag_tau1_perp_strat0)*tau_B_cos1_strat0/sqrt(1-pow(tau_B_cos1_strat0,2));
-  double pMag_tau2_long_strat0 = fabs(pMag_tau2_perp_strat0)*tau_B_cos2_strat0/sqrt(1-pow(tau_B_cos2_strat0,2));
+  double pMag_D1_long_strat0 = fabs(pMag_D1_perp_strat0)*tau_B_cos1_strat0/sqrt(1-pow(tau_B_cos1_strat0,2));
+  double pMag_D2_long_strat0 = fabs(pMag_D2_perp_strat0)*tau_B_cos2_strat0/sqrt(1-pow(tau_B_cos2_strat0,2));
 
-  double pMag_tau1_long_strat1 = fabs(pMag_tau1_perp_strat1)*tau_B_cos1_strat1/sqrt(1-pow(tau_B_cos1_strat1,2));
-  double pMag_tau2_long_strat1 = fabs(pMag_tau2_perp_strat1)*tau_B_cos2_strat1/sqrt(1-pow(tau_B_cos2_strat1,2));
+  double pMag_D1_long_strat1 = fabs(pMag_D1_perp_strat1)*tau_B_cos1_strat1/sqrt(1-pow(tau_B_cos1_strat1,2));
+  double pMag_D2_long_strat1 = fabs(pMag_D2_perp_strat1)*tau_B_cos2_strat1/sqrt(1-pow(tau_B_cos2_strat1,2));
 
-  double pMag_tau1_long_strat3 = fabs(pMag_tau1_perp_strat3)*tau_B_cos1_strat3/sqrt(1-pow(tau_B_cos1_strat3,2));
-  double pMag_tau2_long_strat3 = fabs(pMag_tau2_perp_strat3)*tau_B_cos2_strat3/sqrt(1-pow(tau_B_cos2_strat3,2));
+  double pMag_D1_long_strat3 = fabs(pMag_D1_perp_strat3)*tau_B_cos1_strat3/sqrt(1-pow(tau_B_cos1_strat3,2));
+  double pMag_D2_long_strat3 = fabs(pMag_D2_perp_strat3)*tau_B_cos2_strat3/sqrt(1-pow(tau_B_cos2_strat3,2));
 
-  double pMag_tau1_long_strat4 = fabs(pMag_tau1_perp_strat4)*tau_B_cos1_strat4/sqrt(1-pow(tau_B_cos1_strat4,2));
-  double pMag_tau2_long_strat4 = fabs(pMag_tau2_perp_strat4)*tau_B_cos2_strat4/sqrt(1-pow(tau_B_cos2_strat4,2));
+  double pMag_D1_long_strat4 = fabs(pMag_D1_perp_strat4)*tau_B_cos1_strat4/sqrt(1-pow(tau_B_cos1_strat4,2));
+  double pMag_D2_long_strat4 = fabs(pMag_D2_perp_strat4)*tau_B_cos2_strat4/sqrt(1-pow(tau_B_cos2_strat4,2));
 
   //Set total tau momentum vector
-  Gaudi::XYZVector p_tau1_strat0 = p_tau1_perp_strat0 + (pMag_tau1_long_strat0*bDir);
-  Gaudi::XYZVector p_tau2_strat0 = p_tau2_perp_strat0 + (pMag_tau2_long_strat0*bDir);
+  Gaudi::XYZVector p_D1_strat0 = p_D1_perp_strat0 + (pMag_D1_long_strat0*bDir);
+  Gaudi::XYZVector p_D2_strat0 = p_D2_perp_strat0 + (pMag_D2_long_strat0*bDir);
 
-  Gaudi::XYZVector p_tau1_strat1 = p_tau1_perp_strat1 + (pMag_tau1_long_strat1*bDir);
-  Gaudi::XYZVector p_tau2_strat1 = p_tau2_perp_strat1 + (pMag_tau2_long_strat1*bDir);
+  Gaudi::XYZVector p_D1_strat1 = p_D1_perp_strat1 + (pMag_D1_long_strat1*bDir);
+  Gaudi::XYZVector p_D2_strat1 = p_D2_perp_strat1 + (pMag_D2_long_strat1*bDir);
 
-  Gaudi::XYZVector p_tau1_strat3 = p_tau1_perp_strat3 + (pMag_tau1_long_strat3*bDir);
-  Gaudi::XYZVector p_tau2_strat3 = p_tau2_perp_strat3 + (pMag_tau2_long_strat3*bDir);
+  Gaudi::XYZVector p_D1_strat3 = p_D1_perp_strat3 + (pMag_D1_long_strat3*bDir);
+  Gaudi::XYZVector p_D2_strat3 = p_D2_perp_strat3 + (pMag_D2_long_strat3*bDir);
 
-  Gaudi::XYZVector p_tau1_strat4 = p_tau1_perp_strat4 + (pMag_tau1_long_strat4*bDir);
-  Gaudi::XYZVector p_tau2_strat4 = p_tau2_perp_strat4 + (pMag_tau2_long_strat4*bDir);
+  Gaudi::XYZVector p_D1_strat4 = p_D1_perp_strat4 + (pMag_D1_long_strat4*bDir);
+  Gaudi::XYZVector p_D2_strat4 = p_D2_perp_strat4 + (pMag_D2_long_strat4*bDir);
 
   //### RD* initialization
-  double m_3pi1_sq = pow(E_3pi1, 2) - pow(pmag_3pi1, 2);
-  double m_3pi2_sq = pow(E_3pi2, 2) - pow(pmag_3pi2, 2);
+  double m_K2pi1_sq = pow(E_K2pi1, 2) - pow(pmag_K2pi1, 2);
+  double m_K2pi2_sq = pow(E_K2pi2, 2) - pow(pmag_K2pi2, 2);
   
-  double m_3pi1 = 0., m_3pi2 = 0.;
+  double m_K2pi1 = 0., m_K2pi2 = 0.;
 
-  if(m_3pi1_sq > 0) { m_3pi1 = sqrt(m_3pi1_sq);}
-  if(m_3pi2_sq > 0) { m_3pi2 = sqrt(m_3pi2_sq);}
+  if(m_K2pi1_sq > 0) { m_K2pi1 = sqrt(m_K2pi1_sq);}
+  if(m_K2pi2_sq > 0) { m_K2pi2 = sqrt(m_K2pi2_sq);}
 
-  double thetaMax_tau_3pi1 = TMath::ASin( (pow(m_tauMass,2) - pow(m_3pi1, 2))/(2*m_tauMass*pmag_3pi1) );
-  double thetaMax_tau_3pi2 = TMath::ASin( (pow(m_tauMass,2) - pow(m_3pi2, 2))/(2*m_tauMass*pmag_3pi2) );
+  double thetaMax_tau_K2pi1 = TMath::ASin( (pow(m_tauMass,2) - pow(m_K2pi1, 2))/(2*m_tauMass*pmag_K2pi1) );
+  double thetaMax_tau_K2pi2 = TMath::ASin( (pow(m_tauMass,2) - pow(m_K2pi2, 2))/(2*m_tauMass*pmag_K2pi2) );
 
-  double pmag_tau1_rdInit = (pow(m_tauMass,2) + pow(m_3pi1, 2))* pmag_3pi1 * TMath::Cos(thetaMax_tau_3pi1)/(2*(pow(E_3pi1, 2) - (pow(pmag_3pi1,2)*pow(TMath::Cos(thetaMax_tau_3pi1),2))));
-  double pmag_tau2_rdInit = (pow(m_tauMass,2) + pow(m_3pi2, 2))* pmag_3pi2 * TMath::Cos(thetaMax_tau_3pi2)/(2*(pow(E_3pi2, 2) - (pow(pmag_3pi2,2)*pow(TMath::Cos(thetaMax_tau_3pi2),2))));
+  double pmag_D1_rdInit = (pow(m_tauMass,2) + pow(m_K2pi1, 2))* pmag_K2pi1 * TMath::Cos(thetaMax_tau_K2pi1)/(2*(pow(E_K2pi1, 2) - (pow(pmag_K2pi1,2)*pow(TMath::Cos(thetaMax_tau_K2pi1),2))));
+  double pmag_D2_rdInit = (pow(m_tauMass,2) + pow(m_K2pi2, 2))* pmag_K2pi2 * TMath::Cos(thetaMax_tau_K2pi2)/(2*(pow(E_K2pi2, 2) - (pow(pmag_K2pi2,2)*pow(TMath::Cos(thetaMax_tau_K2pi2),2))));
 
-  Gaudi::XYZVector p_tau1_strat2 = pmag_tau1_rdInit * tau_dir1_strat2;
-  Gaudi::XYZVector p_tau2_strat2 = pmag_tau2_rdInit * tau_dir2_strat2;
+  Gaudi::XYZVector p_D1_strat2 = pmag_D1_rdInit * D_dir1_strat2;
+  Gaudi::XYZVector p_D2_strat2 = pmag_D2_rdInit * D_dir2_strat2;
   
   //###
   if(m_doNuPZFix)
   {
-    if(p_tau1_strat0.z() < p_3pi1.z())
+    if(p_D1_strat0.z() < p_K2pi1.z())
     {
-      p_tau1_strat0.SetZ(p_3pi1.z());
+      p_D1_strat0.SetZ(p_K2pi1.z());
     }
-    if(p_tau2_strat0.z() < p_3pi2.z())
+    if(p_D2_strat0.z() < p_K2pi2.z())
     {
-      p_tau2_strat0.SetZ(p_3pi2.z());
-    }
-
-    if(p_tau1_strat1.z() < p_3pi1.z())
-    {
-      p_tau1_strat1.SetZ(p_3pi1.z());
-    }
-    if(p_tau2_strat1.z() < p_3pi2.z())
-    {
-      p_tau2_strat1.SetZ(p_3pi2.z());
+      p_D2_strat0.SetZ(p_K2pi2.z());
     }
 
-    if(p_tau1_strat2.z() < p_3pi1.z())
+    if(p_D1_strat1.z() < p_K2pi1.z())
     {
-      p_tau1_strat2.SetZ(p_3pi1.z());
+      p_D1_strat1.SetZ(p_K2pi1.z());
     }
-    if(p_tau2_strat2.z() < p_3pi2.z())
+    if(p_D2_strat1.z() < p_K2pi2.z())
     {
-      p_tau2_strat2.SetZ(p_3pi2.z());
-    }
-
-    if(p_tau1_strat3.z() < p_3pi1.z())
-    {
-      p_tau1_strat3.SetZ(p_3pi1.z());
-    }
-    if(p_tau2_strat3.z() < p_3pi2.z())
-    {
-      p_tau2_strat3.SetZ(p_3pi2.z());
+      p_D2_strat1.SetZ(p_K2pi2.z());
     }
 
-    if(p_tau1_strat4.z() < p_3pi1.z())
+    if(p_D1_strat2.z() < p_K2pi1.z())
     {
-      p_tau1_strat4.SetZ(p_3pi1.z());
+      p_D1_strat2.SetZ(p_K2pi1.z());
     }
-    if(p_tau2_strat4.z() < p_3pi2.z())
+    if(p_D2_strat2.z() < p_K2pi2.z())
     {
-      p_tau2_strat4.SetZ(p_3pi2.z());
+      p_D2_strat2.SetZ(p_K2pi2.z());
+    }
+
+    if(p_D1_strat3.z() < p_K2pi1.z())
+    {
+      p_D1_strat3.SetZ(p_K2pi1.z());
+    }
+    if(p_D2_strat3.z() < p_K2pi2.z())
+    {
+      p_D2_strat3.SetZ(p_K2pi2.z());
+    }
+
+    if(p_D1_strat4.z() < p_K2pi1.z())
+    {
+      p_D1_strat4.SetZ(p_K2pi1.z());
+    }
+    if(p_D2_strat4.z() < p_K2pi2.z())
+    {
+      p_D2_strat4.SetZ(p_K2pi2.z());
     }
     
   }
   //###
 
-  //double mTau = m_tauMass;//1776.8199 is the value in truth MC. But PDG value is 1776.86 +- 0.12
+  double E_D1_strat0 = sqrt(pow(m_tauMass, 2) + p_D1_strat0.Mag2());
+  double E_D2_strat0 = sqrt(pow(m_tauMass, 2) + p_D2_strat0.Mag2());
 
-  double E_tau1_strat0 = sqrt(pow(m_tauMass, 2) + p_tau1_strat0.Mag2());
-  double E_tau2_strat0 = sqrt(pow(m_tauMass, 2) + p_tau2_strat0.Mag2());
+  double E_D1_strat1 = sqrt(pow(m_tauMass, 2) + p_D1_strat1.Mag2());
+  double E_D2_strat1 = sqrt(pow(m_tauMass, 2) + p_D2_strat1.Mag2());
 
-  double E_tau1_strat1 = sqrt(pow(m_tauMass, 2) + p_tau1_strat1.Mag2());
-  double E_tau2_strat1 = sqrt(pow(m_tauMass, 2) + p_tau2_strat1.Mag2());
+  double E_D1_strat2 = sqrt(pow(m_tauMass, 2) + p_D1_strat2.Mag2());
+  double E_D2_strat2 = sqrt(pow(m_tauMass, 2) + p_D2_strat2.Mag2());
 
-  double E_tau1_strat2 = sqrt(pow(m_tauMass, 2) + p_tau1_strat2.Mag2());
-  double E_tau2_strat2 = sqrt(pow(m_tauMass, 2) + p_tau2_strat2.Mag2());
+  double E_D1_strat3 = sqrt(pow(m_tauMass, 2) + p_D1_strat3.Mag2());
+  double E_D2_strat3 = sqrt(pow(m_tauMass, 2) + p_D2_strat3.Mag2());
 
-  double E_tau1_strat3 = sqrt(pow(m_tauMass, 2) + p_tau1_strat3.Mag2());
-  double E_tau2_strat3 = sqrt(pow(m_tauMass, 2) + p_tau2_strat3.Mag2());
+  double E_D1_strat4 = sqrt(pow(m_tauMass, 2) + p_D1_strat4.Mag2());
+  double E_D2_strat4 = sqrt(pow(m_tauMass, 2) + p_D2_strat4.Mag2());
 
-  double E_tau1_strat4 = sqrt(pow(m_tauMass, 2) + p_tau1_strat4.Mag2());
-  double E_tau2_strat4 = sqrt(pow(m_tauMass, 2) + p_tau2_strat4.Mag2());
+  Gaudi::LorentzVector P4_D1_strat0(p_D1_strat0.x(), p_D1_strat0.y(), p_D1_strat0.z(), E_D1_strat0);
+  Gaudi::LorentzVector P4_D2_strat0(p_D2_strat0.x(), p_D2_strat0.y(), p_D2_strat0.z(), E_D2_strat0);
 
-  Gaudi::LorentzVector P4_tau1_strat0(p_tau1_strat0.x(), p_tau1_strat0.y(), p_tau1_strat0.z(), E_tau1_strat0);
-  Gaudi::LorentzVector P4_tau2_strat0(p_tau2_strat0.x(), p_tau2_strat0.y(), p_tau2_strat0.z(), E_tau2_strat0);
+  Gaudi::LorentzVector P4_D1_strat1(p_D1_strat1.x(), p_D1_strat1.y(), p_D1_strat1.z(), E_D1_strat1);
+  Gaudi::LorentzVector P4_D2_strat1(p_D2_strat1.x(), p_D2_strat1.y(), p_D2_strat1.z(), E_D2_strat1);
 
-  Gaudi::LorentzVector P4_tau1_strat1(p_tau1_strat1.x(), p_tau1_strat1.y(), p_tau1_strat1.z(), E_tau1_strat1);
-  Gaudi::LorentzVector P4_tau2_strat1(p_tau2_strat1.x(), p_tau2_strat1.y(), p_tau2_strat1.z(), E_tau2_strat1);
+  Gaudi::LorentzVector P4_D1_strat2(p_D1_strat2.x(), p_D1_strat2.y(), p_D1_strat2.z(), E_D1_strat2);
+  Gaudi::LorentzVector P4_D2_strat2(p_D2_strat2.x(), p_D2_strat2.y(), p_D2_strat2.z(), E_D2_strat2);
 
-  Gaudi::LorentzVector P4_tau1_strat2(p_tau1_strat2.x(), p_tau1_strat2.y(), p_tau1_strat2.z(), E_tau1_strat2);
-  Gaudi::LorentzVector P4_tau2_strat2(p_tau2_strat2.x(), p_tau2_strat2.y(), p_tau2_strat2.z(), E_tau2_strat2);
+  Gaudi::LorentzVector P4_D1_strat3(p_D1_strat3.x(), p_D1_strat3.y(), p_D1_strat3.z(), E_D1_strat3);
+  Gaudi::LorentzVector P4_D2_strat3(p_D2_strat3.x(), p_D2_strat3.y(), p_D2_strat3.z(), E_D2_strat3);
 
-  Gaudi::LorentzVector P4_tau1_strat3(p_tau1_strat3.x(), p_tau1_strat3.y(), p_tau1_strat3.z(), E_tau1_strat3);
-  Gaudi::LorentzVector P4_tau2_strat3(p_tau2_strat3.x(), p_tau2_strat3.y(), p_tau2_strat3.z(), E_tau2_strat3);
-
-  Gaudi::LorentzVector P4_tau1_strat4(p_tau1_strat4.x(), p_tau1_strat4.y(), p_tau1_strat4.z(), E_tau1_strat4);
-  Gaudi::LorentzVector P4_tau2_strat4(p_tau2_strat4.x(), p_tau2_strat4.y(), p_tau2_strat4.z(), E_tau2_strat4);
+  Gaudi::LorentzVector P4_D1_strat4(p_D1_strat4.x(), p_D1_strat4.y(), p_D1_strat4.z(), E_D1_strat4);
+  Gaudi::LorentzVector P4_D2_strat4(p_D2_strat4.x(), p_D2_strat4.y(), p_D2_strat4.z(), E_D2_strat4);
 
   LHCb::Particle::Vector nuList;
-  LHCb::Particle * tau1 = const_cast<LHCb::Particle*>(tauList[0]);
-  LHCb::Particle * tau2 = const_cast<LHCb::Particle*>(tauList[1]);
+  LHCb::Particle * D1 = const_cast<LHCb::Particle*>(DList[0]);
+  LHCb::Particle * D2 = const_cast<LHCb::Particle*>(DList[1]);
 
   if( (m_order == 0.12) ||  (m_order == 0.21) )
   {
     nuList.push_back( new LHCb::Particle() );
     nuList.back()->setParticleID( LHCb::ParticleID(16) ); //Looks like the order of neutrino PID's doesn't matter. Check again later to make sure.
-    nuList.back()->setMomentum( P4_tau1_strat0 - tauList[0]->momentum() );//NB 4 momenta going in here
+    nuList.back()->setMomentum( P4_D1_strat0 - DList[0]->momentum() );//NB 4 momenta going in here
     
-    tau1->addToDaughters( nuList.back() );
-    tau1->setMomentum( P4_tau1_strat0 );
+    D1->addToDaughters( nuList.back() );
+    D1->setMomentum( P4_D1_strat0 );
     debug() << "Add nu 1 " << *nuList.back() << endmsg;
-    debug() << "After " << *tau1 << endmsg;
+    debug() << "After " << *D1 << endmsg;
 
     nuList.push_back( new LHCb::Particle() );
     nuList.back()->setParticleID( LHCb::ParticleID(-16) );
-    nuList.back()->setMomentum( P4_tau2_strat0 - tauList[1]->momentum() );
+    nuList.back()->setMomentum( P4_D2_strat0 - DList[1]->momentum() );
     
-    tau2->addToDaughters( nuList.back() );
-    tau2->setMomentum( P4_tau2_strat0 );
+    D2->addToDaughters( nuList.back() );
+    D2->setMomentum( P4_D2_strat0 );
     debug() << "Add nu 2 " << *nuList.back() << endmsg;
-    debug() << "After " << *tau2 << endmsg;
+    debug() << "After " << *D2 << endmsg;
 
-    treeHead->setMomentum( P4_tau1_strat0 + P4_tau2_strat0 + Kplus->momentum() );
+    treeHead->setMomentum( P4_D1_strat0 + P4_D2_strat0 + Kplus->momentum() );
+
   }
   else if( (m_order == 1.02) || (m_order == 1.20) )
   {
     nuList.push_back( new LHCb::Particle() );
     nuList.back()->setParticleID( LHCb::ParticleID(16) ); //Looks like the order of neutrino PID's doesn't matter. Check again later to make sure.
-    nuList.back()->setMomentum( P4_tau1_strat1 - tauList[0]->momentum() );//NB 4 momenta going in here
+    nuList.back()->setMomentum( P4_D1_strat1 - DList[0]->momentum() );//NB 4 momenta going in here
     
-    tau1->addToDaughters( nuList.back() );
-    tau1->setMomentum( P4_tau1_strat1 );
+    D1->addToDaughters( nuList.back() );
+    D1->setMomentum( P4_D1_strat1 );
     debug() << "Add nu 1 " << *nuList.back() << endmsg;
-    debug() << "After " << *tau1 << endmsg;
+    debug() << "After " << *D1 << endmsg;
 
     nuList.push_back( new LHCb::Particle() );
     nuList.back()->setParticleID( LHCb::ParticleID(-16) );
-    nuList.back()->setMomentum( P4_tau2_strat1 - tauList[1]->momentum() );
+    nuList.back()->setMomentum( P4_D2_strat1 - DList[1]->momentum() );
     
-    tau2->addToDaughters( nuList.back() );
-    tau2->setMomentum( P4_tau2_strat1 );
+    D2->addToDaughters( nuList.back() );
+    D2->setMomentum( P4_D2_strat1 );
     debug() << "Add nu 2 " << *nuList.back() << endmsg;
-    debug() << "After " << *tau2 << endmsg;
+    debug() << "After " << *D2 << endmsg;
 
-    treeHead->setMomentum( P4_tau1_strat1 + P4_tau2_strat1 + Kplus->momentum() );
+    treeHead->setMomentum( P4_D1_strat1 + P4_D2_strat1 + Kplus->momentum() );
   }
   else if( (m_order == 2.01) || (m_order == 2.10) )
   {
     nuList.push_back( new LHCb::Particle() );
     nuList.back()->setParticleID( LHCb::ParticleID(16) ); //Looks like the order of neutrino PID's doesn't matter. Check again later to make sure.
-    nuList.back()->setMomentum( P4_tau1_strat2 - tauList[0]->momentum() );//NB 4 momenta going in here
+    nuList.back()->setMomentum( P4_D1_strat2 - DList[0]->momentum() );//NB 4 momenta going in here
     
-    tau1->addToDaughters( nuList.back() );
-    tau1->setMomentum( P4_tau1_strat2 );
+    D1->addToDaughters( nuList.back() );
+    D1->setMomentum( P4_D1_strat2 );
     debug() << "Add nu 1 " << *nuList.back() << endmsg;
-    debug() << "After " << *tau1 << endmsg;
+    debug() << "After " << *D1 << endmsg;
 
     nuList.push_back( new LHCb::Particle() );
     nuList.back()->setParticleID( LHCb::ParticleID(-16) );
-    nuList.back()->setMomentum( P4_tau2_strat2 - tauList[1]->momentum() );
+    nuList.back()->setMomentum( P4_D2_strat2 - DList[1]->momentum() );
     
-    tau2->addToDaughters( nuList.back() );
-    tau2->setMomentum( P4_tau2_strat2 );
+    D2->addToDaughters( nuList.back() );
+    D2->setMomentum( P4_D2_strat2 );
     debug() << "Add nu 2 " << *nuList.back() << endmsg;
-    debug() << "After " << *tau2 << endmsg;
+    debug() << "After " << *D2 << endmsg;
 
-    treeHead->setMomentum( P4_tau1_strat2 + P4_tau2_strat2 + Kplus->momentum() );
+    treeHead->setMomentum( P4_D1_strat2 + P4_D2_strat2 + Kplus->momentum() );
   }
 
   //checkMassConstraints( LHCb::DecayTree( *treeHead) ) ;
@@ -596,23 +588,23 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
       //std::cout<<" strategy 0 failed. trying strategy 1 "<<std::endl;
 
       //remove previously attached neutrino daughters
-      tau1->removeFromDaughters(nuList.front());
-      tau2->removeFromDaughters(nuList.back());
+      D1->removeFromDaughters(nuList.front());
+      D2->removeFromDaughters(nuList.back());
 
       //reset 4-momentum of 3pi to the original value
-      tau1->setMomentum(p4_3pi1);
-      tau2->setMomentum(p4_3pi2);
+      D1->setMomentum(p4_K2pi1);
+      D2->setMomentum(p4_K2pi2);
 
-      nuList.front()->setMomentum( P4_tau1_strat1 - tauList[0]->momentum() );//NB 4 momenta going in here
-      nuList.back()->setMomentum( P4_tau2_strat1 - tauList[1]->momentum() );//NB 4 momenta going in here
+      nuList.front()->setMomentum( P4_D1_strat1 - DList[0]->momentum() );//NB 4 momenta going in here
+      nuList.back()->setMomentum( P4_D2_strat1 - DList[1]->momentum() );//NB 4 momenta going in here
 
-      tau1->addToDaughters( nuList.front() );
-      tau1->setMomentum( P4_tau1_strat1 );
+      D1->addToDaughters( nuList.front() );
+      D1->setMomentum( P4_D1_strat1 );
 
-      tau2->addToDaughters( nuList.back() );
-      tau2->setMomentum( P4_tau2_strat1 );
+      D2->addToDaughters( nuList.back() );
+      D2->setMomentum( P4_D2_strat1 );
 
-      treeHead->setMomentum( P4_tau1_strat1 + P4_tau2_strat1 + Kplus->momentum() );
+      treeHead->setMomentum( P4_D1_strat1 + P4_D2_strat1 + Kplus->momentum() );
 
       DecayTreeFitter::Fitter fitter_strat1(*treeHead, *originVtx[0], stateprovider ) ;
       if (!fit(fitter_strat1, treeHead, originVtx[0], prefix, tMap, tuple, false)) return StatusCode::FAILURE ;
@@ -624,23 +616,23 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
         //std::cout<<" strategy 1 failed. trying strategy 2 "<<std::endl;
 
         //remove previously attached neutrino daughters
-        tau1->removeFromDaughters(nuList.front());
-        tau2->removeFromDaughters(nuList.back());
+        D1->removeFromDaughters(nuList.front());
+        D2->removeFromDaughters(nuList.back());
 
         //reset 4-momentum of 3pi to the original value
-        tau1->setMomentum(p4_3pi1);
-        tau2->setMomentum(p4_3pi2);
+        D1->setMomentum(p4_K2pi1);
+        D2->setMomentum(p4_K2pi2);
 
-        nuList.front()->setMomentum( P4_tau1_strat2 - tauList[0]->momentum() );//NB 4 momenta going in here
-        nuList.back()->setMomentum( P4_tau2_strat2 - tauList[1]->momentum() );//NB 4 momenta going in here
+        nuList.front()->setMomentum( P4_D1_strat2 - DList[0]->momentum() );//NB 4 momenta going in here
+        nuList.back()->setMomentum( P4_D2_strat2 - DList[1]->momentum() );//NB 4 momenta going in here
 
-        tau1->addToDaughters( nuList.front() );
-        tau1->setMomentum( P4_tau1_strat2 );
+        D1->addToDaughters( nuList.front() );
+        D1->setMomentum( P4_D1_strat2 );
 
-        tau2->addToDaughters( nuList.back() );
-        tau2->setMomentum( P4_tau2_strat2 );
+        D2->addToDaughters( nuList.back() );
+        D2->setMomentum( P4_D2_strat2 );
 
-        treeHead->setMomentum( P4_tau1_strat2 + P4_tau2_strat2 + Kplus->momentum() );
+        treeHead->setMomentum( P4_D1_strat2 + P4_D2_strat2 + Kplus->momentum() );
 
         DecayTreeFitter::Fitter fitter_strat2(*treeHead, *originVtx[0], stateprovider ) ;
         if (!fit(fitter_strat2, treeHead, originVtx[0], prefix, tMap, tuple, true)) return StatusCode::FAILURE ;
@@ -652,23 +644,23 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
           std::cout<<"strategy 2 failed. trying strategy 3"<<std::endl;
 
           //remove previously attached neutrino daughters
-          tau1->removeFromDaughters(nuList.front());
-          tau2->removeFromDaughters(nuList.back());
+          D1->removeFromDaughters(nuList.front());
+          D2->removeFromDaughters(nuList.back());
 
           //reset 4-momentum of 3pi to the original value
-          tau1->setMomentum(p4_3pi1);
-          tau2->setMomentum(p4_3pi2);
+          D1->setMomentum(p4_K2pi1);
+          D2->setMomentum(p4_K2pi2);
 
-          nuList.front()->setMomentum( P4_tau1_strat3 - tauList[0]->momentum() );//NB 4 momenta going in here
-          nuList.back()->setMomentum( P4_tau2_strat3 - tauList[1]->momentum() );//NB 4 momenta going in here
+          nuList.front()->setMomentum( P4_D1_strat3 - DList[0]->momentum() );//NB 4 momenta going in here
+          nuList.back()->setMomentum( P4_D2_strat3 - DList[1]->momentum() );//NB 4 momenta going in here
 
-          tau1->addToDaughters( nuList.front() );
-          tau1->setMomentum( P4_tau1_strat3 );
+          D1->addToDaughters( nuList.front() );
+          D1->setMomentum( P4_D1_strat3 );
 
-          tau2->addToDaughters( nuList.back() );
-          tau2->setMomentum( P4_tau2_strat3 );
+          D2->addToDaughters( nuList.back() );
+          D2->setMomentum( P4_D2_strat3 );
 
-          treeHead->setMomentum( P4_tau1_strat3 + P4_tau2_strat3 + Kplus->momentum() );
+          treeHead->setMomentum( P4_D1_strat3 + P4_D2_strat3 + Kplus->momentum() );
 
           DecayTreeFitter::Fitter fitter_strat3(*treeHead, *originVtx[0], stateprovider ) ;
           if (!fit(fitter_strat3, treeHead, originVtx[0], prefix, tMap, tuple, false)) return StatusCode::FAILURE ;
@@ -680,23 +672,23 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
             std::cout<<"strategy 3 failed. trying strategy 4"<<std::endl;
 
             //remove previously attached neutrino daughters
-            tau1->removeFromDaughters(nuList.front());
-            tau2->removeFromDaughters(nuList.back());
+            D1->removeFromDaughters(nuList.front());
+            D2->removeFromDaughters(nuList.back());
 
             //reset 4-momentum of 3pi to the original value
-            tau1->setMomentum(p4_3pi1);
-            tau2->setMomentum(p4_3pi2);
+            D1->setMomentum(p4_K2pi1);
+            D2->setMomentum(p4_K2pi2);
 
-            nuList.front()->setMomentum( P4_tau1_strat4 - tauList[0]->momentum() );//NB 4 momenta going in here
-            nuList.back()->setMomentum( P4_tau2_strat4 - tauList[1]->momentum() );//NB 4 momenta going in here
+            nuList.front()->setMomentum( P4_D1_strat4 - DList[0]->momentum() );//NB 4 momenta going in here
+            nuList.back()->setMomentum( P4_D2_strat4 - DList[1]->momentum() );//NB 4 momenta going in here
 
-            tau1->addToDaughters( nuList.front() );
-            tau1->setMomentum( P4_tau1_strat4 );
+            D1->addToDaughters( nuList.front() );
+            D1->setMomentum( P4_D1_strat4 );
 
-            tau2->addToDaughters( nuList.back() );
-            tau2->setMomentum( P4_tau2_strat4 );
+            D2->addToDaughters( nuList.back() );
+            D2->setMomentum( P4_D2_strat4 );
 
-            treeHead->setMomentum( P4_tau1_strat4 + P4_tau2_strat4 + Kplus->momentum() );
+            treeHead->setMomentum( P4_D1_strat4 + P4_D2_strat4 + Kplus->momentum() );
 
             DecayTreeFitter::Fitter fitter_strat4(*treeHead, *originVtx[0], stateprovider ) ;
             if (!fit(fitter_strat4, treeHead, originVtx[0], prefix, tMap, tuple, true)) return StatusCode::FAILURE ;
@@ -717,23 +709,23 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
       //std::cout<<" strategy 0 failed. trying strategy 2 "<<std::endl;
 
       //remove previously attached neutrino daughters
-      tau1->removeFromDaughters(nuList.front());
-      tau2->removeFromDaughters(nuList.back());
+      D1->removeFromDaughters(nuList.front());
+      D2->removeFromDaughters(nuList.back());
 
       //reset 4-momentum of 3pi to the original value
-      tau1->setMomentum(p4_3pi1);
-      tau2->setMomentum(p4_3pi2);
+      D1->setMomentum(p4_K2pi1);
+      D2->setMomentum(p4_K2pi2);
 
-      nuList.front()->setMomentum( P4_tau1_strat2 - tauList[0]->momentum() );//NB 4 momenta going in here
-      nuList.back()->setMomentum( P4_tau2_strat2 - tauList[1]->momentum() );//NB 4 momenta going in here
+      nuList.front()->setMomentum( P4_D1_strat2 - DList[0]->momentum() );//NB 4 momenta going in here
+      nuList.back()->setMomentum( P4_D2_strat2 - DList[1]->momentum() );//NB 4 momenta going in here
 
-      tau1->addToDaughters( nuList.front() );
-      tau1->setMomentum( P4_tau1_strat2 );
+      D1->addToDaughters( nuList.front() );
+      D1->setMomentum( P4_D1_strat2 );
 
-      tau2->addToDaughters( nuList.back() );
-      tau2->setMomentum( P4_tau2_strat2 );
+      D2->addToDaughters( nuList.back() );
+      D2->setMomentum( P4_D2_strat2 );
 
-      treeHead->setMomentum( P4_tau1_strat2 + P4_tau2_strat2 + Kplus->momentum() );
+      treeHead->setMomentum( P4_D1_strat2 + P4_D2_strat2 + Kplus->momentum() );
 
       DecayTreeFitter::Fitter fitter_strat2(*treeHead, *originVtx[0], stateprovider ) ;
       if (!fit(fitter_strat2, treeHead, originVtx[0], prefix, tMap, tuple, false)) return StatusCode::FAILURE ;
@@ -745,23 +737,23 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
         //std::cout<<" strategy 2 failed. trying strategy 1 "<<std::endl;
 
         //remove previously attached neutrino daughters
-        tau1->removeFromDaughters(nuList.front());
-        tau2->removeFromDaughters(nuList.back());
+        D1->removeFromDaughters(nuList.front());
+        D2->removeFromDaughters(nuList.back());
 
         //reset 4-momentum of 3pi to the original value
-        tau1->setMomentum(p4_3pi1);
-        tau2->setMomentum(p4_3pi2);
+        D1->setMomentum(p4_K2pi1);
+        D2->setMomentum(p4_K2pi2);
 
-        nuList.front()->setMomentum( P4_tau1_strat1 - tauList[0]->momentum() );//NB 4 momenta going in here
-        nuList.back()->setMomentum( P4_tau2_strat1 - tauList[1]->momentum() );//NB 4 momenta going in here
+        nuList.front()->setMomentum( P4_D1_strat1 - DList[0]->momentum() );//NB 4 momenta going in here
+        nuList.back()->setMomentum( P4_D2_strat1 - DList[1]->momentum() );//NB 4 momenta going in here
 
-        tau1->addToDaughters( nuList.front() );
-        tau1->setMomentum( P4_tau1_strat1 );
+        D1->addToDaughters( nuList.front() );
+        D1->setMomentum( P4_D1_strat1 );
 
-        tau2->addToDaughters( nuList.back() );
-        tau2->setMomentum( P4_tau2_strat1 );
+        D2->addToDaughters( nuList.back() );
+        D2->setMomentum( P4_D2_strat1 );
 
-        treeHead->setMomentum( P4_tau1_strat1 + P4_tau2_strat1 + Kplus->momentum() );
+        treeHead->setMomentum( P4_D1_strat1 + P4_D2_strat1 + Kplus->momentum() );
 
         DecayTreeFitter::Fitter fitter_strat1(*treeHead, *originVtx[0], stateprovider ) ;
         if (!fit(fitter_strat1, treeHead, originVtx[0], prefix, tMap, tuple, true)) return StatusCode::FAILURE ;
@@ -775,23 +767,23 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
       //std::cout<<" strategy 1 failed. trying strategy 0 "<<std::endl;
 
       //remove previously attached neutrino daughters
-      tau1->removeFromDaughters(nuList.front());
-      tau2->removeFromDaughters(nuList.back());
+      D1->removeFromDaughters(nuList.front());
+      D2->removeFromDaughters(nuList.back());
 
       //reset 4-momentum of 3pi to the original value
-      tau1->setMomentum(p4_3pi1);
-      tau2->setMomentum(p4_3pi2);
+      D1->setMomentum(p4_K2pi1);
+      D2->setMomentum(p4_K2pi2);
 
-      nuList.front()->setMomentum( P4_tau1_strat0 - tauList[0]->momentum() );//NB 4 momenta going in here
-      nuList.back()->setMomentum( P4_tau2_strat0 - tauList[1]->momentum() );//NB 4 momenta going in here
+      nuList.front()->setMomentum( P4_D1_strat0 - DList[0]->momentum() );//NB 4 momenta going in here
+      nuList.back()->setMomentum( P4_D2_strat0 - DList[1]->momentum() );//NB 4 momenta going in here
 
-      tau1->addToDaughters( nuList.front() );
-      tau1->setMomentum( P4_tau1_strat0 );
+      D1->addToDaughters( nuList.front() );
+      D1->setMomentum( P4_D1_strat0 );
 
-      tau2->addToDaughters( nuList.back() );
-      tau2->setMomentum( P4_tau2_strat0 );
+      D2->addToDaughters( nuList.back() );
+      D2->setMomentum( P4_D2_strat0 );
 
-      treeHead->setMomentum( P4_tau1_strat0 + P4_tau2_strat0 + Kplus->momentum() );
+      treeHead->setMomentum( P4_D1_strat0 + P4_D2_strat0 + Kplus->momentum() );
 
       DecayTreeFitter::Fitter fitter_strat0(*treeHead, *originVtx[0], stateprovider ) ;
       if (!fit(fitter_strat0, treeHead, originVtx[0], prefix, tMap, tuple, false)) return StatusCode::FAILURE ;
@@ -803,23 +795,23 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
         //std::cout<<" strategy 0 failed. trying strategy 2 "<<std::endl;
 
         //remove previously attached neutrino daughters
-        tau1->removeFromDaughters(nuList.front());
-        tau2->removeFromDaughters(nuList.back());
+        D1->removeFromDaughters(nuList.front());
+        D2->removeFromDaughters(nuList.back());
 
         //reset 4-momentum of 3pi to the original value
-        tau1->setMomentum(p4_3pi1);
-        tau2->setMomentum(p4_3pi2);
+        D1->setMomentum(p4_K2pi1);
+        D2->setMomentum(p4_K2pi2);
 
-        nuList.front()->setMomentum( P4_tau1_strat2 - tauList[0]->momentum() );//NB 4 momenta going in here
-        nuList.back()->setMomentum( P4_tau2_strat2 - tauList[1]->momentum() );//NB 4 momenta going in here
+        nuList.front()->setMomentum( P4_D1_strat2 - DList[0]->momentum() );//NB 4 momenta going in here
+        nuList.back()->setMomentum( P4_D2_strat2 - DList[1]->momentum() );//NB 4 momenta going in here
 
-        tau1->addToDaughters( nuList.front() );
-        tau1->setMomentum( P4_tau1_strat2 );
+        D1->addToDaughters( nuList.front() );
+        D1->setMomentum( P4_D1_strat2 );
 
-        tau2->addToDaughters( nuList.back() );
-        tau2->setMomentum( P4_tau2_strat2 );
+        D2->addToDaughters( nuList.back() );
+        D2->setMomentum( P4_D2_strat2 );
 
-        treeHead->setMomentum( P4_tau1_strat2 + P4_tau2_strat2 + Kplus->momentum() );
+        treeHead->setMomentum( P4_D1_strat2 + P4_D2_strat2 + Kplus->momentum() );
 
         DecayTreeFitter::Fitter fitter_strat2(*treeHead, *originVtx[0], stateprovider ) ;
         if (!fit(fitter_strat2, treeHead, originVtx[0], prefix, tMap, tuple, true)) return StatusCode::FAILURE ;
@@ -833,23 +825,23 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
       //std::cout<<" strategy 1 failed. trying strategy 2 "<<std::endl;
 
       //remove previously attached neutrino daughters
-      tau1->removeFromDaughters(nuList.front());
-      tau2->removeFromDaughters(nuList.back());
+      D1->removeFromDaughters(nuList.front());
+      D2->removeFromDaughters(nuList.back());
 
       //reset 4-momentum of 3pi to the original value
-      tau1->setMomentum(p4_3pi1);
-      tau2->setMomentum(p4_3pi2);
+      D1->setMomentum(p4_K2pi1);
+      D2->setMomentum(p4_K2pi2);
 
-      nuList.front()->setMomentum( P4_tau1_strat2 - tauList[0]->momentum() );//NB 4 momenta going in here
-      nuList.back()->setMomentum( P4_tau2_strat2 - tauList[1]->momentum() );//NB 4 momenta going in here
+      nuList.front()->setMomentum( P4_D1_strat2 - DList[0]->momentum() );//NB 4 momenta going in here
+      nuList.back()->setMomentum( P4_D2_strat2 - DList[1]->momentum() );//NB 4 momenta going in here
 
-      tau1->addToDaughters( nuList.front() );
-      tau1->setMomentum( P4_tau1_strat2 );
+      D1->addToDaughters( nuList.front() );
+      D1->setMomentum( P4_D1_strat2 );
 
-      tau2->addToDaughters( nuList.back() );
-      tau2->setMomentum( P4_tau2_strat2 );
+      D2->addToDaughters( nuList.back() );
+      D2->setMomentum( P4_D2_strat2 );
 
-      treeHead->setMomentum( P4_tau1_strat2 + P4_tau2_strat2 + Kplus->momentum() );
+      treeHead->setMomentum( P4_D1_strat2 + P4_D2_strat2 + Kplus->momentum() );
 
       DecayTreeFitter::Fitter fitter_strat2(*treeHead, *originVtx[0], stateprovider ) ;
       if (!fit(fitter_strat2, treeHead, originVtx[0], prefix, tMap, tuple, false)) return StatusCode::FAILURE ;
@@ -861,23 +853,23 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
         //std::cout<<" strategy 2 failed. trying strategy 0 "<<std::endl;
 
         //remove previously attached neutrino daughters
-        tau1->removeFromDaughters(nuList.front());
-        tau2->removeFromDaughters(nuList.back());
+        D1->removeFromDaughters(nuList.front());
+        D2->removeFromDaughters(nuList.back());
 
         //reset 4-momentum of 3pi to the original value
-        tau1->setMomentum(p4_3pi1);
-        tau2->setMomentum(p4_3pi2);
+        D1->setMomentum(p4_K2pi1);
+        D2->setMomentum(p4_K2pi2);
 
-        nuList.front()->setMomentum( P4_tau1_strat0 - tauList[0]->momentum() );//NB 4 momenta going in here
-        nuList.back()->setMomentum( P4_tau2_strat0 - tauList[1]->momentum() );//NB 4 momenta going in here
+        nuList.front()->setMomentum( P4_D1_strat0 - DList[0]->momentum() );//NB 4 momenta going in here
+        nuList.back()->setMomentum( P4_D2_strat0 - DList[1]->momentum() );//NB 4 momenta going in here
 
-        tau1->addToDaughters( nuList.front() );
-        tau1->setMomentum( P4_tau1_strat0 );
+        D1->addToDaughters( nuList.front() );
+        D1->setMomentum( P4_D1_strat0 );
 
-        tau2->addToDaughters( nuList.back() );
-        tau2->setMomentum( P4_tau2_strat0 );
+        D2->addToDaughters( nuList.back() );
+        D2->setMomentum( P4_D2_strat0 );
 
-        treeHead->setMomentum( P4_tau1_strat0 + P4_tau2_strat0 + Kplus->momentum() );
+        treeHead->setMomentum( P4_D1_strat0 + P4_D2_strat0 + Kplus->momentum() );
 
         DecayTreeFitter::Fitter fitter_strat0(*treeHead, *originVtx[0], stateprovider ) ;
         if (!fit(fitter_strat0, treeHead, originVtx[0], prefix, tMap, tuple, true)) return StatusCode::FAILURE ;
@@ -891,23 +883,23 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
       //std::cout<<" strategy 2 failed. trying strategy 0 "<<std::endl;
 
       //remove previously attached neutrino daughters
-      tau1->removeFromDaughters(nuList.front());
-      tau2->removeFromDaughters(nuList.back());
+      D1->removeFromDaughters(nuList.front());
+      D2->removeFromDaughters(nuList.back());
 
       //reset 4-momentum of 3pi to the original value
-      tau1->setMomentum(p4_3pi1);
-      tau2->setMomentum(p4_3pi2);
+      D1->setMomentum(p4_K2pi1);
+      D2->setMomentum(p4_K2pi2);
 
-      nuList.front()->setMomentum( P4_tau1_strat0 - tauList[0]->momentum() );//NB 4 momenta going in here
-      nuList.back()->setMomentum( P4_tau2_strat0 - tauList[1]->momentum() );//NB 4 momenta going in here
+      nuList.front()->setMomentum( P4_D1_strat0 - DList[0]->momentum() );//NB 4 momenta going in here
+      nuList.back()->setMomentum( P4_D2_strat0 - DList[1]->momentum() );//NB 4 momenta going in here
 
-      tau1->addToDaughters( nuList.front() );
-      tau1->setMomentum( P4_tau1_strat0 );
+      D1->addToDaughters( nuList.front() );
+      D1->setMomentum( P4_D1_strat0 );
 
-      tau2->addToDaughters( nuList.back() );
-      tau2->setMomentum( P4_tau2_strat0 );
+      D2->addToDaughters( nuList.back() );
+      D2->setMomentum( P4_D2_strat0 );
 
-      treeHead->setMomentum( P4_tau1_strat0 + P4_tau2_strat0 + Kplus->momentum() );
+      treeHead->setMomentum( P4_D1_strat0 + P4_D2_strat0 + Kplus->momentum() );
 
       DecayTreeFitter::Fitter fitter_strat0(*treeHead, *originVtx[0], stateprovider ) ;
       if (!fit(fitter_strat0, treeHead, originVtx[0], prefix, tMap, tuple, false)) return StatusCode::FAILURE ;
@@ -919,23 +911,23 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
         //std::cout<<" strategy 0 failed. trying strategy 1 "<<std::endl;
 
         //remove previously attached neutrino daughters
-        tau1->removeFromDaughters(nuList.front());
-        tau2->removeFromDaughters(nuList.back());
+        D1->removeFromDaughters(nuList.front());
+        D2->removeFromDaughters(nuList.back());
 
         //reset 4-momentum of 3pi to the original value
-        tau1->setMomentum(p4_3pi1);
-        tau2->setMomentum(p4_3pi2);
+        D1->setMomentum(p4_K2pi1);
+        D2->setMomentum(p4_K2pi2);
 
-        nuList.front()->setMomentum( P4_tau1_strat1 - tauList[0]->momentum() );//NB 4 momenta going in here
-        nuList.back()->setMomentum( P4_tau2_strat1 - tauList[1]->momentum() );//NB 4 momenta going in here
+        nuList.front()->setMomentum( P4_D1_strat1 - DList[0]->momentum() );//NB 4 momenta going in here
+        nuList.back()->setMomentum( P4_D2_strat1 - DList[1]->momentum() );//NB 4 momenta going in here
 
-        tau1->addToDaughters( nuList.front() );
-        tau1->setMomentum( P4_tau1_strat1 );
+        D1->addToDaughters( nuList.front() );
+        D1->setMomentum( P4_D1_strat1 );
 
-        tau2->addToDaughters( nuList.back() );
-        tau2->setMomentum( P4_tau2_strat1 );
+        D2->addToDaughters( nuList.back() );
+        D2->setMomentum( P4_D2_strat1 );
 
-        treeHead->setMomentum( P4_tau1_strat1 + P4_tau2_strat1 + Kplus->momentum() );
+        treeHead->setMomentum( P4_D1_strat1 + P4_D2_strat1 + Kplus->momentum() );
 
         DecayTreeFitter::Fitter fitter_strat1(*treeHead, *originVtx[0], stateprovider ) ;
         if (!fit(fitter_strat1, treeHead, originVtx[0], prefix, tMap, tuple, true)) return StatusCode::FAILURE ;
@@ -949,23 +941,23 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
       //std::cout<<" strategy 2 failed. trying strategy 1 "<<std::endl;
 
       //remove previously attached neutrino daughters
-      tau1->removeFromDaughters(nuList.front());
-      tau2->removeFromDaughters(nuList.back());
+      D1->removeFromDaughters(nuList.front());
+      D2->removeFromDaughters(nuList.back());
 
       //reset 4-momentum of 3pi to the original value
-      tau1->setMomentum(p4_3pi1);
-      tau2->setMomentum(p4_3pi2);
+      D1->setMomentum(p4_K2pi1);
+      D2->setMomentum(p4_K2pi2);
 
-      nuList.front()->setMomentum( P4_tau1_strat1 - tauList[0]->momentum() );//NB 4 momenta going in here
-      nuList.back()->setMomentum( P4_tau2_strat1 - tauList[1]->momentum() );//NB 4 momenta going in here
+      nuList.front()->setMomentum( P4_D1_strat1 - DList[0]->momentum() );//NB 4 momenta going in here
+      nuList.back()->setMomentum( P4_D2_strat1 - DList[1]->momentum() );//NB 4 momenta going in here
 
-      tau1->addToDaughters( nuList.front() );
-      tau1->setMomentum( P4_tau1_strat1 );
+      D1->addToDaughters( nuList.front() );
+      D1->setMomentum( P4_D1_strat1 );
 
-      tau2->addToDaughters( nuList.back() );
-      tau2->setMomentum( P4_tau2_strat1 );
+      D2->addToDaughters( nuList.back() );
+      D2->setMomentum( P4_D2_strat1 );
 
-      treeHead->setMomentum( P4_tau1_strat1 + P4_tau2_strat1 + Kplus->momentum() );
+      treeHead->setMomentum( P4_D1_strat1 + P4_D2_strat1 + Kplus->momentum() );
 
       DecayTreeFitter::Fitter fitter_strat1(*treeHead, *originVtx[0], stateprovider ) ;
       if (!fit(fitter_strat1, treeHead, originVtx[0], prefix, tMap, tuple, false)) return StatusCode::FAILURE ;
@@ -977,23 +969,23 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
         //std::cout<<" strategy 1 failed. trying strategy 0 "<<std::endl;
 
         //remove previously attached neutrino daughters
-        tau1->removeFromDaughters(nuList.front());
-        tau2->removeFromDaughters(nuList.back());
+        D1->removeFromDaughters(nuList.front());
+        D2->removeFromDaughters(nuList.back());
 
         //reset 4-momentum of 3pi to the original value
-        tau1->setMomentum(p4_3pi1);
-        tau2->setMomentum(p4_3pi2);
+        D1->setMomentum(p4_K2pi1);
+        D2->setMomentum(p4_K2pi2);
 
-        nuList.front()->setMomentum( P4_tau1_strat0 - tauList[0]->momentum() );//NB 4 momenta going in here
-        nuList.back()->setMomentum( P4_tau2_strat0 - tauList[1]->momentum() );//NB 4 momenta going in here
+        nuList.front()->setMomentum( P4_D1_strat0 - DList[0]->momentum() );//NB 4 momenta going in here
+        nuList.back()->setMomentum( P4_D2_strat0 - DList[1]->momentum() );//NB 4 momenta going in here
 
-        tau1->addToDaughters( nuList.front() );
-        tau1->setMomentum( P4_tau1_strat0 );
+        D1->addToDaughters( nuList.front() );
+        D1->setMomentum( P4_D1_strat0 );
 
-        tau2->addToDaughters( nuList.back() );
-        tau2->setMomentum( P4_tau2_strat0 );
+        D2->addToDaughters( nuList.back() );
+        D2->setMomentum( P4_D2_strat0 );
 
-        treeHead->setMomentum( P4_tau1_strat0 + P4_tau2_strat0 + Kplus->momentum() );
+        treeHead->setMomentum( P4_D1_strat0 + P4_D2_strat0 + Kplus->momentum() );
 
         DecayTreeFitter::Fitter fitter_strat0(*treeHead, *originVtx[0], stateprovider ) ;
         if (!fit(fitter_strat0, treeHead, originVtx[0], prefix, tMap, tuple, true)) return StatusCode::FAILURE ;
@@ -1003,6 +995,7 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
     }
 
   }
+
   //Note that calling the fit function with originVtx[0] instead of 0 ensures the point-to-PV constraint
   //In the future, we might want to loop this procedure for all the PVs
 
@@ -1047,7 +1040,7 @@ StatusCode TupleToolKTauTauDTFSequential::fill( const LHCb::Particle* mother, co
 //=============================================================================
 // do filling for a given vertex
 //=============================================================================
-StatusCode TupleToolKTauTauDTFSequential::fit(DecayTreeFitter::Fitter& fitter, const LHCb::Particle* P,
+StatusCode TupleToolKTauTauDTFSequential_DDK::fit(DecayTreeFitter::Fitter& fitter, const LHCb::Particle* P,
                                               const LHCb::VertexBase* pv, const std::string& prefix,
                                               TupleMap& tMap, Tuples::Tuple& tuple,
                                               bool fillIfFailed) const
@@ -1068,8 +1061,8 @@ StatusCode TupleToolKTauTauDTFSequential::fit(DecayTreeFitter::Fitter& fitter, c
   std::vector<float> chisq_iters = {}; //DTF chi-square after every iteration
   std::vector<Gaudi::XYZPoint> BV = {}, DV1 = {}, DV2 = {}; //vertices after every iteration
   std::vector<float> B_M = {}; //B mass after every iteration
-  std::vector<Gaudi::XYZVector> p_taup_nu = {}, p_taum_nu = {}; //neutrino kinematics after every iteration
-  std::vector<Gaudi::XYZVector> p_taup = {}, p_taum = {}; //tau kinematics after every iteration
+  std::vector<Gaudi::XYZVector> p_Dp_nu = {}, p_Dm_nu = {}; //neutrino kinematics after every iteration
+  std::vector<Gaudi::XYZVector> p_Dp = {}, p_Dm = {}; //D kinematics after every iteration
 
   //std::vector<float> BV_X = {}, BV_Y = {}, BV_Z = {};
 
@@ -1079,12 +1072,12 @@ StatusCode TupleToolKTauTauDTFSequential::fit(DecayTreeFitter::Fitter& fitter, c
   //calling the actual fit function.
   fitter.fit(m_maxNiter, 0.01, m_maxndiverging, m_dChisqQuit, chisq_iters, 
              BV, DV1, DV2, P, B_M,
-             p_taup_nu, p_taum_nu,
-             p_taup, p_taum, true);
+             p_Dp_nu, p_Dm_nu,
+             p_Dp, p_Dm, true);
 
-  // std::cout<<"Initial p_taup_nu: "<<p_taup_nu[0].x()<<" "<<p_taup_nu[0].y()<<" "<<p_taup_nu[0].z()<<" p_taum_nu: "<<p_taum_nu[0].x()<<" "<<p_taum_nu[0].y()<<" "<<p_taum_nu[0].z()<<std::endl;
+  // std::cout<<"Initial p_Dp_nu: "<<p_Dp_nu[0].x()<<" "<<p_Dp_nu[0].y()<<" "<<p_Dp_nu[0].z()<<" p_Dm_nu: "<<p_Dm_nu[0].x()<<" "<<p_Dm_nu[0].y()<<" "<<p_Dm_nu[0].z()<<std::endl;
 
-  // std::cout<<"Initial p_taup: "<<p_taup[0].x()<<" "<<p_taup[0].y()<<" "<<p_taup[0].z()<<" p_taum: "<<p_taum[0].x()<<" "<<p_taum[0].y()<<" "<<p_taum[0].z()<<std::endl;
+  // std::cout<<"Initial p_Dp: "<<p_Dp[0].x()<<" "<<p_Dp[0].y()<<" "<<p_Dp[0].z()<<" p_Dm: "<<p_Dm[0].x()<<" "<<p_Dm[0].y()<<" "<<p_Dm[0].z()<<std::endl;
   if (msgLevel(MSG::VERBOSE)) verbose() << "called Fit" << endmsg ;
 
   // std::cout<<"Initial BV :"<<BV[0].x()<<" "<<BV[0].y()<<" "<<BV[0].z()<<" "<<" DV1 :"<<DV1[0].x()<<" "<<DV1[0].y()<<" "<<DV1[0].z()<<" DV2 :"<<DV2[0].x()<<" "<<DV2[0].y()<<" "<<DV2[0].z()<<std::endl;
@@ -1100,15 +1093,15 @@ StatusCode TupleToolKTauTauDTFSequential::fit(DecayTreeFitter::Fitter& fitter, c
 
         //fill decay vertices after each fitter iteration
         fillVtxIter(fitter, prefix, tuple, BV,
-                    DV1, DV2, B_M, p_taup_nu, p_taum_nu,
-                    p_taup, p_taum); //made by AV
+                    DV1, DV2, B_M, p_Dp_nu, p_Dm_nu,
+                    p_Dp, p_Dm); //made by AV
 
     }
 
     // fill the fit result
     fillEndVtx(prefix+"_Bp", tMap, BV[fitter.nIter()]);
-    fillEndVtx(prefix+"_taup", tMap, DV1[fitter.nIter()]);
-    fillEndVtx(prefix+"_taum", tMap, DV2[fitter.nIter()]);
+    fillEndVtx(prefix+"_Dp", tMap, DV1[fitter.nIter()]);
+    fillEndVtx(prefix+"_Dm", tMap, DV2[fitter.nIter()]);
 
     fillDecay(fitter,prefix,tMap );
     fillMomentum(fitter,P,prefix,tMap );
@@ -1133,7 +1126,7 @@ StatusCode TupleToolKTauTauDTFSequential::fit(DecayTreeFitter::Fitter& fitter, c
 //=============================================================================
 // Fill endvertex information from DTF for intermediates
 //=============================================================================
-StatusCode TupleToolKTauTauDTFSequential::fillEndVtx(const std::string& prefix, TupleMap& tMap, Gaudi::XYZPoint vtx) const
+StatusCode TupleToolKTauTauDTFSequential_DDK::fillEndVtx(const std::string& prefix, TupleMap& tMap, Gaudi::XYZPoint vtx) const
 {
   bool test = true;
   if (msgLevel(MSG::VERBOSE)) verbose() << "fillEndVtx " << prefix << endmsg ;
@@ -1146,7 +1139,7 @@ StatusCode TupleToolKTauTauDTFSequential::fillEndVtx(const std::string& prefix, 
 //=============================================================================
 // Fill standard stuff
 //=============================================================================
-StatusCode TupleToolKTauTauDTFSequential::fillPV(const LHCb::VertexBase* pv, const std::string& prefix,
+StatusCode TupleToolKTauTauDTFSequential_DDK::fillPV(const LHCb::VertexBase* pv, const std::string& prefix,
                                        TupleMap& tMap ) const
 {
   bool test = true;
@@ -1164,7 +1157,7 @@ StatusCode TupleToolKTauTauDTFSequential::fillPV(const LHCb::VertexBase* pv, con
 //=============================================================================
 // Fill chi2 for all iterations of the fitter
 //=============================================================================
-StatusCode TupleToolKTauTauDTFSequential::fillChi2Iter(DecayTreeFitter::Fitter& fitter, std::vector<float> chisq_iters,
+StatusCode TupleToolKTauTauDTFSequential_DDK::fillChi2Iter(DecayTreeFitter::Fitter& fitter, std::vector<float> chisq_iters,
                                              const std::string& prefix, Tuples::Tuple& tuple ) const
 {
   bool test = true;
@@ -1183,7 +1176,7 @@ StatusCode TupleToolKTauTauDTFSequential::fillChi2Iter(DecayTreeFitter::Fitter& 
 //=============================================================================
 // Fill standard stuff
 //=============================================================================
-StatusCode TupleToolKTauTauDTFSequential::fillDecay(const DecayTreeFitter::Fitter& fitter, const std::string& prefix,
+StatusCode TupleToolKTauTauDTFSequential_DDK::fillDecay(const DecayTreeFitter::Fitter& fitter, const std::string& prefix,
                                           TupleMap& tMap ) const
 {
   bool test = true;
@@ -1199,12 +1192,12 @@ StatusCode TupleToolKTauTauDTFSequential::fillDecay(const DecayTreeFitter::Fitte
 //=============================================================================
 // Fill B decay vertex after each fitter iteration
 //=============================================================================
-StatusCode TupleToolKTauTauDTFSequential::fillVtxIter(const DecayTreeFitter::Fitter& fitter, const std::string& prefix,
+StatusCode TupleToolKTauTauDTFSequential_DDK::fillVtxIter(const DecayTreeFitter::Fitter& fitter, const std::string& prefix,
                                             Tuples::Tuple& tuple, std::vector<Gaudi::XYZPoint> BV,
                                             std::vector<Gaudi::XYZPoint> DV1, std::vector<Gaudi::XYZPoint> DV2,
                                             std::vector<float> B_M,
-                                            std::vector<Gaudi::XYZVector> p_taup_nu, std::vector<Gaudi::XYZVector> p_taum_nu,
-                                            std::vector<Gaudi::XYZVector> p_taup, std::vector<Gaudi::XYZVector> p_taum) const
+                                            std::vector<Gaudi::XYZVector> p_Dp_nu, std::vector<Gaudi::XYZVector> p_Dm_nu,
+                                            std::vector<Gaudi::XYZVector> p_Dp, std::vector<Gaudi::XYZVector> p_Dm) const
 {
   bool test = true;
 
@@ -1217,10 +1210,10 @@ StatusCode TupleToolKTauTauDTFSequential::fillVtxIter(const DecayTreeFitter::Fit
   std::vector<float> BV_X = {}, BV_Y = {}, BV_Z = {};
   std::vector<float> DV1_X = {}, DV1_Y = {}, DV1_Z = {};
   std::vector<float> DV2_X = {}, DV2_Y = {}, DV2_Z = {};
-  std::vector<float> p_taup_nu_X = {}, p_taup_nu_Y = {}, p_taup_nu_Z = {};
-  std::vector<float> p_taum_nu_X = {}, p_taum_nu_Y = {}, p_taum_nu_Z = {};
-  std::vector<float> p_taup_X = {}, p_taup_Y = {}, p_taup_Z = {};
-  std::vector<float> p_taum_X = {}, p_taum_Y = {}, p_taum_Z = {};
+  std::vector<float> p_Dp_nu_X = {}, p_Dp_nu_Y = {}, p_Dp_nu_Z = {};
+  std::vector<float> p_Dm_nu_X = {}, p_Dm_nu_Y = {}, p_Dm_nu_Z = {};
+  std::vector<float> p_Dp_X = {}, p_Dp_Y = {}, p_Dp_Z = {};
+  std::vector<float> p_Dm_X = {}, p_Dm_Y = {}, p_Dm_Z = {};
 
   for (Gaudi::XYZPoint iter : BV)
   {
@@ -1240,31 +1233,31 @@ StatusCode TupleToolKTauTauDTFSequential::fillVtxIter(const DecayTreeFitter::Fit
     DV2_Y.push_back(float(iter.Y()));
     DV2_Z.push_back(float(iter.Z()));
   }
-  for (Gaudi::XYZVector iter: p_taup_nu)
+  for (Gaudi::XYZVector iter: p_Dp_nu)
   {
-    p_taup_nu_X.push_back(float(iter.X()));
-    p_taup_nu_Y.push_back(float(iter.Y()));
-    p_taup_nu_Z.push_back(float(iter.Z()));
+    p_Dp_nu_X.push_back(float(iter.X()));
+    p_Dp_nu_Y.push_back(float(iter.Y()));
+    p_Dp_nu_Z.push_back(float(iter.Z()));
   }  
-  for (Gaudi::XYZVector iter: p_taum_nu)
+  for (Gaudi::XYZVector iter: p_Dm_nu)
   {
-    p_taum_nu_X.push_back(float(iter.X()));
-    p_taum_nu_Y.push_back(float(iter.Y()));
-    p_taum_nu_Z.push_back(float(iter.Z()));
+    p_Dm_nu_X.push_back(float(iter.X()));
+    p_Dm_nu_Y.push_back(float(iter.Y()));
+    p_Dm_nu_Z.push_back(float(iter.Z()));
   }  
-  for (Gaudi::XYZVector iter: p_taup)
+  for (Gaudi::XYZVector iter: p_Dp)
   {
-    p_taup_X.push_back(float(iter.X()));
-    p_taup_Y.push_back(float(iter.Y()));
-    p_taup_Z.push_back(float(iter.Z()));
+    p_Dp_X.push_back(float(iter.X()));
+    p_Dp_Y.push_back(float(iter.Y()));
+    p_Dp_Z.push_back(float(iter.Z()));
   }  
-  for (Gaudi::XYZVector iter: p_taum)
+  for (Gaudi::XYZVector iter: p_Dm)
   {
-    p_taum_X.push_back(float(iter.X()));
-    p_taum_Y.push_back(float(iter.Y()));
-    p_taum_Z.push_back(float(iter.Z()));
+    p_Dm_X.push_back(float(iter.X()));
+    p_Dm_Y.push_back(float(iter.Y()));
+    p_Dm_Z.push_back(float(iter.Z()));
   }  
-  // for (float iter : p_taup_nu_X)
+  // for (float iter : p_Dp_nu_X)
   // {
   //   std::cout<<"In fillVtxIter "<<iter<<std::endl;
   // }
@@ -1275,46 +1268,46 @@ StatusCode TupleToolKTauTauDTFSequential::fillVtxIter(const DecayTreeFitter::Fit
   test &= tuple->farray(prefix+"_Bp_ENDVERTEX_Z", BV_Z.begin(), BV_Z.end(),
                         prefix+"_nIters", m_maxNiter);
 
-  test &= tuple->farray(prefix+"_Taup_ENDVERTEX_X", DV1_X.begin(), DV1_X.end(),
+  test &= tuple->farray(prefix+"_Dp_ENDVERTEX_X", DV1_X.begin(), DV1_X.end(),
                         prefix+"_nIters", m_maxNiter);
-  test &= tuple->farray(prefix+"_Taup_ENDVERTEX_Y", DV1_Y.begin(), DV1_Y.end(),
+  test &= tuple->farray(prefix+"_Dp_ENDVERTEX_Y", DV1_Y.begin(), DV1_Y.end(),
                         prefix+"_nIters", m_maxNiter);
-  test &= tuple->farray(prefix+"_Taup_ENDVERTEX_Z", DV1_Z.begin(), DV1_Z.end(),
-                        prefix+"_nIters", m_maxNiter);
-
-  test &= tuple->farray(prefix+"_Taum_ENDVERTEX_X", DV2_X.begin(), DV2_X.end(),
-                        prefix+"_nIters", m_maxNiter);
-  test &= tuple->farray(prefix+"_Taum_ENDVERTEX_Y", DV2_Y.begin(), DV2_Y.end(),
-                        prefix+"_nIters", m_maxNiter);
-  test &= tuple->farray(prefix+"_Taum_ENDVERTEX_Z", DV2_Z.begin(), DV2_Z.end(),
+  test &= tuple->farray(prefix+"_Dp_ENDVERTEX_Z", DV1_Z.begin(), DV1_Z.end(),
                         prefix+"_nIters", m_maxNiter);
 
-  test &= tuple->farray(prefix+"_Taup_nu_PX", p_taup_nu_X.begin(), p_taup_nu_X.end(),
+  test &= tuple->farray(prefix+"_Dm_ENDVERTEX_X", DV2_X.begin(), DV2_X.end(),
                         prefix+"_nIters", m_maxNiter);
-  test &= tuple->farray(prefix+"_Taup_nu_PY", p_taup_nu_Y.begin(), p_taup_nu_Y.end(),
+  test &= tuple->farray(prefix+"_Dm_ENDVERTEX_Y", DV2_Y.begin(), DV2_Y.end(),
                         prefix+"_nIters", m_maxNiter);
-  test &= tuple->farray(prefix+"_Taup_nu_PZ", p_taup_nu_Z.begin(), p_taup_nu_Z.end(),
+  test &= tuple->farray(prefix+"_Dm_ENDVERTEX_Z", DV2_Z.begin(), DV2_Z.end(),
+                        prefix+"_nIters", m_maxNiter);
+
+  test &= tuple->farray(prefix+"_Dp_nu_PX", p_Dp_nu_X.begin(), p_Dp_nu_X.end(),
+                        prefix+"_nIters", m_maxNiter);
+  test &= tuple->farray(prefix+"_Dp_nu_PY", p_Dp_nu_Y.begin(), p_Dp_nu_Y.end(),
+                        prefix+"_nIters", m_maxNiter);
+  test &= tuple->farray(prefix+"_Dp_nu_PZ", p_Dp_nu_Z.begin(), p_Dp_nu_Z.end(),
                         prefix+"_nIters", m_maxNiter);
   
-  test &= tuple->farray(prefix+"_Taum_nu_PX", p_taum_nu_X.begin(), p_taum_nu_X.end(),
+  test &= tuple->farray(prefix+"_Dm_nu_PX", p_Dm_nu_X.begin(), p_Dm_nu_X.end(),
                         prefix+"_nIters", m_maxNiter);
-  test &= tuple->farray(prefix+"_Taum_nu_PY", p_taum_nu_Y.begin(), p_taum_nu_Y.end(),
+  test &= tuple->farray(prefix+"_Dm_nu_PY", p_Dm_nu_Y.begin(), p_Dm_nu_Y.end(),
                         prefix+"_nIters", m_maxNiter);
-  test &= tuple->farray(prefix+"_Taum_nu_PZ", p_taum_nu_Z.begin(), p_taum_nu_Z.end(),
+  test &= tuple->farray(prefix+"_Dm_nu_PZ", p_Dm_nu_Z.begin(), p_Dm_nu_Z.end(),
                         prefix+"_nIters", m_maxNiter);
 
-  test &= tuple->farray(prefix+"_Taup_PX", p_taup_X.begin(), p_taup_X.end(),
+  test &= tuple->farray(prefix+"_Dp_PX", p_Dp_X.begin(), p_Dp_X.end(),
                         prefix+"_nIters", m_maxNiter);
-  test &= tuple->farray(prefix+"_Taup_PY", p_taup_Y.begin(), p_taup_Y.end(),
+  test &= tuple->farray(prefix+"_Dp_PY", p_Dp_Y.begin(), p_Dp_Y.end(),
                         prefix+"_nIters", m_maxNiter);
-  test &= tuple->farray(prefix+"_Taup_PZ", p_taup_Z.begin(), p_taup_Z.end(),
+  test &= tuple->farray(prefix+"_Dp_PZ", p_Dp_Z.begin(), p_Dp_Z.end(),
                         prefix+"_nIters", m_maxNiter);
   
-  test &= tuple->farray(prefix+"_Taum_PX", p_taum_X.begin(), p_taum_X.end(),
+  test &= tuple->farray(prefix+"_Dm_PX", p_Dm_X.begin(), p_Dm_X.end(),
                         prefix+"_nIters", m_maxNiter);
-  test &= tuple->farray(prefix+"_Taum_PY", p_taum_Y.begin(), p_taum_Y.end(),
+  test &= tuple->farray(prefix+"_Dm_PY", p_Dm_Y.begin(), p_Dm_Y.end(),
                         prefix+"_nIters", m_maxNiter);
-  test &= tuple->farray(prefix+"_Taum_PZ", p_taum_Z.begin(), p_taum_Z.end(),
+  test &= tuple->farray(prefix+"_Dm_PZ", p_Dm_Z.begin(), p_Dm_Z.end(),
                         prefix+"_nIters", m_maxNiter);
   
   // test &= tuple->farray(prefix+"_M_iters", B_M.begin(), B_M.end(),
@@ -1324,7 +1317,7 @@ StatusCode TupleToolKTauTauDTFSequential::fillVtxIter(const DecayTreeFitter::Fit
 //=============================================================================
 // Fill momentum and mass information
 //=============================================================================
-StatusCode TupleToolKTauTauDTFSequential::fillMomentum(const DecayTreeFitter::Fitter& fitter, const Particle* P,
+StatusCode TupleToolKTauTauDTFSequential_DDK::fillMomentum(const DecayTreeFitter::Fitter& fitter, const Particle* P,
                                              const std::string& prefix, TupleMap& tMap ) const
 {
   bool test = true;
@@ -1335,9 +1328,9 @@ StatusCode TupleToolKTauTauDTFSequential::fillMomentum(const DecayTreeFitter::Fi
   //Get the fit parameters
   const auto    params = fitter.fitParams(P) ;
   const auto& momentum = params->momentum() ;
-  if ( abs( P->particleID().pid()) == 15 ) {//just some checking printouts
+  if ( abs( P->particleID().pid()) == 411 ) {//just some checking printouts
     debug() << "Check pars for " << P->particleID().pid() << endmsg;
-    debug() << "tau check M = " << momentum.M()  << ", " << momentum.E()*momentum.E() - momentum.Px()*momentum.Px() - momentum.Py()*momentum.Py() - momentum.Pz()*momentum.Pz() << endmsg;
+    debug() << "D check M = " << momentum.M()  << ", " << momentum.E()*momentum.E() - momentum.Px()*momentum.Px() - momentum.Py()*momentum.Py() - momentum.Pz()*momentum.Pz() << endmsg;
     debug() << "Check p pars = " << momentum.Px() << ", " << momentum.Py() << ", " << momentum.Pz() << ", " << momentum.E() << endmsg;
   }
   test &= insert( prefix+"_M",  momentum.m().value(), tMap  );
@@ -1353,7 +1346,7 @@ StatusCode TupleToolKTauTauDTFSequential::fillMomentum(const DecayTreeFitter::Fi
 //=============================================================================
 // Fill lifetime information
 //=============================================================================
-StatusCode TupleToolKTauTauDTFSequential::fillLT(const DecayTreeFitter::Fitter& fitter, const Particle* P,
+StatusCode TupleToolKTauTauDTFSequential_DDK::fillLT(const DecayTreeFitter::Fitter& fitter, const Particle* P,
                                        const std::string& prefix, TupleMap& tMap ) const
 {
   bool test = true;
@@ -1374,7 +1367,7 @@ StatusCode TupleToolKTauTauDTFSequential::fillLT(const DecayTreeFitter::Fitter& 
 //=============================================================================
 // Fill lifetime information for non stable daughters
 //=============================================================================
-StatusCode TupleToolKTauTauDTFSequential::fillDaughters(const DecayTreeFitter::Fitter& fitter, const LHCb::Particle* P,
+StatusCode TupleToolKTauTauDTFSequential_DDK::fillDaughters(const DecayTreeFitter::Fitter& fitter, const LHCb::Particle* P,
                                               const std::string& prefix, TupleMap& tMap ) const
 {
   bool test = true;
@@ -1418,7 +1411,7 @@ StatusCode TupleToolKTauTauDTFSequential::fillDaughters(const DecayTreeFitter::F
 // Fill lifetime information for stable daughters
 //=============================================================================
 StatusCode
-TupleToolKTauTauDTFSequential::fillStableDaughters(const DecayTreeFitter::Fitter& fitter, const LHCb::Particle* P,
+TupleToolKTauTauDTFSequential_DDK::fillStableDaughters(const DecayTreeFitter::Fitter& fitter, const LHCb::Particle* P,
                                          const std::string& prefix, TupleMap& tMap ) const
 {
   bool test = true;
@@ -1480,7 +1473,7 @@ TupleToolKTauTauDTFSequential::fillStableDaughters(const DecayTreeFitter::Fitter
 // Fill updated tracks momentum
 //=============================================================================
 StatusCode
-TupleToolKTauTauDTFSequential::fillTracksMomentum(const DecayTreeFitter::Fitter& fitter, const Particle* P,
+TupleToolKTauTauDTFSequential_DDK::fillTracksMomentum(const DecayTreeFitter::Fitter& fitter, const Particle* P,
                                         const std::string& prefix, TupleMap& tMap ) const
 {
   bool test = true;
@@ -1505,7 +1498,7 @@ TupleToolKTauTauDTFSequential::fillTracksMomentum(const DecayTreeFitter::Fitter&
 //=============================================================================
 // append data to TupleMap
 //=============================================================================
-StatusCode TupleToolKTauTauDTFSequential::insert(const std::string& leaf, const double val,
+StatusCode TupleToolKTauTauDTFSequential_DDK::insert(const std::string& leaf, const double val,
                                        TupleMap& tMap ) const
 {
   auto l = tMap.find(leaf);
@@ -1528,7 +1521,7 @@ StatusCode TupleToolKTauTauDTFSequential::insert(const std::string& leaf, const 
 //=============================================================================
 // actual filling of the Tuple
 //=============================================================================
-StatusCode TupleToolKTauTauDTFSequential::fillTuple(TupleMap& tMap, Tuples::Tuple& tuple,
+StatusCode TupleToolKTauTauDTFSequential_DDK::fillTuple(TupleMap& tMap, Tuples::Tuple& tuple,
                                           const std::string& prefix )
 {
   bool test = true ;
@@ -1571,7 +1564,7 @@ StatusCode TupleToolKTauTauDTFSequential::fillTuple(TupleMap& tMap, Tuples::Tupl
 // Sort Tracks
 //=============================================================================
 std::set<const LHCb::Track*>
-TupleToolKTauTauDTFSequential::sortedTracks(const LHCb::VertexBase* vb) const
+TupleToolKTauTauDTFSequential_DDK::sortedTracks(const LHCb::VertexBase* vb) const
 {
   const LHCb::RecVertex* pv = dynamic_cast<const LHCb::RecVertex*>(vb);
   if (!pv) Exception("Failed to cast PV");
@@ -1583,7 +1576,7 @@ TupleToolKTauTauDTFSequential::sortedTracks(const LHCb::VertexBase* vb) const
 //=============================================================================
 // Compare PVs, check that one PV's tracks is a subset of the other
 //=============================================================================
-bool TupleToolKTauTauDTFSequential::samePV( const LHCb::VertexBase* vb1,
+bool TupleToolKTauTauDTFSequential_DDK::samePV( const LHCb::VertexBase* vb1,
                                   const LHCb::VertexBase* vb2 ) const
 {
   // exception checking. See bug https://savannah.cern.ch/bugs/?100933
@@ -1625,7 +1618,7 @@ bool TupleToolKTauTauDTFSequential::samePV( const LHCb::VertexBase* vb1,
 // get origin vertex
 //=============================================================================
 std::vector<const VertexBase*>
-TupleToolKTauTauDTFSequential::originVertex( const Particle* mother, const Particle* P ) const
+TupleToolKTauTauDTFSequential_DDK::originVertex( const Particle* mother, const Particle* P ) const
 {
   std::vector<const VertexBase*> oriVx;
   if ( mother == P )
@@ -1698,7 +1691,7 @@ TupleToolKTauTauDTFSequential::originVertex( const Particle* mother, const Parti
 //=============================================================================
 // Convert pid number in names
 //=============================================================================
-std::string TupleToolKTauTauDTFSequential::getName(const int id) const
+std::string TupleToolKTauTauDTFSequential_DDK::getName(const int id) const
 {
   const auto * prop = m_ppSvc->find( LHCb::ParticleID(id) );
   if (!prop) Exception("Unknown PID");
@@ -1710,7 +1703,7 @@ std::string TupleToolKTauTauDTFSequential::getName(const int id) const
 //=============================================================================
 // Substitute
 //=============================================================================
-StatusCode TupleToolKTauTauDTFSequential::substitute(LHCb::DecayTree& tree)
+StatusCode TupleToolKTauTauDTFSequential_DDK::substitute(LHCb::DecayTree& tree)
 {
   if (msgLevel(MSG::DEBUG)) debug() << "Calling substitute" << endmsg ;
   const auto substituted = m_substitute->substitute ( tree.head() ) ;
@@ -1742,7 +1735,7 @@ StatusCode TupleToolKTauTauDTFSequential::substitute(LHCb::DecayTree& tree)
 //=============================================================================
 // Check Mass Constraints
 //=============================================================================
-StatusCode TupleToolKTauTauDTFSequential::checkMassConstraints(const LHCb::DecayTree& tree)
+StatusCode TupleToolKTauTauDTFSequential_DDK::checkMassConstraints(const LHCb::DecayTree& tree)
 {
   if (!m_first) return StatusCode::SUCCESS ;  // do that only once
   m_first = false ;
@@ -1772,7 +1765,7 @@ StatusCode TupleToolKTauTauDTFSequential::checkMassConstraints(const LHCb::Decay
 
 }
 
-Gaudi::XYZVector TupleToolKTauTauDTFSequential::makeTransformation_vec(Gaudi::XYZVector p_K, Gaudi::XYZPoint refPoint, 
+Gaudi::XYZVector TupleToolKTauTauDTFSequential_DDK::makeTransformation_vec(Gaudi::XYZVector p_K, Gaudi::XYZPoint refPoint, 
                                                              Gaudi::XYZVector theVector, bool invFlag)
 {
   double deltaX = refPoint.x();
@@ -1806,7 +1799,7 @@ Gaudi::XYZVector TupleToolKTauTauDTFSequential::makeTransformation_vec(Gaudi::XY
   return theVector_t;
 }
 
-Gaudi::XYZPoint TupleToolKTauTauDTFSequential::makeTransformation_point(Gaudi::XYZVector p_K, Gaudi::XYZPoint refPoint, 
+Gaudi::XYZPoint TupleToolKTauTauDTFSequential_DDK::makeTransformation_point(Gaudi::XYZVector p_K, Gaudi::XYZPoint refPoint, 
                                                               Gaudi::XYZPoint thePoint, bool invFlag)
 {
   double deltaX = refPoint.x();
@@ -1840,4 +1833,4 @@ Gaudi::XYZPoint TupleToolKTauTauDTFSequential::makeTransformation_point(Gaudi::X
   return thePoint_t;
 }
 // Declaration of the Tool Factory
-DECLARE_COMPONENT( TupleToolKTauTauDTFSequential )
+DECLARE_COMPONENT( TupleToolKTauTauDTFSequential_DDK )
