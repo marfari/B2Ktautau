@@ -1,142 +1,158 @@
-localrules: make_pre_sel_eff_tables, compare_TMVA, compute_bkg_yield, get_run_numbers, get_lumi_of_subset, sensitivity_plots, compare_DTF_fitter
+localrules: make_TMVA_training, compare_TMVA, compute_bkg_yield, get_run_numbers, get_lumi_of_subset, sensitivity_plots, exact_constraints, comparisons, compare_vars, create_dataset, fit_mass, make_sPlot_histos, compare_MC_sWeighted_data, addWeight
 
 rule all:
     input:
-        expand('/panfs/felician/B2Ktautau/workflow/create_DATA_pre_selection_tree/201{year}/Species_{species}/{line}.root', year=8, species=2, line=range(1,14))
+        expand('/panfs/felician/B2Ktautau/workflow/standalone_fitter/201{year}/Species_{species}/{line}.root', year=6, species=10, line=1)
 
 ###################################################### Reconstruction ############################################################################
-rule test_analytical_reconstruction:
-    ''' Tests the analytical reconstruction calculations in MC (gen / reco) and in data '''
-    input:
-        'analytic_reconstruction.C',
-        MC_files = 'Files_on_grid/full_MC_201{year}.txt',
-        DATA_files = 'Files_on_grid/full_data_201{year}.txt'
-    output:
-        '/panfs/felician/B2Ktautau/workflow/analytical_reco/201{year}/ana_reco_vars_{type}.root'
-    log:
-        '/panfs/felician/B2Ktautau/workflow/analytical_reco/201{year}/ana_reco_{type}.log'
-    shell:
-        'root -l -b -q \' analytic_reconstruction.C( {wildcards.year}, \"{input.MC_files}\", \"{input.DATA_files}\", {wildcards.type} ) \' &> {log}'
+# rule test_analytical_reconstruction:
+#     ''' Tests the analytical reconstruction calculations in MC (gen / reco) and in data '''
+#     input:
+#         'analytic_reconstruction.C',
+#         RECO_files = '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{year}/Species_{species}/pre_sel_tree.txt',
+#     output:
+#         '/panfs/felician/B2Ktautau/workflow/analytical_reco/201{year}/ana_reco_vars_{species}.root'
+#     log:
+#         '/panfs/felician/B2Ktautau/workflow/analytical_reco/201{year}/ana_reco_{species}.log'
+#     shell:
+#         'root -l -b -q \' analytic_reconstruction.C( {wildcards.year}, \"{input.RECO_files}\", {wildcards.species} ) \' &> {log}'
 ###################################################################################################################################################
 
 rule separate_reco_mc_components:
     ''' Creates a .root file with 1 branch (component) that allows to separate the 3pi3pi (component = 0), 3pi3pipi0 (component = 1) and 3pi3pi2pi0 (component = 2) components in the reco MC based on the true knowledge from gen MC '''
     input:
         'create_MC_component_branch.C',
-        MC_files = 'Files_on_grid/full_MC_201{year}.txt'
+        MC_files = 'Files_on_grid/MC_201{year}.txt'
     output:
-        '/panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201{year}/MC_component_{line}.root'
+        '/panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201{year}/{line}.root'
     log:
         '/panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201{year}/{line}.log'
     shell:
         'root -l -b -q \'create_MC_component_branch.C( {wildcards.year}, \"{input.MC_files}\", {wildcards.line})\' &> {log};'
         'ls /panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201{wildcards.year}/*.root | sort -V > /panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201{wildcards.year}/mc_components.txt'
 
-rule create_MC_pre_selection_tree:
-    ''' Creates a MC tree passing the pre-selections. Species must be set to 0. Component can be choosen: 0 (3pi3pi), 1 (3pi3pi pi0), 2 (3pi3pi 2pi0), -1 (all). '''
-    input:
-        'create_pre_sel_tree.C',
-        MC_files = 'Files_on_grid/full_MC_201{year}.txt',
-        MC_component_file = '/panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201{year}/MC_component_{line}.root'
-    output:
-        '/panfs/felician/B2Ktautau/workflow/create_MC_pre_selection_tree/201{year}/Component_{component}/{line}.root'
-    log:
-        '/panfs/felician/B2Ktautau/workflow/create_MC_pre_selection_tree/201{year}/Component_{component}/{line}.log'
-    shell:        
-        'root -l -b -q \'create_pre_sel_tree.C( {wildcards.year}, 0, {wildcards.component}, \"{input.MC_files}\", \"{input.MC_component_file}\", \" \", {wildcards.line}, false)\' &> {log};'
-        'ls /panfs/felician/B2Ktautau/workflow/create_MC_pre_selection_tree/201{wildcards.year}/Component_{wildcards.component}/*.root | sort -V > /panfs/felician/B2Ktautau/workflow/create_MC_pre_selection_tree/201{wildcards.year}/Component_{wildcards.component}/pre_sel_tree.txt'
+rule create_pre_selection_tree:
+    ''' Creates a tree passing the pre-selections for 1 of the following species:
+        10 - Ktautau MC (3pi3pi component)
+        11 - Ktautau MC (3pi3pi pi0 component)
+        12 - Ktautau MC (3pi3pi 2pi0 component)
+        1 - Ktautau MC (all components)
+        2 - Ktautau RS data
+        3 - Ktautau WS data 
+        4 - DDK MC
+        5 - DDK RS data
+        6 - DDK WS data
 
-rule create_DATA_pre_selection_tree:
-    ''' Creates a DATA tree passing the pre-selections. Species can be chosen: 1 (RS data) or 2 (WS data). '''
+        Currently: applies trigger cuts and truth-matches MC.
+    '''
     input:
-        'create_pre_sel_tree.C',
-        DATA_files = 'Files_on_grid/full_data_201{year}.txt'
+        'create_pre_sel_tree.C'
     output:
-        '/panfs/felician/B2Ktautau/workflow/create_DATA_pre_selection_tree/201{year}/Species_{species}/{line}.root'
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{year}/Species_{species}/{line}.root'
     log:
-        '/panfs/felician/B2Ktautau/workflow/create_DATA_pre_selection_tree/201{year}/Species_{species}/{line}.log'
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{year}/Species_{species}/{line}.log'
+    resources:
+        time = "99:00:00",
+        mem_mb = 25000
     resources:
         time = "12:00:00"
-    shell:
-        'root -l -b -q \'create_pre_sel_tree.C( {wildcards.year}, {wildcards.species}, 0, \" \", \" \", \"{input.DATA_files}\", {wildcards.line}, false)\' &> {log};'
-        'ls /panfs/felician/B2Ktautau/workflow/create_DATA_pre_selection_tree/201{wildcards.year}/Species_{wildcards.species}/*.root | sort -V > /panfs/felician/B2Ktautau/workflow/create_DATA_pre_selection_tree/201{wildcards.year}/Species_{wildcards.species}/pre_sel_tree.txt'
+    shell:        
+        'root -l -b -q \'create_pre_sel_tree.C( {wildcards.year}, {wildcards.species}, {wildcards.line}, false)\' &> {log};'
+        'ls /panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{wildcards.year}/Species_{wildcards.species}/*.root | sort -V > /panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{wildcards.year}/Species_{wildcards.species}/pre_sel_tree.txt'
 
-rule make_pre_sel_eff_tables:
-    ''' Creates pre-selection efficiency tables for data and MC '''
-    ''' If species==0, it produces the MC table. If species==1 it produces the data table. '''
+rule compare_vars:
+    ''' Compares variables between 2 files (e.g. signal MC vs WS data) '''
     input:
-        'create_pre_sel_tree.C',
-        MC_files = 'Files_on_grid/full_MC_201{year}.txt',
-        DATA_files = 'Files_on_grid/full_data_201{year}.txt'
+        'compare_vars.C',
+        SIG_FILES = "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{year}/Species_4/pre_sel_tree.txt", # 3pi3pi Ktautau MC
+        BKG_FILES = "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{year}/Species_6/pre_sel_tree.txt"   # WS Ktautau data
     output:
-        '/panfs/felician/B2Ktautau/workflow/pre_selection_efficiency_tables/201{year}/species{species}_pre_sel_efficiency.tex'
+        '/panfs/felician/B2Ktautau/workflow/compare_vars/201{year}/DDK_MC_vs_WS_data/var_0.gif'
     log:
-        '/panfs/felician/B2Ktautau/workflow/pre_selection_efficiency_tables/201{year}/species{species}_pre_sel_efficiency.log'
+        '/panfs/felician/B2Ktautau/workflow/compare_vars/201{year}/DDK_MC_vs_WS_data/out.log'
     shell:
-        'root -l -b -q \'create_pre_sel_tree.C( {wildcards.year}, {wildcards.species}, 0, \"{input.MC_files}\", \" ", \"{input.DATA_files}\", 0, true)\' &> {log}'
+        'root -l -b -q \' compare_vars.C( {wildcards.year}, \"{input.SIG_FILES}\", \"{input.BKG_FILES}\" ) \' &> {log}'
+
+# rule make_pre_sel_eff_tables:
+#     ''' Creates pre-selection efficiency tables for data and MC '''
+#     ''' If species==0, it produces the MC table. If species==1 it produces the data table. '''
+#     input:
+#         'create_pre_sel_tree.C',
+#         MC_files = 'Files_on_grid/full_MC_201{year}.txt',
+#         DATA_files = 'Files_on_grid/full_data_201{year}.txt'
+#     output:
+#         '/panfs/felician/B2Ktautau/workflow/pre_selection_efficiency_tables/201{year}/species{species}_pre_sel_efficiency.tex'
+#     log:
+#         '/panfs/felician/B2Ktautau/workflow/pre_selection_efficiency_tables/201{year}/species{species}_pre_sel_efficiency.log'
+#     shell:
+#         'root -l -b -q \'create_pre_sel_tree.C( {wildcards.year}, {wildcards.species}, 0, \"{input.MC_files}\", \" ", \"{input.DATA_files}\", 0, true)\' &> {log}'
 
 rule run_standalone_fitter:
     ''' Run offline minimisation '''
     input:
-        'decay_fit.C',
-        MC_files = '/panfs/felician/B2Ktautau/workflow/create_MC_pre_selection_tree/201{year}/Component_{component}/pre_sel_tree.txt'
+        'decay_fit_Penalty.C',
+        RECO_files = '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{year}/Species_{species}/pre_sel_tree.txt'
     output:
-        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/201{year}/Component_{component}/fit_result_{line}.root'
+        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/201{year}/Species_{species}/{line}.root'
     log:
-        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/201{year}/Component_{component}/{line}.log'
+        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/201{year}/Species_{species}/{line}.log'
     resources:
-        time = "12:00:00",
-        mem_mb=25000
+        time = "99:00:00",
+        mem_mb = 25000
     shell:
-        'root -l -b -q \' decay_fit.C( {wildcards.year}, \"{input.MC_files}\", {wildcards.component}, {wildcards.line} ) \' &> {log};'
-        'ls /panfs/felician/B2Ktautau/workflow/standalone_fitter/201{wildcards.year}/Component_{wildcards.component}/*.root | sort -V > /panfs/felician/B2Ktautau/workflow/standalone_fitter/201{wildcards.year}/Component_{wildcards.component}/fit_results.txt'
+        'root -l -b -q \'decay_fit_Penalty.C( {wildcards.year}, \"{input.RECO_files}\", {wildcards.species}, {wildcards.line} ) \' &> {log};'
+        'ls /panfs/felician/B2Ktautau/workflow/standalone_fitter/201{wildcards.year}/Species_{wildcards.species}/*.root | sort -V > /panfs/felician/B2Ktautau/workflow/standalone_fitter/201{wildcards.year}/Species_{wildcards.species}/fit_results.txt'
 
-rule compare_DTF_fitter:
-    ''' Compares DTF and standalone fitter outputs '''
+rule exact_constraints:
+    ''' Plots functions in system of equations '''
     input:
-        'compare_fits.C',
-        MC_files = '/panfs/felician/B2Ktautau/workflow/create_MC_pre_selection_tree/201{year}/Component_{component}/pre_sel_tree.txt',
-        FIT_files = '/panfs/felician/B2Ktautau/workflow/standalone_fitter/201{year}/Component_{component}/fit_results.txt'
+        'exact_constraints.C',
+        RECO_files = '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{year}/Species_{species}/pre_sel_tree.txt',
+        FIT_files = '/panfs/felician/B2Ktautau/workflow/standalone_fitter/201{year}/Species_{species}_lowest_chi2/fit_results.txt'
     output:
-        '/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201{year}/Component_{component}/Bmass.gif'
+        '/panfs/felician/B2Ktautau/workflow/exact_constraints/201{year}/Species_{species}/F0.gif'
     log:
-        '/panfs/felician/B2Ktautau/workflow/compare_DTF_fitter/201{year}/Component_{component}/out.log'
+        '/panfs/felician/B2Ktautau/workflow/exact_constraints/201{year}/Species_{species}/out.log'
     shell:
-        'root -l -b -q \' compare_fits.C( {wildcards.year}, {wildcards.component}, \"{input.MC_files}\", \"{input.FIT_files}\" ) \' &> {log}'
+        'root -l -b -q \' exact_constraints.C( {wildcards.year}, {wildcards.species}, \"{input.RECO_files}\", \"{input.FIT_files}\" ) \' &> {log}'
+
+rule comparisons:
+    ''' Compares variables from 2 different files  '''
+    input:
+        'compare.C',
+        FILES1 = 'Files_on_grid/MC_201{year}.txt',
+        FILES2 = 'Files_on_grid/data_201{year}.txt'
+    output:
+        '/panfs/felician/B2Ktautau/workflow/comparisons/201{year}/TruthMatch_trigger_MC_vs_WS_data/var_0.gif'
+    log: 
+        '/panfs/felician/B2Ktautau/workflow/comparisons/201{year}/TruthMatch_trigger_MC_vs_WS_data/out.log'
+    shell:
+        'root -l -b -q \' compare.C( {wildcards.year}, \"{input.FILES1}\", \"{input.FILES2}\" ) \' &> {log}'
 
 ######################################################### ML training ########################################################################################################
 #########################################################     TMVA    ######################################################################################################## 
+
 rule make_TMVA_training:
-    ''' Does the TMVA training. Uses only 1 data grid file for training. Uses all MC grid files for training. '''
-    # tmva_method (TMVA method used in the training)
-    # 0 -> BDT w/ gradient boost
-    # 1 -> BDT
-    # 2 -> artificial neural network
-    # 3 -> deep neural network w/ GPU
-    # tmva_type (input variables used in the training)
-    # 0 -> tau geometry + kinematic
-    # 1 -> 0 response cut (bdt1 > -0.5) + tau isolation
-    # 2 -> 2 response + 
-    # 6 -> Mix (throw sink at TMVA)
-    # background_proxy
-    # 0 -> use RS data, with M > 6.5 GeV
-    # 1 -> use WS data
+    ''' Does the TMVA training. '''
+    # Uses TMVA to separate between to classes (FILES1 and FILES2)
+    # year = 6,7,8
+    # tmva_type = 0 (Ktautau sig vs bkg); 1 (DDK sig vs background)
+    # tmva_method = 0 (BDT gradient boost) ; 1 (BDT adaptive boost); 2 (MLP); 3 (DNN)
+    # tmva_vars = 0,1,2 (which set of input variables to use?)
+    # background proxy = 0 (RS data, right sideband); (WS data, signal region)
+    # FILES1 (signal), FILES2 (background) -> files containing the 2 species we want to separate (CHANGE ME for each tmva_type && background_proxy)
     input:
         'TMVA/TMVA_training.C',
-        SIGNAL_MC_files = '/panfs/felician/B2Ktautau/workflow/create_MC_pre_selection_tree/201{year}/Component_0/pre_sel_tree.txt',
-        RS_DATA_files = '/panfs/felician/B2Ktautau/workflow/create_DATA_pre_selection_tree/201{year}/Species_1/pre_sel_tree.txt',
-        WS_DATA_files = '/panfs/felician/B2Ktautau/workflow/create_DATA_pre_selection_tree/201{year}/Species_2/pre_sel_tree.txt',
-        SIGNAL_MC_BDT1_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_10/tmva_method0_type0_bkgProxy1.txt',
-        RS_DATA_BDT1_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_1/tmva_method0_type0_bkgProxy1.txt',
-        WS_DATA_BDT1_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_2/tmva_method0_type0_bkgProxy1.txt'
+        FILES1 = '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{year}/Species_4/pre_sel_tree.txt',
+        FILES2 = '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{year}/Species_6/pre_sel_tree.txt',
     output:
-        '/panfs/felician/B2Ktautau/workflow/TMVA_training/201{year}/tmva_output_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}.root'
+        '/panfs/felician/B2Ktautau/workflow/TMVA_training/201{year}/tmva_output_type{tmva_type}_method{tmva_method}_vars{tmva_vars}_bkgProxy{background_proxy}.root' 
     log:
-        '/panfs/felician/B2Ktautau/workflow/TMVA_training/201{year}/log_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}.log'
+        '/panfs/felician/B2Ktautau/workflow/TMVA_training/201{year}/tmva_output_type{tmva_type}_method{tmva_method}_vars{tmva_vars}_bkgProxy{background_proxy}.log' 
     shell:
-        'root -l -b -q \'TMVA/TMVA_training.C( {wildcards.year}, {wildcards.tmva_method}, {wildcards.tmva_type}, {wildcards.background_proxy}, \"{input.RS_DATA_files}\", \"{input.WS_DATA_files}\", \"{input.SIGNAL_MC_files}\", \"{input.SIGNAL_MC_BDT1_files}\", \"{input.RS_DATA_BDT1_files}\", \"{input.WS_DATA_BDT1_files}\" )\' &> {log};'
-        'rm -rf /panfs/felician/B2Ktautau/workflow/TMVA_training/201{wildcards.year}/tmva_dataset_method{wildcards.tmva_method}_type{wildcards.tmva_type}_bkgProxy{wildcards.background_proxy};'
-        'mv tmva_dataset_method{wildcards.tmva_method}_type{wildcards.tmva_type}_bkgProxy{wildcards.background_proxy} /panfs/felician/B2Ktautau/workflow/TMVA_training/201{wildcards.year}'
+        'root -l -b -q \'TMVA/TMVA_training.C( {wildcards.year}, {wildcards.tmva_type}, {wildcards.tmva_vars}, {wildcards.tmva_method}, {wildcards.background_proxy}, \"{input.FILES1}\", \"{input.FILES2}\" )\' &> {log};'
+        'rm -rf /panfs/felician/B2Ktautau/workflow/TMVA_training/201{wildcards.year}/tmva_output_type{wildcards.tmva_type}_method{wildcards.tmva_method}_vars{wildcards.tmva_vars}_bkgProxy{wildcards.background_proxy};' 
+        'mv tmva_output_type{wildcards.tmva_type}_method{wildcards.tmva_method}_vars{wildcards.tmva_vars}_bkgProxy{wildcards.background_proxy} /panfs/felician/B2Ktautau/workflow/TMVA_training/201{wildcards.year}'
 
 rule evaluate_TMVA_response:
     ''' Evaluates the BDT response.'''
@@ -168,20 +184,16 @@ rule evaluate_TMVA_response:
         MC_2_files = '/panfs/felician/B2Ktautau/workflow/create_MC_pre_selection_tree/201{year}/Component_2/pre_sel_tree.txt',
         RS_DATA_files = '/panfs/felician/B2Ktautau/workflow/create_DATA_pre_selection_tree/201{year}/Species_1/pre_sel_tree.txt',
         WS_DATA_files = '/panfs/felician/B2Ktautau/workflow/create_DATA_pre_selection_tree/201{year}/Species_2/pre_sel_tree.txt',
-        weights = '/panfs/felician/B2Ktautau/workflow/TMVA_training/201{year}/tmva_dataset_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}/weights/TMVAClassification_BDTG.weights.xml',
-        MC_BDT1_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_0/tmva_method0_type0_bkgProxy1.txt',
-        MC_0_BDT1_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_10/tmva_method0_type0_bkgProxy1.txt',
-        MC_1_BDT1_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_11/tmva_method0_type0_bkgProxy1.txt',
-        MC_2_BDT1_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_12/tmva_method0_type0_bkgProxy1.txt',
-        RS_DATA_BDT1_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_1/tmva_method0_type0_bkgProxy1.txt',
-        WS_DATA_BDT1_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_2/tmva_method0_type0_bkgProxy1.txt'
+        weights = '/panfs/felician/B2Ktautau/workflow/TMVA_training/201{year}/tmva_dataset_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}/weights/TMVAClassification_BDT.weights.xml'
+    resources:
+        mem_mb = 25000
     output:
-        '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_{species}/tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}_{line}.root'
+        '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_{species}/tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}/{line}.root'
     log:
-        '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_{species}/tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}_{line}.log'
+        '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_{species}/tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}/{line}.log'
     shell:
-        'root -l -b -q \'TMVA/TMVA_response.C( {wildcards.year}, {wildcards.species}, {wildcards.tmva_method}, {wildcards.tmva_type}, {wildcards.background_proxy}, \"{input.MC_files}\", \"{input.MC_0_files}\", \"{input.MC_1_files}\", \"{input.MC_2_files}\", \"{input.RS_DATA_files}\", \"{input.WS_DATA_files}\", \"{input.weights}\", \"{input.MC_BDT1_files}\", \"{input.MC_0_BDT1_files}\", \"{input.MC_1_BDT1_files}\", \"{input.MC_2_BDT1_files}\", \"{input.RS_DATA_BDT1_files}\", \"{input.WS_DATA_BDT1_files}\", {wildcards.line} )\' &> {log};'
-        'ls /panfs/felician/B2Ktautau/workflow/TMVA_response/201{wildcards.year}/Species_{wildcards.species}/*.root | sort -V > /panfs/felician/B2Ktautau/workflow/TMVA_response/201{wildcards.year}/Species_{wildcards.species}/tmva_method{wildcards.tmva_method}_type{wildcards.tmva_type}_bkgProxy{wildcards.background_proxy}.txt;'
+        'root -l -b -q \'TMVA/TMVA_response.C( {wildcards.year}, {wildcards.species}, {wildcards.tmva_method}, {wildcards.tmva_type}, {wildcards.background_proxy}, \"{input.MC_files}\", \"{input.MC_0_files}\", \"{input.MC_1_files}\", \"{input.MC_2_files}\", \"{input.RS_DATA_files}\", \"{input.WS_DATA_files}\", \"{input.weights}\", {wildcards.line} )\' &> {log};'
+        'ls /panfs/felician/B2Ktautau/workflow/TMVA_response/201{wildcards.year}/Species_{wildcards.species}/tmva_method{wildcards.tmva_method}_type{wildcards.tmva_type}_bkgProxy{wildcards.background_proxy}/*.root | sort -V > /panfs/felician/B2Ktautau/workflow/TMVA_response/201{wildcards.year}/Species_{wildcards.species}/tmva_method{wildcards.tmva_method}_type{wildcards.tmva_type}_bkgProxy{wildcards.background_proxy}/TMVA_response.txt;'
 
 rule compare_TMVA:
     ''' Compares BDT distributions evaluated in MC, RS and WS data '''
@@ -193,29 +205,18 @@ rule compare_TMVA:
         MC_2_files = '/panfs/felician/B2Ktautau/workflow/create_MC_pre_selection_tree/201{year}/Component_2/pre_sel_tree.txt',
         RS_DATA_files = '/panfs/felician/B2Ktautau/workflow/create_DATA_pre_selection_tree/201{year}/Species_1/pre_sel_tree.txt',
         WS_DATA_files = '/panfs/felician/B2Ktautau/workflow/create_DATA_pre_selection_tree/201{year}/Species_2/pre_sel_tree.txt',
-        MC_BDT_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_0/tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}.txt',
-        MC_0_BDT_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_10/tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}.txt',
-        MC_1_BDT_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_11/tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}.txt',
-        MC_2_BDT_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_12/tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}.txt',
-        RS_DATA_BDT_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_1/tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}.txt',
-        WS_DATA_BDT_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_2/tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}.txt',
-        MC_BDT1_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_0/tmva_method0_type0_bkgProxy1.txt',
-        MC_0_BDT1_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_10/tmva_method0_type0_bkgProxy1.txt',
-        MC_1_BDT1_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_11/tmva_method0_type0_bkgProxy1.txt',
-        MC_2_BDT1_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_12/tmva_method0_type0_bkgProxy1.txt',
-        RS_DATA_BDT1_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_1/tmva_method0_type0_bkgProxy1.txt',
-        WS_DATA_BDT1_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_2/tmva_method0_type0_bkgProxy1.txt'
+        MC_BDT_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_0/tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}/TMVA_response.txt',
+        MC_0_BDT_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_10/tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}/TMVA_response.txt',
+        MC_1_BDT_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_11/tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}/TMVA_response.txt',
+        MC_2_BDT_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_12/tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}/TMVA_response.txt',
+        RS_DATA_BDT_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_1/tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}/TMVA_response.txt',
+        WS_DATA_BDT_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_2/tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}/TMVA_response.txt'
     output:
-        '/panfs/felician/B2Ktautau/workflow/TMVA_plots_compare/201{year}/sig_bkg_tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}_numDST{num_data_dst_files}_comparison.gif',
-        '/panfs/felician/B2Ktautau/workflow/TMVA_plots_compare/201{year}/sig_bkg_tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}_numDST{num_data_dst_files}_comparison.pdf',
-        '/panfs/felician/B2Ktautau/workflow/TMVA_plots_compare/201{year}/mc_components_tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}_numDST{num_data_dst_files}_comparison.gif',
-        '/panfs/felician/B2Ktautau/workflow/TMVA_plots_compare/201{year}/mc_components_tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}_numDST{num_data_dst_files}_comparison.pdf',
-        '/panfs/felician/B2Ktautau/workflow/TMVA_plots_compare/201{year}/RS_WS_tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}_numDST{num_data_dst_files}_comparison.gif',
-        '/panfs/felician/B2Ktautau/workflow/TMVA_plots_compare/201{year}/RS_WS_tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}_numDST{num_data_dst_files}_comparison.pdf'
+        '/panfs/felician/B2Ktautau/workflow/TMVA_plots_compare/201{year}/tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}_numDST{num_data_dst_files}/sig_bkg_comparison.gif'
     log:
-        '/panfs/felician/B2Ktautau/workflow/TMVA_plots_compare/201{year}/compare_tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}_numDST{num_data_dst_files}.log'
+        '/panfs/felician/B2Ktautau/workflow/TMVA_plots_compare/201{year}/tmva_method{tmva_method}_type{tmva_type}_bkgProxy{background_proxy}_numDST{num_data_dst_files}/out.log'
     shell:
-        'root -l -b -q \'TMVA/TMVA_compare.C( {wildcards.year}, {wildcards.tmva_method}, {wildcards.tmva_type}, {wildcards.background_proxy}, {wildcards.num_data_dst_files}, \"{input.MC_files}\", \"{input.MC_0_files}\", \"{input.MC_1_files}\", \"{input.MC_2_files}\", \"{input.RS_DATA_files}\", \"{input.WS_DATA_files}\", \"{input.MC_BDT_files}\", \"{input.MC_0_BDT_files}\", \"{input.MC_1_BDT_files}\", \"{input.MC_2_BDT_files}\", \"{input.RS_DATA_BDT_files}\", \"{input.WS_DATA_BDT_files}\", \"{input.MC_BDT1_files}\", \"{input.MC_0_BDT1_files}\", \"{input.MC_1_BDT1_files}\", \"{input.MC_2_BDT1_files}\", \"{input.RS_DATA_BDT1_files}\", \"{input.WS_DATA_BDT1_files}\" )\' > {log}'
+        'root -l -b -q \'TMVA/TMVA_compare.C( {wildcards.year}, {wildcards.tmva_method}, {wildcards.tmva_type}, {wildcards.background_proxy}, {wildcards.num_data_dst_files}, \"{input.MC_files}\", \"{input.MC_0_files}\", \"{input.MC_1_files}\", \"{input.MC_2_files}\", \"{input.RS_DATA_files}\", \"{input.WS_DATA_files}\", \"{input.MC_BDT_files}\", \"{input.MC_0_BDT_files}\", \"{input.MC_1_BDT_files}\", \"{input.MC_2_BDT_files}\", \"{input.RS_DATA_BDT_files}\", \"{input.WS_DATA_BDT_files}\" )\' > {log}'
 
 #########################################################    LUMIN    ######################################################################################################## 
 rule convert_tree_to_pandas:
@@ -245,21 +246,125 @@ rule convert_tree_to_pandas:
 #     output:
 
 ##############################################################################################################################################################################
+############################################################################## Do mass fit ####################################################################
+
+rule create_dataset:
+    ''' Saves the mass variable and a colection of variables that are used in sideband subtraction and splot plots + TRatio plots in a RooDataSet called data '''
+    ''' All the variables in this dataset pass DTF '''
+    input:
+        'createDataset.C',
+        FILES = '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{year}/Species_{species}/pre_sel_tree.txt' 
+    output:
+        '/panfs/felician/B2Ktautau/workflow/create_dataset/201{year}/Species_{species}/mass_dataset.root'
+    log:
+        '/panfs/felician/B2Ktautau/workflow/create_dataset/201{year}/Species_{species}/out.log'
+    shell:
+        'root -l -b -q \'createDataset.C( {wildcards.year}, {wildcards.species}, \"{input.FILES}\" )\' &> {log}'
+
+rule create_merged_root_from_dataset:
+    ''' Creates a TTree from the merged datasets created with create_dataset '''
+    input:
+        'create_merged_root_from_dataset.C',
+        '/panfs/felician/B2Ktautau/workflow/create_dataset/2016/Species_{species}/mass_dataset.root',
+        '/panfs/felician/B2Ktautau/workflow/create_dataset/2017/Species_{species}/mass_dataset.root',
+        '/panfs/felician/B2Ktautau/workflow/create_dataset/2018/Species_{species}/mass_dataset.root',
+        '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/Species_{species}/splot_result.root'
+    output:
+        #'/panfs/felician/B2Ktautau/workflow/create_merged_root_from_dataset/species_{species}_tree.root',
+        '/panfs/felician/B2Ktautau/workflow/create_merged_root_from_dataset/species_{species}_signal_tree.root'
+    log:
+        '/panfs/felician/B2Ktautau/workflow/create_merged_root_from_dataset/species_{species}.log'
+    shell:
+        'root -l -b -q \'create_merged_root_from_dataset.C( {wildcards.species}, true )\' &> {log}'
+
+rule bdt_reweighter:
+    ''' Compares data and MC before and after re-weighting the MC with a BDT '''
+    input:
+        'bdt_reweighter.py',
+        '/panfs/felician/B2Ktautau/workflow/create_merged_root_from_dataset/species_4_tree.root',
+        '/panfs/felician/B2Ktautau/workflow/create_merged_root_from_dataset/species_5_signal_tree.root'
+    output:
+        '/panfs/felician/B2Ktautau/workflow/bdt_reweighter/MC_unweighted/1.pdf',
+        '/panfs/felician/B2Ktautau/workflow/bdt_reweighter/MC_GBReweighter/1.pdf',
+        '/panfs/felician/B2Ktautau/workflow/bdt_reweighter/MC_unweighted_all/1.pdf',
+        '/panfs/felician/B2Ktautau/workflow/bdt_reweighter/MC_GBReweighter_all/1.pdf'
+    log:
+        '/panfs/felician/B2Ktautau/workflow/bdt_reweighter/out.log'
+    shell:
+        'python bdt_reweighter.py &> {log}'
+    
+rule fit_mass:
+    ''' Makes mass fit with mass stored in RooDataSet data '''
+    input:
+        'fit_mass.C',
+        '/panfs/felician/B2Ktautau/workflow/create_dataset/2016/Species_{species}/mass_dataset.root',
+        '/panfs/felician/B2Ktautau/workflow/create_dataset/2017/Species_{species}/mass_dataset.root',
+        '/panfs/felician/B2Ktautau/workflow/create_dataset/2018/Species_{species}/mass_dataset.root'
+    output:
+        '/panfs/felician/B2Ktautau/workflow/fit_mass/Species_{species}/mass_fit.gif',
+        '/panfs/felician/B2Ktautau/workflow/fit_mass/Species_{species}/mass_fit_result.root'
+    log:
+        '/panfs/felician/B2Ktautau/workflow/fit_mass/Species_{species}/out.log'
+    shell:
+        'root -l -b -q \'fit_mass.C( {wildcards.species} )\' &> {log}'
+    
+rule make_sPlot_histos:
+    ''' Saves RooDataSet with sWeights '''
+    input:
+        'make_sPlot_histos.C',
+        FIT_workspace = '/panfs/felician/B2Ktautau/workflow/fit_mass/Species_{species}/mass_fit_result.root',
+    output:
+        '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/Species_{species}/Sideband_plots/var_0.gif',
+        '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/Species_{species}/splot_result.root',
+        '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/Species_{species}/Splot_plots/Mass_var_plots/var_0.gif',
+        '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/Species_{species}/Splot_plots/Sig_vs_bkg_plots/var_0.gif',
+        '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/Species_{species}/Splot_vs_sideband_plots/var_0.gif'
+    log:
+        '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/Species_{species}/out.log'
+    shell:
+        'root -l -b -q \'make_sPlot_histos.C( {wildcards.species}, \"{input.FIT_workspace}\" )\' &> {log}'
+
+rule compare_MC_sWeighted_data:
+    ''' Compares the MC with the sWeighted data (signal in MC vs signal in data) in DDK '''
+    input:
+        'compare_MC_sWeighted_data.C',
+        MC_files = '/panfs/felician/B2Ktautau/workflow/fit_mass/Species_4/mass_fit_result.root',
+        SPLOT_files = '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/Species_5/splot_result.root'
+    output:
+        '/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/DDK/MC_reweighted/var_0.gif'
+    log:
+        '/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/DDK/MC_reweighted/out.log'
+    shell:
+        'root -l -b -q \'compare_MC_sWeighted_data.C( \"{input.MC_files}\", \"{input.SPLOT_files}\", true )\' &> {log}'
+
+rule addWeight:
+    ''' Creates a TTree with data / MC weight that can be added as a friend '''
+    input:
+        'addWeight.C',
+        MC_files = '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/species_4.txt',
+        WEIGHT_file  = '/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/DDK/weights.root'
+    output:
+        '/panfs/felician/B2Ktautau/workflow/addWeight/Species_4/tree_with_weight.root'
+    log:
+        '/panfs/felician/B2Ktautau/workflow/addWeight/Species_4/out.log'
+    shell:
+        'root -l -b -q \'addWeight.C( \"{input.MC_files}\", \"{input.WEIGHT_file}\" )\' &> {log}'
+
+
+##############################################################################################################################################################################
 
 rule compute_bkg_yield:
     ''' Computes the background yield in the signal region '''
     input:
         'compute_B_yield.C',
         RS_DATA_files = '/panfs/felician/B2Ktautau/workflow/create_DATA_pre_selection_tree/201{year}/Species_1/pre_sel_tree.txt',
-        WS_DATA_files = '/panfs/felician/B2Ktautau/workflow/create_DATA_pre_selection_tree/201{year}/Species_2/pre_sel_tree.txt',
-        RS_DATA_BDT_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_1/tmva_type6_bkgProxy1.txt',
-        WS_DATA_BDT_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_2/tmva_type6_bkgProxy1.txt'
+        WS_DATA_files = '/panfs/felician/B2Ktautau/workflow/create_DATA_pre_selection_tree/201{year}/Species_2/pre_sel_tree.txt'
     output:
         '/panfs/felician/B2Ktautau/workflow/compute_bkg_yield/201{year}/bkg_yield.root'
     log:
         '/panfs/felician/B2Ktautau/workflow/compute_bkg_yield/201{year}/bkg_yield.log'
     shell: 
-        'root -l -b -q \'compute_B_yield.C( {wildcards.year}, \"{input.RS_DATA_files}\", \"{input.WS_DATA_files}\", \"{input.RS_DATA_BDT_files}\", \"{input.WS_DATA_BDT_files}\" )\' > {log}'
+        'root -l -b -q \'compute_B_yield.C( {wildcards.year}, \"{input.RS_DATA_files}\", \"{input.WS_DATA_files}\" )\' > {log}'
 
 rule get_run_numbers:
     ''' Returns list with run numbers present in a particular .dst file of RS data (after pre-selections) '''
@@ -291,17 +396,15 @@ rule sensitivity:
         'sensitivity.C',
         MC_files = '/panfs/felician/B2Ktautau/workflow/create_MC_pre_selection_tree/201{year}/Component_-1/pre_sel_tree.txt',
         RS_DATA_files = '/panfs/felician/B2Ktautau/workflow/create_DATA_pre_selection_tree/201{year}/Species_1/pre_sel_tree.txt',
-        MC_BDT_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_0/tmva_type6_bkgProxy1.txt',
-        RS_DATA_BDT_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_1/tmva_type6_bkgProxy1.txt',
-        BKG_YIELD_file = '/panfs/felician/B2Ktautau/workflow/compute_bkg_yield/201{year}/bkg_yield.root',
-        LUMI_file = '/panfs/felician/B2Ktautau/workflow/get_lumi_of_subset/201{year}/lumi_of_subset.root',
-        MC_PREBDT_EFF_file = '/panfs/felician/B2Ktautau/workflow/pre_selection_efficiency_tables/201{year}/species0_pre_sel_efficiency.root'
+        MC_BDT_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_0/tmva_method1_type6_bkgProxy1/TMVA_response.txt',
+        RS_DATA_BDT_files = '/panfs/felician/B2Ktautau/workflow/TMVA_response/201{year}/Species_1/tmva_method1_type6_bkgProxy1/TMVA_response.txt',
+        BKG_YIELD_file = '/panfs/felician/B2Ktautau/workflow/compute_bkg_yield/201{year}/bkg_yield.root'
     output:
         '/panfs/felician/B2Ktautau/workflow/sensitivity/201{year}/N_prob_{nprob}/BDT_cut_{bdt_it}.root'
     log:
         '/panfs/felician/B2Ktautau/workflow/sensitivity/201{year}/N_prob_{nprob}/BDT_cut_{bdt_it}.log'
     shell:
-        'root -l -b -q \'sensitivity.C( {wildcards.year}, {wildcards.nprob}, {wildcards.bdt_it}, \"{input.MC_files}\", \"{input.RS_DATA_files}\", \"{input.MC_BDT_files}\", \"{input.RS_DATA_BDT_files}\", \"{input.BKG_YIELD_file}\", \"{input.LUMI_file}\", \"{input.MC_PREBDT_EFF_file}\" ) \' > {log};'
+        'root -l -b -q \'sensitivity.C( {wildcards.year}, {wildcards.nprob}, {wildcards.bdt_it}, \"{input.MC_files}\", \"{input.RS_DATA_files}\", \"{input.MC_BDT_files}\", \"{input.RS_DATA_BDT_files}\", \"{input.BKG_YIELD_file}\" ) \' > {log};'
         'ls /panfs/felician/B2Ktautau/workflow/sensitivity/201{wildcards.year}/N_prob_{wildcards.nprob}/*.root | sort -V > /panfs/felician/B2Ktautau/workflow/sensitivity/201{wildcards.year}/N_prob_{wildcards.nprob}/sensitivity.txt'
 
 rule sensitivity_plots:
