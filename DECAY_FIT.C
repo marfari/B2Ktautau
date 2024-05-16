@@ -154,12 +154,19 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
     TChain* t = new TChain("DecayTree");
     t->AddFileInfoList((TCollection*)fc->GetList());
 
-    Float_t m_vars[dimM];
-    Float_t V_vars[dimM][dimM];
+    Double_t m_vars[dimM];
+    Double_t V_vars[dimM][dimM];
     Double_t BVx, BVy, BVz; // offline estimate for the BV is needed to have a first estimate for the unknown parameters using some of the initialisations
 
-    t->SetBranchAddress("df_m", m_vars);
-    t->SetBranchAddress("df_V", V_vars);
+    for(int i = 0; i < dimM; i++)
+    {
+        t->SetBranchAddress(Form("df_m_%i",i+1), &m_vars[i]);
+        for(int j = 0; j < dimM; j++)
+        {
+        t->SetBranchAddress(Form("df_V_%i_%i",i+1,j+1), &V_vars[i][j]);
+        }
+    }
+
     t->SetBranchAddress("Kp_RP_Z", &RPz); 
     t->SetBranchAddress("eventNumber", &eventNumber);
     t->SetBranchAddress("Bp_ENDVERTEX_X", &BVx);
@@ -364,7 +371,7 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
     TStopwatch watch_total;
 
     // Loop over events
-    for(int evt = 0; evt < 10; evt++)
+    for(int evt = 0; evt < num_entries; evt++)
     {
         TStopwatch watch;
         t->GetEntry(evt);
@@ -382,19 +389,19 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
         // V.Print();
 
         // Eigenvalues of V
-        TVectorD V_eigen_values(dimM);  
-        TMatrixD V_eigen_vectors = V.EigenVectors(V_eigen_values);
+        // TVectorD V_eigen_values(dimM);  
+        // TMatrixD V_eigen_vectors = V.EigenVectors(V_eigen_values);
         // V_eigen_values.Print();
 
         // Correlation matrix
-        TMatrixDSym V_corr(dimM);
-        for(int i = 0; i < dimM; i++)
-        {
-          for(int j = 0; j < dimM; j++)
-          {
-            V_corr(i,j) = V(i,j)/sqrt( V(i,i)*V(j,j) );
-          }
-        }
+        // TMatrixDSym V_corr(dimM);
+        // for(int i = 0; i < dimM; i++)
+        // {
+        //   for(int j = 0; j < dimM; j++)
+        //   {
+        //     V_corr(i,j) = V(i,j)/sqrt( V(i,i)*V(j,j) );
+        //   }
+        // }
         // V_corr.Print();
 
         // 2) Build weights matrix W = V^-1
@@ -501,26 +508,45 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
         // }
 
         // MLP approach
-        solve( BV, -2, solver, initial_tolerance, species );
+        // solve( BV, -2, solver, initial_tolerance, species );
+        // if(status != 0)
+        // {
+        //     x_MLP_current = X;
+        //     solve( BV, -2, solver, pow(10,-6), species );
+        // }
+        // if(status != 0)
+        // {
+        //     x_MLP_current = X;
+        //     solve( BV, -2, solver, pow(10,-3), species );
+        // }
+        // if(status != 0)
+        // {
+        //     x_MLP_current = X;
+        //     solve( BV, -2, solver, 1, species );
+        // }
+        // if(status != 0)
+        // {
+        //     x_MLP_current = X;
+        //     solve( BV, -2, solver, 100, species );
+        // }
+
+        // DTF sequence approach
+        sequence(BV, solver, initial_tolerance, species);
         if(status != 0)
         {
-            x_MLP_current = X;
-            solve( BV, -2, solver, pow(10,-6), species );
+            sequence(BV, solver, pow(10,-6), species);       
         }
         if(status != 0)
         {
-            x_MLP_current = X;
-            solve( BV, -2, solver, pow(10,-3), species );
+            sequence(BV, solver, pow(10,-3), species);
         }
         if(status != 0)
         {
-            x_MLP_current = X;
-            solve( BV, -2, solver, 1, species );
+            sequence(BV, solver, 1, species);
         }
         if(status != 0)
         {
-            x_MLP_current = X;
-            solve( BV, -2, solver, 100, species );
+            sequence(BV, solver, 100, species);
         }
 
         // 5) Error estimation
@@ -529,9 +555,6 @@ void DECAY_FIT(int year, TString RECO_files, int species, int line)
         {
             X_ERR(i) = sqrt(U(i,i));
         }
-
-        cout << "final nu PZ = " << X(dimM+13) << endl; 
-
 
         Double_t dMB_squared = sqrt(U(28,28));
         MB_err = dMB_squared/(2*abs(MB));    
@@ -803,8 +826,6 @@ void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* 
         if(tolerance == initial_tolerance)
         {
             x0 = x_initial_estimate_MLP( m, BV, species );
-
-            cout << "initial nu PZ = " << x0(dimM+13) << endl; 
         }
         else
         {
@@ -820,7 +841,7 @@ void solve( ROOT::Math::XYZPoint BV, int init,  ROOT::Math::GSLMultiRootFinder* 
     }
 
     // 2) Solve system of equations
-    solver->Solve(x0_vars, 1000, tolerance);
+    solver->Solve(x0_vars, 10000, tolerance);
 
     // 3) Retrieve results
     const double* x_results = solver->X();
@@ -1149,7 +1170,6 @@ void lowest_chi2(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver
             }   
         }
         
-
         init = i_min;
         status = status_vec[i_min];
         MB = MB_vec[i_min];
@@ -1165,57 +1185,73 @@ void lowest_chi2(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver
 
 void sequence(ROOT::Math::XYZPoint BV, ROOT::Math::GSLMultiRootFinder *solver, Double_t tolerance, Int_t species)
 {
-    init = 3; // Marseille
+    init = 1;  // K*tautau vertex
     solve( BV, init, solver, tolerance, species );
-    if(status != 0)
-    {
-        init = 0; // Original
-        solve( BV, init, solver, tolerance, species );
-    }
-    if(status != 0)
-    {
-        init = 9; // Marseille (tau-) + K*tautau pions (tau+)
-        solve( BV, init, solver, tolerance, species );
-    }
-    if(status != 0)
-    {
-        init = 8; // Marseille (tau+) + K*tautau pions (tau-)
-        solve( BV, init, solver, tolerance, species );
-    }
-    if(status != 0)
-    {
-        init = 7; // Marseille (tau-) + K*tautau vertex (tau+)
-        solve( BV, init, solver, tolerance, species );
-    }
-    if(status != 0)
-    {
-        init = 6; // Marseille (tau+) + K*tautau vertex (tau-)
-        solve( BV, init, solver, tolerance, species );
-    }
+    x1_current = X;
     if(status != 0)
     {
         init = 2; // K*tautau pions
         solve( BV, init, solver, tolerance, species );
+        x2_current = X;
     }
     if(status != 0)
     {
-        init = 5; // K*tautau vertex (tau-) + K*tautau pions (tau+)
+        init = 3; // Marseille
         solve( BV, init, solver, tolerance, species );
+        x3_current = X;
     }
-    if(status != 0)
-    {
-        init = 4; // K*tautau vertex (tau+) + K*tautau pions (tau-)
-        solve( BV, init, solver, tolerance, species );
-    }
-    if(status != 0)
-    {
-        init = 1; // K*tautau vertex
-        solve( BV, init, solver, tolerance, species );
-    }
-    if(status != 0)
-    {
-        init = -1;
-    }
+
+    // init = 3; // Marseille
+    // solve( BV, init, solver, tolerance, species );
+    // if(status != 0)
+    // {
+    //     init = 0; // Original
+    //     solve( BV, init, solver, tolerance, species );
+    // }
+    // if(status != 0)
+    // {
+    //     init = 9; // Marseille (tau-) + K*tautau pions (tau+)
+    //     solve( BV, init, solver, tolerance, species );
+    // }
+    // if(status != 0)
+    // {
+    //     init = 8; // Marseille (tau+) + K*tautau pions (tau-)
+    //     solve( BV, init, solver, tolerance, species );
+    // }
+    // if(status != 0)
+    // {
+    //     init = 7; // Marseille (tau-) + K*tautau vertex (tau+)
+    //     solve( BV, init, solver, tolerance, species );
+    // }
+    // if(status != 0)
+    // {
+    //     init = 6; // Marseille (tau+) + K*tautau vertex (tau-)
+    //     solve( BV, init, solver, tolerance, species );
+    // }
+    // if(status != 0)
+    // {
+    //     init = 2; // K*tautau pions
+    //     solve( BV, init, solver, tolerance, species );
+    // }
+    // if(status != 0)
+    // {
+    //     init = 5; // K*tautau vertex (tau-) + K*tautau pions (tau+)
+    //     solve( BV, init, solver, tolerance, species );
+    // }
+    // if(status != 0)
+    // {
+    //     init = 4; // K*tautau vertex (tau+) + K*tautau pions (tau-)
+    //     solve( BV, init, solver, tolerance, species );
+    // }
+    // if(status != 0)
+    // {
+    //     init = 1; // K*tautau vertex
+    //     solve( BV, init, solver, tolerance, species );
+    // }
+    // if(status != 0)
+    // {
+    //     init = -1;
+    // }
 }
 
 void scan_chisquare( TVectorD X, Int_t index, Int_t npoints, TString x_name, Int_t year, Int_t species, Int_t line)
@@ -2427,7 +2463,7 @@ double equations( const double* x_vars )
     eqs(dimM+5) = -(BV.x()-PV.x())*l(0) - (BV.y()-PV.y())*l(1) + l(22) + (pB.z()/EB)*l(23);
     eqs(dimM+6) = (1./(2.*EB))*l(23);
     // ptau1
-    eqs(dimM+7) = (DV1.z()-BV.z())*l(2) + l(4) - (ptau1.x()/sqrt(pow(mtau,2) + ptau1.Mag2()))*l(8)  - l(20);
+    eqs(dimM+7) = (DV1.z()-BV.z())*l(2) + l(4) - (ptau1.x()/sqrt(pow(mtau,2) + ptau1.Mag2()))*l(8) - l(20);
     eqs(dimM+8) = (DV1.z()-BV.z())*l(3) + l(5) - (ptau1.y()/sqrt(pow(mtau,2) + ptau1.Mag2()))*l(8) - l(21);
     eqs(dimM+9) = -(DV1.x()-BV.x())*l(2) - (DV1.y()-BV.y())*l(3) + l(6) - (ptau1.z()/sqrt(pow(mtau,2) + ptau1.Mag2()))*l(8) - l(22);
     eqs(dimM+10) = l(7) + l(8) - l(23);
@@ -2740,7 +2776,7 @@ TVectorD x_initial_estimate_0( TVectorD m ) // Original initialisation for x (ba
     return x0;
 }
 
-TVectorD x_initial_estimate_1( TVectorD m, ROOT::Math::XYZPoint BV ) 
+TVectorD x_initial_estimate_1( TVectorD m, ROOT::Math::XYZPoint BV ) // B->K* tautau initialisation; taus direction based on vertices
 {
     // Builds an initial estimate for x using B->K* tautau initialisation; taus direction based on vertices
     TVectorD x0(dimM+dimX+dimC);
@@ -2761,7 +2797,6 @@ TVectorD x_initial_estimate_1( TVectorD m, ROOT::Math::XYZPoint BV )
     Double_t E3pi2 = m(16); 
     ROOT::Math::XYZPoint RP( m(17), m(18), RPz );
     ROOT::Math::XYZVector pK( m(19), m(20), m(21) );
-
     Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
 
     // Magnitude of 3pi momenta
@@ -2884,7 +2919,7 @@ TVectorD x_initial_estimate_1( TVectorD m, ROOT::Math::XYZPoint BV )
     return x0;
 }
 
-TVectorD x_initial_estimate_2( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B->K* tautau initialisation; taus direction based visible 3pi momenta
+TVectorD x_initial_estimate_2( TVectorD m, ROOT::Math::XYZPoint BV )  // B->K* tautau initialisation; taus direction based on visible 3pi momenta
 {
     // Builds an initial estimate for x using B->K* tautau initialisation; taus direction based on visible 3pi momenta
     TVectorD x0(dimM+dimX+dimC);
@@ -3028,7 +3063,7 @@ TVectorD x_initial_estimate_2( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B-
     return x0;
 }
 
-TVectorD x_initial_estimate_3( TVectorD m, ROOT::Math::XYZPoint BV ) 
+TVectorD x_initial_estimate_3( TVectorD m, ROOT::Math::XYZPoint BV ) // RD initialisation
 {
     // Builds an initial estimate for x based on the Marseille analytical calculations; it uses the offline estimate for BV  
     TVectorD x0(dimM+dimX+dimC);
@@ -3137,7 +3172,7 @@ TVectorD x_initial_estimate_3( TVectorD m, ROOT::Math::XYZPoint BV )
     return x0;
 }
 
-TVectorD x_initial_estimate_4( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B->K* tautau initialisation; tau+ direction from vertices ; tau- direction from pions
+TVectorD x_initial_estimate_4( TVectorD m, ROOT::Math::XYZPoint BV ) // B->K* tautau initialisation; tau+ direction from vertices ; tau- direction from pions
 {
     TVectorD x0(dimM+dimX+dimC);
 
@@ -3280,7 +3315,7 @@ TVectorD x_initial_estimate_4( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B-
     return x0;
 }
 
-TVectorD x_initial_estimate_5( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B->K* tautau initialisation; tau- direction from vertices ; tau+ direction from pions
+TVectorD x_initial_estimate_5( TVectorD m, ROOT::Math::XYZPoint BV ) // B->K* tautau initialisation; tau- direction from vertices ; tau+ direction from pions
 {
     TVectorD x0(dimM+dimX+dimC);
 
@@ -3300,7 +3335,6 @@ TVectorD x_initial_estimate_5( TVectorD m, ROOT::Math::XYZPoint BV ) // Using B-
     Double_t E3pi2 = m(16); 
     ROOT::Math::XYZPoint RP( m(17), m(18), RPz );
     ROOT::Math::XYZVector pK( m(19), m(20), m(21) );
-
     Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
 
     // Magnitude of 3pi momenta
@@ -3443,11 +3477,10 @@ TVectorD x_initial_estimate_6( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes M
     Double_t E3pi2 = m(16);
     ROOT::Math::XYZPoint RP( m(17), m(18), RPz );
     ROOT::Math::XYZVector pK( m(19), m(20), m(21) );  
+    Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
 
     ROOT::Math::XYZVector u1 = (DV1 - BV).Unit();
     ROOT::Math::XYZVector u2 = (DV2 - BV).Unit();
-
-    Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
 
     Double_t m3pi1 = sqrt( pow(E3pi1,2) - p3pi1.Mag2() );
     Double_t m3pi2 = sqrt( pow(E3pi2,2) - p3pi2.Mag2() );
@@ -3585,11 +3618,10 @@ TVectorD x_initial_estimate_7( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes M
     Double_t E3pi2 = m(16);
     ROOT::Math::XYZPoint RP( m(17), m(18), RPz );
     ROOT::Math::XYZVector pK( m(19), m(20), m(21) );  
+    Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
 
     ROOT::Math::XYZVector u1 = (DV1 - BV).Unit();
     ROOT::Math::XYZVector u2 = (DV2 - BV).Unit();
-
-    Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
 
     Double_t m3pi1 = sqrt( pow(E3pi1,2) - p3pi1.Mag2() );
     Double_t m3pi2 = sqrt( pow(E3pi2,2) - p3pi2.Mag2() );
@@ -3727,11 +3759,10 @@ TVectorD x_initial_estimate_8( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes M
     Double_t E3pi2 = m(16);
     ROOT::Math::XYZPoint RP( m(17), m(18), RPz );
     ROOT::Math::XYZVector pK( m(19), m(20), m(21) );  
+    Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
 
     ROOT::Math::XYZVector u1 = (DV1 - BV).Unit();
     ROOT::Math::XYZVector u2 = (DV2 - BV).Unit();
-
-    Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
 
     Double_t m3pi1 = sqrt( pow(E3pi1,2) - p3pi1.Mag2() );
     Double_t m3pi2 = sqrt( pow(E3pi2,2) - p3pi2.Mag2() );
@@ -3869,11 +3900,10 @@ TVectorD x_initial_estimate_9( TVectorD m, ROOT::Math::XYZPoint BV )  // Mixes M
     Double_t E3pi2 = m(16);
     ROOT::Math::XYZPoint RP( m(17), m(18), RPz );
     ROOT::Math::XYZVector pK( m(19), m(20), m(21) );  
+    Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
 
     ROOT::Math::XYZVector u1 = (DV1 - BV).Unit();
     ROOT::Math::XYZVector u2 = (DV2 - BV).Unit();
-
-    Double_t EK = sqrt( pow(mkaon,2) + pK.Mag2() );
 
     Double_t m3pi1 = sqrt( pow(E3pi1,2) - p3pi1.Mag2() );
     Double_t m3pi2 = sqrt( pow(E3pi2,2) - p3pi2.Mag2() );
@@ -4041,7 +4071,7 @@ TVectorD x_initial_estimate_MLP( TVectorD m, ROOT::Math::XYZPoint BV, Int_t spec
     TString weightfile_taum_PY;
     TString weightfile_taum_PZ;
 
-    if(species == 10)
+    if((species == 10) || (species == 11) || (species == 12) || (species == 2) || (species == 3))
     {
         weightfile_taup_PX = "/home/avenkate/jobs/KTauTau_MLP_Train_taup_PX/dataset/weights/TMVARegression_taup_TRUEP_X_MLP.weights.xml";
         weightfile_taup_PY = "/home/avenkate/jobs/KTauTau_MLP_Train_taup_PY/dataset/weights/TMVARegression_taup_TRUEP_Y_MLP.weights.xml";
