@@ -21,7 +21,7 @@ TVectorD X(dimM+dimX);
 TVectorD X_ERR(dimM+dimX);
 TVectorD X_tot(dimM+23);
 TVectorD X_ERR_tot(dimM+23);
-std::vector<Double_t> chi2_iter;
+std::vector<Double_t> chi2_iter, chi2_iter_0, chi2_iter_1, chi2_iter_2, chi2_iter_3, chi2_iter_4, chi2_iter_5, chi2_iter_6, chi2_iter_7, chi2_iter_8, chi2_iter_9, chi2_iter_10;
 Int_t status, init, cov_status, nIter, STATUS;
 ULong64_t eventNumber;
 
@@ -228,7 +228,7 @@ void decay_fit_Penalty(int year, TString RECO_files, int species, int line)
 
     // Loop over events
     UInt_t num_entries = t->GetEntries();
-    for(int evt = 0; evt < 1; evt++)
+    for(int evt = 0; evt < 10; evt++)
     {
         TStopwatch watch;
         t->GetEntry(evt);
@@ -289,7 +289,7 @@ void decay_fit_Penalty(int year, TString RECO_files, int species, int line)
         chi2_iter.push_back(function_to_minimize(x_vars_init));
 
         // Tolerance : 10-4
-        run_block(pow(10,-4), 10, 10, -2, species, BV_0);
+        run_block(pow(10,-6), 10, 10, -2, species, BV_0);
 
         if( ((status == 0) || (status == 1)) && (sum_of_constraints < pow(10,-4)) )
         {
@@ -303,7 +303,7 @@ void decay_fit_Penalty(int year, TString RECO_files, int species, int line)
 
         // cout << "init = " << init << endl;
         cout << "status == " << status << endl;
-        cout << "cov status == " << cov_status << endl;
+        cout << "cov_status == " << cov_status << endl;
         cout << "STATUS == " << STATUS << endl;
         cout << "sum of constraints = " << sum_of_constraints << endl;
         cout << "MB = " << MB << " +/- " << MB_err << endl;
@@ -2399,339 +2399,374 @@ void equations(TVectorD X)
 
 }
 
-// void lowest_chi2(ROOT::Math::XYZPoint BV)
-// {
-//         // Lowest sum
-//         // Init 0
-//         minimize( BV, 0 );
-//         x0_current = X;
-//         Int_t status0 = status;
-//         Double_t MB_0 = MB;
-//         Double_t MB_err0 = MB_err;
-//         TVectorD X0 = X;
-//         TVectorD X0_ERR = X_ERR;
-//         Double_t chi2_0 = chi2;
-//         Int_t nIter_0 = nIter;
-//         Double_t sum0 = sum_of_constraints;
-//         TVectorD g0 = g;
+/*
+void lowest_chi2(Int_t max_iter, Double_t r, Double_t eps,  Int_t species, ROOT::Math::XYZPoint BV)
+{
+        Int_t entry = 0;
+        Double_t factor = 1;
 
-//         // cout << "MB_0 = " << MB_0 << endl;
-//         // cout << "sum_0 = " << F_tol_0 << endl;
-//         // cout << "chi2_0 = " << chi2_0 << endl;
-//         // cout << "status_0 = " << status0 << endl;
-//         // cout << "nIter_0 = " << nIter_0 << endl;
+        // Lowest sum
+        // Init 0
+        minimize(BV, 0, species, factor);
+        x_current = X;
+        status_current = status;
+        factor *= r;
+        firstTrial = false;
+        Double_t x_vars_init[dimM+dimX];
+        for(int i = 0; i < dimM+dimX; i++)
+        {
+            x_vars_init[i] = X(i); 
+        }
+        chi2_iter_0.push_back(function_to_minimize(x_vars_init));
+        run_block(eps, r, max_iter, 0, species, BV);
 
-//         // Init 1
-//         minimize( BV, 1 );
-//         x1_current = X;
-//         Int_t status1 = status;
-//         Double_t MB_1 = MB;
-//         Double_t MB_err1 = MB_err;
-//         TVectorD X1 = X;
-//         TVectorD X1_ERR = X_ERR;
-//         Double_t chi2_1 = chi2;
-//         Int_t nIter_1 = nIter;
-//         Double_t sum1 = sum_of_constraints;
-//         TVectorD g1 = g;
+        x0_current = X;
+        Int_t status0 = status;
+        Double_t MB_0 = MB;
+        Double_t MB_err0 = MB_err;
+        TVectorD X0 = X;
+        TVectorD X0_ERR = X_ERR;
+        Double_t chi2_0 = chi2;
+        Int_t nIter_0 = nIter;
+        Double_t sum0 = sum_of_constraints;
+        TVectorD g0 = g;
+
+
+        // 1st trial
+        
+
+        // Tolerance : 10-4
+        
+
+        if( ((status == 0) || (status == 1)) && (sum_of_constraints < pow(10,-4)) )
+        {
+            STATUS = 0;
+        }
+        else
+        {
+            STATUS = 1;
+        }
+
+        // cout << "MB_0 = " << MB_0 << endl;
+        // cout << "sum_0 = " << F_tol_0 << endl;
+        // cout << "chi2_0 = " << chi2_0 << endl;
+        // cout << "status_0 = " << status0 << endl;
+        // cout << "nIter_0 = " << nIter_0 << endl;
+
+        // Init 1
+        minimize( BV, 1 );
+        x1_current = X;
+        Int_t status1 = status;
+        Double_t MB_1 = MB;
+        Double_t MB_err1 = MB_err;
+        TVectorD X1 = X;
+        TVectorD X1_ERR = X_ERR;
+        Double_t chi2_1 = chi2;
+        Int_t nIter_1 = nIter;
+        Double_t sum1 = sum_of_constraints;
+        TVectorD g1 = g;
     
-//         // cout << "MB_1 = " << MB_1 << endl;
-//         // cout << "sum_1 = " << F_tol_1 << endl;
-//         // cout << "chi2_1 = " << chi2_1 << endl;
-//         // cout << "status_1 = " << status1 << endl;
-//         // cout << "nIter_1 = " << nIter_1 << endl;
+        // cout << "MB_1 = " << MB_1 << endl;
+        // cout << "sum_1 = " << F_tol_1 << endl;
+        // cout << "chi2_1 = " << chi2_1 << endl;
+        // cout << "status_1 = " << status1 << endl;
+        // cout << "nIter_1 = " << nIter_1 << endl;
 
-//         // Init 2
-//         minimize( BV, 2 );
-//         x2_current = X;
-//         Int_t status2 = status;
-//         Double_t MB_2 = MB;
-//         Double_t MB_err2 = MB_err;
-//         TVectorD X2 = X;
-//         TVectorD X2_ERR = X_ERR;
-//         Double_t chi2_2 = chi2;
-//         Int_t nIter_2 = nIter;
-//         Double_t sum2 = sum_of_constraints;
-//         TVectorD g2 = g;
+        // Init 2
+        minimize( BV, 2 );
+        x2_current = X;
+        Int_t status2 = status;
+        Double_t MB_2 = MB;
+        Double_t MB_err2 = MB_err;
+        TVectorD X2 = X;
+        TVectorD X2_ERR = X_ERR;
+        Double_t chi2_2 = chi2;
+        Int_t nIter_2 = nIter;
+        Double_t sum2 = sum_of_constraints;
+        TVectorD g2 = g;
 
-//         // cout << "MB_2 = " << MB_2 << endl;
-//         // cout << "sum_2 = " << F_tol_2 << endl;
-//         // cout << "chi2_2 = " << chi2_2 << endl;
-//         // cout << "status_2 = " << status2 << endl;
-//         // cout << "nIter_2 = " << nIter_2 << endl;
+        // cout << "MB_2 = " << MB_2 << endl;
+        // cout << "sum_2 = " << F_tol_2 << endl;
+        // cout << "chi2_2 = " << chi2_2 << endl;
+        // cout << "status_2 = " << status2 << endl;
+        // cout << "nIter_2 = " << nIter_2 << endl;
 
-//         // Init 3
-//         minimize( BV, 3 );
-//         x3_current = X;
-//         Int_t status3 = status;
-//         Double_t MB_3 = MB;
-//         Double_t MB_err3 = MB_err;
-//         TVectorD X3 = X;
-//         TVectorD X3_ERR = X_ERR;
-//         Double_t chi2_3 = chi2;
-//         Int_t nIter_3 = nIter;
-//         Double_t sum3 = sum_of_constraints;
-//         TVectorD g3 = g;
+        // Init 3
+        minimize( BV, 3 );
+        x3_current = X;
+        Int_t status3 = status;
+        Double_t MB_3 = MB;
+        Double_t MB_err3 = MB_err;
+        TVectorD X3 = X;
+        TVectorD X3_ERR = X_ERR;
+        Double_t chi2_3 = chi2;
+        Int_t nIter_3 = nIter;
+        Double_t sum3 = sum_of_constraints;
+        TVectorD g3 = g;
 
-//         // cout << "MB_3 = " << MB_3 << endl;
-//         // cout << "sum_3 = " << F_tol_3 << endl;
-//         // cout << "chi2_3 = " << chi2_3 << endl;
-//         // cout << "status_3 = " << status3 << endl;
-//         // cout << "nIter_3 = " << nIter_3 << endl;
+        // cout << "MB_3 = " << MB_3 << endl;
+        // cout << "sum_3 = " << F_tol_3 << endl;
+        // cout << "chi2_3 = " << chi2_3 << endl;
+        // cout << "status_3 = " << status3 << endl;
+        // cout << "nIter_3 = " << nIter_3 << endl;
 
-//         // Init 4
-//         minimize( BV, 4 );
-//         x4_current = X;
-//         Int_t status4 = status;
-//         Double_t MB_4 = MB;
-//         Double_t MB_err4 = MB_err;
-//         TVectorD X4 = X;
-//         TVectorD X4_ERR = X_ERR;
-//         Double_t chi2_4 = chi2;
-//         Int_t nIter_4 = nIter;
-//         Double_t sum4 = sum_of_constraints;
-//         TVectorD g4 = g;
+        // Init 4
+        minimize( BV, 4 );
+        x4_current = X;
+        Int_t status4 = status;
+        Double_t MB_4 = MB;
+        Double_t MB_err4 = MB_err;
+        TVectorD X4 = X;
+        TVectorD X4_ERR = X_ERR;
+        Double_t chi2_4 = chi2;
+        Int_t nIter_4 = nIter;
+        Double_t sum4 = sum_of_constraints;
+        TVectorD g4 = g;
 
-//         // cout << "MB_4 = " << MB_4 << endl;
-//         // cout << "sum_4 = " << F_tol_4 << endl;
-//         // cout << "chi2_4 = " << chi2_4 << endl;
-//         // cout << "status_4 = " << status4 << endl;
-//         // cout << "nIter_4 = " << nIter_4 << endl;
+        // cout << "MB_4 = " << MB_4 << endl;
+        // cout << "sum_4 = " << F_tol_4 << endl;
+        // cout << "chi2_4 = " << chi2_4 << endl;
+        // cout << "status_4 = " << status4 << endl;
+        // cout << "nIter_4 = " << nIter_4 << endl;
 
-//         // Init 5
-//         minimize( BV, 5 );
-//         x5_current = X;
-//         Int_t status5 = status;
-//         Double_t MB_5 = MB;
-//         Double_t MB_err5 = MB_err;
-//         TVectorD X5 = X;
-//         TVectorD X5_ERR = X_ERR;
-//         Double_t chi2_5 = chi2;
-//         Int_t nIter_5 = nIter;
-//         Double_t sum5 = sum_of_constraints;
-//         TVectorD g5 = g;
+        // Init 5
+        minimize( BV, 5 );
+        x5_current = X;
+        Int_t status5 = status;
+        Double_t MB_5 = MB;
+        Double_t MB_err5 = MB_err;
+        TVectorD X5 = X;
+        TVectorD X5_ERR = X_ERR;
+        Double_t chi2_5 = chi2;
+        Int_t nIter_5 = nIter;
+        Double_t sum5 = sum_of_constraints;
+        TVectorD g5 = g;
 
-//         // cout << "MB_5 = " << MB_5 << endl;
-//         // cout << "sum_5 = " << F_tol_5 << endl;
-//         // cout << "chi2_5 = " << chi2_5 << endl;
-//         // cout << "status_5 = " << status5 << endl;
-//         // cout << "nIter_5 = " << nIter_5 << endl;
+        // cout << "MB_5 = " << MB_5 << endl;
+        // cout << "sum_5 = " << F_tol_5 << endl;
+        // cout << "chi2_5 = " << chi2_5 << endl;
+        // cout << "status_5 = " << status5 << endl;
+        // cout << "nIter_5 = " << nIter_5 << endl;
 
-//         // Init 6
-//         minimize( BV, 6 );
-//         x6_current = X;
-//         Int_t status6 = status;
-//         Double_t MB_6 = MB;
-//         Double_t MB_err6 = MB_err;
-//         TVectorD X6 = X;
-//         TVectorD X6_ERR = X_ERR;
-//         Double_t chi2_6 = chi2;
-//         Int_t nIter_6 = nIter;
-//         Double_t sum6 = sum_of_constraints;
-//         TVectorD g6 = g;
+        // Init 6
+        minimize( BV, 6 );
+        x6_current = X;
+        Int_t status6 = status;
+        Double_t MB_6 = MB;
+        Double_t MB_err6 = MB_err;
+        TVectorD X6 = X;
+        TVectorD X6_ERR = X_ERR;
+        Double_t chi2_6 = chi2;
+        Int_t nIter_6 = nIter;
+        Double_t sum6 = sum_of_constraints;
+        TVectorD g6 = g;
 
-//         // cout << "MB_6 = " << MB_6 << endl;
-//         // cout << "sum_6 = " << F_tol_6 << endl;
-//         // cout << "chi2_6 = " << chi2_6 << endl;
-//         // cout << "status_6 = " << status6 << endl;
-//         // cout << "nIter_6 = " << nIter_6 << endl;
+        // cout << "MB_6 = " << MB_6 << endl;
+        // cout << "sum_6 = " << F_tol_6 << endl;
+        // cout << "chi2_6 = " << chi2_6 << endl;
+        // cout << "status_6 = " << status6 << endl;
+        // cout << "nIter_6 = " << nIter_6 << endl;
 
-//         // Init 7
-//         minimize( BV, 7 );
-//         x7_current = X;
-//         Int_t status7 = status;
-//         Double_t MB_7 = MB;
-//         Double_t MB_err7 = MB_err;
-//         TVectorD X7 = X;
-//         TVectorD X7_ERR = X_ERR;
-//         Double_t chi2_7 = chi2;
-//         Int_t nIter_7 = nIter;
-//         Double_t sum7 = sum_of_constraints;
-//         TVectorD g7 = g;
+        // Init 7
+        minimize( BV, 7 );
+        x7_current = X;
+        Int_t status7 = status;
+        Double_t MB_7 = MB;
+        Double_t MB_err7 = MB_err;
+        TVectorD X7 = X;
+        TVectorD X7_ERR = X_ERR;
+        Double_t chi2_7 = chi2;
+        Int_t nIter_7 = nIter;
+        Double_t sum7 = sum_of_constraints;
+        TVectorD g7 = g;
 
-//         // cout << "MB_7 = " << MB_7 << endl;
-//         // cout << "sum_7 = " << F_tol_7 << endl;
-//         // cout << "chi2_7 = " << chi2_7 << endl;
-//         // cout << "status_7 = " << status7 << endl;
-//         // cout << "nIter_7 = " << nIter_7 << endl;
+        // cout << "MB_7 = " << MB_7 << endl;
+        // cout << "sum_7 = " << F_tol_7 << endl;
+        // cout << "chi2_7 = " << chi2_7 << endl;
+        // cout << "status_7 = " << status7 << endl;
+        // cout << "nIter_7 = " << nIter_7 << endl;
 
-//         // Init 8
-//         minimize( BV, 8 );
-//         x8_current = X;
-//         Int_t status8 = status;
-//         Double_t MB_8 = MB;
-//         Double_t MB_err8 = MB_err;
-//         TVectorD X8 = X;
-//         TVectorD X8_ERR = X_ERR;
-//         Double_t chi2_8 = chi2;
-//         Int_t nIter_8 = nIter;
-//         Double_t sum8 = sum_of_constraints;
-//         TVectorD g8 = g;
+        // Init 8
+        minimize( BV, 8 );
+        x8_current = X;
+        Int_t status8 = status;
+        Double_t MB_8 = MB;
+        Double_t MB_err8 = MB_err;
+        TVectorD X8 = X;
+        TVectorD X8_ERR = X_ERR;
+        Double_t chi2_8 = chi2;
+        Int_t nIter_8 = nIter;
+        Double_t sum8 = sum_of_constraints;
+        TVectorD g8 = g;
 
-//         // cout << "MB_8 = " << MB_8 << endl;
-//         // cout << "sum_8 = " << F_tol_8 << endl;
-//         // cout << "chi2_8 = " << chi2_8 << endl;
-//         // cout << "status_8 = " << status8 << endl;
-//         // cout << "nIter_8 = " << nIter_8 << endl;
+        // cout << "MB_8 = " << MB_8 << endl;
+        // cout << "sum_8 = " << F_tol_8 << endl;
+        // cout << "chi2_8 = " << chi2_8 << endl;
+        // cout << "status_8 = " << status8 << endl;
+        // cout << "nIter_8 = " << nIter_8 << endl;
 
-//         // Init 9
-//         minimize( BV, 9 );
-//         x9_current = X;
-//         Int_t status9 = status;
-//         Double_t MB_9 = MB;
-//         Double_t MB_err9 = MB_err;
-//         TVectorD X9 = X;
-//         TVectorD X9_ERR = X_ERR;
-//         Double_t chi2_9 = chi2;
-//         Int_t nIter_9 = nIter;
-//         Double_t sum9 = sum_of_constraints;
-//         TVectorD g9 = g;
+        // Init 9
+        minimize( BV, 9 );
+        x9_current = X;
+        Int_t status9 = status;
+        Double_t MB_9 = MB;
+        Double_t MB_err9 = MB_err;
+        TVectorD X9 = X;
+        TVectorD X9_ERR = X_ERR;
+        Double_t chi2_9 = chi2;
+        Int_t nIter_9 = nIter;
+        Double_t sum9 = sum_of_constraints;
+        TVectorD g9 = g;
 
-//         // cout << "MB_9 = " << MB_9 << endl;
-//         // cout << "sum_9 = " << F_tol_9 << endl;
-//         // cout << "chi2_9 = " << chi2_9 << endl;
-//         // cout << "status_9 = " << status9 << endl;
-//         // cout << "nIter_9 = " << nIter_9 << endl;
+        // cout << "MB_9 = " << MB_9 << endl;
+        // cout << "sum_9 = " << F_tol_9 << endl;
+        // cout << "chi2_9 = " << chi2_9 << endl;
+        // cout << "status_9 = " << status9 << endl;
+        // cout << "nIter_9 = " << nIter_9 << endl;
 
-//         Int_t status_vec[10] = { status0, status1, status2, status3, status4, status5, status6, status7, status8, status9 };
-//         Double_t MB_vec[10] = { MB_0, MB_1, MB_2, MB_3, MB_4, MB_5, MB_6, MB_7, MB_8, MB_9 }; 
-//         Double_t MB_err_vec[10] = { MB_err0, MB_err1, MB_err2, MB_err3, MB_err4, MB_err5, MB_err6, MB_err7, MB_err8, MB_err9 };
-//         Double_t chi2_vec[10] = { chi2_0, chi2_1, chi2_2, chi2_3, chi2_4, chi2_5, chi2_6, chi2_7, chi2_8, chi2_9 };
-//         Int_t nIter_vec[10] = { nIter_0, nIter_1, nIter_2, nIter_3, nIter_4, nIter_5, nIter_6, nIter_7, nIter_8, nIter_9 };
-//         Double_t sum[10] = { sum0, sum1, sum2, sum3, sum4, sum5, sum6, sum7, sum8, sum9 };
+        Int_t status_vec[10] = { status0, status1, status2, status3, status4, status5, status6, status7, status8, status9 };
+        Double_t MB_vec[10] = { MB_0, MB_1, MB_2, MB_3, MB_4, MB_5, MB_6, MB_7, MB_8, MB_9 }; 
+        Double_t MB_err_vec[10] = { MB_err0, MB_err1, MB_err2, MB_err3, MB_err4, MB_err5, MB_err6, MB_err7, MB_err8, MB_err9 };
+        Double_t chi2_vec[10] = { chi2_0, chi2_1, chi2_2, chi2_3, chi2_4, chi2_5, chi2_6, chi2_7, chi2_8, chi2_9 };
+        Int_t nIter_vec[10] = { nIter_0, nIter_1, nIter_2, nIter_3, nIter_4, nIter_5, nIter_6, nIter_7, nIter_8, nIter_9 };
+        Double_t sum[10] = { sum0, sum1, sum2, sum3, sum4, sum5, sum6, sum7, sum8, sum9 };
 
-//         std::vector<TVectorD> X_vec;
-//         X_vec.push_back(X0);
-//         X_vec.push_back(X1);
-//         X_vec.push_back(X2);
-//         X_vec.push_back(X3);
-//         X_vec.push_back(X4);
-//         X_vec.push_back(X5);
-//         X_vec.push_back(X6);
-//         X_vec.push_back(X7);
-//         X_vec.push_back(X8);
-//         X_vec.push_back(X9);
+        std::vector<TVectorD> X_vec;
+        X_vec.push_back(X0);
+        X_vec.push_back(X1);
+        X_vec.push_back(X2);
+        X_vec.push_back(X3);
+        X_vec.push_back(X4);
+        X_vec.push_back(X5);
+        X_vec.push_back(X6);
+        X_vec.push_back(X7);
+        X_vec.push_back(X8);
+        X_vec.push_back(X9);
 
-//         std::vector<TVectorD> X_ERR_vec;
-//         X_ERR_vec.push_back(X0_ERR);
-//         X_ERR_vec.push_back(X1_ERR);
-//         X_ERR_vec.push_back(X2_ERR);
-//         X_ERR_vec.push_back(X3_ERR);
-//         X_ERR_vec.push_back(X4_ERR);
-//         X_ERR_vec.push_back(X5_ERR);
-//         X_ERR_vec.push_back(X6_ERR);
-//         X_ERR_vec.push_back(X7_ERR);
-//         X_ERR_vec.push_back(X8_ERR);
-//         X_ERR_vec.push_back(X9_ERR);
+        std::vector<TVectorD> X_ERR_vec;
+        X_ERR_vec.push_back(X0_ERR);
+        X_ERR_vec.push_back(X1_ERR);
+        X_ERR_vec.push_back(X2_ERR);
+        X_ERR_vec.push_back(X3_ERR);
+        X_ERR_vec.push_back(X4_ERR);
+        X_ERR_vec.push_back(X5_ERR);
+        X_ERR_vec.push_back(X6_ERR);
+        X_ERR_vec.push_back(X7_ERR);
+        X_ERR_vec.push_back(X8_ERR);
+        X_ERR_vec.push_back(X9_ERR);
 
-//         std::vector<TVectorD> g_vec;
-//         g_vec.push_back(g0);
-//         g_vec.push_back(g1);
-//         g_vec.push_back(g2);
-//         g_vec.push_back(g3);
-//         g_vec.push_back(g4);
-//         g_vec.push_back(g5);
-//         g_vec.push_back(g6);
-//         g_vec.push_back(g7);
-//         g_vec.push_back(g8);
-//         g_vec.push_back(g9);
+        std::vector<TVectorD> g_vec;
+        g_vec.push_back(g0);
+        g_vec.push_back(g1);
+        g_vec.push_back(g2);
+        g_vec.push_back(g3);
+        g_vec.push_back(g4);
+        g_vec.push_back(g5);
+        g_vec.push_back(g6);
+        g_vec.push_back(g7);
+        g_vec.push_back(g8);
+        g_vec.push_back(g9);
 
-//         bool all_fail = false;
-//         if( (status0 != 0) && (status1 != 0) && (status2 != 0) && (status3 != 0) && (status4 != 0) && (status5 != 0) && (status6 != 0) && (status7 != 0) && (status8 != 0) && (status9 != 0) )
-//         {
-//             all_fail = true;
-//         }
+        bool all_fail = false;
+        if( (status0 != 0) && (status1 != 0) && (status2 != 0) && (status3 != 0) && (status4 != 0) && (status5 != 0) && (status6 != 0) && (status7 != 0) && (status8 != 0) && (status9 != 0) )
+        {
+            all_fail = true;
+        }
 
-//         Double_t chi2_min = 100000000000000000;
-//         Double_t sum_min = 100;
-//         Int_t i_min = 0;
+        Double_t chi2_min = 100000000000000000;
+        Double_t sum_min = 100;
+        Int_t i_min = 0;
 
-//         if(all_fail) // If all fail, returns the one with the lowest value for the sum
-//         {
-//             for(int i = 0; i < 10; i++)
-//             {
-//                 if( (sum[i] < sum_min) )
-//                 {
-//                     sum_min = sum[i];
-//                     i_min = i;
-//                 }
-//             }   
-//         }
-//         else // if one or more passes, from the ones that pass return the one that gives the lowest value for the chi^2
-//         {
-//             for(int i = 0; i < 10; i++)
-//             {
-//                 if( (status_vec[i] == 0) && (chi2_vec[i] < chi2_min) )
-//                 {
-//                     chi2_min = chi2_vec[i];
-//                     i_min = i;
-//                 }
-//             }   
-//         }
+        if(all_fail) // If all fail, returns the one with the lowest value for the sum
+        {
+            for(int i = 0; i < 10; i++)
+            {
+                if( (sum[i] < sum_min) )
+                {
+                    sum_min = sum[i];
+                    i_min = i;
+                }
+            }   
+        }
+        else // if one or more passes, from the ones that pass return the one that gives the lowest value for the chi^2
+        {
+            for(int i = 0; i < 10; i++)
+            {
+                if( (status_vec[i] == 0) && (chi2_vec[i] < chi2_min) )
+                {
+                    chi2_min = chi2_vec[i];
+                    i_min = i;
+                }
+            }   
+        }
 
-//         init = i_min;
-//         status = status_vec[i_min];
-//         MB = MB_vec[i_min];
-//         MB_err = MB_err_vec[i_min];
-//         X = X_vec[i_min];
-//         X_ERR = X_ERR_vec[i_min];
-//         g = g_vec[i_min];
-//         sum_of_constraints = sum[i_min];
-//         nIter = nIter_vec[i_min];
-//         chi2 = chi2_vec[i_min];
+        init = i_min;
+        status = status_vec[i_min];
+        MB = MB_vec[i_min];
+        MB_err = MB_err_vec[i_min];
+        X = X_vec[i_min];
+        X_ERR = X_ERR_vec[i_min];
+        g = g_vec[i_min];
+        sum_of_constraints = sum[i_min];
+        nIter = nIter_vec[i_min];
+        chi2 = chi2_vec[i_min];
 
-// }
+}
+*/
 
-// void sequence(ROOT::Math::XYZPoint BV)
-// {
-//     init = 3; // Marseille
-//     minimize( BV, init );
-//     if(status != 0)
-//     {
-//         init = 0; // Original
-//         minimize( BV, init );
-//     }
-//     if(status != 0)
-//     {
-//         init = 9; // Marseille (tau-) + K*tautau pions (tau+)
-//         minimize( BV, init );
-//     }
-//     if(status != 0)
-//     {
-//         init = 8; // Marseille (tau+) + K*tautau pions (tau-)
-//         minimize( BV, init );
-//     }
-//     if(status != 0)
-//     {
-//         init = 7; // Marseille (tau-) + K*tautau vertex (tau+)
-//         minimize( BV, init );
-//     }
-//     if(status != 0)
-//     {
-//         init = 6; // Marseille (tau+) + K*tautau vertex (tau-)
-//         minimize( BV, init );
-//     }
-//     if(status != 0)
-//     {
-//         init = 2; // K*tautau pions
-//         minimize( BV, init );
-//     }
-//     if(status != 0)
-//     {
-//         init = 5; // K*tautau vertex (tau-) + K*tautau pions (tau+)
-//         minimize( BV, init );
-//     }
-//     if(status != 0)
-//     {
-//         init = 4; // K*tautau vertex (tau+) + K*tautau pions (tau-)
-//         minimize( BV, init );
-//     }
-//     if(status != 0)
-//     {
-//         init = 1; // K*tautau vertex
-//         minimize( BV, init );
-//     }
-//     if(status != 0)
-//     {
-//         init = -1;
-//     }
-// }
+/*
+void sequence(ROOT::Math::XYZPoint BV)
+{
+    init = 3; // Marseille
+    minimize( BV, init );
+    if(status != 0)
+    {
+        init = 0; // Original
+        minimize( BV, init );
+    }
+    if(status != 0)
+    {
+        init = 9; // Marseille (tau-) + K*tautau pions (tau+)
+        minimize( BV, init );
+    }
+    if(status != 0)
+    {
+        init = 8; // Marseille (tau+) + K*tautau pions (tau-)
+        minimize( BV, init );
+    }
+    if(status != 0)
+    {
+        init = 7; // Marseille (tau-) + K*tautau vertex (tau+)
+        minimize( BV, init );
+    }
+    if(status != 0)
+    {
+        init = 6; // Marseille (tau+) + K*tautau vertex (tau-)
+        minimize( BV, init );
+    }
+    if(status != 0)
+    {
+        init = 2; // K*tautau pions
+        minimize( BV, init );
+    }
+    if(status != 0)
+    {
+        init = 5; // K*tautau vertex (tau-) + K*tautau pions (tau+)
+        minimize( BV, init );
+    }
+    if(status != 0)
+    {
+        init = 4; // K*tautau vertex (tau+) + K*tautau pions (tau-)
+        minimize( BV, init );
+    }
+    if(status != 0)
+    {
+        init = 1; // K*tautau vertex
+        minimize( BV, init );
+    }
+    if(status != 0)
+    {
+        init = -1;
+    }
+}
+*/
