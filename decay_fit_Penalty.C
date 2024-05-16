@@ -11,7 +11,8 @@ TMatrixDSym V(dimM);
 TMatrixDSym W(dimM);
 
 TVectorD x0(dimM+dimX);
-TVectorD x0_current(dimM+dimX), x1_current(dimM+dimX), x2_current(dimM+dimX), x3_current(dimM+dimX), x4_current(dimM+dimX), x5_current(dimM+dimX), x6_current(dimM+dimX), x7_current(dimM+dimX), x8_current(dimM+dimX), x9_current(dimM+dimX), x_true_current(dimM+dimX), x_initial_estimate_MLP_current(dimM+dimX), x_initial_estimate_MLP_init(dimM+dimX);
+TVectorD x0_current(dimM+dimX), x1_current(dimM+dimX), x2_current(dimM+dimX), x3_current(dimM+dimX), x4_current(dimM+dimX), x5_current(dimM+dimX), x6_current(dimM+dimX), x7_current(dimM+dimX), x8_current(dimM+dimX), x9_current(dimM+dimX), x_true_current(dimM+dimX), x_current(dimM+dimX), x_initial_estimate_MLP_init(dimM+dimX);
+Double_t status_current, cov_status_current;
 Double_t RPz = 0.; // z-component of the RP on the K+ trajectory (fixed)
 
 // Fit results
@@ -20,6 +21,7 @@ TVectorD X(dimM+dimX);
 TVectorD X_ERR(dimM+dimX);
 TVectorD X_tot(dimM+23);
 TVectorD X_ERR_tot(dimM+23);
+std::vector<Double_t> chi2_iter;
 Int_t status, init, cov_status, nIter, STATUS;
 ULong64_t eventNumber;
 
@@ -58,6 +60,8 @@ Double_t g_sum(TVectorD g);
 void sequence(ROOT::Math::XYZPoint BV);
 void lowest_chi2(ROOT::Math::XYZPoint BV);
 Bool_t firstTrial = true;
+void run_block(Double_t eps, Int_t max_iter, Double_t r, Int_t init, Int_t species, ROOT::Math::XYZPoint BV_0);
+void equations(TVectorD X);
 
 void decay_fit_Penalty(int year, TString RECO_files, int species, int line)
 {
@@ -189,13 +193,14 @@ void decay_fit_Penalty(int year, TString RECO_files, int species, int line)
         "df_pB_pointing_to_PV_XZ",
         "df_pB_pointing_to_PV_YZ",
         "df_E_conservation_in_DV1",
-        "df_E_conservation_in_DV2"
+        "df_E_conservation_in_DV2",
+        "df_E_conservation_in_BV"
     };
 
     for(int i = 0; i < dimM+23; i++)
     {
         tout->Branch(name_x[i], &X_tot(i));
-        tout->Branch(name_x_err[i], &X_ERR_tot(i));
+        // tout->Branch(name_x_err[i], &X_ERR_tot(i));
     }
 
     for(int i = 0; i < dimC; i++)
@@ -203,7 +208,6 @@ void decay_fit_Penalty(int year, TString RECO_files, int species, int line)
         tout->Branch(name_g[i], &g(i));
     }
 
-    tout->Branch("df_init", &init);
     tout->Branch("df_Bp_M", &MB);
     tout->Branch("df_Bp_MERR", &MB_err);
     tout->Branch("df_status", &status);
@@ -213,17 +217,18 @@ void decay_fit_Penalty(int year, TString RECO_files, int species, int line)
     tout->Branch("df_nIter", &nIter);
     tout->Branch("df_time", &deltaT);
     tout->Branch("df_STATUS", &STATUS);
+    tout->Branch("df_chi2_iter", &chi2_iter);
 
     for(int i = 0; i < dimC; i++)
     {
-        tout->Branch(Form("df_F_%i",i), &g(i));
+        tout->Branch(Form("df_g_%i",i), &g(i));
     }
 
     TStopwatch watch_total;
 
     // Loop over events
     UInt_t num_entries = t->GetEntries();
-    for(int evt = 0; evt < num_entries; evt++)
+    for(int evt = 0; evt < 1; evt++)
     {
         TStopwatch watch;
         t->GetEntry(evt);
@@ -266,67 +271,27 @@ void decay_fit_Penalty(int year, TString RECO_files, int species, int line)
 
         ROOT::Math::XYZPoint BV_0( BVx_0, BVy_0, BVz_0 ); // offline estimate of BV (necessary for some initialisations)
 
-        Int_t max_iter = 100;
+        Int_t max_iter = 10;
         int entry = 0;
-        Double_t r = 1.5;
+        Double_t r = 10.;
 
         // 1st trial
         minimize(BV_0, -2, species, factor);
-        x_initial_estimate_MLP_current = X;
+        x_current = X;
+        status_current = status;
         factor *= r;
         firstTrial = false;
-
-        // cout << "Trying with tol = e-10" << endl;
-        while( (sum_of_constraints > pow(10,-10)) && (entry < max_iter))
+        Double_t x_vars_init[dimM+dimX];
+        for(int i = 0; i < dimM+dimX; i++)
         {
-            minimize(BV_0, -2, species, factor);
-            x_initial_estimate_MLP_current = X;
-            factor *= r;
-            entry += 1;
+            x_vars_init[i] = X(i); 
         }
-        entry = 0;
+        chi2_iter.push_back(function_to_minimize(x_vars_init));
 
-        // cout << "Trying with tol = e-6" << endl;
-        while( (sum_of_constraints > pow(10,-6)) && (entry < max_iter))
-        {
-            minimize(BV_0, -2, species, factor);
-            x_initial_estimate_MLP_current = X;
-            factor *= r;
-            entry += 1;
-        }
-        entry = 0;
+        // Tolerance : 10-4
+        run_block(pow(10,-4), 10, 10, -2, species, BV_0);
 
-        // cout << "Trying with tol = e-3" << endl;
-        while( (sum_of_constraints > pow(10,-3)) && (entry < max_iter))
-        {
-            minimize(BV_0, -2, species, factor);
-            x_initial_estimate_MLP_current = X;
-            factor *= r;
-            entry += 1;
-        }
-        entry = 0;
-
-        // cout << "Trying with tol = 1" << endl;
-        while( (sum_of_constraints > 1) && (entry < max_iter))
-        {
-            minimize(BV_0, -2, species, factor);
-            x_initial_estimate_MLP_current = X;
-            factor *= r;
-            entry += 1;
-        }
-        entry = 0;
-
-        // cout << "Trying with tol = 10" << endl;
-        while( (sum_of_constraints > 10) && (entry < max_iter))
-        {
-            minimize(BV_0, -2, species, factor);
-            x_initial_estimate_MLP_current = X;
-            factor *= r;
-            entry += 1;
-        }
-        entry = 0;
-
-        if( ((status == 0) || (status == 1)) && (sum_of_constraints < 10) )
+        if( ((status == 0) || (status == 1)) && (sum_of_constraints < pow(10,-4)) )
         {
             STATUS = 0;
         }
@@ -334,6 +299,7 @@ void decay_fit_Penalty(int year, TString RECO_files, int species, int line)
         {
             STATUS = 1;
         }
+        equations(X);
 
         // cout << "init = " << init << endl;
         cout << "status == " << status << endl;
@@ -341,7 +307,6 @@ void decay_fit_Penalty(int year, TString RECO_files, int species, int line)
         cout << "STATUS == " << STATUS << endl;
         cout << "sum of constraints = " << sum_of_constraints << endl;
         cout << "MB = " << MB << " +/- " << MB_err << endl;
-        g.Print();
         cout << " ///////////////////////////////////////////////////////////////////////// " << endl;
 
         // Fill X_total
@@ -429,6 +394,7 @@ void decay_fit_Penalty(int year, TString RECO_files, int species, int line)
 
         firstTrial = true;
         factor = 1;
+        chi2_iter.clear();
     }
     watch_total.Stop();
 
@@ -437,6 +403,37 @@ void decay_fit_Penalty(int year, TString RECO_files, int species, int line)
     fout->cd();
     tout->Write();
     fout->Close();
+}
+
+void run_block(Double_t eps, Int_t max_iter, Double_t r, Int_t init, Int_t species, ROOT::Math::XYZPoint BV_0)
+{
+    Double_t x_vars[dimM+dimX];
+    Int_t entry = 0;
+    while( (sum_of_constraints > eps) && (entry < max_iter))
+    {
+        minimize(BV_0, init, species, factor);
+
+        if(status > 1)
+        {
+            // return value before Minuit failure
+            X = x_current;  
+            status = status_current;
+            cov_status = cov_status_current;
+            break;
+        }
+
+        for(int i = 0; i < dimM+dimX; i++)
+        {
+            x_vars[i] = X(i); 
+        }
+        chi2_iter.push_back(function_to_minimize(x_vars));
+
+        factor *= r;
+        entry += 1;
+        x_current = X;
+        status_current = status;
+        cov_status_current = cov_status;
+    }
 }
 
 void minimize( ROOT::Math::XYZPoint BV, int init, int species, Double_t factor )
@@ -565,7 +562,7 @@ void minimize( ROOT::Math::XYZPoint BV, int init, int species, Double_t factor )
         }
         else
         {
-            x0 = x_initial_estimate_MLP_current;
+            x0 = x_current;
         }
     }
     // x0.Print();
@@ -734,11 +731,11 @@ Double_t function_to_minimize( const Double_t* x_values )
     TVectorD g = exact_constraints(x);
 
     TVectorD delta_g(dimC); // errors squared on the constraints
-    delta_g(0) = 1000.;
-    delta_g(1) = 1000.;
-    delta_g(2) = 80.;
-    delta_g(3) = 80.;
-    delta_g(4) = 100.;
+    delta_g(0) = 0.2890; // mm*MeV
+    delta_g(1) = 0.3078; // mm*MeV
+    delta_g(2) = 0.2595; // MeV
+    delta_g(3) = 0.2567; // MeV
+    delta_g(4) = 0.3000; // MeV
 
     for(int i = 0; i < dimC; i++)
     {
@@ -836,12 +833,12 @@ TVectorD exact_constraints( TVectorD x )
 
     TVectorD g(dimC);
     // pB must point back to the PV (2)
-    g(0) = (pB.x()*(BV.z() - PV.z()) - pB.z()*(BV.x() - PV.x()))/10000.;
-    g(1) = (pB.y()*(BV.z() - PV.z()) - pB.z()*(BV.y() - PV.y()))/10000.;
+    g(0) = pB.x()*(BV.z() - PV.z()) - pB.z()*(BV.x() - PV.x());
+    g(1) = pB.y()*(BV.z() - PV.z()) - pB.z()*(BV.y() - PV.y());
     // Energy conservation in DV1, DV2 and in BV
-    g(2) = (Etau1 - E3pi1 - Enu1)/1000.;
-    g(3) = (Etau2 - E3pi2 - Enu2)/10000.;
-    g(4) = (EB - Etau1 - Etau2 - EK)/100000.;
+    g(2) = Etau1 - E3pi1 - Enu1;
+    g(3) = Etau2 - E3pi2 - Enu2;
+    g(4) = EB - Etau1 - Etau2 - EK;
 
     return g;
 }
@@ -2022,18 +2019,12 @@ TVectorD x_initial_estimate_MLP( TVectorD m, ROOT::Math::XYZPoint BV, Int_t spec
 
     if((species == 10) || (species == 11) || (species == 12) || (species == 1) || (species == 2) || (species ==3))
     {
-      weightfile_taup_PX = "/home/avenkate/jobs/KTauTau_MLP_Train_taup_PX/dataset/weights/TMVARegression_taup_TRUEP_X_MLP.weights.xml";
-      weightfile_taup_PY = "/home/avenkate/jobs/KTauTau_MLP_Train_taup_PY/dataset/weights/TMVARegression_taup_TRUEP_Y_MLP.weights.xml";
-      weightfile_taup_PZ = "/home/avenkate/jobs/KTauTau_MLP_Train_taup_PZ/dataset/weights/TMVARegression_taup_TRUEP_Z_MLP.weights.xml";
-      weightfile_taum_PX = "/home/avenkate/jobs/KTauTau_MLP_Train_taum_PX/dataset/weights/TMVARegression_taum_TRUEP_X_MLP.weights.xml";
-      weightfile_taum_PY = "/home/avenkate/jobs/KTauTau_MLP_Train_taum_PY/dataset/weights/TMVARegression_taum_TRUEP_Y_MLP.weights.xml";
-      weightfile_taum_PZ = "/home/avenkate/jobs/KTauTau_MLP_Train_taum_PZ/dataset/weights/TMVARegression_taum_TRUEP_Z_MLP.weights.xml";
-      // weightfile_taup_PX = "/home/felician/B2Ktautau/MLP_init_weights/Ktautau/TMVARegression_taup_TRUEP_X_MLP.weights.xml";
-      // weightfile_taup_PY = "/home/felician/B2Ktautau/MLP_init_weights/Ktautau/TMVARegression_taup_TRUEP_Y_MLP.weights.xml";
-      // weightfile_taup_PZ = "/home/felician/B2Ktautau/MLP_init_weights/Ktautau/TMVARegression_taup_TRUEP_Z_MLP.weights.xml";
-      // weightfile_taum_PX = "/home/felician/B2Ktautau/MLP_init_weights/Ktautau/TMVARegression_taum_TRUEP_X_MLP.weights.xml";
-      // weightfile_taum_PY = "/home/felician/B2Ktautau/MLP_init_weights/Ktautau/TMVARegression_taum_TRUEP_Y_MLP.weights.xml";
-      // weightfile_taum_PZ = "/home/felician/B2Ktautau/MLP_init_weights/Ktautau/TMVARegression_taum_TRUEP_Z_MLP.weights.xml";
+      weightfile_taup_PX = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taup_PX/dataset/weights/TMVARegression_taup_TRUEP_X_MLP.weights.xml";
+      weightfile_taup_PY = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taup_PY/dataset/weights/TMVARegression_taup_TRUEP_Y_MLP.weights.xml";
+      weightfile_taup_PZ = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taup_PZ/dataset/weights/TMVARegression_taup_TRUEP_Z_MLP.weights.xml";
+      weightfile_taum_PX = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taum_PX/dataset/weights/TMVARegression_taum_TRUEP_X_MLP.weights.xml";
+      weightfile_taum_PY = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taum_PY/dataset/weights/TMVARegression_taum_TRUEP_Y_MLP.weights.xml";
+      weightfile_taum_PZ = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taum_PZ/dataset/weights/TMVARegression_taum_TRUEP_Z_MLP.weights.xml";
     }
     else if(species == 4)
     {
@@ -2338,6 +2329,74 @@ ROOT::Math::XYZPoint makeTransformation_point(ROOT::Math::XYZVector Pk, ROOT::Ma
     thePoint_t = myTransformation * thePoint;
   
   return thePoint_t;
+}
+
+void equations(TVectorD X)
+{
+    // Measured parameters
+    ROOT::Math::XYZPoint PV( X(0), X(1), X(2) );
+    ROOT::Math::XYZPoint DV1( X(3), X(4), X(5) );
+    ROOT::Math::XYZVector p3pi1( X(6), X(7), X(8) );
+    Double_t E3pi1 = X(9);
+    ROOT::Math::XYZPoint DV2( X(10), X(11), X(12) );
+    ROOT::Math::XYZVector p3pi2( X(13), X(14), X(15) );
+    Double_t E3pi2 = X(16);
+    ROOT::Math::XYZPoint RP( X(17), X(18), RPz );
+    ROOT::Math::XYZVector pK( X(19), X(20), X(21) );
+
+    Double_t EK  = sqrt( pow(mkaon,2) + pK.Mag2() );
+    Double_t m3pi1 = sqrt( pow(E3pi1,2) - p3pi1.Mag2() );
+    Double_t m3pi2 = sqrt( pow(E3pi2,2) - p3pi2.Mag2() );
+
+    // Make transformation from LHCb to reference frame where the z-axis points along the K+ trajectory
+    ROOT::Math::XYZPoint PV_t = makeTransformation_point( pK, RP, PV, false );
+    ROOT::Math::XYZPoint DV1_t = makeTransformation_point( pK, RP, DV1, false );
+    ROOT::Math::XYZVector p3pi1_t = makeTransformation_vec( pK, RP, p3pi1, false );
+    ROOT::Math::XYZPoint DV2_t = makeTransformation_point( pK, RP, DV2, false );
+    ROOT::Math::XYZVector p3pi2_t = makeTransformation_vec( pK, RP, p3pi2, false );
+    ROOT::Math::XYZVector pK_t = makeTransformation_vec( pK, RP, pK, false );
+
+    Double_t a1 = (DV1_t.y())/(DV1_t.x());
+    Double_t a2 = (DV2_t.y())/(DV2_t.x());
+    Double_t b = (PV_t.y() - a1*PV_t.x())/(a2*PV_t.x() - PV_t.y());
+    Double_t c1 = b*((DV2_t.z() - DV1_t.z())/(DV2_t.x()));
+    Double_t c2 = b*(DV1_t.x())/(DV2_t.x());
+    Double_t d1 = ( (1+b)*(DV1_t.z() - PV_t.z()) + c1*PV_t.x() )/( (1+b)*DV1_t.x() - (1+c2)*PV_t.x() );
+    Double_t d2 = ( PV_t.x()*sqrt(pK_t.Mag2()) )/( (1+b)*DV1_t.x() - (1+c2)*PV_t.x() );
+    Double_t e1 = c1 + c2*d1;
+    Double_t e2 = c2*d2;
+
+    Double_t x1 = p3pi1_t.x() + a1*p3pi1_t.y() + d1*p3pi1_t.z();
+    Double_t x2 = b*p3pi2_t.x() + a2*b*p3pi2_t.y() + e1*p3pi2_t.z();
+
+    Double_t g = 1 + pow(a1,2) + pow(d1,2) - pow(x1/E3pi1,2);
+    Double_t h = 2*d1*d2 - ( pow(mtau,2) + pow(m3pi1,2) + 2*e2*p3pi1_t.z() )*(x1/pow(E3pi1,2) );
+    Double_t j = pow(mtau,2) + pow(d2,2) - pow( ( pow(mtau,2) + pow(m3pi1,2) + 2*d2*p3pi1_t.z() )/(2*E3pi1), 2);
+
+    Double_t m = pow(b,2) + pow(a2*b,2) + pow(e1,2) - pow(x2/E3pi2,2);
+    Double_t n = 2*e1*e2 - ( pow(mtau,2) + pow(m3pi2,2) + 2*e2*p3pi2_t.z() )*(x2/pow(E3pi2,2) );
+    Double_t o =  pow(mtau,2) + pow(e2,2) - pow( ( pow(mtau,2) + pow(m3pi2,2) + 2*e2*p3pi2_t.z() )/(2*E3pi2),2 );
+
+    Double_t BVz = X(dimM);
+    Double_t ptau1z = X(dimM+1);
+
+    // BV must be in the K+ trajectory
+    Double_t BVx = RP.x() + (pK.x()/pK.z())*( BVz - RP.z() );
+    Double_t BVy = RP.y() + (pK.y()/pK.z())*( BVz - RP.z() );
+    ROOT::Math::XYZPoint BV( BVx, BVy, BVz );
+
+    // ptau1 must point back to the BV
+    Double_t ptau1x = ((DV1.x()-BV.x())/(DV1.z()-BV.z()))*ptau1z;
+    Double_t ptau1y = ((DV1.y()-BV.y())/(DV1.z()-BV.z()))*ptau1z;
+    ROOT::Math::XYZVector ptau1( ptau1x, ptau1y, ptau1z );
+
+    ROOT::Math::XYZVector ptau1_t = makeTransformation_vec( pK, RP, ptau1, false );
+
+    Double_t x = ptau1_t.x();
+    
+    cout << "Eq1 value at solution = " << g*pow(x,2) + h*x + j << endl;
+    cout << "Eq2 value at solution = " << m*pow(x,2) + n*x + o << endl;
+
 }
 
 // void lowest_chi2(ROOT::Math::XYZPoint BV)
