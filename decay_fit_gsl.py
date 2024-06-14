@@ -36,7 +36,6 @@ MB = array('d', [0])
 dMB = array('d', [0])
 init = array('i', [0])
 
-eventNumber = 0
 mtau = 1776.86
 mkaon = 493.677
 mnu = 0
@@ -47,8 +46,15 @@ status = -1
 nIter = 0
 chi2_value = 0
 tol_value = 100
+x_true = []
+
+lambdify_f = 0
+lambdify_df = 0
+lambdify_dfm = 0
+lambdify_chi2 = 0
 
 computeDerivatives = False
+firstTrial = True
 
 m_symbols = sp.IndexedBase('m_symbols')
 W_symbols = sp.IndexedBase('W_symbols')
@@ -145,46 +151,6 @@ def equations_dfm_exp(params):
     f = equations_f_exp(params)
     dfm = np.array( [ [f[i].diff(m_symbols[j]) for j in range(dimM)] for i in range(dimM+dimX+dimC)] )
     return dfm
-
-if(computeDerivatives):
-    params = [m_symbols, W_symbols, RPz_symbol]
-    print("Computing 1st derivatives")
-    symbolic_f = equations_f_exp(params)
-    print("Finished computing 1st derivatives")
-    with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/first_derivatives.npy", "wb") as first_derivative_file:
-        np.save(first_derivative_file, symbolic_f)
-
-    print("Computing 2nd derivatives")
-    symbolic_df = equations_df_exp(params)
-    print("Finished computing 2nd derivatives")
-    with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives.npy", "wb") as second_derivative_file:
-        np.save(second_derivative_file, symbolic_df)
-
-    print("Computing 2nd derivatives wrt m")
-    symbolic_dfm = equations_dfm_exp(params)
-    print("Finished computing 2nd derivatives wrt m")
-    with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives_m.npy", "wb") as second_derivative_m_file:
-        np.save(second_derivative_m_file, symbolic_dfm)
-
-    print("Computing chi2 expression")
-    symbolic_chi2 = chisquare(params)
-    with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/chisquare.npy", "wb") as chi2_file:
-        np.save(chi2_file, symbolic_chi2)
-    
-    quit()
-else:
-    print("Loading 1st derivatives")
-    symbolic_f = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/first_derivatives.npy")
-    lambdify_f = sp.lambdify( (x_symbols, m_symbols, W_symbols, RPz_symbol), symbolic_f, "numpy")
-    print("Loading 2nd derivatives")
-    symbolic_df = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives.npy")
-    lambdify_df = sp.lambdify( (x_symbols, m_symbols, W_symbols, RPz_symbol), symbolic_df, "numpy")
-    print("Loading 2nd derivatives wrt m")
-    symbolic_dfm = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives_m.npy")
-    lambdify_dfm = sp.lambdify( (x_symbols, m_symbols, W_symbols, RPz_symbol), symbolic_dfm, "numpy")
-    print("Loading chi2 expression")
-    symbolic_chi2 = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/chisquare.npy")
-    lambdify_chi2 = sp.lambdify( (x_symbols, m_symbols, W_symbols, RPz_symbol), symbolic_chi2, "numpy")
 
 def get_minor(numbers, i, j):
     minor = []
@@ -347,6 +313,7 @@ def x_initial_estimate(init, BV, species, params):
     m = params[0]
     W = params[1]
     RPz = params[2]
+    eventNumber = params[3]
 
     x0 = np.zeros(dimM+dimX+dimC)
 
@@ -369,7 +336,7 @@ def x_initial_estimate(init, BV, species, params):
     m3pi2 = np.sqrt( E3pi2**2 - p3pi2.Mag2() )
     
     # Initial values for xu
-    if(init == 0): # MLP 
+    if(init == 0): # MLP -> needs to be re-trained for D0D0K
         ROOT.TMVA.Tools.Instance()
         reader_taup_PX = ROOT.TMVA.Reader( "V:Color:Silent" )
         reader_taup_PY = ROOT.TMVA.Reader( "V:Color:Silent" ) 
@@ -385,20 +352,20 @@ def x_initial_estimate(init, BV, species, params):
         weightfile_taum_PY = ""
         weightfile_taum_PZ = ""
 
-        if((species == 10) or (species == 11) or (species == 12) or (species == 2) or (species == 3) or (species == 0)):
+        if((species == 10) or (species == 11) or (species == 12) or (species == 2) or (species == 3)): # Ktautau
             weightfile_taup_PX = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taup_PX/dataset/weights/TMVARegression_taup_TRUEP_X_MLP.weights.xml"
             weightfile_taup_PY = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taup_PY/dataset/weights/TMVARegression_taup_TRUEP_Y_MLP.weights.xml"
             weightfile_taup_PZ = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taup_PZ/dataset/weights/TMVARegression_taup_TRUEP_Z_MLP.weights.xml"
             weightfile_taum_PX = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taum_PX/dataset/weights/TMVARegression_taum_TRUEP_X_MLP.weights.xml"
             weightfile_taum_PY = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taum_PY/dataset/weights/TMVARegression_taum_TRUEP_Y_MLP.weights.xml"
             weightfile_taum_PZ = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taum_PZ/dataset/weights/TMVARegression_taum_TRUEP_Z_MLP.weights.xml"
-        elif( (species == 4) or (species == 5) or (species == 6)):
-            weightfile_taup_PX = "/home/felician/B2Ktautau/MLP_init_weights/DDK/TMVARegression_Dp_TRUEP_X_MLP.weights.xml"
-            weightfile_taup_PY = "/home/felician/B2Ktautau/MLP_init_weights/DDK/TMVARegression_Dp_TRUEP_Y_MLP.weights.xml"
-            weightfile_taup_PZ = "/home/felician/B2Ktautau/MLP_init_weights/DDK/TMVARegression_Dp_TRUEP_Z_MLP.weights.xml"
-            weightfile_taum_PX = "/home/felician/B2Ktautau/MLP_init_weights/DDK/TMVARegression_Dm_TRUEP_X_MLP.weights.xml"
-            weightfile_taum_PY = "/home/felician/B2Ktautau/MLP_init_weights/DDK/TMVARegression_Dm_TRUEP_Y_MLP.weights.xml"
-            weightfile_taum_PZ = "/home/felician/B2Ktautau/MLP_init_weights/DDK/TMVARegression_Dm_TRUEP_Z_MLP.weights.xml"
+        elif( (species == 4) or (species == 5) or (species == 6)): # D+D-K+
+            weightfile_taup_PX = "/panfs/felician/MLP_weights/DDK_MLP_Train_taup_PX/dataset/weights/TMVARegression_Dp_TRUEP_X_MLP.weights.xml"
+            weightfile_taup_PY = "/panfs/felician/MLP_weights/DDK_MLP_Train_taup_PY/dataset/weights/TMVARegression_Dp_TRUEP_Y_MLP.weights.xml"
+            weightfile_taup_PZ = "/panfs/felician/MLP_weights/DDK_MLP_Train_taup_PZ/dataset/weights/TMVARegression_Dp_TRUEP_Z_MLP.weights.xml"
+            weightfile_taum_PX = "/panfs/felician/MLP_weights/DDK_MLP_Train_taum_PX/dataset/weights/TMVARegression_Dm_TRUEP_X_MLP.weights.xml"
+            weightfile_taum_PY = "/panfs/felician/MLP_weights/DDK_MLP_Train_taum_PY/dataset/weights/TMVARegression_Dm_TRUEP_Y_MLP.weights.xml"
+            weightfile_taum_PZ = "/panfs/felician/MLP_weights/DDK_MLP_Train_taum_PZ/dataset/weights/TMVARegression_Dm_TRUEP_Z_MLP.weights.xml"
         
         arr_m_1 = array('f', [0])
         arr_m_2 = array('f', [0])
@@ -679,10 +646,10 @@ def x_initial_estimate(init, BV, species, params):
 
         p1 = 1 + a1**2 + e**2 - (x1/E3pi1)**2
         p2 = 2*e*f - ( mtau**2 + m3pi1**2 + 2*f*p3pi1_t.z() )*(x1/(E3pi1**2) )
-        p3 = mtau**2 + f**2 - ( ( mtau**2 + m3pi1**2 + 2*f*p3pi1_t.z() )/(2*E3pi1) )**2
+        p3 = mtau**2 + f**2 - ( ( mtau**2 + m3pi1**2 + 2*f*p3pi1_t.z() )/(2*E3pi1) )**2 - mnu**2
         q1 = b**2 + (a2*b)**2 + g**2 - (x2/E3pi2)**2
         q2 = 2*g*h - ( mtau**2 + m3pi2**2 + 2*h*p3pi2_t.z() )*(x2/(E3pi2**2) )
-        q3 =  mtau**2 + h**2 - ( ( mtau**2 + m3pi2**2 + 2*h*p3pi2_t.z() )/(2*E3pi2) )**2
+        q3 =  mtau**2 + h**2 - ( ( mtau**2 + m3pi2**2 + 2*h*p3pi2_t.z() )/(2*E3pi2) )**2 - mnu**2
 
         Ptau1x_t = (p1*q3 - p3*q1)/(p2*q1 - p1*q2)
         Ptau1y_t = a1*Ptau1x_t
@@ -706,8 +673,8 @@ def x_initial_estimate(init, BV, species, params):
 
         Etau1 = np.sqrt( mtau**2 + ptau1.Mag2() )
         Etau2 = np.sqrt( mtau**2 + ptau2.Mag2() )
-        Enu1 = np.sqrt( pnu1.Mag2() )
-        Enu2 = np.sqrt( pnu2.Mag2() )
+        Enu1 = np.sqrt( mnu**2 + pnu1.Mag2() )
+        Enu2 = np.sqrt( mnu**2 + pnu2.Mag2() )
 
         EB = Etau1 + Etau2 + EK
         MB_squared = EB**2 - pB.Mag2()
@@ -793,8 +760,8 @@ def x_initial_estimate(init, BV, species, params):
 
         Etau1 = np.sqrt( mtau**2 + ptau1.Mag2() )
         Etau2 = np.sqrt( mtau**2 + ptau2.Mag2() )
-        Enu1 = np.sqrt( pnu1.Mag2() )
-        Enu2 = np.sqrt( pnu2.Mag2() )
+        Enu1 = np.sqrt( mnu**2 + pnu1.Mag2() )
+        Enu2 = np.sqrt( mnu**2 + pnu2.Mag2() )
 
         EB = Etau1 + Etau2 + EK
         MB_squared = EB**2 - pB.Mag2()
@@ -880,8 +847,8 @@ def x_initial_estimate(init, BV, species, params):
 
         Etau1 = np.sqrt( mtau**2 + ptau1.Mag2() )
         Etau2 = np.sqrt( mtau**2 + ptau2.Mag2() )
-        Enu1 = np.sqrt( pnu1.Mag2() )
-        Enu2 = np.sqrt( pnu2.Mag2() )
+        Enu1 = np.sqrt( mnu**2 + pnu1.Mag2() )
+        Enu2 = np.sqrt( mnu**2 + pnu2.Mag2() )
 
         EB = Etau1 + Etau2 + EK
         MB_squared = EB**2 - pB.Mag2()
@@ -915,23 +882,21 @@ def x_initial_estimate(init, BV, species, params):
         u2 = (DV2 - BV).Unit()
 
         # Use the maximum value of theta: neutrino takes the maximum portion of momentum from the tau
-        theta1 = np.arcsin( ( mtau**2 - m3pi1**2 )/( 2*mtau*np.sqrt( p3pi1.Mag2() ) ) )
-        theta2 = np.arcsin( ( mtau**2 - m3pi2**2 )/( 2*mtau*np.sqrt( p3pi2.Mag2() ) ) )
+        theta1 = np.arcsin( ( np.sqrt( (mtau**2 + m3pi1**2 - mnu**2)**2 - 4*(mtau**2)*(m3pi1**2) ) )/( 2*mtau*np.sqrt( p3pi1.Mag2() ) ) )
+        theta2 = np.arcsin( ( np.sqrt( (mtau**2 + m3pi2**2 - mnu**2)**2 - 4*(mtau**2)*(m3pi2**2) ) )/( 2*mtau*np.sqrt( p3pi2.Mag2() ) ) )
 
-        ptau1_mag = ( (mtau**2 + m3pi1**2)*np.sqrt(p3pi1.Mag2())*np.cos(theta1) )/( 2*( E3pi1**2 - p3pi1.Mag2()*np.cos(theta1)**2 ) )
-        ptau2_mag = ( (mtau**2 + m3pi2**2)*np.sqrt(p3pi2.Mag2())*np.cos(theta2) )/( 2*( E3pi2**2 - p3pi2.Mag2()*np.cos(theta2)**2 ) )
+        ptau1_mag = ( (mtau**2 + m3pi1**2 - mnu**2)*np.sqrt(p3pi1.Mag2())*np.cos(theta1) )/( 2*( E3pi1**2 - p3pi1.Mag2()*np.cos(theta1)**2 ) )
+        ptau2_mag = ( (mtau**2 + m3pi2**2 - mnu**2)*np.sqrt(p3pi2.Mag2())*np.cos(theta2) )/( 2*( E3pi2**2 - p3pi2.Mag2()*np.cos(theta2)**2 ) )
 
         ptau1 = ROOT.Math.XYZVector(ptau1_mag * u1.x(), ptau1_mag * u1.y(), ptau1_mag * u1.z())
         ptau2 = ROOT.Math.XYZVector(ptau2_mag * u2.x(), ptau2_mag * u2.y(), ptau2_mag * u2.z())
-
         pnu1 = ptau1 - p3pi1
         pnu2 = ptau2 - p3pi2
 
         Etau1 = np.sqrt( mtau**2 + ptau1.Mag2() )
         Etau2 = np.sqrt( mtau**2 + ptau2.Mag2() )
-
-        Enu1 = Etau1 - E3pi1
-        Enu2 = Etau2 - E3pi2
+        Enu1 = np.sqrt( mnu**2 + pnu1.Mag2() )
+        Enu2 = np.sqrt( mnu**2 + pnu2.Mag2() )
 
         pB = pK + ptau1 + ptau2
         EB = EK + Etau1 + Etau2
@@ -1018,8 +983,8 @@ def x_initial_estimate(init, BV, species, params):
 
         Etau1 = np.sqrt( mtau**2 + ptau1.Mag2() )
         Etau2 = np.sqrt( mtau**2 + ptau2.Mag2() )
-        Enu1 = np.sqrt( pnu1.Mag2() )
-        Enu2 = np.sqrt( pnu2.Mag2() )
+        Enu1 = np.sqrt( mnu**2 + pnu1.Mag2() )
+        Enu2 = np.sqrt( mnu**2 + pnu2.Mag2() )
 
         EB = Etau1 + Etau2 + EK
         MB_squared = EB**2 - pB.Mag2()
@@ -1105,8 +1070,8 @@ def x_initial_estimate(init, BV, species, params):
 
         Etau1 = np.sqrt( mtau**2 + ptau1.Mag2() )
         Etau2 = np.sqrt( mtau**2 + ptau2.Mag2() )
-        Enu1 = np.sqrt( pnu1.Mag2() )
-        Enu2 = np.sqrt( pnu2.Mag2() )
+        Enu1 = np.sqrt( mnu**2 + pnu1.Mag2() )
+        Enu2 = np.sqrt( mnu**2 + pnu2.Mag2() )
 
         EB = Etau1 + Etau2 + EK
         MB_squared = EB**2 - pB.Mag2()
@@ -1139,9 +1104,9 @@ def x_initial_estimate(init, BV, species, params):
         u1 = (DV1 - BV).Unit()
         u2 = (DV2 - BV).Unit()
 
-        theta1 = np.arcsin( ( mtau**2 - m3pi1**2 )/( 2*mtau*np.sqrt( p3pi1.Mag2() ) ) )
+        theta1 = np.arcsin( ( np.sqrt( (mtau**2 + m3pi1**2 - mnu**2)**2 - 4*(mtau**2)*(m3pi1**2) ) )/( 2*mtau*np.sqrt( p3pi1.Mag2() ) ) )
 
-        ptau1_mag = ( (mtau**2 + m3pi1**2)*np.sqrt(p3pi1.Mag2())*np.cos(theta1) )/( 2*( E3pi1**2 - p3pi1.Mag2()*np.cos(theta1)**2 ) )
+        ptau1_mag = ( (mtau**2 + m3pi1**2 - mnu**2)*np.sqrt(p3pi1.Mag2())*np.cos(theta1) )/( 2*( E3pi1**2 - p3pi1.Mag2()*np.cos(theta1)**2 ) )
 
         ptau1 = ROOT.Math.XYZVector(ptau1_mag * u1.x(), ptau1_mag * u1.y(), ptau1_mag * u1.z())
 
@@ -1183,11 +1148,10 @@ def x_initial_estimate(init, BV, species, params):
         pnu1 = ptau1 - p3pi1
         pnu2 = ptau2 - p3pi2
 
-        Enu1 = np.sqrt( pnu1.Mag2() )
-        Enu2 = np.sqrt( pnu2.Mag2() )
-
         Etau1 = np.sqrt( mtau**2 + ptau1.Mag2() )
         Etau2 = np.sqrt( mtau**2 + ptau2.Mag2() )
+        Enu1 = np.sqrt( mnu**2 + pnu1.Mag2() )
+        Enu2 = np.sqrt( mnu**2 + pnu2.Mag2() )
 
         pB = pK + ptau1 + ptau2
         EB = EK + Etau1 + Etau2
@@ -1224,9 +1188,9 @@ def x_initial_estimate(init, BV, species, params):
         m3pi1 = np.sqrt( E3pi1**2 - p3pi1.Mag2() )
         m3pi2 = np.sqrt( E3pi2**2 - p3pi2.Mag2() )
 
-        theta2 = np.arcsin( ( mtau**2 - m3pi2**2 )/( 2*mtau*np.sqrt( p3pi2.Mag2() ) ) )
+        theta2 = np.arcsin( ( np.sqrt( (mtau**2 + m3pi2**2 - mnu**2)**2 - 4*(mtau**2)*(m3pi2**2) ) )/( 2*mtau*np.sqrt( p3pi2.Mag2() ) ) )
 
-        ptau2_mag = ( (mtau**2 + m3pi2**2)*np.sqrt(p3pi2.Mag2())*np.cos(theta2) )/( 2*( E3pi2**2 - p3pi2.Mag2()*np.cos(theta2)**2 ) )
+        ptau2_mag = ( (mtau**2 + m3pi2**2 - mnu**2)*np.sqrt(p3pi2.Mag2())*np.cos(theta2) )/( 2*( E3pi2**2 - p3pi2.Mag2()*np.cos(theta2)**2 ) )
 
         ptau2 = ROOT.Math.XYZVector(ptau2_mag * u2.x(), ptau2_mag * u2.y(), ptau2_mag * u2.z())
 
@@ -1268,11 +1232,10 @@ def x_initial_estimate(init, BV, species, params):
         pnu1 = ptau1 - p3pi1
         pnu2 = ptau2 - p3pi2
 
-        Enu1 = np.sqrt( pnu1.Mag2() )
-        Enu2 = np.sqrt( pnu2.Mag2() )
-
         Etau1 = np.sqrt( mtau**2 + ptau1.Mag2() )
         Etau2 = np.sqrt( mtau**2 + ptau2.Mag2() )
+        Enu1 = np.sqrt( mnu**2 + pnu1.Mag2() )
+        Enu2 = np.sqrt( mnu**2 + pnu2.Mag2() )
 
         pB = pK + ptau1 + ptau2
         EB = EK + Etau1 + Etau2
@@ -1306,9 +1269,9 @@ def x_initial_estimate(init, BV, species, params):
         u1 = (DV1 - BV).Unit()
         u2 = (DV2 - BV).Unit()
 
-        theta1 = np.arcsin( ( mtau**2 - m3pi1**2 )/( 2*mtau*np.sqrt( p3pi1.Mag2() ) ) )
+        theta1 = np.arcsin( ( np.sqrt( (mtau**2 + m3pi1**2 - mnu**2)**2 - 4*(mtau**2)*(m3pi1**2) ) )/( 2*mtau*np.sqrt( p3pi1.Mag2() ) ) )
 
-        ptau1_mag = ( (mtau**2 + m3pi1**2)*np.sqrt(p3pi1.Mag2())*np.cos(theta1) )/( 2*( E3pi1**2 - p3pi1.Mag2()*np.cos(theta1)**2 ) )
+        ptau1_mag = ( (mtau**2 + m3pi1**2 - mnu**2)*np.sqrt(p3pi1.Mag2())*np.cos(theta1) )/( 2*( E3pi1**2 - p3pi1.Mag2()*np.cos(theta1)**2 ) )
 
         ptau1 = ROOT.Math.XYZVector(ptau1_mag * u1.x(), ptau1_mag * u1.y(), ptau1_mag * u1.z())
 
@@ -1350,11 +1313,10 @@ def x_initial_estimate(init, BV, species, params):
         pnu1 = ptau1 - p3pi1
         pnu2 = ptau2 - p3pi2
 
-        Enu1 = np.sqrt( pnu1.Mag2() )
-        Enu2 = np.sqrt( pnu2.Mag2() )
-
         Etau1 = np.sqrt( mtau**2 + ptau1.Mag2() )
         Etau2 = np.sqrt( mtau**2 + ptau2.Mag2() )
+        Enu1 = np.sqrt( mnu**2 + pnu1.Mag2() )
+        Enu2 = np.sqrt( mnu**2 + pnu2.Mag2() )
 
         pB = pK + ptau1 + ptau2
         EB = EK + Etau1 + Etau2
@@ -1388,9 +1350,9 @@ def x_initial_estimate(init, BV, species, params):
         u1 = (DV1 - BV).Unit()
         u2 = (DV2 - BV).Unit()
 
-        theta2 = np.arcsin( ( mtau**2 - m3pi2**2 )/( 2*mtau*np.sqrt( p3pi2.Mag2() ) ) )
+        theta2 = np.arcsin( ( np.sqrt( (mtau**2 + m3pi2**2 - mnu**2)**2 - 4*(mtau**2)*(m3pi2**2) ) )/( 2*mtau*np.sqrt( p3pi2.Mag2() ) ) )
 
-        ptau2_mag = ( (mtau**2 + m3pi2**2)*np.sqrt(p3pi2.Mag2())*np.cos(theta2) )/( 2*( E3pi2*2 - p3pi2.Mag2()*np.cos(theta2)**2 ) )
+        ptau2_mag = ( (mtau**2 + m3pi2**2 - mnu**2)*np.sqrt(p3pi2.Mag2())*np.cos(theta2) )/( 2*( E3pi2*2 - p3pi2.Mag2()*np.cos(theta2)**2 ) )
 
         ptau2 = ROOT.Math.XYZVector(ptau2_mag * u2.x(), ptau2_mag * u2.y(), ptau2_mag * u2.z())
 
@@ -1432,11 +1394,10 @@ def x_initial_estimate(init, BV, species, params):
         pnu1 = ptau1 - p3pi1
         pnu2 = ptau2 - p3pi2
 
-        Enu1 = np.sqrt( pnu1.Mag2() )
-        Enu2 = np.sqrt( pnu2.Mag2() )
-
         Etau1 = np.sqrt( mtau**2 + ptau1.Mag2() )
         Etau2 = np.sqrt( mtau**2 + ptau2.Mag2() )
+        Enu1 = np.sqrt( mnu**2 + pnu1.Mag2() )
+        Enu2 = np.sqrt( mnu**2 + pnu2.Mag2() )
 
         pB = pK + ptau1 + ptau2
         EB = EK + Etau1 + Etau2
@@ -1465,6 +1426,41 @@ def x_initial_estimate(init, BV, species, params):
         x0[dimM+20] = pnu2.y()
         x0[dimM+21] = pnu2.z()
         x0[dimM+22] = Enu2
+    elif(init == -1):
+        BV = ROOT.Math.XYZPoint( x_true[0], x_true[1], x_true[2] )
+        pB = ROOT.Math.XYZVector( x_true[3], x_true[4], x_true[5] )
+        Ptau1 = ROOT.Math.PxPyPzEVector( x_true[6], x_true[7], x_true[8], x_true[9] )
+        P1 = ROOT.Math.PxPyPzEVector( x_true[10], x_true[11], x_true[12], x_true[13] )
+        P2 = ROOT.Math.PxPyPzEVector( x_true[14], x_true[15], x_true[16], x_true[17] )
+        P3 = ROOT.Math.PxPyPzEVector( x_true[18], x_true[19], x_true[20], x_true[21] )
+        Ptau2 = ROOT.Math.PxPyPzEVector( x_true[22], x_true[23], x_true[24], x_true[25] )
+        P4 = ROOT.Math.PxPyPzEVector( x_true[26], x_true[27], x_true[28], x_true[29] )
+        P5 = ROOT.Math.PxPyPzEVector( x_true[30], x_true[31], x_true[32], x_true[33] )
+        P6 = ROOT.Math.PxPyPzEVector( x_true[34], x_true[35], x_true[36], x_true[37] )
+
+        x0[dimM] = BV.x()
+        x0[dimM+1] = BV.y()
+        x0[dimM+2] = BV.z()
+        x0[dimM+3] = pB.x()
+        x0[dimM+4] = pB.y()
+        x0[dimM+5] = pB.z()
+        x0[dimM+6] = (5279.41)**2
+        x0[dimM+7] = Ptau1.x()
+        x0[dimM+8] = Ptau1.y()
+        x0[dimM+9] = Ptau1.z()
+        x0[dimM+10] = Ptau1.t()
+        x0[dimM+11] = Ptau1.x() - P1.x() - P2.x() - P3.x()
+        x0[dimM+12] = Ptau1.y() - P1.y() - P2.y() - P3.y()
+        x0[dimM+13] = Ptau1.z() - P1.z() - P2.z() - P3.z()
+        x0[dimM+14] = Ptau1.t() - P1.t() - P2.t() - P3.t()
+        x0[dimM+15] = Ptau2.x()
+        x0[dimM+16] = Ptau2.y()
+        x0[dimM+17] = Ptau2.z()
+        x0[dimM+18] = Ptau2.t()
+        x0[dimM+19] = Ptau2.x() - P4.x() - P5.x() - P6.x()
+        x0[dimM+20] = Ptau2.y() - P4.y() - P5.y() - P6.y()
+        x0[dimM+21] = Ptau2.z() - P4.z() - P5.z() - P6.z()
+        x0[dimM+22] = Ptau2.t() - P4.t() - P5.t() - P6.t()
 
     # Initialise lambda (lb = 0 gives trivial solution)
     for i in range(dimC):
@@ -1474,15 +1470,23 @@ def x_initial_estimate(init, BV, species, params):
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-def run_solver(init, year, species, line, BV_offline, params):
-    x0 =  x_initial_estimate(init, BV_offline, species, params)
+def run_solver(init, year, species, line, BV_offline, params, max_iter, eps):
+    global chi2_value, tol_value, status
+
+    if firstTrial:
+        try:
+            x0 =  x_initial_estimate(init, BV_offline, species, params)
+        except:
+            status = 3
+            print("ERROR: Numerical problem like divide by 0")
+    else:
+        x0 = x
 
     try:
-        run_fdfsolver(year, species, line, x0, params, max_iter=10000, eps=0.000001)
+        run_fdfsolver(year, species, line, x0, params, max_iter, eps)
     except:
-        print("An error occurred")
+        print("ERROR: solver got stuck in iteration")
     
-    global chi2_value, tol_value, status
     chi2_value = chisquare_value(x,params)
     tol_value = absolute_sum(f)
 
@@ -1496,7 +1500,7 @@ def run_solver(init, year, species, line, BV_offline, params):
     else:
         status = 2
 
-def lowest_chi2(year, species, line, BV_offline, params, N=11):
+def lowest_chi2(year, species, line, BV_offline, params, max_iter, eps, N=11):
     global x, f, status, nIter, chi2_value, tol_value, init
 
     x_list = []
@@ -1506,8 +1510,8 @@ def lowest_chi2(year, species, line, BV_offline, params, N=11):
     sum_list = []
     chi2_list = []
 
-    for i in range(N):
-        run_solver(i, year, species, line, BV_offline, params)
+    for i in range(1,N+1):
+        run_solver(i, year, species, line, BV_offline, params, max_iter, eps)
         x_list.append(x)
         f_list.append(f)
         status_list.append(status)
@@ -1554,6 +1558,13 @@ def lowest_chi2(year, species, line, BV_offline, params, N=11):
     chi2_value = chi2_list[i_min]
     init[0] = i_min
 
+    x_list.clear()
+    f_list.clear()
+    status_list.clear()
+    nIter_list.clear()
+    sum_list.clear()
+    chi2_list.clear()
+
 def absolute_sum(F):
     abs_sum = 0
     for i in range(len(F)):
@@ -1588,7 +1599,7 @@ def run_fdfsolver(year, species, line, x0, params, max_iter, eps):
         chi2 = chisquare_value(x,params)
         tol  = absolute_sum(f)
 
-        # print("iter = ", iter, "status = ", status, "chi2 = ", chi2, "tol = ", tol)
+        # print("iter = ", iter, "status = ", status, "chi2 = ", chi2, "tol = ", tol, "mB = ", mass, "pKx = ", x[dimM+11], "pKy = ", x[dimM+12], "pKz = ", x[dimM+13], "EK = ", x[dimM+14])
 
         if status == errno.GSL_SUCCESS:
             print("Converged")
@@ -1610,9 +1621,118 @@ def main(argv):
     species = int(species_str)
     line = int(line)
 
-    if( (species == 9) or (species == 0) or (species == -1)): # B+ -> D0 D0 K+
+    isKtautau = False
+    if((species == 10) or (species == 11) or (species == 12) or (species == 1) or (species == 2) or (species == 3)):
+        isKtautau = True
+
+    isD0D0K = False
+    if((species == 9) or (species == 0) or (species == -1)):
+        isD0D0K = True
+    
+    isDpDmK = False
+    if((species == 4) or (species == 5) or (species == 6)):
+        isDpDmK = True
+    
+    global mtau, mnu
+
+    if isD0D0K: # B+ -> D0 D0 K+
         mtau = 1864.84
         mnu = 493.677
+    if isDpDmK:
+        mtau = 1869.66
+
+    if(computeDerivatives):
+        params = [m_symbols, W_symbols, RPz_symbol]
+        print("Computing 1st derivatives")
+        symbolic_f = equations_f_exp(params)
+        print("Finished computing 1st derivatives")
+        if isKtautau:
+            with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/first_derivatives_ktautau.npy", "wb") as first_derivative_file:
+                np.save(first_derivative_file, symbolic_f)
+        if isDpDmK:
+            with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/first_derivatives_dpdmk.npy", "wb") as first_derivative_file:
+                np.save(first_derivative_file, symbolic_f)
+        if isD0D0K:
+            with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/first_derivatives_d0d0k.npy", "wb") as first_derivative_file:
+                np.save(first_derivative_file, symbolic_f)
+
+        print("Computing 2nd derivatives")
+        symbolic_df = equations_df_exp(params)
+        print("Finished computing 2nd derivatives")
+        if isKtautau:
+            with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives_ktautau.npy", "wb") as second_derivative_file:
+                np.save(second_derivative_file, symbolic_df)
+        if isDpDmK:
+            with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives_dpdmk.npy", "wb") as second_derivative_file:
+                np.save(second_derivative_file, symbolic_df)
+        if isD0D0K:
+            with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives_d0d0k.npy", "wb") as second_derivative_file:
+                np.save(second_derivative_file, symbolic_df)
+
+        print("Computing 2nd derivatives wrt m")
+        symbolic_dfm = equations_dfm_exp(params)
+        print("Finished computing 2nd derivatives wrt m")
+        if isKtautau:
+            with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives_m_ktautau.npy", "wb") as second_derivative_m_file:
+                np.save(second_derivative_m_file, symbolic_dfm)
+        if isDpDmK:
+            with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives_m_dpdmk.npy", "wb") as second_derivative_m_file:
+                np.save(second_derivative_m_file, symbolic_dfm)
+        if isD0D0K:
+            with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives_m_d0d0k.npy", "wb") as second_derivative_m_file:
+                np.save(second_derivative_m_file, symbolic_dfm)
+
+        print("Computing chi2 expression")
+        symbolic_chi2 = chisquare(params)
+        if isKtautau:
+            with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/chisquare_ktautau.npy", "wb") as chi2_file:
+                np.save(chi2_file, symbolic_chi2)
+        if isDpDmK:
+            with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/chisquare_dpdmk.npy", "wb") as chi2_file:
+                np.save(chi2_file, symbolic_chi2)
+        if isD0D0K:
+            with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/chisquare_d0d0k.npy", "wb") as chi2_file:
+                np.save(chi2_file, symbolic_chi2)
+                
+        quit()
+    else:
+        global lambdify_f, lambdify_df, lambdify_dfm, lambdify_chi2
+
+        print("Loading 1st derivatives")
+        if isKtautau:
+            symbolic_f = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/first_derivatives_ktautau.npy")
+        if isDpDmK:
+            symbolic_f = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/first_derivatives_dpdmk.npy")
+        if isD0D0K:
+            symbolic_f = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/first_derivatives_d0d0k.npy")
+        lambdify_f = sp.lambdify( (x_symbols, m_symbols, W_symbols, RPz_symbol), symbolic_f, "numpy")
+
+        print("Loading 2nd derivatives")
+        if isKtautau:
+            symbolic_df = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives_ktautau.npy")
+        if isDpDmK:
+            symbolic_df = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives_dpdmk.npy") 
+        if isD0D0K:
+            symbolic_df = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives_d0d0k.npy") 
+        lambdify_df = sp.lambdify( (x_symbols, m_symbols, W_symbols, RPz_symbol), symbolic_df, "numpy")
+
+        print("Loading 2nd derivatives wrt m")
+        if isKtautau:
+            symbolic_dfm = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives_m_ktautau.npy")
+        if isDpDmK:
+            symbolic_dfm = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives_m_dpdmk.npy")
+        if isD0D0K:
+            symbolic_dfm = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives_m_d0d0k.npy")
+        lambdify_dfm = sp.lambdify( (x_symbols, m_symbols, W_symbols, RPz_symbol), symbolic_dfm, "numpy")
+        
+        print("Loading chi2 expression")
+        if isKtautau:
+            symbolic_chi2 = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/chisquare_ktautau.npy")
+        if isDpDmK:
+            symbolic_chi2 = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/chisquare_dpdmk.npy")
+        if isD0D0K:
+            symbolic_chi2 = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/chisquare_d0d0k.npy")
+        lambdify_chi2 = sp.lambdify( (x_symbols, m_symbols, W_symbols, RPz_symbol), symbolic_chi2, "numpy")
 
     fc = ROOT.TFileCollection("fc", "fc", RECO_files, 1, line)
     t = ROOT.TChain("DecayTree")
@@ -1623,6 +1743,12 @@ def main(argv):
 
     x_names = ["df_PVx", "df_PVy", "df_PVz", "df_DV1x", "df_DV1y", "df_DV1z", "df_3pi1_PX", "df_3pi1_PY", "df_3pi1_PZ", "df_3pi1_PE", "df_DV2x", "df_DV2y", "df_DV2z", "df_3pi2_PX", "df_3pi2_PY", "df_3pi2_PZ", "df_3pi2_PE", "df_RPx", "df_RPy", "df_Kp_PX", "df_Kp_PY", "df_Kp_PZ", "df_BVx", "df_BVy", "df_BVz", "df_Bp_PX", "df_Bp_PY", "df_Bp_PZ", "df_Bp_M2", "df_taup_PX", "df_taup_PY", "df_taup_PZ", "df_taup_PE", "df_antinutau_PX", "df_antinutau_PY", "df_antinutau_PZ", "df_antinutau_PE", "df_taum_PX", "df_taum_PY", "df_taum_PZ", "df_taum_PE", "df_nutau_PX", "df_nutau_PY", "df_nutau_PZ", "df_nutau_PE"]
     x_err_names = ["df_PVx_err", "df_PVy_err", "df_PVz_err", "df_DV1x_err", "df_DV1y_err", "df_DV1z_err", "df_3pi1_PX_err", "df_3pi1_PY_err", "df_3pi1_PZ_err", "df_3pi1_PE_err", "df_DV2x_err", "df_DV2y_err", "df_DV2z_err", "df_3pi2_PX_err", "df_3pi2_PY_err", "df_3pi2_PZ_err", "df_3pi2_PE_err", "df_RPx_err", "df_RPy_err", "df_Kp_PX_err", "df_Kp_PY_err", "df_Kp_PZ_err", "df_BVx_err", "df_BVy_err", "df_BVz_err", "df_Bp_PX_err", "df_Bp_PY_err", "df_Bp_PZ_err", "df_Bp_M2_err", "df_taup_PX_err", "df_taup_PY_err", "df_taup_PZ_err", "df_taup_PE_err", "df_antinutau_PX_err", "df_antinutau_PY_err", "df_antinutau_PZ_err", "df_antinutau_PE_err", "df_taum_PX_err", "df_taum_PY_err", "df_taum_PZ_err", "df_taum_PE_err", "df_nutau_PX_err", "df_nutau_PY_err", "df_nutau_PZ_err", "df_nutau_PE_err"]
+    x_true_names = ["Bp_TRUEENDVERTEX_X", "Bp_TRUEENDVERTEX_Y", "Bp_TRUEENDVERTEX_Z", "Bp_TRUEP_X", "Bp_TRUEP_Y", "Bp_TRUEP_Z", "taup_TRUEP_X", "taup_TRUEP_Y", "taup_TRUEP_Z", "taup_TRUEP_E", "taup_pi1_TRUEP_X", "taup_pi1_TRUEP_Y", "taup_pi1_TRUEP_Z", "taup_pi1_TRUEP_E", "taup_pi2_TRUEP_X", "taup_pi2_TRUEP_Y", "taup_pi2_TRUEP_Z", "taup_pi2_TRUEP_E", "taup_pi3_TRUEP_X", "taup_pi3_TRUEP_Y", "taup_pi3_TRUEP_Z", "taup_pi3_TRUEP_E", "taum_TRUEP_X", "taum_TRUEP_Y", "taum_TRUEP_Z", "taum_TRUEP_E", "taum_pi1_TRUEP_X", "taum_pi1_TRUEP_Y", "taum_pi1_TRUEP_Z", "taum_pi1_TRUEP_E", "taum_pi2_TRUEP_X", "taum_pi2_TRUEP_Y", "taum_pi2_TRUEP_Z", "taum_pi2_TRUEP_E", "taum_pi3_TRUEP_X", "taum_pi3_TRUEP_Y", "taum_pi3_TRUEP_Z", "taum_pi3_TRUEP_E"]
+    if isDpDmK:
+        x_true_names = ["Bp_TRUEENDVERTEX_X", "Bp_TRUEENDVERTEX_Y", "Bp_TRUEENDVERTEX_Z", "Bp_TRUEP_X", "Bp_TRUEP_Y", "Bp_TRUEP_Z", "Dp_TRUEP_X", "Dp_TRUEP_Y", "Dp_TRUEP_Z", "Dp_TRUEP_E", "Dp_K_TRUEP_X", "Dp_K_TRUEP_Y", "Dp_K_TRUEP_Z", "Dp_K_TRUEP_E", "Dp_pi1_TRUEP_X", "Dp_pi1_TRUEP_Y", "Dp_pi1_TRUEP_Z", "Dp_pi1_TRUEP_E", "Dp_pi2_TRUEP_X", "Dp_pi2_TRUEP_Y", "Dp_pi2_TRUEP_Z", "Dp_pi2_TRUEP_E", "Dm_TRUEP_X", "Dm_TRUEP_Y", "Dm_TRUEP_Z", "Dm_TRUEP_E", "Dm_K_TRUEP_X", "Dm_K_TRUEP_Y", "Dm_K_TRUEP_Z", "Dm_K_TRUEP_E", "Dm_pi1_TRUEP_X", "Dm_pi1_TRUEP_Y", "Dm_pi1_TRUEP_Z", "Dm_pi1_TRUEP_E", "Dm_pi2_TRUEP_X", "Dm_pi2_TRUEP_Y", "Dm_pi2_TRUEP_Z", "Dm_pi2_TRUEP_E"]
+    if isD0D0K:
+        x_true_names = ["Bp_TRUEENDVERTEX_X", "Bp_TRUEENDVERTEX_Y", "Bp_TRUEENDVERTEX_Z", "Bp_TRUEP_X", "Bp_TRUEP_Y", "Bp_TRUEP_Z", "D0_TRUEP_X", "D0_TRUEP_Y", "D0_TRUEP_Z", "D0_TRUEP_E", "D0_pi1_TRUEP_X", "D0_pi1_TRUEP_Y", "D0_pi1_TRUEP_Z", "D0_pi1_TRUEP_E", "D0_pi2_TRUEP_X", "D0_pi2_TRUEP_Y", "D0_pi2_TRUEP_Z", "D0_pi2_TRUEP_E", "D0_pi3_TRUEP_X", "D0_pi3_TRUEP_Y", "D0_pi3_TRUEP_Z", "D0_pi3_TRUEP_E", "D0bar_TRUEP_X", "D0bar_TRUEP_Y", "D0bar_TRUEP_Z", "D0bar_TRUEP_E", "D0bar_pi1_TRUEP_X", "D0bar_pi1_TRUEP_Y", "D0bar_pi1_TRUEP_Z", "D0bar_pi1_TRUEP_E", "D0bar_pi2_TRUEP_X", "D0bar_pi2_TRUEP_Y", "D0bar_pi2_TRUEP_Z", "D0bar_pi2_TRUEP_E", "D0bar_pi3_TRUEP_X", "D0bar_pi3_TRUEP_Y", "D0bar_pi3_TRUEP_Z", "D0bar_pi3_TRUEP_E"]
+
     for i in range(dimM+dimX):
        tree.Branch(x_names[i], X[i], x_names[i]+"/D")
        tree.Branch(x_err_names[i], X_ERR[i], x_err_names[i]+"/D")
@@ -1642,21 +1768,37 @@ def main(argv):
     num_entries = t.GetEntries()
     for evt in range(1):
         print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", " evt = ", evt, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+        global nIter, status
 
-        # 8,10
         entry = t.GetEntry(evt) 
 
         # Get vector m and covariance matrix V from TTree
         for i in range(dimM):
-            m[i] = getattr(t, "df_m_{0}".format(i+1)) 
+
+            if isD0D0K:
+                m[i] = getattr(t, "df_mprime_{0}".format(i+1))
+            else:
+                m[i] = getattr(t, "df_m_{0}".format(i+1)) 
+
             for j in range(dimM):
-                V[i][j] = getattr(t, "df_V_{0}_{1}".format(i+1,j+1)) 
+
+                if isD0D0K:
+                    V[i][j] = getattr(t, "df_Vprime_{0}_{1}".format(i+1,j+1)) 
+                else:
+                    V[i][j] = getattr(t, "df_V_{0}_{1}".format(i+1,j+1))
+        
+        if((species == 10) or (species == 11) or (species == 12) or (species == 1) or (species == 4) or (species == 9)):
+            global x_true
+            for i in range(len(x_true_names)):
+                x_true.append( getattr(t, x_true_names[i]) )
+
         RPz = getattr(t, "Kp_RP_Z")
         eventNumber = getattr(t, "eventNumber")
 
         # Invert matrix V
         W = np.linalg.inv(V)
         # print(np.dot(W,V))
+        # print(np.linalg.eig(V))
 
         # # Initial estimate for x
         BVx = getattr(t, "Bp_ENDVERTEX_X")
@@ -1665,16 +1807,51 @@ def main(argv):
         # global BV_offline 
         BV_offline = ROOT.Math.XYZPoint(BVx, BVy, BVz)
 
-        params = [m, W, RPz]
+        params = [m, W, RPz, eventNumber]
 
-        run_solver(0, year, species, line, BV_offline, params)
-        # lowest_chi2(year, species, line, BV_offline, params, N=11)
+        # MLP initialisation
+        # run_solver(0, year, species, line, BV_offline, params, max_iter=10000, eps=0.000001)
+        # global firstTrial
+        # firstTrial = False
+        # if(status != 0):
+        #     run_solver(0, year, species, line, BV_offline, params, max_iter=10000, eps=0.001)
+        # if(status != 0):
+        #     run_solver(0, year, species, line, BV_offline, params, max_iter=10000, eps=1)
+        # if(status != 0):
+        #     run_solver(0, year, species, line, BV_offline, params, max_iter=10000, eps=10)
+    
+        # True initialisation
+        # run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=0.000001)
+        # global firstTrial
+        # firstTrial = False
+        # if(status != 0):
+        #     run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=0.001)
+        # if(status != 0):
+        #     run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=1)
+        # if(status != 0):
+        #     run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=10)
+
+        # Lowest chi2
+        lowest_chi2(year, species, line, BV_offline, params, max_iter=10000, eps=0.000001, N=10)
+        global firstTrial
+        firstTrial = False
+        if(status != 0):
+            lowest_chi2(year, species, line, BV_offline, params, max_iter=10000, eps=0.001, N=10)
+        if(status != 0):
+            lowest_chi2(year, species, line, BV_offline, params, max_iter=10000, eps=1, N=10)
+        if(status != 0):
+            lowest_chi2(year, species, line, BV_offline, params, max_iter=10000, eps=10, N=10)
         
-        U = U_cov(x,params,V)
+        try:
+            U = U_cov(x,params,V)
+        except:
+            status = 3
+            print("ERROR: Problem encountered when computing errors")
 
         for i in range(dimM+dimX):
             X[i][0] = x[i]
-            X_ERR[i][0] = np.sqrt(U[i][i])
+            if(status != 3):
+                X_ERR[i][0] = np.sqrt(U[i][i])
         for i in range(dimM+dimX+dimC):
             F[i][0] = f[i]
 
@@ -1689,8 +1866,9 @@ def main(argv):
         else:
             MB[0] = - np.sqrt( -mass_squared )
 
-        dMB_squared = np.sqrt(U[dimM+6][dimM+6])
-        dMB[0] =  dMB_squared/(2*np.abs(MB))
+        if(status != 3):
+            dMB_squared = np.sqrt(U[dimM+6][dimM+6])
+            dMB[0] =  dMB_squared/(2*np.abs(MB))
 
         print("init = ", init[0], "status = ", STATUS[0], "MB = ", MB[0], "dMB = ", dMB[0], "chi2 = ", chi2[0], "sum = ", tolerance[0], "nIter = ", nIter)
 
@@ -1710,6 +1888,9 @@ def main(argv):
         # plt.savefig('/panfs/felician/B2Ktautau/workflow/standalone_fitter/201{0}/Species_{1}/{2}_event0_sum.pdf'.format(year,species,line))
 
         tree.Fill()
+        x_true.clear()
+        nIter = 0
+        firstTrial = True
 
     file.cd()
     tree.Write()
