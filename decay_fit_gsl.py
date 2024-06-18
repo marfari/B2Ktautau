@@ -1766,7 +1766,7 @@ def main(argv):
     V = np.zeros((dimM,dimM))
 
     num_entries = t.GetEntries()
-    for evt in range(1):
+    for evt in range(num_entries):
         print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", " evt = ", evt, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
         global nIter, status
 
@@ -1786,6 +1786,12 @@ def main(argv):
                     V[i][j] = getattr(t, "df_Vprime_{0}_{1}".format(i+1,j+1)) 
                 else:
                     V[i][j] = getattr(t, "df_V_{0}_{1}".format(i+1,j+1))
+
+        # Scale tau covariance matrix
+        for i in range(7):
+            for j in range(7):
+                V[i+3][j+3] = V[i+3][j+3]*100
+                V[i+10][j+10] = V[i+10][j+10]*100
         
         if((species == 10) or (species == 11) or (species == 12) or (species == 1) or (species == 4) or (species == 9)):
             global x_true
@@ -1821,26 +1827,26 @@ def main(argv):
         #     run_solver(0, year, species, line, BV_offline, params, max_iter=10000, eps=10)
     
         # True initialisation
-        # run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=0.000001)
-        # global firstTrial
-        # firstTrial = False
-        # if(status != 0):
-        #     run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=0.001)
-        # if(status != 0):
-        #     run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=1)
-        # if(status != 0):
-        #     run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=10)
-
-        # Lowest chi2
-        lowest_chi2(year, species, line, BV_offline, params, max_iter=10000, eps=0.000001, N=10)
+        run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=0.000001)
         global firstTrial
         firstTrial = False
         if(status != 0):
-            lowest_chi2(year, species, line, BV_offline, params, max_iter=10000, eps=0.001, N=10)
+            run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=0.001)
         if(status != 0):
-            lowest_chi2(year, species, line, BV_offline, params, max_iter=10000, eps=1, N=10)
+            run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=1)
         if(status != 0):
-            lowest_chi2(year, species, line, BV_offline, params, max_iter=10000, eps=10, N=10)
+            run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=10)
+
+        # Lowest chi2
+        # lowest_chi2(year, species, line, BV_offline, params, max_iter=10000, eps=0.000001, N=10)
+        # global firstTrial
+        # firstTrial = False
+        # if(status != 0):
+        #     lowest_chi2(year, species, line, BV_offline, params, max_iter=10000, eps=0.001, N=10)
+        # if(status != 0):
+        #     lowest_chi2(year, species, line, BV_offline, params, max_iter=10000, eps=1, N=10)
+        # if(status != 0):
+        #     lowest_chi2(year, species, line, BV_offline, params, max_iter=10000, eps=10, N=10)
         
         try:
             U = U_cov(x,params,V)
