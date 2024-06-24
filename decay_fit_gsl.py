@@ -3,8 +3,8 @@ import sys
 import numpy as np
 from array import array
 import sympy as sp
-import pygsl._numobj as numx
 from pygsl  import multiroots, errno
+import pygsl._numobj as numx
 import matplotlib.pyplot as plt
 from numba import njit
 
@@ -22,9 +22,11 @@ BV_offline = ROOT.Math.XYZPoint(0,0,0)
 X = []
 X_ERR = []
 F = []
+# D = []
 for i in range(dimM+dimX):
     X.append(array('d', [0]))
     X_ERR.append(array('d', [0]))
+    # D.append(array('d', [0]))
 for i in range(dimM+dimX+dimC):
     F.append(array('d', [0]))
 
@@ -179,10 +181,13 @@ def second_derivative_test(x,params):
 
     passes_test = True
 
+    global D
+
     # 1st dimM+dimX=45 principal minors of H
     for i in range(dimM+dimX):
         A = get_minor(H,i,i)
         a = np.linalg.det(A)
+        #D[i][0] = a
         s = np.sign(a)
         # print(s)
         if(s < 0):
@@ -314,6 +319,7 @@ def x_initial_estimate(init, BV, species, params):
     W = params[1]
     RPz = params[2]
     eventNumber = params[3]
+    m_original = params[4]
 
     x0 = np.zeros(dimM+dimX+dimC)
 
@@ -587,18 +593,24 @@ def x_initial_estimate(init, BV, species, params):
         p3pi2 = ROOT.Math.XYZVector( m[13], m[14], m[15] )
         pnu1 = ptau1 - p3pi1
         pnu2 = ptau2 - p3pi2
+
         Etau1 = np.sqrt( mtau**2 + ptau1.Mag2() )
         Etau2 = np.sqrt( mtau**2 + ptau2.Mag2() )
+
         Enu1 = np.sqrt( mnu**2 + pnu1.Mag2() )
         Enu2 = np.sqrt( mnu**2 + pnu2.Mag2() )
+
         pK = ROOT.Math.XYZVector( m[19], m[20], m[21] )
         EK = np.sqrt( mkaon**2 + pK.Mag2() )
         pB = ptau1 + ptau2 + pK
         EB = Etau1 + Etau2 + EK
         MB_squared = EB**2 - pB.Mag2()
 
-        x0[dimM] = BV.x()
-        x0[dimM+1] = BV.y()
+        BVx = RP.x() + (pK.x()/pK.z())*(BV.z() - RPz)
+        BVy = RP.y() + (pK.y()/pK.z())*(BV.z() - RPz )
+
+        x0[dimM] = BVx
+        x0[dimM+1] = BVy
         x0[dimM+2] = BV.z()
         x0[dimM+3] = pB.x()
         x0[dimM+4] = pB.y()
@@ -679,8 +691,11 @@ def x_initial_estimate(init, BV, species, params):
         EB = Etau1 + Etau2 + EK
         MB_squared = EB**2 - pB.Mag2()
 
-        x0[dimM] = BV.x()
-        x0[dimM+1] = BV.y()
+        BVx = RP.x() + (pK.x()/pK.z())*(BV.z() - RPz)
+        BVy = RP.y() + (pK.y()/pK.z())*(BV.z() - RPz )
+
+        x0[dimM] = BVx
+        x0[dimM+1] = BVy
         x0[dimM+2] = BV.z()
         x0[dimM+3] = pB.x()
         x0[dimM+4] = pB.y()
@@ -766,8 +781,11 @@ def x_initial_estimate(init, BV, species, params):
         EB = Etau1 + Etau2 + EK
         MB_squared = EB**2 - pB.Mag2()
 
-        x0[dimM] = BV.x()
-        x0[dimM+1] = BV.y()
+        BVx = RP.x() + (pK.x()/pK.z())*(BV.z() - RPz)
+        BVy = RP.y() + (pK.y()/pK.z())*(BV.z() - RPz )
+
+        x0[dimM] = BVx
+        x0[dimM+1] = BVy
         x0[dimM+2] = BV.z()
         x0[dimM+3] = pB.x()
         x0[dimM+4] = pB.y()
@@ -853,8 +871,11 @@ def x_initial_estimate(init, BV, species, params):
         EB = Etau1 + Etau2 + EK
         MB_squared = EB**2 - pB.Mag2()
 
-        x0[dimM] = BV.x()
-        x0[dimM+1] = BV.y()
+        BVx = RP.x() + (pK.x()/pK.z())*(BV.z() - RPz)
+        BVy = RP.y() + (pK.y()/pK.z())*(BV.z() - RPz )
+
+        x0[dimM] = BVx
+        x0[dimM+1] = BVy
         x0[dimM+2] = BV.z()
         x0[dimM+3] = pB.x()
         x0[dimM+4] = pB.y()
@@ -902,8 +923,11 @@ def x_initial_estimate(init, BV, species, params):
         EB = EK + Etau1 + Etau2
         MB_squared = EB**2 - pB.Mag2()
 
-        x0[dimM] = BV.x()
-        x0[dimM+1] = BV.y()
+        BVx = RP.x() + (pK.x()/pK.z())*(BV.z() - RPz)
+        BVy = RP.y() + (pK.y()/pK.z())*(BV.z() - RPz )
+
+        x0[dimM] = BVx
+        x0[dimM+1] = BVy
         x0[dimM+2] = BV.z()
         x0[dimM+3] = pB.x()
         x0[dimM+4] = pB.y()
@@ -989,8 +1013,11 @@ def x_initial_estimate(init, BV, species, params):
         EB = Etau1 + Etau2 + EK
         MB_squared = EB**2 - pB.Mag2()
 
-        x0[dimM] = BV.x()
-        x0[dimM+1] = BV.y()
+        BVx = RP.x() + (pK.x()/pK.z())*(BV.z() - RPz)
+        BVy = RP.y() + (pK.y()/pK.z())*(BV.z() - RPz )
+
+        x0[dimM] = BVx
+        x0[dimM+1] = BVy
         x0[dimM+2] = BV.z()
         x0[dimM+3] = pB.x()
         x0[dimM+4] = pB.y()
@@ -1076,8 +1103,11 @@ def x_initial_estimate(init, BV, species, params):
         EB = Etau1 + Etau2 + EK
         MB_squared = EB**2 - pB.Mag2()
     
-        x0[dimM] = BV.x()
-        x0[dimM+1] = BV.y()
+        BVx = RP.x() + (pK.x()/pK.z())*(BV.z() - RPz)
+        BVy = RP.y() + (pK.y()/pK.z())*(BV.z() - RPz )
+
+        x0[dimM] = BVx
+        x0[dimM+1] = BVy
         x0[dimM+2] = BV.z()
         x0[dimM+3] = pB.x()
         x0[dimM+4] = pB.y()
@@ -1157,8 +1187,11 @@ def x_initial_estimate(init, BV, species, params):
         EB = EK + Etau1 + Etau2
         MB_squared = EB**2 - pB.Mag2()
 
-        x0[dimM] = BV.x()
-        x0[dimM+1] = BV.y()
+        BVx = RP.x() + (pK.x()/pK.z())*(BV.z() - RPz)
+        BVy = RP.y() + (pK.y()/pK.z())*(BV.z() - RPz )
+
+        x0[dimM] = BVx
+        x0[dimM+1] = BVy
         x0[dimM+2] = BV.z()
         x0[dimM+3] = pB.x()
         x0[dimM+4] = pB.y()
@@ -1241,8 +1274,11 @@ def x_initial_estimate(init, BV, species, params):
         EB = EK + Etau1 + Etau2
         MB_squared = EB**2 - pB.Mag2()
 
-        x0[dimM] = BV.x()
-        x0[dimM+1] = BV.y()
+        BVx = RP.x() + (pK.x()/pK.z())*(BV.z() - RPz)
+        BVy = RP.y() + (pK.y()/pK.z())*(BV.z() - RPz )
+
+        x0[dimM] = BVx
+        x0[dimM+1] = BVy
         x0[dimM+2] = BV.z()
         x0[dimM+3] = pB.x()
         x0[dimM+4] = pB.y()
@@ -1322,8 +1358,11 @@ def x_initial_estimate(init, BV, species, params):
         EB = EK + Etau1 + Etau2
         MB_squared = EB**2 - pB.Mag2()
 
-        x0[dimM] = BV.x()
-        x0[dimM+1] = BV.y()
+        BVx = RP.x() + (pK.x()/pK.z())*(BV.z() - RPz)
+        BVy = RP.y() + (pK.y()/pK.z())*(BV.z() - RPz )
+
+        x0[dimM] = BVx
+        x0[dimM+1] = BVy
         x0[dimM+2] = BV.z()
         x0[dimM+3] = pB.x()
         x0[dimM+4] = pB.y()
@@ -1403,8 +1442,11 @@ def x_initial_estimate(init, BV, species, params):
         EB = EK + Etau1 + Etau2
         MB_squared = EB**2 - pB.Mag2()
 
-        x0[dimM] = BV.x()
-        x0[dimM+1] = BV.y()
+        BVx = RP.x() + (pK.x()/pK.z())*(BV.z() - RPz)
+        BVy = RP.y() + (pK.y()/pK.z())*(BV.z() - RPz )
+
+        x0[dimM] = BVx
+        x0[dimM+1] = BVy
         x0[dimM+2] = BV.z()
         x0[dimM+3] = pB.x()
         x0[dimM+4] = pB.y()
@@ -1426,6 +1468,620 @@ def x_initial_estimate(init, BV, species, params):
         x0[dimM+20] = pnu2.y()
         x0[dimM+21] = pnu2.z()
         x0[dimM+22] = Enu2
+    elif(init == 11): # MLP, K*tautau pions
+        ROOT.TMVA.Tools.Instance()
+        reader_taup_PX = ROOT.TMVA.Reader( "V:Color:Silent" )
+        reader_taup_PY = ROOT.TMVA.Reader( "V:Color:Silent" ) 
+        reader_taup_PZ = ROOT.TMVA.Reader( "V:Color:Silent" ) 
+
+        weightfile_taup_PX = ""
+        weightfile_taup_PY = ""
+        weightfile_taup_PZ = ""
+
+        if((species == 10) or (species == 11) or (species == 12) or (species == 2) or (species == 3)): # Ktautau
+            weightfile_taup_PX = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taup_PX/dataset/weights/TMVARegression_taup_TRUEP_X_MLP.weights.xml"
+            weightfile_taup_PY = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taup_PY/dataset/weights/TMVARegression_taup_TRUEP_Y_MLP.weights.xml"
+            weightfile_taup_PZ = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taup_PZ/dataset/weights/TMVARegression_taup_TRUEP_Z_MLP.weights.xml"
+        elif( (species == 4) or (species == 5) or (species == 6)): # D+D-K+
+            weightfile_taup_PX = "/panfs/felician/MLP_weights/DDK_MLP_Train_taup_PX/dataset/weights/TMVARegression_Dp_TRUEP_X_MLP.weights.xml"
+            weightfile_taup_PY = "/panfs/felician/MLP_weights/DDK_MLP_Train_taup_PY/dataset/weights/TMVARegression_Dp_TRUEP_Y_MLP.weights.xml"
+            weightfile_taup_PZ = "/panfs/felician/MLP_weights/DDK_MLP_Train_taup_PZ/dataset/weights/TMVARegression_Dp_TRUEP_Z_MLP.weights.xml"
+
+        arr_m_1 = array('f', [0])
+        arr_m_2 = array('f', [0])
+        arr_m_3 = array('f', [0])
+        arr_m_4 = array('f', [0])
+        arr_m_5 = array('f', [0])
+        arr_m_6 = array('f', [0])
+        arr_m_7 = array('f', [0])
+        arr_m_8 = array('f', [0])
+        arr_m_9 = array('f', [0])
+        arr_m_10 = array('f', [0])
+        arr_m_11 = array('f', [0])
+        arr_m_12 = array('f', [0])
+        arr_m_13 = array('f', [0])
+        arr_m_14 = array('f', [0])
+        arr_m_15 = array('f', [0])
+        arr_m_16 = array('f', [0])
+        arr_m_17 = array('f', [0])
+        arr_m_18 = array('f', [0])
+        arr_m_19 = array('f', [0])
+        arr_m_20 = array('f', [0])
+        arr_m_21 = array('f', [0])
+        arr_m_22 = array('f', [0])
+        arr_Kp_RP_Z = array('f', [0])
+        arr_eventNumber = array('i', [0])
+
+        reader_taup_PX.AddVariable("df_m_1", arr_m_1)
+        reader_taup_PX.AddVariable("df_m_2", arr_m_2)
+        reader_taup_PX.AddVariable("df_m_3", arr_m_3)
+        reader_taup_PX.AddVariable("df_m_4", arr_m_4)
+        reader_taup_PX.AddVariable("df_m_5", arr_m_5)
+        reader_taup_PX.AddVariable("df_m_6", arr_m_6)
+        reader_taup_PX.AddVariable("df_m_7", arr_m_7)
+        reader_taup_PX.AddVariable("df_m_8", arr_m_8)
+        reader_taup_PX.AddVariable("df_m_9", arr_m_9)
+        reader_taup_PX.AddVariable("df_m_10", arr_m_10)
+        reader_taup_PX.AddVariable("df_m_11", arr_m_11)
+        reader_taup_PX.AddVariable("df_m_12", arr_m_12)
+        reader_taup_PX.AddVariable("df_m_13", arr_m_13)
+        reader_taup_PX.AddVariable("df_m_14", arr_m_14)
+        reader_taup_PX.AddVariable("df_m_15", arr_m_15)
+        reader_taup_PX.AddVariable("df_m_16", arr_m_16)
+        reader_taup_PX.AddVariable("df_m_17", arr_m_17)
+        reader_taup_PX.AddVariable("df_m_18", arr_m_18)
+        reader_taup_PX.AddVariable("df_m_19", arr_m_19)
+        reader_taup_PX.AddVariable("df_m_20", arr_m_20)
+        reader_taup_PX.AddVariable("df_m_21", arr_m_21)
+        reader_taup_PX.AddVariable("df_m_22", arr_m_22)
+        reader_taup_PX.AddVariable("Kp_RP_Z", arr_Kp_RP_Z)
+        reader_taup_PX.AddSpectator("eventNumber", arr_eventNumber)
+
+        reader_taup_PY.AddVariable("df_m_1", arr_m_1)
+        reader_taup_PY.AddVariable("df_m_2", arr_m_2)
+        reader_taup_PY.AddVariable("df_m_3", arr_m_3)
+        reader_taup_PY.AddVariable("df_m_4", arr_m_4)
+        reader_taup_PY.AddVariable("df_m_5", arr_m_5)
+        reader_taup_PY.AddVariable("df_m_6", arr_m_6)
+        reader_taup_PY.AddVariable("df_m_7", arr_m_7)
+        reader_taup_PY.AddVariable("df_m_8", arr_m_8)
+        reader_taup_PY.AddVariable("df_m_9", arr_m_9)
+        reader_taup_PY.AddVariable("df_m_10", arr_m_10)
+        reader_taup_PY.AddVariable("df_m_11", arr_m_11)
+        reader_taup_PY.AddVariable("df_m_12", arr_m_12)
+        reader_taup_PY.AddVariable("df_m_13", arr_m_13)
+        reader_taup_PY.AddVariable("df_m_14", arr_m_14)
+        reader_taup_PY.AddVariable("df_m_15", arr_m_15)
+        reader_taup_PY.AddVariable("df_m_16", arr_m_16)
+        reader_taup_PY.AddVariable("df_m_17", arr_m_17)
+        reader_taup_PY.AddVariable("df_m_18", arr_m_18)
+        reader_taup_PY.AddVariable("df_m_19", arr_m_19)
+        reader_taup_PY.AddVariable("df_m_20", arr_m_20)
+        reader_taup_PY.AddVariable("df_m_21", arr_m_21)
+        reader_taup_PY.AddVariable("df_m_22", arr_m_22)
+        reader_taup_PY.AddVariable("Kp_RP_Z", arr_Kp_RP_Z)
+        reader_taup_PY.AddSpectator("eventNumber", arr_eventNumber)
+
+        reader_taup_PZ.AddVariable("df_m_1", arr_m_1)
+        reader_taup_PZ.AddVariable("df_m_2", arr_m_2)
+        reader_taup_PZ.AddVariable("df_m_3", arr_m_3)
+        reader_taup_PZ.AddVariable("df_m_4", arr_m_4)
+        reader_taup_PZ.AddVariable("df_m_5", arr_m_5)
+        reader_taup_PZ.AddVariable("df_m_6", arr_m_6)
+        reader_taup_PZ.AddVariable("df_m_7", arr_m_7)
+        reader_taup_PZ.AddVariable("df_m_8", arr_m_8)
+        reader_taup_PZ.AddVariable("df_m_9", arr_m_9)
+        reader_taup_PZ.AddVariable("df_m_10", arr_m_10)
+        reader_taup_PZ.AddVariable("df_m_11", arr_m_11)
+        reader_taup_PZ.AddVariable("df_m_12", arr_m_12)
+        reader_taup_PZ.AddVariable("df_m_13", arr_m_13)
+        reader_taup_PZ.AddVariable("df_m_14", arr_m_14)
+        reader_taup_PZ.AddVariable("df_m_15", arr_m_15)
+        reader_taup_PZ.AddVariable("df_m_16", arr_m_16)
+        reader_taup_PZ.AddVariable("df_m_17", arr_m_17)
+        reader_taup_PZ.AddVariable("df_m_18", arr_m_18)
+        reader_taup_PZ.AddVariable("df_m_19", arr_m_19)
+        reader_taup_PZ.AddVariable("df_m_20", arr_m_20)
+        reader_taup_PZ.AddVariable("df_m_21", arr_m_21)
+        reader_taup_PZ.AddVariable("df_m_22", arr_m_22)
+        reader_taup_PZ.AddVariable("Kp_RP_Z", arr_Kp_RP_Z)
+        reader_taup_PZ.AddSpectator("eventNumber", arr_eventNumber)
+
+        reader_taup_PX.BookMVA("MLP", weightfile_taup_PX)
+        reader_taup_PY.BookMVA("MLP", weightfile_taup_PY)
+        reader_taup_PZ.BookMVA("MLP", weightfile_taup_PZ)
+
+        arr_m_1[0] = m[0]
+        arr_m_2[0] = m[1]
+        arr_m_3[0] = m[2]
+        arr_m_4[0] = m[3]
+        arr_m_5[0] = m[4]
+        arr_m_6[0] = m[5]
+        arr_m_7[0] = m[6]
+        arr_m_8[0] = m[7]
+        arr_m_9[0] = m[8]
+        arr_m_10[0] = m[9]
+        arr_m_11[0] = m[10]
+        arr_m_12[0] = m[11]
+        arr_m_13[0] = m[12]
+        arr_m_14[0] = m[13]
+        arr_m_15[0] = m[14]
+        arr_m_16[0] = m[15]
+        arr_m_17[0] = m[16]
+        arr_m_18[0] = m[17]
+        arr_m_19[0] = m[18]
+        arr_m_20[0] = m[19]
+        arr_m_21[0] = m[20]
+        arr_m_22[0] = m[21]
+        arr_Kp_RP_Z[0] = RPz
+        arr_eventNumber[0] = (eventNumber%100)
+
+        MLP_taup_PX = reader_taup_PX.EvaluateRegression("MLP")[0]
+        MLP_taup_PY = reader_taup_PY.EvaluateRegression("MLP")[0]
+        MLP_taup_PZ = reader_taup_PZ.EvaluateRegression("MLP")[0]
+
+        ptau1 = ROOT.Math.XYZVector( MLP_taup_PX, MLP_taup_PY, MLP_taup_PZ )        
+
+        # Magnitude of 3pi momenta
+        p3pi2_mag = p3pi2.r()
+
+        # B+ flight direction
+        bDir = (BV - PV).Unit()
+
+        # Get K+ momentum perpendicular to the B+ flight direction
+        pK_perp = pK - ROOT.Math.XYZVector((pK.Dot(bDir)) * bDir.x(), (pK.Dot(bDir)) * bDir.y(), (pK.Dot(bDir)) * bDir.z())
+
+        # Get tau flight directions (from pions visible momenta)
+        tau_dir1 = ROOT.Math.XYZVector(0,0,0)
+        tau_dir2 = ROOT.Math.XYZVector(0,0,0)
+        tau_dir1.SetXYZ( p3pi1.x(), p3pi1.y(), p3pi1.z() )
+        tau_dir2.SetXYZ( p3pi2.x(), p3pi2.y(), p3pi2.z() )
+
+        tau_dir1 = tau_dir1.Unit()
+        tau_dir2 = tau_dir2.Unit()
+
+        # Get tau direction unit vectors perpendicular to B+ flight direction
+        tau_dir1_perp = (tau_dir1 - ROOT.Math.XYZVector((tau_dir1.Dot(bDir)) * bDir.x(), (tau_dir1.Dot(bDir)) * bDir.y(), (tau_dir1.Dot(bDir)) * bDir.z() )).Unit()
+        tau_dir2_perp = (tau_dir2 - ROOT.Math.XYZVector((tau_dir2.Dot(bDir)) * bDir.x(), (tau_dir2.Dot(bDir)) * bDir.y(), (tau_dir2.Dot(bDir)) * bDir.z() )).Unit()
+
+        # In plane perpendicular to B+ flight direction, get angles between tau momenta and K+ momentum
+        cosphi1 = tau_dir1_perp.Dot(pK_perp.Unit())
+        cosphi2 = tau_dir2_perp.Dot(pK_perp.Unit())
+
+        phi1 = np.arccos(cosphi1)
+        phi2 = np.arccos(cosphi2)
+
+        # Calculate momentum component of taus in this plane
+        pMag_tau1_perp = -1*pK_perp.R()/( cosphi1 + (cosphi2*(np.sin(phi1)/np.sin(phi2))) )
+        pMag_tau2_perp = pMag_tau1_perp*(np.sin(phi1) / np.sin(phi2))
+
+        p_tau2_perp = ROOT.Math.XYZVector(pMag_tau2_perp * tau_dir2_perp.x(), pMag_tau2_perp * tau_dir2_perp.y(), pMag_tau2_perp * tau_dir2_perp.z())
+
+        # Get angles made by tau directions with B+ flight direction
+        tau_B_cos2 = (tau_dir2.Unit()).Dot(bDir.Unit())
+
+        # Get tau momenta parallel to B+ flight direction
+        pMag_tau2_long = np.abs(pMag_tau2_perp)*tau_B_cos2/np.sqrt( 1 - tau_B_cos2**2 )
+
+        # Total tau momentum vector
+        ptau2 = p_tau2_perp + ROOT.Math.XYZVector(pMag_tau2_long * bDir.x(), pMag_tau2_long * bDir.y(), pMag_tau2_long * bDir.z())
+
+        p3pi1 = ROOT.Math.XYZVector( m[6], m[7], m[8] )
+        p3pi2 = ROOT.Math.XYZVector( m[13], m[14], m[15] )
+        pnu1 = ptau1 - p3pi1
+        pnu2 = ptau2 - p3pi2
+
+        Etau1 = np.sqrt( mtau**2 + ptau1.Mag2() )
+        Etau2 = np.sqrt( mtau**2 + ptau2.Mag2() )
+
+        Enu1 = np.sqrt( mnu**2 + pnu1.Mag2() )
+        Enu2 = np.sqrt( mnu**2 + pnu2.Mag2() )
+
+        pK = ROOT.Math.XYZVector( m[19], m[20], m[21] )
+        EK = np.sqrt( mkaon**2 + pK.Mag2() )
+        pB = ptau1 + ptau2 + pK
+        EB = Etau1 + Etau2 + EK
+        MB_squared = EB**2 - pB.Mag2()
+
+        BVx = RP.x() + (pK.x()/pK.z())*(BV.z() - RPz)
+        BVy = RP.y() + (pK.y()/pK.z())*(BV.z() - RPz )
+
+        x0[dimM] = BVx
+        x0[dimM+1] = BVy
+        x0[dimM+2] = BV.z()
+        x0[dimM+3] = pB.x()
+        x0[dimM+4] = pB.y()
+        x0[dimM+5] = pB.z()
+        x0[dimM+6] = MB_squared
+        x0[dimM+7] = ptau1.x()
+        x0[dimM+8] = ptau1.y()
+        x0[dimM+9] = ptau1.z()
+        x0[dimM+10] = Etau1
+        x0[dimM+11] = pnu1.x()
+        x0[dimM+12] = pnu1.y()
+        x0[dimM+13] = pnu1.z()
+        x0[dimM+14] = Enu1
+        x0[dimM+15] = ptau2.x()
+        x0[dimM+16] = ptau2.y()
+        x0[dimM+17] = ptau2.z()
+        x0[dimM+18] = Etau2
+        x0[dimM+19] = pnu2.x()
+        x0[dimM+20] = pnu2.y()
+        x0[dimM+21] = pnu2.z()
+        x0[dimM+22] = Enu2
+
+    elif(init == 12): # K*tautau (pions), MLP
+        ROOT.TMVA.Tools.Instance()
+        reader_taum_PX = ROOT.TMVA.Reader( "V:Color:Silent" ) 
+        reader_taum_PY = ROOT.TMVA.Reader( "V:Color:Silent" ) 
+        reader_taum_PZ = ROOT.TMVA.Reader( "V:Color:Silent" ) 
+        
+        weightfile_taum_PX = ""
+        weightfile_taum_PY = ""
+        weightfile_taum_PZ = ""
+
+        if((species == 10) or (species == 11) or (species == 12) or (species == 2) or (species == 3)): # Ktautau
+            weightfile_taum_PX = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taum_PX/dataset/weights/TMVARegression_taum_TRUEP_X_MLP.weights.xml"
+            weightfile_taum_PY = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taum_PY/dataset/weights/TMVARegression_taum_TRUEP_Y_MLP.weights.xml"
+            weightfile_taum_PZ = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taum_PZ/dataset/weights/TMVARegression_taum_TRUEP_Z_MLP.weights.xml"
+        elif( (species == 4) or (species == 5) or (species == 6)): # D+D-K+
+            weightfile_taum_PX = "/panfs/felician/MLP_weights/DDK_MLP_Train_taum_PX/dataset/weights/TMVARegression_Dm_TRUEP_X_MLP.weights.xml"
+            weightfile_taum_PY = "/panfs/felician/MLP_weights/DDK_MLP_Train_taum_PY/dataset/weights/TMVARegression_Dm_TRUEP_Y_MLP.weights.xml"
+            weightfile_taum_PZ = "/panfs/felician/MLP_weights/DDK_MLP_Train_taum_PZ/dataset/weights/TMVARegression_Dm_TRUEP_Z_MLP.weights.xml"
+        
+        arr_m_1 = array('f', [0])
+        arr_m_2 = array('f', [0])
+        arr_m_3 = array('f', [0])
+        arr_m_4 = array('f', [0])
+        arr_m_5 = array('f', [0])
+        arr_m_6 = array('f', [0])
+        arr_m_7 = array('f', [0])
+        arr_m_8 = array('f', [0])
+        arr_m_9 = array('f', [0])
+        arr_m_10 = array('f', [0])
+        arr_m_11 = array('f', [0])
+        arr_m_12 = array('f', [0])
+        arr_m_13 = array('f', [0])
+        arr_m_14 = array('f', [0])
+        arr_m_15 = array('f', [0])
+        arr_m_16 = array('f', [0])
+        arr_m_17 = array('f', [0])
+        arr_m_18 = array('f', [0])
+        arr_m_19 = array('f', [0])
+        arr_m_20 = array('f', [0])
+        arr_m_21 = array('f', [0])
+        arr_m_22 = array('f', [0])
+        arr_Kp_RP_Z = array('f', [0])
+        arr_eventNumber = array('i', [0])
+
+        reader_taum_PX.AddVariable("df_m_1", arr_m_1)
+        reader_taum_PX.AddVariable("df_m_2", arr_m_2)
+        reader_taum_PX.AddVariable("df_m_3", arr_m_3)
+        reader_taum_PX.AddVariable("df_m_4", arr_m_4)
+        reader_taum_PX.AddVariable("df_m_5", arr_m_5)
+        reader_taum_PX.AddVariable("df_m_6", arr_m_6)
+        reader_taum_PX.AddVariable("df_m_7", arr_m_7)
+        reader_taum_PX.AddVariable("df_m_8", arr_m_8)
+        reader_taum_PX.AddVariable("df_m_9", arr_m_9)
+        reader_taum_PX.AddVariable("df_m_10", arr_m_10)
+        reader_taum_PX.AddVariable("df_m_11", arr_m_11)
+        reader_taum_PX.AddVariable("df_m_12", arr_m_12)
+        reader_taum_PX.AddVariable("df_m_13", arr_m_13)
+        reader_taum_PX.AddVariable("df_m_14", arr_m_14)
+        reader_taum_PX.AddVariable("df_m_15", arr_m_15)
+        reader_taum_PX.AddVariable("df_m_16", arr_m_16)
+        reader_taum_PX.AddVariable("df_m_17", arr_m_17)
+        reader_taum_PX.AddVariable("df_m_18", arr_m_18)
+        reader_taum_PX.AddVariable("df_m_19", arr_m_19)
+        reader_taum_PX.AddVariable("df_m_20", arr_m_20)
+        reader_taum_PX.AddVariable("df_m_21", arr_m_21)
+        reader_taum_PX.AddVariable("df_m_22", arr_m_22)
+        reader_taum_PX.AddVariable("Kp_RP_Z", arr_Kp_RP_Z)
+        reader_taum_PX.AddSpectator("eventNumber", arr_eventNumber)
+
+        reader_taum_PY.AddVariable("df_m_1", arr_m_1)
+        reader_taum_PY.AddVariable("df_m_2", arr_m_2)
+        reader_taum_PY.AddVariable("df_m_3", arr_m_3)
+        reader_taum_PY.AddVariable("df_m_4", arr_m_4)
+        reader_taum_PY.AddVariable("df_m_5", arr_m_5)
+        reader_taum_PY.AddVariable("df_m_6", arr_m_6)
+        reader_taum_PY.AddVariable("df_m_7", arr_m_7)
+        reader_taum_PY.AddVariable("df_m_8", arr_m_8)
+        reader_taum_PY.AddVariable("df_m_9", arr_m_9)
+        reader_taum_PY.AddVariable("df_m_10", arr_m_10)
+        reader_taum_PY.AddVariable("df_m_11", arr_m_11)
+        reader_taum_PY.AddVariable("df_m_12", arr_m_12)
+        reader_taum_PY.AddVariable("df_m_13", arr_m_13)
+        reader_taum_PY.AddVariable("df_m_14", arr_m_14)
+        reader_taum_PY.AddVariable("df_m_15", arr_m_15)
+        reader_taum_PY.AddVariable("df_m_16", arr_m_16)
+        reader_taum_PY.AddVariable("df_m_17", arr_m_17)
+        reader_taum_PY.AddVariable("df_m_18", arr_m_18)
+        reader_taum_PY.AddVariable("df_m_19", arr_m_19)
+        reader_taum_PY.AddVariable("df_m_20", arr_m_20)
+        reader_taum_PY.AddVariable("df_m_21", arr_m_21)
+        reader_taum_PY.AddVariable("df_m_22", arr_m_22)
+        reader_taum_PY.AddVariable("Kp_RP_Z", arr_Kp_RP_Z)
+        reader_taum_PY.AddSpectator("eventNumber", arr_eventNumber)
+
+        reader_taum_PZ.AddVariable("df_m_1", arr_m_1)
+        reader_taum_PZ.AddVariable("df_m_2", arr_m_2)
+        reader_taum_PZ.AddVariable("df_m_3", arr_m_3)
+        reader_taum_PZ.AddVariable("df_m_4", arr_m_4)
+        reader_taum_PZ.AddVariable("df_m_5", arr_m_5)
+        reader_taum_PZ.AddVariable("df_m_6", arr_m_6)
+        reader_taum_PZ.AddVariable("df_m_7", arr_m_7)
+        reader_taum_PZ.AddVariable("df_m_8", arr_m_8)
+        reader_taum_PZ.AddVariable("df_m_9", arr_m_9)
+        reader_taum_PZ.AddVariable("df_m_10", arr_m_10)
+        reader_taum_PZ.AddVariable("df_m_11", arr_m_11)
+        reader_taum_PZ.AddVariable("df_m_12", arr_m_12)
+        reader_taum_PZ.AddVariable("df_m_13", arr_m_13)
+        reader_taum_PZ.AddVariable("df_m_14", arr_m_14)
+        reader_taum_PZ.AddVariable("df_m_15", arr_m_15)
+        reader_taum_PZ.AddVariable("df_m_16", arr_m_16)
+        reader_taum_PZ.AddVariable("df_m_17", arr_m_17)
+        reader_taum_PZ.AddVariable("df_m_18", arr_m_18)
+        reader_taum_PZ.AddVariable("df_m_19", arr_m_19)
+        reader_taum_PZ.AddVariable("df_m_20", arr_m_20)
+        reader_taum_PZ.AddVariable("df_m_21", arr_m_21)
+        reader_taum_PZ.AddVariable("df_m_22", arr_m_22)
+        reader_taum_PZ.AddVariable("Kp_RP_Z", arr_Kp_RP_Z)
+        reader_taum_PZ.AddSpectator("eventNumber", arr_eventNumber)
+
+        reader_taum_PX.BookMVA("MLP", weightfile_taum_PX)
+        reader_taum_PY.BookMVA("MLP", weightfile_taum_PY)
+        reader_taum_PZ.BookMVA("MLP", weightfile_taum_PZ)
+
+        arr_m_1[0] = m[0]
+        arr_m_2[0] = m[1]
+        arr_m_3[0] = m[2]
+        arr_m_4[0] = m[3]
+        arr_m_5[0] = m[4]
+        arr_m_6[0] = m[5]
+        arr_m_7[0] = m[6]
+        arr_m_8[0] = m[7]
+        arr_m_9[0] = m[8]
+        arr_m_10[0] = m[9]
+        arr_m_11[0] = m[10]
+        arr_m_12[0] = m[11]
+        arr_m_13[0] = m[12]
+        arr_m_14[0] = m[13]
+        arr_m_15[0] = m[14]
+        arr_m_16[0] = m[15]
+        arr_m_17[0] = m[16]
+        arr_m_18[0] = m[17]
+        arr_m_19[0] = m[18]
+        arr_m_20[0] = m[19]
+        arr_m_21[0] = m[20]
+        arr_m_22[0] = m[21]
+        arr_Kp_RP_Z[0] = RPz
+        arr_eventNumber[0] = (eventNumber%100)
+
+        MLP_taum_PX = reader_taum_PX.EvaluateRegression("MLP")[0]
+        MLP_taum_PY = reader_taum_PY.EvaluateRegression("MLP")[0]
+        MLP_taum_PZ = reader_taum_PZ.EvaluateRegression("MLP")[0]
+
+        ptau2 = ROOT.Math.XYZVector( MLP_taum_PX, MLP_taum_PY, MLP_taum_PZ )
+
+        # Magnitude of 3pi momenta
+        p3pi1_mag = p3pi1.r()
+
+        # B+ flight direction
+        bDir = (BV - PV).Unit()
+
+        # Get K+ momentum perpendicular to the B+ flight direction
+        pK_perp = pK - ROOT.Math.XYZVector((pK.Dot(bDir)) * bDir.x(), (pK.Dot(bDir)) * bDir.y(), (pK.Dot(bDir)) * bDir.z())
+
+        # Get tau flight directions (from pions visible momenta)
+        tau_dir1 = ROOT.Math.XYZVector(0,0,0)
+        tau_dir2 = ROOT.Math.XYZVector(0,0,0)
+        tau_dir1.SetXYZ( p3pi1.x(), p3pi1.y(), p3pi1.z() )
+        tau_dir2.SetXYZ( p3pi2.x(), p3pi2.y(), p3pi2.z() )
+
+        tau_dir1 = tau_dir1.Unit()
+        tau_dir2 = tau_dir2.Unit()
+
+        # Get tau direction unit vectors perpendicular to B+ flight direction
+        tau_dir1_perp = (tau_dir1 - ROOT.Math.XYZVector((tau_dir1.Dot(bDir)) * bDir.x(), (tau_dir1.Dot(bDir)) * bDir.y(), (tau_dir1.Dot(bDir)) * bDir.z() )).Unit()
+        tau_dir2_perp = (tau_dir2 - ROOT.Math.XYZVector((tau_dir2.Dot(bDir)) * bDir.x(), (tau_dir2.Dot(bDir)) * bDir.y(), (tau_dir2.Dot(bDir)) * bDir.z() )).Unit()
+
+        # In plane perpendicular to B+ flight direction, get angles between tau momenta and K+ momentum
+        cosphi1 = tau_dir1_perp.Dot(pK_perp.Unit())
+        cosphi2 = tau_dir2_perp.Dot(pK_perp.Unit())
+
+        phi1 = np.arccos(cosphi1)
+        phi2 = np.arccos(cosphi2)
+
+        # Calculate momentum component of taus in this plane
+        pMag_tau1_perp = -1*pK_perp.R()/( cosphi1 + (cosphi2*(np.sin(phi1)/np.sin(phi2))) )
+        pMag_tau2_perp = pMag_tau1_perp*(np.sin(phi1) / np.sin(phi2))
+
+        p_tau1_perp = ROOT.Math.XYZVector(pMag_tau1_perp * tau_dir1_perp.x(), pMag_tau1_perp * tau_dir1_perp.y(), pMag_tau1_perp * tau_dir1_perp.z())
+
+        # Get angles made by tau directions with B+ flight direction
+        tau_B_cos1 = (tau_dir1.Unit()).Dot(bDir.Unit())
+
+        # Get tau momenta parallel to B+ flight direction
+        pMag_tau1_long = np.abs(pMag_tau1_perp)*tau_B_cos1/np.sqrt( 1 - tau_B_cos1**2 )
+
+        # Total tau momentum vector
+        ptau1 = p_tau1_perp + ROOT.Math.XYZVector(pMag_tau1_long * bDir.x(), pMag_tau1_long * bDir.y(), pMag_tau1_long * bDir.z())
+
+        p3pi1 = ROOT.Math.XYZVector( m[6], m[7], m[8] )
+        p3pi2 = ROOT.Math.XYZVector( m[13], m[14], m[15] )
+        pnu1 = ptau1 - p3pi1
+        pnu2 = ptau2 - p3pi2
+
+        Etau1 = np.sqrt( mtau**2 + ptau1.Mag2() )
+        Etau2 = np.sqrt( mtau**2 + ptau2.Mag2() )
+
+        Enu1 = np.sqrt( mnu**2 + pnu1.Mag2() )
+        Enu2 = np.sqrt( mnu**2 + pnu2.Mag2() )
+
+        pK = ROOT.Math.XYZVector( m[19], m[20], m[21] )
+        EK = np.sqrt( mkaon**2 + pK.Mag2() )
+        pB = ptau1 + ptau2 + pK
+        EB = Etau1 + Etau2 + EK
+        MB_squared = EB**2 - pB.Mag2()
+
+        BVx = RP.x() + (pK.x()/pK.z())*(BV.z() - RPz)
+        BVy = RP.y() + (pK.y()/pK.z())*(BV.z() - RPz )
+
+        x0[dimM] = BVx
+        x0[dimM+1] = BVy
+        x0[dimM+2] = BV.z()
+        x0[dimM+3] = pB.x()
+        x0[dimM+4] = pB.y()
+        x0[dimM+5] = pB.z()
+        x0[dimM+6] = MB_squared
+        x0[dimM+7] = ptau1.x()
+        x0[dimM+8] = ptau1.y()
+        x0[dimM+9] = ptau1.z()
+        x0[dimM+10] = Etau1
+        x0[dimM+11] = pnu1.x()
+        x0[dimM+12] = pnu1.y()
+        x0[dimM+13] = pnu1.z()
+        x0[dimM+14] = Enu1
+        x0[dimM+15] = ptau2.x()
+        x0[dimM+16] = ptau2.y()
+        x0[dimM+17] = ptau2.z()
+        x0[dimM+18] = Etau2
+        x0[dimM+19] = pnu2.x()
+        x0[dimM+20] = pnu2.y()
+        x0[dimM+21] = pnu2.z()
+        x0[dimM+22] = Enu2
+
+    elif(init == 13):
+        # With the offline estimate for the BVz we can obtain all other unknown parameters
+        BVz = x_true[2]
+
+        # BV must be in K+ trajectory
+        BVx = RP.x() + (pK.x()/pK.z())*(BVz - RPz)
+        BVy = RP.y() + (pK.y()/pK.z())*(BVz - RPz)
+
+        # ptau1 must point back to the BV
+        a1 = (DV1.x() - BVx)/(DV1.z() - BVz)
+        a2 = (DV1.y() - BVy)/(DV1.z() - BVz)
+        # ptau1x = a1*ptau1z
+        # ptau1y = a2*ptau1z
+
+        # ptau2 must point back to the BV
+        b1 = (DV2.x() - BVx)/(DV2.z() - BVz)
+        b2 = (DV2.y() - BVy)/(DV2.z() - BVz)
+        # ptau2x = b1*ptau2z
+        # ptau2y = b2*ptau2z
+
+        # pB must point back to the PV
+        c1 = (BVx - PV.x())/(BVz - PV.z())
+        c2 = (BVy - PV.y())/(BVz - PV.z())
+
+        d = (c1 - a1)/(b1 - c1)
+        e = (c1*pK.z() - pK.x())/(b1 - c1)
+        # ptau2z = d*ptau1z + e
+        
+        ptau1z = (c2*pK.z() - pK.y() + (c2 - b2)*e )/(a2 + b2*d - c2 - c2*d)
+        ptau1x = a1*ptau1z
+        ptau1y = a2*ptau1z
+        ptau1 = ROOT.Math.XYZVector(ptau1x, ptau1y, ptau1z)
+
+        ptau2z = d*ptau1z + e
+        ptau2x = b1*ptau2z
+        ptau2y = b2*ptau2z
+        ptau2 = ROOT.Math.XYZVector(ptau2x, ptau2y, ptau2z)
+
+        # Tau mass constraints
+        # Etau1 = np.sqrt( mtau**2 + ptau1.Mag2() )
+        # Etau2 = np.sqrt( mtau**2 + ptau2.Mag2() )
+
+        # 3-momentum conservation in DV1 and DV2
+        pnu1 = ptau1 - p3pi1
+        pnu2 = ptau2 - p3pi2
+
+        # Nu mass constraints
+        # Enu1 = np.sqrt( mnu**2 + pnu1.Mag2() )
+        # Enu2 = np.sqrt( mnu**2 + pnu2.Mag2() )
+
+        m3pi1 = np.sqrt( E3pi1**2 - p3pi1.Mag2() )
+        m3pi2 = np.sqrt( E3pi2**2 - p3pi2.Mag2() )
+
+        Etau1 = ( mtau**2 + m3pi1**2 - mnu**2 + 2*( ptau1.Dot(p3pi1) ) )/(2*E3pi1)
+        Etau2 = ( mtau**2 + m3pi2**2 - mnu**2 + 2*( ptau2.Dot(p3pi2) ) )/(2*E3pi2)
+
+        Enu1 = ( mtau**2 + mnu**2 - m3pi1**2 + 2*( pnu1.Dot(p3pi1) ) )/(2*E3pi1)
+        Enu2 = ( mtau**2 + mnu**2 - m3pi2**2 + 2*( pnu2.Dot(p3pi2) ) )/(2*E3pi2)
+
+        # 4-momentum conservation in BV
+        pB = pK + ptau1 + ptau2
+        EB = EK + Etau1 + Etau2
+        MB_squared = EB**2 - pB.Mag2()
+
+        x0[dimM] = BVx
+        x0[dimM+1] = BVy
+        x0[dimM+2] = BVz
+        x0[dimM+3] = pB.x()
+        x0[dimM+4] = pB.y()
+        x0[dimM+5] = pB.z()
+        x0[dimM+6] = MB_squared
+        x0[dimM+7] = ptau1.x()
+        x0[dimM+8] = ptau1.y()
+        x0[dimM+9] = ptau1.z()
+        x0[dimM+10] = Etau1
+        x0[dimM+11] = pnu1.x()
+        x0[dimM+12] = pnu1.y()
+        x0[dimM+13] = pnu1.z()
+        x0[dimM+14] = Enu1
+        x0[dimM+15] = ptau2.x()
+        x0[dimM+16] = ptau2.y()
+        x0[dimM+17] = ptau2.z()
+        x0[dimM+18] = Etau2
+        x0[dimM+19] = pnu2.x()
+        x0[dimM+20] = pnu2.y()
+        x0[dimM+21] = pnu2.z()
+        x0[dimM+22] = Enu2
+
+    elif(init == 14):
+        ptau1 = ROOT.Math.XYZVector( m_original[6], m_original[7], m_original[8] )
+        Etau1 = m_original[9]
+        ptau2 = ROOT.Math.XYZVector( m_original[13], m_original[14], m_original[15] )
+        Etau2 = m_original[16]
+
+        pnu1 = ptau1 - p3pi1
+        pnu2 = ptau2 - p3pi2
+        Enu1 = Etau1 - E3pi1
+        Enu2 = Etau2 - E3pi2
+
+        pB = ptau1 + ptau2 + pK
+        EB = EK + Etau1 + Etau2
+        MB_squared = EB**2 - pB.Mag2()
+
+        BVx = RP.x() + (pK.x()/pK.z())*(BV.z() - RPz)
+        BVy = RP.y() + (pK.y()/pK.z())*(BV.z() - RPz)
+
+        x0[dimM] = BVx
+        x0[dimM+1] = BVy
+        x0[dimM+2] = BV.z()
+        x0[dimM+3] = pB.x()
+        x0[dimM+4] = pB.y()
+        x0[dimM+5] = pB.z()
+        x0[dimM+6] = MB_squared
+        x0[dimM+7] = ptau1.x()
+        x0[dimM+8] = ptau1.y()
+        x0[dimM+9] = ptau1.z()
+        x0[dimM+10] = Etau1
+        x0[dimM+11] = pnu1.x()
+        x0[dimM+12] = pnu1.y()
+        x0[dimM+13] = pnu1.z()
+        x0[dimM+14] = Enu1
+        x0[dimM+15] = ptau2.x()
+        x0[dimM+16] = ptau2.y()
+        x0[dimM+17] = ptau2.z()
+        x0[dimM+18] = Etau2
+        x0[dimM+19] = pnu2.x()
+        x0[dimM+20] = pnu2.y()
+        x0[dimM+21] = pnu2.z()
+        x0[dimM+22] = Enu2
+
     elif(init == -1):
         BV = ROOT.Math.XYZPoint( x_true[0], x_true[1], x_true[2] )
         pB = ROOT.Math.XYZVector( x_true[3], x_true[4], x_true[5] )
@@ -1461,6 +2117,7 @@ def x_initial_estimate(init, BV, species, params):
         x0[dimM+20] = Ptau2.y() - P4.y() - P5.y() - P6.y()
         x0[dimM+21] = Ptau2.z() - P4.z() - P5.z() - P6.z()
         x0[dimM+22] = Ptau2.t() - P4.t() - P5.t() - P6.t()
+    
 
     # Initialise lambda (lb = 0 gives trivial solution)
     for i in range(dimC):
@@ -1470,20 +2127,31 @@ def x_initial_estimate(init, BV, species, params):
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-def run_solver(init, year, species, line, BV_offline, params, max_iter, eps):
+def run_solver(init, year, species, line, BV_offline, params, use_generalised_region, max_iter, eps):
     global chi2_value, tol_value, status
 
-    if firstTrial:
-        try:
-            x0 =  x_initial_estimate(init, BV_offline, species, params)
-        except:
-            status = 3
-            print("ERROR: Numerical problem like divide by 0")
-    else:
-        x0 = x
+    m = params[0]
+    W = params[1]
+    RPz = params[2]
+
+    x0 =  x_initial_estimate(init, BV_offline, species, params)
+
+    # for i in range(dimC):
+    #     print("i = ", i, "  ", f0[dimM+dimX+i])
+
+    # quit()
+
+    # if firstTrial:
+    #     try:
+    #         x0 =  x_initial_estimate(init, BV_offline, species, params)
+    #     except:
+    #         status = 3
+    #         print("ERROR: Numerical problem like divide by 0")
+    # else:
+    #     x0 = x
 
     try:
-        run_fdfsolver(year, species, line, x0, params, max_iter, eps)
+        run_fdfsolver(year, species, line, x0, params, use_generalised_region, max_iter, eps)
     except:
         print("ERROR: solver got stuck in iteration")
     
@@ -1500,7 +2168,7 @@ def run_solver(init, year, species, line, BV_offline, params, max_iter, eps):
     else:
         status = 2
 
-def lowest_chi2(year, species, line, BV_offline, params, max_iter, eps, N=11):
+def lowest_chi2(year, species, line, BV_offline, params, init_list, max_iter, eps):
     global x, f, status, nIter, chi2_value, tol_value, init
 
     x_list = []
@@ -1510,8 +2178,16 @@ def lowest_chi2(year, species, line, BV_offline, params, max_iter, eps, N=11):
     sum_list = []
     chi2_list = []
 
-    for i in range(1,N+1):
-        run_solver(i, year, species, line, BV_offline, params, max_iter, eps)
+    N = len(init_list)
+
+    for i in range(N):
+        a = init_list[i]
+
+        print("init = ",a)
+        run_solver(a, year, species, line, BV_offline, params, True, max_iter, eps)
+        if(status != 0):
+            run_solver(a, year, species, line, BV_offline, params, False, max_iter, eps)
+
         x_list.append(x)
         f_list.append(f)
         status_list.append(status)
@@ -1519,13 +2195,6 @@ def lowest_chi2(year, species, line, BV_offline, params, max_iter, eps, N=11):
         sum_list.append(absolute_sum(f))
         chi2_list.append(chisquare_value(x,params))
 
-        MB_squared = x[dimM+6]
-        if(MB_squared > 0):
-            a = np.sqrt(MB_squared)
-        else:
-            a = -np.sqrt(np.abs(MB_squared))
-
-        # print("init = ", i, "status = ", status, "tol = ", sum_list[i], "chi2 = ", chi2_list[i], "MB = ", a, "nIter = ", nIter)
         nIter = 0
 
     # Return solution with lowest chi2
@@ -1571,11 +2240,14 @@ def absolute_sum(F):
         abs_sum += np.abs(F[i])
     return abs_sum
 
-def run_fdfsolver(year, species, line, x0, params, max_iter, eps):
+def run_fdfsolver(year, species, line, x0, params, use_generalised_region, max_iter, eps):
     global x, f, status, nIter
 
     mysys = multiroots.gsl_multiroot_function_fdf(equations_f, equations_df, equations_fdf, params, dimM+dimX+dimC)
-    solver = multiroots.hybridsj(mysys, dimM+dimX+dimC)
+    if use_generalised_region:
+        solver = multiroots.hybridsj(mysys, dimM+dimX+dimC)
+    else:
+        solver = multiroots.hybridj(mysys, dimM+dimX+dimC)
 
     tmp = numx.array(x0,)
     solver.set(tmp) 
@@ -1616,10 +2288,14 @@ def main(argv):
     RECO_files = argv[2]
     species_str = argv[3]
     line = argv[4]
+    # i_first = argv[5]
+    # i_last = argv[6]
 
     year = int(year)
     species = int(species_str)
     line = int(line)
+    # i_first = int(i_first)
+    # i_last = int(i_last)
 
     isKtautau = False
     if((species == 10) or (species == 11) or (species == 12) or (species == 1) or (species == 2) or (species == 3)):
@@ -1752,6 +2428,7 @@ def main(argv):
     for i in range(dimM+dimX):
        tree.Branch(x_names[i], X[i], x_names[i]+"/D")
        tree.Branch(x_err_names[i], X_ERR[i], x_err_names[i]+"/D")
+       # tree.Branch("df_det_{0}".format(i), D[i], "df_det_{0}/D".format(i))
     for i in range(dimM+dimX+dimC):
        tree.Branch("df_F_{0}".format(i), F[i], "df_F_{0}/D".format(i))
     tree.Branch("df_status", STATUS, "df_status/i")
@@ -1764,9 +2441,10 @@ def main(argv):
 
     m = np.zeros(dimM)
     V = np.zeros((dimM,dimM))
+    m_original = np.zeros(dimM)
 
     num_entries = t.GetEntries()
-    for evt in range(num_entries):
+    for evt in range(1):
         print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", " evt = ", evt, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
         global nIter, status
 
@@ -1777,6 +2455,7 @@ def main(argv):
 
             if isD0D0K:
                 m[i] = getattr(t, "df_mprime_{0}".format(i+1))
+                m_original[i] = getattr(t, "df_m_{0}".format(i+1))
             else:
                 m[i] = getattr(t, "df_m_{0}".format(i+1)) 
 
@@ -1786,12 +2465,6 @@ def main(argv):
                     V[i][j] = getattr(t, "df_Vprime_{0}_{1}".format(i+1,j+1)) 
                 else:
                     V[i][j] = getattr(t, "df_V_{0}_{1}".format(i+1,j+1))
-
-        # Scale tau covariance matrix
-        for i in range(7):
-            for j in range(7):
-                V[i+3][j+3] = V[i+3][j+3]*100
-                V[i+10][j+10] = V[i+10][j+10]*100
         
         if((species == 10) or (species == 11) or (species == 12) or (species == 1) or (species == 4) or (species == 9)):
             global x_true
@@ -1813,32 +2486,29 @@ def main(argv):
         # global BV_offline 
         BV_offline = ROOT.Math.XYZPoint(BVx, BVy, BVz)
 
-        params = [m, W, RPz, eventNumber]
+        params = [m, W, RPz, eventNumber, m_original]
 
         # MLP initialisation
-        # run_solver(0, year, species, line, BV_offline, params, max_iter=10000, eps=0.000001)
+        # run_solver(11, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+        # if(status != 0):
+        #     run_solver(0, year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
+
+        # True initialisation
+        # run_solver(-1, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+        # if(status != 0):
+        #     run_solver(-1, year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
+
         # global firstTrial
         # firstTrial = False
         # if(status != 0):
-        #     run_solver(0, year, species, line, BV_offline, params, max_iter=10000, eps=0.001)
+        #     run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=0.001)
         # if(status != 0):
-        #     run_solver(0, year, species, line, BV_offline, params, max_iter=10000, eps=1)
+        #     run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=1)
         # if(status != 0):
-        #     run_solver(0, year, species, line, BV_offline, params, max_iter=10000, eps=10)
-    
-        # True initialisation
-        run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=0.000001)
-        global firstTrial
-        firstTrial = False
-        if(status != 0):
-            run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=0.001)
-        if(status != 0):
-            run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=1)
-        if(status != 0):
-            run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=10)
+        #     run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=10)
 
         # Lowest chi2
-        # lowest_chi2(year, species, line, BV_offline, params, max_iter=10000, eps=0.000001, N=10)
+        # lowest_chi2(year, species, line, BV_offline, params, [0,3,11,12], max_iter=10000, eps=0.000001)        
         # global firstTrial
         # firstTrial = False
         # if(status != 0):
@@ -1847,7 +2517,13 @@ def main(argv):
         #     lowest_chi2(year, species, line, BV_offline, params, max_iter=10000, eps=1, N=10)
         # if(status != 0):
         #     lowest_chi2(year, species, line, BV_offline, params, max_iter=10000, eps=10, N=10)
-        
+
+        # New init
+        # run_solver(12, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+        # if(status != 0):
+        #     run_solver(12, year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
+        run_solver(14, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+
         try:
             U = U_cov(x,params,V)
         except:
@@ -1874,7 +2550,7 @@ def main(argv):
 
         if(status != 3):
             dMB_squared = np.sqrt(U[dimM+6][dimM+6])
-            dMB[0] =  dMB_squared/(2*np.abs(MB))
+            dMB[0] =  dMB_squared/(2*np.abs(MB[0]))
 
         print("init = ", init[0], "status = ", STATUS[0], "MB = ", MB[0], "dMB = ", dMB[0], "chi2 = ", chi2[0], "sum = ", tolerance[0], "nIter = ", nIter)
 
