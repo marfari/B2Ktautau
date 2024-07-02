@@ -214,7 +214,23 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
             isMC = true;
         }
 
-        TFileCollection* fc_all = new TFileCollection("fc_all", "fc_all", FILES);
+        TCut mass = ""; // background definition
+        // if(species == 8) 
+        // {
+        //     mass = "Bp_dtf_M[0] > 5350";
+
+        // }
+
+        TFileCollection* fc_all;
+        if(isMC)
+        {
+            fc_all = new TFileCollection("fc_all", "fc_all", FILES);
+        }
+        else
+        {
+            fc_all = new TFileCollection("fc_all", "fc_all", FILES);
+        }
+         
         TChain* t_reco;
         if((species == 3) || (species == 6) || (species == -1)) // WS data (Ktautau,D+D-K+,D0D0K)
         {
@@ -230,7 +246,7 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
         cout << "Reconstruction efficiency" << endl;
         TChain* t_gen;
         Double_t eps_reco = 1.;
-        Double_t N_reco = t_reco->GetEntries();
+        Double_t N_reco = t_reco->GetEntries(mass);
         Double_t N_gen;
         if(isMC)
         {
@@ -245,16 +261,16 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
 
         // Trigger
         cout << "Trigger efficiency" << endl;
-        Double_t N_L0 = t_reco->GetEntries(truthMatch+L0_trigger);
-        Double_t N_L0_HLT1 = t_reco->GetEntries(truthMatch+L0_trigger+HLT1_trigger);
-        Double_t N_trigger = t_reco->GetEntries(truthMatch+trigger);
+        Double_t N_L0 = t_reco->GetEntries(mass+truthMatch+L0_trigger);
+        Double_t N_L0_HLT1 = t_reco->GetEntries(mass+truthMatch+L0_trigger+HLT1_trigger);
+        Double_t N_trigger = t_reco->GetEntries(mass+truthMatch+trigger);
         Double_t eps_L0 = N_L0 / N_reco;
         Double_t eps_L0_HLT1 = N_L0_HLT1 / N_reco; 
         Double_t eps_trigger = N_trigger / N_reco;
 
         // DTF
         cout << "DTF efficiency" << endl;
-        Double_t N_pass = t_reco->GetEntries(truthMatch+trigger+passDTF);
+        Double_t N_pass = t_reco->GetEntries(mass+truthMatch+trigger+passDTF);
         Double_t eps_dtf = N_pass / N_trigger;
 
         // Pre-selections
@@ -263,11 +279,11 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
         std::vector<Double_t> N_others;
         for(int i = 0; i < N; i++)
         {
-            N_others.push_back( t_reco->GetEntries(truthMatch+trigger+passDTF+other_cuts[i]) );
+            N_others.push_back( t_reco->GetEntries(mass+truthMatch+trigger+passDTF+other_cuts[i]) );
             eps_others.push_back( N_others[i] / N_pass );
         }
 
-        Double_t N_others_all = t_reco->GetEntries(truthMatch+trigger+passDTF+others);
+        Double_t N_others_all = t_reco->GetEntries(mass+truthMatch+trigger+passDTF+others);
         Double_t eps_others_all = N_others_all / N_pass;
 
         file << " \\begin{table}[!htbp]" << std::endl;
