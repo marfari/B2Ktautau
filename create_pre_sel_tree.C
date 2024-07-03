@@ -1,14 +1,30 @@
 
 Double_t eps_error(Double_t Num, Double_t Den);
 
+Bool_t addFit = false;
+
 void create_pre_sel_tree(int year, int species, int line, bool createTable)
 {   
-    std::ofstream file(Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/Species_%i/pre_sel_table.tex",year,species));
+    TString path;
+    if(createTable)
+    {
+        path = Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/pre_sel_table_species_%i.tex",year,species);
+    }
+    else
+    {
+        path = "";
+    }
+    std::ofstream file(path);
 
     Bool_t isKtautauMC = false;
     if( (species == 10) || (species == 11) || (species == 12) || (species == 1) )
     {
         isKtautauMC = true;
+    }
+
+    if(isKtautauMC || (species == 2) || (species == 3))
+    {
+        addFit = true;
     }
 
     TString FILES;
@@ -51,8 +67,13 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
         MC_component_file = Form("/panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201%i/%i.root",year,line);
     }
 
-    // Pre-selection cuts
+    TString FILES_fit;
+    if(addFit)
+    {
+        FILES_fit = Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/fit_results.txt",year,species);
+    }
 
+    // Pre-selection cuts
     // MC truth-match
     TCut truthMatch;
     if(isKtautauMC){
@@ -79,7 +100,7 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
 
     // pass fitter
     TCut passDTF;
-    if(isKtautauMC || (species == 2) || (species == 3))
+    if(addFit)
     {
         passDTF = "df_status==0";
     }
@@ -90,6 +111,12 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
 
     TCut others;
     std::vector<TCut> other_cuts;
+    if(isKtautauMC || (species == 2) || (species == 3))
+    {
+        other_cuts.push_back("sqrt( pow(df_BVx - df_PVx,2) + pow(df_BVy - df_PVy,2) + pow(df_BVz - df_PVz,2) ) > 2");
+        other_cuts.push_back("(taup_M > 800) && (taup_M < 1650)");
+        other_cuts.push_back("(taum_M > 800) && (taum_M < 1650)");
+    }
     if((species == 4) || (species == 5) || (species == 6)) // D+D-K+
     {   
         other_cuts.push_back("(Dp_K_ProbNNk > 0.1) && (Dm_K_ProbNNk > 0.1)");
@@ -164,7 +191,7 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     }
     t->AddFileInfoList((TCollection*)fc->GetList());
 
-    TCut MC_component;
+    TCut MC_component = "";
     if(isKtautauMC)
     {
         t->AddFriend("DecayTree", MC_component_file);
@@ -178,7 +205,7 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     TCut pre_selections;
     if(isKtautauMC) // Ktautau MC
     {
-        pre_selections = MC_component+truthMatch+trigger;
+        pre_selections = MC_component+truthMatch+trigger+passDTF+others;
     }
     else if((species == 4) || (species == 7) || (species == 9)) // D+D-K+, D0barD+s, D0D0K MC
     {
@@ -190,18 +217,84 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     }
     else if((species == 2) || (species == 3)) // Ktautau data
     {
-        pre_selections = trigger;
+        pre_selections = trigger+passDTF+others;
     }
     else if((species == 5) || (species == 6) || (species == 8) || (species == 81) || (species == 82) || (species == 83) || (species == 0) || (species == -1)) // D+D-K+ and D0barD+s data
     {
         pre_selections = trigger+passDTF+others;
     }
-    
-    TFile* fout = new TFile(Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/Species_%i/%i.root",year,species,line), "RECREATE");   
-    fout->cd();
-    TTree* t_pre_sel = (TTree*)t->CopyTree(pre_selections);
-    t_pre_sel->Write();
-    fout->Close();
+
+
+    TString fout_name = Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/Species_%i/%i.root",year,species,line);
+    if(addFit)
+    {
+        TTree* t_intermediate;
+        if(isKtautauMC)
+        {
+            t_intermediate = (TTree*)t->CopyTree(MC_component+truthMatch+trigger);
+        }
+        else
+        {
+            t_intermediate = (TTree*)t->CopyTree(trigger);   
+        }
+
+        // TFileCollection* fc_fit = new TFileCollection("fc_fit", "fc_fit", FILES_fit, 1, line);
+        // t_fit = new TChain("DecayTree");
+        // t_fit->AddFileInfoList((TCollection*)fc_fit->GetList());
+        TFile* f_fit = new TFile(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/%i.root",year,species,line));
+        TTree* t_fit = (TTree*)f_fit->Get("DecayTree");
+
+        // cout << t_intermediate->GetEntries() << endl;
+        // cout << t_fit->GetEntries() << endl;
+
+        t_intermediate->AddFriend(t_fit, "fit");
+        // t_fit->AddFriend(t_intermediate);
+
+        // TTree* t_meas_pre_sel = (TTree*)t_intermediate->CopyTree(pre_selections);
+        // TTree* t_fit_pre_sel = (TTree*)t_fit->CopyTree(pre_selections);
+        // t_meas_pre_sel->AddFriend(t_fit_pre_sel);
+
+        ROOT::RDataFrame df(*t_intermediate);
+        df.Filter(pre_selections.GetTitle()).Snapshot("DecayTree", fout_name);
+    }
+    else
+    {
+        TFile* fout = new TFile(fout_name, "RECREATE");   
+        fout->cd();
+        TTree* t_pre_sel = (TTree*)t->CopyTree(pre_selections);
+        t_pre_sel->Write();
+        fout->Close();
+    }
+
+    // I want a TTree with t_intermediate and t_fit branches
+
+    // TChain* t_fit_pre_sel;
+    // TChain* t_pre_sel_measured;
+    // if(addFit)
+    // {   
+    //     t_fit_pre_sel = (TChain*)t_fit->CopyTree(pre_selections);
+    //     t_fit_pre_sel->SetName("DecayTree_fit");
+    //     t_fit_pre_sel->SetTitle("DecayTree_fit");
+
+    //     t_pre_sel_measured = (TChain*)t_intermediate->CopyTree(pre_selections);
+    //     t_pre_sel_measured->SetName("DecayTree_measured");
+    //     t_pre_sel_measured->SetTitle("DecayTree_measured");
+    // }
+
+    // TTree* t_pre_sel;
+    // if(addFit)
+    // {
+    //     // t_fit_pre_sel->AddFriend(t_pre_sel_measured);
+    //     ROOT::RDataFrame df(*t_fit_pre_sel);
+    //     df.Snapshot("DecayTree", fout_name);
+
+    //     // t_pre_sel_measured->Add(t_fit_pre_sel);
+    //     // t_pre_sel_measured->Write();
+
+    //     // t_pre_sel_measured->AddFriend(t_fit_pre_sel);
+    //     // t_pre_sel_measured->Write();
+    // }
+
 
     cout << "Finished successfully" << endl;
 
@@ -245,32 +338,118 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
         // Reconstruction efficiency
         cout << "Reconstruction efficiency" << endl;
         TChain* t_gen;
+        TChain* t_gen1;
+        TChain* t_gen2;
+        TChain* t_gen3;
         Double_t eps_reco = 1.;
         Double_t N_reco = t_reco->GetEntries(mass);
         Double_t N_gen;
         if(isMC)
         {
-            t_gen = new TChain("mc_ntuple/MCDecayTree");
+            if(species == 10)
+            {
+                t_gen = new TChain("mc_ntuple_3pi_3pi/MCDecayTree");
+            }
+            else if(species == 11)
+            {
+                t_gen = new TChain("mc_ntuple_3pipi0_3pi/MCDecayTree");
+                t_gen1 = new TChain("mc_ntuple_3pi_3pipi0/MCDecayTree");
+            }
+            else if(species == 12)
+            {
+                t_gen = new TChain("mc_ntuple_3pipi0_3pipi0/MCDecayTree");
+            }
+            else if(species == 1)
+            {
+                t_gen1 = new TChain("mc_ntuple_3pi_3pi/MCDecayTree");
+                t_gen2 = new TChain("mc_ntuple_3pipi0_3pi/MCDecayTree");
+                t_gen3 = new TChain("mc_ntuple_3pi_3pipi0/MCDecayTree");
+                t_gen = new TChain("mc_ntuple_3pipi0_3pipi0/MCDecayTree");
+            }
+            else
+            {
+                t_gen = new TChain("mc_ntuple/MCDecayTree");
+            }
             t_gen->AddFileInfoList((TCollection*)fc_all->GetList());
 
-            N_reco = t_reco->GetEntries(truthMatch);
-            N_gen = t_gen->GetEntries();
+            if(species == 11)
+            {
+                t_gen1->AddFileInfoList((TCollection*)fc_all->GetList());
+            }
+            if(species == 1)
+            {
+                t_gen1->AddFileInfoList((TCollection*)fc_all->GetList());
+                t_gen2->AddFileInfoList((TCollection*)fc_all->GetList());
+                t_gen3->AddFileInfoList((TCollection*)fc_all->GetList());
+            }
+
+            if(isKtautauMC)
+            {
+                TFileCollection* fc_comp = new TFileCollection("fc_comp", "fc_comp", Form("/panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201%i/mc_components.txt",year));
+                TChain* t_comp = new TChain("DecayTree");
+                t_comp->AddFileInfoList((TCollection*)fc_comp->GetList());
+
+                t_reco->AddFriend(t_comp);
+                N_reco = t_reco->GetEntries(MC_component+truthMatch);
+            }
+            else
+            {
+                N_reco = t_reco->GetEntries(truthMatch);
+            }
+
+            if(species == 11)
+            {
+                N_gen = t_gen->GetEntries();
+                N_gen += t_gen1->GetEntries();
+            }
+            else if(species == 1)
+            {
+                N_gen = t_gen->GetEntries();
+                N_gen += t_gen1->GetEntries();
+                N_gen += t_gen2->GetEntries();
+                N_gen += t_gen3->GetEntries();
+            }
+            else
+            {
+                N_gen = t_gen->GetEntries();
+            }
 
             eps_reco = N_reco / N_gen;
         }
 
         // Trigger
         cout << "Trigger efficiency" << endl;
-        Double_t N_L0 = t_reco->GetEntries(mass+truthMatch+L0_trigger);
-        Double_t N_L0_HLT1 = t_reco->GetEntries(mass+truthMatch+L0_trigger+HLT1_trigger);
-        Double_t N_trigger = t_reco->GetEntries(mass+truthMatch+trigger);
+        Double_t N_L0 = t_reco->GetEntries(MC_component+mass+truthMatch+L0_trigger);
+        Double_t N_L0_HLT1 = t_reco->GetEntries(MC_component+mass+truthMatch+L0_trigger+HLT1_trigger);
+        Double_t N_trigger = t_reco->GetEntries(MC_component+mass+truthMatch+trigger);
         Double_t eps_L0 = N_L0 / N_reco;
         Double_t eps_L0_HLT1 = N_L0_HLT1 / N_reco; 
         Double_t eps_trigger = N_trigger / N_reco;
 
+        TTree* t_intermediate;
+        TChain* t_fit;
+        if(addFit)
+        {
+            t_intermediate = (TTree*)t_reco->CopyTree(MC_component+truthMatch+trigger);
+
+            TFileCollection* fc_fit = new TFileCollection("fc_fit", "fc_fit", FILES_fit);
+            t_fit = new TChain("DecayTree");
+            t_fit->AddFileInfoList((TCollection*)fc_fit->GetList());
+
+            t_intermediate->AddFriend(t_fit);
+        }
+    
         // DTF
         cout << "DTF efficiency" << endl;
-        Double_t N_pass = t_reco->GetEntries(mass+truthMatch+trigger+passDTF);
+        Double_t N_pass;
+        if(addFit)
+        {
+            N_pass = t_intermediate->GetEntries(passDTF);
+        }
+        else
+        {
+            N_pass = t_reco->GetEntries(mass+truthMatch+trigger+passDTF);
+        }
         Double_t eps_dtf = N_pass / N_trigger;
 
         // Pre-selections
@@ -279,11 +458,26 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
         std::vector<Double_t> N_others;
         for(int i = 0; i < N; i++)
         {
-            N_others.push_back( t_reco->GetEntries(mass+truthMatch+trigger+passDTF+other_cuts[i]) );
+            if(addFit)
+            {
+                N_others.push_back( t_intermediate->GetEntries(passDTF+other_cuts[i]) );
+            }
+            else
+            {
+                N_others.push_back( t_reco->GetEntries(mass+truthMatch+trigger+passDTF+other_cuts[i]) );
+            }
             eps_others.push_back( N_others[i] / N_pass );
         }
 
-        Double_t N_others_all = t_reco->GetEntries(mass+truthMatch+trigger+passDTF+others);
+        Double_t N_others_all;
+        if(addFit)
+        {
+            N_others_all = t_intermediate->GetEntries(passDTF+others);
+        }
+        else
+        {
+            N_others_all = t_reco->GetEntries(mass+truthMatch+trigger+passDTF+others);
+        }
         Double_t eps_others_all = N_others_all / N_pass;
 
         file << " \\begin{table}[!htbp]" << std::endl;
