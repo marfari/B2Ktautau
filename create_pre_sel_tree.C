@@ -244,9 +244,6 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
         TFile* f_fit = new TFile(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/%i.root",year,species,line));
         TTree* t_fit = (TTree*)f_fit->Get("DecayTree");
 
-        // cout << t_intermediate->GetEntries() << endl;
-        // cout << t_fit->GetEntries() << endl;
-
         t_intermediate->AddFriend(t_fit, "fit");
         // t_fit->AddFriend(t_intermediate);
 
