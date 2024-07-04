@@ -224,7 +224,6 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
         pre_selections = trigger+passDTF+others;
     }
 
-
     TString fout_name = Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/Species_%i/%i.root",year,species,line);
     if(addFit)
     {
@@ -232,6 +231,8 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
         if(isKtautauMC)
         {
             t_intermediate = (TTree*)t->CopyTree(MC_component+truthMatch+trigger);
+
+            pre_selections = truthMatch+trigger+passDTF+others;
         }
         else
         {
@@ -245,11 +246,6 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
         TTree* t_fit = (TTree*)f_fit->Get("DecayTree");
 
         t_intermediate->AddFriend(t_fit, "fit");
-        // t_fit->AddFriend(t_intermediate);
-
-        // TTree* t_meas_pre_sel = (TTree*)t_intermediate->CopyTree(pre_selections);
-        // TTree* t_fit_pre_sel = (TTree*)t_fit->CopyTree(pre_selections);
-        // t_meas_pre_sel->AddFriend(t_fit_pre_sel);
 
         ROOT::RDataFrame df(*t_intermediate);
         df.Filter(pre_selections.GetTitle()).Snapshot("DecayTree", fout_name);
@@ -262,36 +258,6 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
         t_pre_sel->Write();
         fout->Close();
     }
-
-    // I want a TTree with t_intermediate and t_fit branches
-
-    // TChain* t_fit_pre_sel;
-    // TChain* t_pre_sel_measured;
-    // if(addFit)
-    // {   
-    //     t_fit_pre_sel = (TChain*)t_fit->CopyTree(pre_selections);
-    //     t_fit_pre_sel->SetName("DecayTree_fit");
-    //     t_fit_pre_sel->SetTitle("DecayTree_fit");
-
-    //     t_pre_sel_measured = (TChain*)t_intermediate->CopyTree(pre_selections);
-    //     t_pre_sel_measured->SetName("DecayTree_measured");
-    //     t_pre_sel_measured->SetTitle("DecayTree_measured");
-    // }
-
-    // TTree* t_pre_sel;
-    // if(addFit)
-    // {
-    //     // t_fit_pre_sel->AddFriend(t_pre_sel_measured);
-    //     ROOT::RDataFrame df(*t_fit_pre_sel);
-    //     df.Snapshot("DecayTree", fout_name);
-
-    //     // t_pre_sel_measured->Add(t_fit_pre_sel);
-    //     // t_pre_sel_measured->Write();
-
-    //     // t_pre_sel_measured->AddFriend(t_fit_pre_sel);
-    //     // t_pre_sel_measured->Write();
-    // }
-
 
     cout << "Finished successfully" << endl;
 
