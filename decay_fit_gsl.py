@@ -94,40 +94,89 @@ def lagrangian(params):
     def EK(e, f, g):
         return (mkaon**2 + e**2 + f**2 + g**2)**(0.5)
 
+    # xm
+    PVx = xm_symbols[0]
+    PVy = xm_symbols[1]
+    PVz = xm_symbols[2]
+    DV1x = xm_symbols[3]
+    DV1y = xm_symbols[4]
+    DV1z = xm_symbols[5]
+    p3pi1x = xm_symbols[6]
+    p3pi1y = xm_symbols[7]
+    p3pi1z = xm_symbols[8]
+    E3pi1 = xm_symbols[9]
+    DV2x = xm_symbols[10]
+    DV2y = xm_symbols[11]
+    DV2z = xm_symbols[12]
+    p3pi2x = xm_symbols[13]
+    p3pi2y = xm_symbols[14]
+    p3pi2z = xm_symbols[15]
+    E3pi2 = xm_symbols[16]
+    RPx = xm_symbols[17]
+    RPy = xm_symbols[18]
+    pKx = xm_symbols[19]
+    pKy = xm_symbols[20]
+    pKz = xm_symbols[21]
+
+    # xu
+    BVx = xu_symbols[0]
+    BVy = xu_symbols[1]
+    BVz = xu_symbols[2]
+    pBx = xu_symbols[3]
+    pBy = xu_symbols[4]
+    pBz = xu_symbols[5]
+    mB_squared = xu_symbols[6]
+    ptau1x = xu_symbols[7]
+    ptau1y = xu_symbols[8]
+    ptau1z = xu_symbols[9]
+    Etau1 = xu_symbols[10]
+    pnu1x = xu_symbols[11]
+    pnu1y = xu_symbols[12]
+    pnu1z = xu_symbols[13]
+    Enu1 = xu_symbols[14]
+    ptau2x = xu_symbols[15]
+    ptau2y = xu_symbols[16]
+    ptau2z = xu_symbols[17]
+    Etau2 = xu_symbols[18]
+    pnu2x = xu_symbols[19]
+    pnu2y = xu_symbols[20]
+    pnu2z = xu_symbols[21]
+    Enu2 = xu_symbols[22]
+
     # BV must be in K+ trajectory
     g = []
-    g.append(xm_symbols[21]*( xu_symbols[0] - xm_symbols[17] ) - xm_symbols[19]*( xu_symbols[2] - RPz )) # pKz*( BVx - RPx ) - pKx*( BVz - RPz ) = 0
-    g.append(xm_symbols[21]*( xu_symbols[1] - xm_symbols[18] ) - xm_symbols[20]*( xu_symbols[2] - RPz )) # pKz*( BVy - RPy ) - pKy*( BVz - RPz ) = 0
+    g.append( pKz*( BVx - RPx ) - pKx*( BVz - RPz ) ) 
+    g.append( pKz*( BVy - RPy ) - pKy*( BVz - RPz ) ) 
     # ptau1 must point back to BV
-    g.append(xu_symbols[7]*( xm_symbols[5] - xu_symbols[2] ) - xu_symbols[9]*( xm_symbols[3] - xu_symbols[0] )) # ptau1x*( DV1z - BVz ) - ptau1z*( DV1x - BVx ) = 0
-    g.append(xu_symbols[8]*( xm_symbols[5] - xu_symbols[2] ) - xu_symbols[9]*( xm_symbols[4] - xu_symbols[1] )) # ptau1y*( DV1z - BVz ) - ptau1z*( DV1y - BVy ) = 0
+    g.append( ptau1x*( DV1z - BVz ) - ptau1z*( DV1x - BVx ) )
+    g.append( ptau1y*( DV1z - BVz ) - ptau1z*( DV1y - BVy ) )
     # ptau2 must point back to BV
-    g.append(xu_symbols[15]*( xm_symbols[12] - xu_symbols[2] ) - xu_symbols[17]*( xm_symbols[10] - xu_symbols[0] )) # ptau2x*( DV2z - BVz ) - ptau2z*( DV2x - BVx ) = 0
-    g.append(xu_symbols[16]*( xm_symbols[12] - xu_symbols[2] ) - xu_symbols[17]*( xm_symbols[11] - xu_symbols[1] )) # ptau2y*( DV2z - BVz ) - ptau2z*( DV2y - BVy ) = 0
+    g.append( ptau2x*( DV2z - BVz ) - ptau2z*( DV2x - BVx ) )
+    g.append( ptau2y*( DV2z - BVz ) - ptau2z*( DV2y - BVy ) ) 
     # pB must point back to the PV
-    g.append(xu_symbols[3]*( xu_symbols[2] - xm_symbols[2] ) - xu_symbols[5]*( xu_symbols[0] - xm_symbols[0] )) # pBx*( BVz - PVz ) - pBz*( BVx - PVx ) = 0
-    g.append(xu_symbols[4]*( xu_symbols[2] - xm_symbols[2] ) - xu_symbols[5]*( xu_symbols[1] - xm_symbols[1] )) # pBy*( BVz - PVz ) - pBz*( BVy - PVy ) = 0
+    g.append( pBx*( BVz - PVz ) - pBz*( BVx - PVx ) ) 
+    g.append( pBy*( BVz - PVz ) - pBz*( BVy - PVy ) ) 
     # 4-momentum conservation in DV1
-    g.append(xu_symbols[7] - xm_symbols[6] - xu_symbols[11]) # ptau1x - p3pi1x - pnu1x = 0
-    g.append(xu_symbols[8] - xm_symbols[7] - xu_symbols[12]) # ptau1y - p3pi1y - pnu1y = 0
-    g.append(xu_symbols[9] - xm_symbols[8] - xu_symbols[13]) # ptau1z - p3pi1z - pnu1z = 0
-    g.append(xu_symbols[10] - xm_symbols[9] - xu_symbols[14]) # Etau1 - E3pi1 - Enu1 = 0
+    g.append( ptau1x - p3pi1x - pnu1x ) 
+    g.append( ptau1y - p3pi1y - pnu1y ) 
+    g.append( ptau1z - p3pi1z - pnu1z ) 
+    g.append( Etau1 - E3pi1 - Enu1 ) 
     # tau+ and anti-nu mass constraints
-    g.append(xu_symbols[10] - (mtau**2 + xu_symbols[7]**2 + xu_symbols[8]**2 + xu_symbols[9]**2)**(0.5)) # Etau1 - np.sqrt(mtau^2 + ptau1^2) = 0
-    g.append(xu_symbols[14] - (mnu**2 + xu_symbols[11]**2 + xu_symbols[12]**2 + xu_symbols[13]**2)**(0.5)) # Enu1 - np.sqrt(pnu1^2) = 0
+    g.append( Etau1 - (mtau**2 + ptau1x**2 + ptau1y**2 + ptau1z**2)**(0.5) ) 
+    g.append( Enu1 - (mnu**2 + pnu1x**2 + pnu1y**2 + pnu1z**2)**(0.5) )
     # 4-momentum conservation in DV2
-    g.append(xu_symbols[15] - xm_symbols[13] - xu_symbols[19]) # ptau2x - p3pi2x - pnu2x = 0
-    g.append(xu_symbols[16] - xm_symbols[14] - xu_symbols[20]) # ptau2y - p3pi2y - pnu2y = 0
-    g.append(xu_symbols[17] - xm_symbols[15] - xu_symbols[21]) # ptau2z - p3pi2z - pnu2z = 0
-    g.append(xu_symbols[18] - xm_symbols[16] - xu_symbols[22]) # Etau2 - E3pi2 - Enu2 = 0
+    g.append( ptau2x - p3pi2x - pnu2x ) 
+    g.append( ptau2y - p3pi2y - pnu2y ) 
+    g.append( ptau2z - p3pi2z - pnu2z ) 
+    g.append( Etau2 - E3pi2 - Enu2 ) 
     # tau- and nu mass constraints
-    g.append(xu_symbols[18] - (mtau**2 + xu_symbols[15]**2 + xu_symbols[16]**2 + xu_symbols[17]**2)**(0.5)) # Etau2 - np.sqrt(mtau^2 + ptau2^2) = 0
-    g.append(xu_symbols[22] - (mnu**2 + xu_symbols[19]**2 + xu_symbols[20]**2 + xu_symbols[21]**2)**(0.5)) # Enu2 - np.sqrt(pnu2^2) = 0
+    g.append( Etau2 - (mtau**2 + ptau2x**2 + ptau2y**2 + ptau2z**2)**(0.5) ) 
+    g.append( Enu2 - (mnu**2 + pnu2x**2 + pnu2y**2 + pnu2z**2)**(0.5) ) 
     # 4-momentum conservation in BV
-    g.append(xu_symbols[3] - xu_symbols[7] - xu_symbols[15] - xm_symbols[19]) # pBx - ptau1x - ptau2x - pKx = 0
-    g.append(xu_symbols[4] - xu_symbols[8] - xu_symbols[16] - xm_symbols[20]) # pBy - ptau1y - ptau2y - pKy = 0
-    g.append(xu_symbols[5] - xu_symbols[9] - xu_symbols[17] - xm_symbols[21]) # pBz - ptau1z - ptau2z - pKz = 0
-    g.append(EB(xu_symbols[6], xu_symbols[3], xu_symbols[4], xu_symbols[5]) - xu_symbols[10] - xu_symbols[18] - EK(xm_symbols[19], xm_symbols[20], xm_symbols[21])) # EB - Etau1 - Etau2 - EK = 0
+    g.append( pBx - ptau1x - ptau2x - pKx ) 
+    g.append( pBy - ptau1y - ptau2y - pKy ) 
+    g.append( pBz - ptau1z - ptau2z - pKz ) 
+    g.append(EB(mB_squared,pBx,pBy,pBz) - Etau1 - Etau2 - EK(pKx,pKy,pKz))
 
     L = chisquare(params)
     for i in range(dimC):
@@ -358,7 +407,7 @@ def x_initial_estimate(init, BV, species, params):
         weightfile_taum_PY = ""
         weightfile_taum_PZ = ""
 
-        if((species == 10) or (species == 11) or (species == 12) or (species == 2) or (species == 3)): # Ktautau
+        if((species == 1) or (species == 10) or (species == 11) or (species == 12) or (species == 2) or (species == 3)): # Ktautau
             weightfile_taup_PX = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taup_PX/dataset/weights/TMVARegression_taup_TRUEP_X_MLP.weights.xml"
             weightfile_taup_PY = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taup_PY/dataset/weights/TMVARegression_taup_TRUEP_Y_MLP.weights.xml"
             weightfile_taup_PZ = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taup_PZ/dataset/weights/TMVARegression_taup_TRUEP_Z_MLP.weights.xml"
@@ -1013,6 +1062,8 @@ def x_initial_estimate(init, BV, species, params):
         EB = Etau1 + Etau2 + EK
         MB_squared = EB**2 - pB.Mag2()
 
+        print(EK)
+
         BVx = RP.x() + (pK.x()/pK.z())*(BV.z() - RPz)
         BVy = RP.y() + (pK.y()/pK.z())*(BV.z() - RPz )
 
@@ -1478,7 +1529,7 @@ def x_initial_estimate(init, BV, species, params):
         weightfile_taup_PY = ""
         weightfile_taup_PZ = ""
 
-        if((species == 10) or (species == 11) or (species == 12) or (species == 2) or (species == 3)): # Ktautau
+        if((species == 1) or (species == 10) or (species == 11) or (species == 12) or (species == 2) or (species == 3)): # Ktautau
             weightfile_taup_PX = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taup_PX/dataset/weights/TMVARegression_taup_TRUEP_X_MLP.weights.xml"
             weightfile_taup_PY = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taup_PY/dataset/weights/TMVARegression_taup_TRUEP_Y_MLP.weights.xml"
             weightfile_taup_PZ = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taup_PZ/dataset/weights/TMVARegression_taup_TRUEP_Z_MLP.weights.xml"
@@ -1720,7 +1771,7 @@ def x_initial_estimate(init, BV, species, params):
         weightfile_taum_PY = ""
         weightfile_taum_PZ = ""
 
-        if((species == 10) or (species == 11) or (species == 12) or (species == 2) or (species == 3)): # Ktautau
+        if((species == 1) or (species == 10) or (species == 11) or (species == 12) or (species == 2) or (species == 3)): # Ktautau
             weightfile_taum_PX = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taum_PX/dataset/weights/TMVARegression_taum_TRUEP_X_MLP.weights.xml"
             weightfile_taum_PY = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taum_PY/dataset/weights/TMVARegression_taum_TRUEP_Y_MLP.weights.xml"
             weightfile_taum_PZ = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taum_PZ/dataset/weights/TMVARegression_taum_TRUEP_Z_MLP.weights.xml"
@@ -2040,7 +2091,7 @@ def x_initial_estimate(init, BV, species, params):
         x0[dimM+21] = pnu2.z()
         x0[dimM+22] = Enu2
 
-    elif(init == 14):
+    elif(init == 14): # D0D0K measured info init
         ptau1 = ROOT.Math.XYZVector( m_original[6], m_original[7], m_original[8] )
         Etau1 = m_original[9]
         ptau2 = ROOT.Math.XYZVector( m_original[13], m_original[14], m_original[15] )
@@ -2052,7 +2103,7 @@ def x_initial_estimate(init, BV, species, params):
         Enu2 = Etau2 - E3pi2
 
         pB = ptau1 + ptau2 + pK
-        EB = EK + Etau1 + Etau2
+        EB = Etau1 + Etau2 + EK
         MB_squared = EB**2 - pB.Mag2()
 
         BVx = RP.x() + (pK.x()/pK.z())*(BV.z() - RPz)
@@ -2136,11 +2187,6 @@ def run_solver(init, year, species, line, BV_offline, params, use_generalised_re
 
     x0 =  x_initial_estimate(init, BV_offline, species, params)
 
-    # for i in range(dimC):
-    #     print("i = ", i, "  ", f0[dimM+dimX+i])
-
-    # quit()
-
     # if firstTrial:
     #     try:
     #         x0 =  x_initial_estimate(init, BV_offline, species, params)
@@ -2183,7 +2229,6 @@ def lowest_chi2(year, species, line, BV_offline, params, init_list, max_iter, ep
     for i in range(N):
         a = init_list[i]
 
-        print("init = ",a)
         run_solver(a, year, species, line, BV_offline, params, True, max_iter, eps)
         if(status != 0):
             run_solver(a, year, species, line, BV_offline, params, False, max_iter, eps)
@@ -2285,9 +2330,8 @@ def main(argv):
     global X, X_ERR, F, STATUS, NITER, MB, dMB, init
 
     year = argv[1]
-    RECO_files = argv[2]
-    species_str = argv[3]
-    line = argv[4]
+    species_str = argv[2]
+    line = argv[3]
     # i_first = argv[5]
     # i_last = argv[6]
 
@@ -2296,6 +2340,8 @@ def main(argv):
     line = int(line)
     # i_first = int(i_first)
     # i_last = int(i_last)
+
+    RECO_files = "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{0}/Species_{1}/pre_sel_tree.txt".format(year,species)
 
     isKtautau = False
     if((species == 10) or (species == 11) or (species == 12) or (species == 1) or (species == 2) or (species == 3)):
@@ -2444,7 +2490,7 @@ def main(argv):
     m_original = np.zeros(dimM)
 
     num_entries = t.GetEntries()
-    for evt in range(1):
+    for evt in range(num_entries):
         print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", " evt = ", evt, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
         global nIter, status
 
@@ -2460,7 +2506,6 @@ def main(argv):
                 m[i] = getattr(t, "df_m_{0}".format(i+1)) 
 
             for j in range(dimM):
-
                 if isD0D0K:
                     V[i][j] = getattr(t, "df_Vprime_{0}_{1}".format(i+1,j+1)) 
                 else:
@@ -2507,8 +2552,9 @@ def main(argv):
         # if(status != 0):
         #     run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=10)
 
-        # Lowest chi2
-        # lowest_chi2(year, species, line, BV_offline, params, [0,3,11,12], max_iter=10000, eps=0.000001)        
+        # Lowest chi2 (DEFAULT)
+        # lowest_chi2(year, species, line, BV_offline, params, [0,3,11,12], max_iter=10000, eps=0.000001) 
+
         # global firstTrial
         # firstTrial = False
         # if(status != 0):
@@ -2522,7 +2568,10 @@ def main(argv):
         # run_solver(12, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
         # if(status != 0):
         #     run_solver(12, year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
-        run_solver(14, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+        
+        # D0D0K measured info
+        # run_solver(14, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+        lowest_chi2(year, species, line, BV_offline, params, [1,2,3,4], max_iter=10000, eps=0.000001) 
 
         try:
             U = U_cov(x,params,V)
