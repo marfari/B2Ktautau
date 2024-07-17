@@ -84,7 +84,6 @@ def chisquare(params):
             chi2 += ( m[i] - xm_symbols[i] )*W[i,j]*( m[j] - xm_symbols[j] )
     return chi2
 
-# #njit
 def chisquare_value(x, params):
     m = params[0]
     W = params[1]
@@ -92,7 +91,6 @@ def chisquare_value(x, params):
 
     return lambdify_chi2(x,m,W,RPz)
 
-##njit
 def lagrangian(params):
     RPz = params[2]
 
@@ -151,8 +149,8 @@ def lagrangian(params):
     pnu2z = xu_symbols[21]
     Enu2 = xu_symbols[22]
 
-    # BV must be in K+ trajectory
     g = []
+    # BV must be in K+ trajectory
     g.append( pKz*( BVx - RPx ) - pKx*( BVz - RPz ) ) 
     g.append( pKz*( BVy - RPy ) - pKy*( BVz - RPz ) ) 
     # ptau1 must point back to BV
@@ -171,7 +169,7 @@ def lagrangian(params):
     g.append( Etau1 - E3pi1 - Enu1 ) 
     # tau+ and anti-nu mass constraints
     g.append( Etau1 - (mtau**2 + ptau1x**2 + ptau1y**2 + ptau1z**2)**(0.5) ) 
-    g.append( Enu1 - (pnu1x**2 + pnu1y**2 + pnu1z**2)**(0.5) ) 
+    g.append( Enu1 - (mnu**2 + pnu1x**2 + pnu1y**2 + pnu1z**2)**(0.5) ) 
     # 4-momentum conservation in DV2
     g.append( ptau2x - p3pi2x - pnu2x ) 
     g.append( ptau2y - p3pi2y - pnu2y ) 
@@ -252,38 +250,11 @@ def second_derivative_test(x,params):
     
     return passes_test
 
-# def substitutions(x,params):
-#     m = params[0]
-#     W = params[1]
-#     RPz = params[2]
-
-#     substitutions = {}
-#     for a,b in zip(x_symbols,x):
-#         substitutions[a] = b
-
-#     substitutions1 = {}
-#     for a,b in zip(m_symbols,m):
-#         substitutions1[a] = b
-
-#     substitutions2 = {}
-#     for i in range(dimM):
-#         for j in range(dimM):
-#             substitutions[W_symbols[i,j]] = W[i][j]
-
-#     substitutions.update(substitutions1)
-#     substitutions.update(substitutions2)
-
-#     return substitutions
-
 ##njit
 def equations_f(x,params):
     m = params[0]
     W = params[1]
     RPz = params[2]
-
-    # subs_list = substitutions(x,params)
-    # f = np.array([ symbolic_f[i].evalf( subs=subs_list ) for i in range(dimM+dimX+dimC) ], dtype=float)
-    # f = sp.lambdify( (x_symbols, m_symbols, W_symbols, RPz_symbol), symbolic_f, "numpy")
 
     return lambdify_f(x,m,W,RPz)
 
@@ -292,10 +263,6 @@ def equations_df(x,params):
     m = params[0]
     W = params[1]
     RPz = params[2]
-
-    # subs_list = substitutions(x)
-    # df = np.array([ [ symbolic_df[i][j].evalf( subs=subs_list ) for j in range(dimM+dimX+dimC) ] for i in range(dimM+dimX+dimC)], dtype=float)
-    # df = sp.lambdify( (x_symbols, m_symbols, W_symbols, RPz_symbol), symbolic_df, "numpy" )
 
     df = lambdify_df(x,m,W,RPz)
 
@@ -2433,11 +2400,35 @@ def x_initial_estimate(init, BV, species, params):
         x0[dimM+20] = Ptau2.y() - P4.y() - P5.y() - P6.y()
         x0[dimM+21] = Ptau2.z() - P4.z() - P5.z() - P6.z()
         x0[dimM+22] = Ptau2.t() - P4.t() - P5.t() - P6.t()
-    
 
     # Initialise lambda (lb = 0 gives trivial solution)
     for i in range(dimC):
         x0[dimM+dimX+i] = 0
+
+    # x0[dimM+dimX] = 0.001
+    # x0[dimM+dimX+1] = 0.001
+    # x0[dimM+dimX+2] = 0.001
+    # x0[dimM+dimX+3] = 0.001
+    # x0[dimM+dimX+4] = 0.001
+    # x0[dimM+dimX+5] = 0.001
+    # x0[dimM+dimX+6] = 0.0001
+    # x0[dimM+dimX+7] = 0.0001
+    # x0[dimM+dimX+8] = 0.0001
+    # x0[dimM+dimX+9] = 0.0001
+    # x0[dimM+dimX+10] = 0.01
+    # x0[dimM+dimX+11] = 0.01
+    # x0[dimM+dimX+12] = 0.01
+    # x0[dimM+dimX+13] = 0.01
+    # x0[dimM+dimX+14] = 0.0001
+    # x0[dimM+dimX+15] = 0.0001
+    # x0[dimM+dimX+16] = 0.01
+    # x0[dimM+dimX+17] = 0.01
+    # x0[dimM+dimX+18] = 0.01
+    # x0[dimM+dimX+19] = 0.01
+    # x0[dimM+dimX+20] = 0.001
+    # x0[dimM+dimX+21] = 0.001
+    # x0[dimM+dimX+22] = 0.0001
+    # x0[dimM+dimX+23] = 0
 
     return x0
 
@@ -2462,22 +2453,13 @@ def run_solver(init, year, species, line, BV_offline, params, use_generalised_re
 
     pass_second_test = second_derivative_test(x,params)
 
-    if((pass_second_test) and (tol_value < 0.1)):
-        status = 0
-    elif((pass_second_test) and (tol_value > 0.1)):
-        status = 1
-    elif((not pass_second_test) and (tol_value < 0.1)):
-        status = 2
+    if(status == 0):
+        if(pass_second_test):
+            status = 0
+        else:
+            status = 1
     else:
-        status = 3
-
-    # if(status == 0):
-    #     if(pass_second_test):
-    #         status = 0
-    #     else:
-    #         status = 1
-    # else:
-    #     status = 2
+        status = 2
 
 def lowest_chi2(year, species, line, BV_offline, params, init_list, max_iter, eps):
     global x, f, status, nIter, chi2_value, tol_value, init
@@ -2572,16 +2554,16 @@ def run_fdfsolver(year, species, line, x0, params, use_generalised_region, max_i
 
         nIter += 1
 
-        # mass_squared = x[dimM+6]
-        # if(mass_squared > 0):
-        #     mass = np.sqrt(mass_squared)
-        # else:
-        #     mass = -np.sqrt( -mass_squared )
+        mass_squared = x[dimM+6]
+        if(mass_squared > 0):
+            mass = np.sqrt(mass_squared)
+        else:
+            mass = -np.sqrt( -mass_squared )
 
         chi2 = chisquare_value(x,params)
         tol  = absolute_sum(f)
 
-        # print("iter = ", iter, "status = ", status, "chi2 = ", chi2, "tol = ", tol, "mB = ", mass)
+        print("iter = ", iter, "status = ", status, "chi2 = ", chi2, "tol = ", tol, "mB = ", mass)
 
         if status == errno.GSL_SUCCESS:
             print("Converged")
@@ -2694,6 +2676,9 @@ def main(argv):
         if isD0D0K:
             with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/borderedHessian_d0d0k.npy", "wb") as bordHess_file:
                 np.save(bordHess_file, symbolic_bH)
+            
+        for i in range(dimC):
+            print(symbolic_f[dimM+dimX+i])
                         
         quit()
     else:
@@ -2783,7 +2768,7 @@ def main(argv):
     V = np.zeros((dimM,dimM))
 
     num_entries = t.GetEntries()
-    for evt in range(num_entries):
+    for evt in range(1):
         print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", " evt = ", evt, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
         global nIter, status
 
@@ -2881,22 +2866,28 @@ def main(argv):
         params = [m, W, RPz, eventNumber]
 
         # MLP initialisation
+        # init[0] = 0
         # run_solver(0, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
         # if(status != 0):
         #     run_solver(0, year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
 
+        # x0 = x_initial_estimate(-1,BV_offline,species,params)
+        # f0 = np.zeros(dimC)
+        # for i in range(dimC):
+        #     f0 [i]= equations_f(x0,params)[dimM+dimX+i]*x0[dimM+dimX+i]
+        # print(f0)
+
         # True initialisation
         init[0] = -1
-        run_solver(-1, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-        if(status != 0):
-            run_solver(-1, year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
+        run_solver(-1, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.0001)
+        # if(status != 0):
+        #     run_solver(-1, year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
 
+        # RD initialisation
+        # init[0] = 4
+        # run_solver(4, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
         # if(status != 0):
-        #     run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=0.001)
-        # if(status != 0):
-        #     run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=1)
-        # if(status != 0):
-        #     run_solver(-1, year, species, line, BV_offline, params, max_iter=10000, eps=10)
+        #     run_solver(4, year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
 
         # Lowest chi2 (DEFAULT)
         # lowest_chi2(year, species, line, BV_offline, params, [0,3,11,12], max_iter=10000, eps=0.000001) 
@@ -2944,6 +2935,11 @@ def main(argv):
         if(status != 3):
             dMB_squared = np.sqrt(U[dimM+6][dimM+6])
             dMB[0] =  dMB_squared/(2*np.abs(MB[0]))
+
+        max_sum = max(f)
+        i_max = np.where(f == max_sum)[0]
+
+        print("i = ", i_max, " max sum = ", max_sum)
 
         print("init = ", init[0], "status = ", STATUS[0], "MB = ", MB[0], "dMB = ", dMB[0], "chi2 = ", chi2[0], "sum = ", tolerance[0], "nIter = ", nIter)
 
