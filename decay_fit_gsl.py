@@ -64,6 +64,7 @@ lambdify_chi2 = 0
 lambdify_bH = 0
 
 computeDerivatives = False
+change_L = 0
 
 m_symbols = sp.IndexedBase('m_symbols')
 W_symbols = sp.IndexedBase('W_symbols')
@@ -2279,7 +2280,7 @@ def x_initial_estimate(init, BV, species, params):
 
     elif(init == 13):
         # With the offline estimate for the BVz we can obtain all other unknown parameters
-        BVz = x_true[2]
+        BVz = BV.z()
 
         # BV must be in K+ trajectory
         BVx = RP.x() + (pK.x()/pK.z())*(BVz - RPz)
@@ -2402,33 +2403,59 @@ def x_initial_estimate(init, BV, species, params):
         x0[dimM+22] = Ptau2.t() - P4.t() - P5.t() - P6.t()
 
     # Initialise lambda (lb = 0 gives trivial solution)
-    for i in range(dimC):
-        x0[dimM+dimX+i] = 0
-
-    # x0[dimM+dimX] = 0.001
-    # x0[dimM+dimX+1] = 0.001
-    # x0[dimM+dimX+2] = 0.001
-    # x0[dimM+dimX+3] = 0.001
-    # x0[dimM+dimX+4] = 0.001
-    # x0[dimM+dimX+5] = 0.001
-    # x0[dimM+dimX+6] = 0.0001
-    # x0[dimM+dimX+7] = 0.0001
-    # x0[dimM+dimX+8] = 0.0001
-    # x0[dimM+dimX+9] = 0.0001
-    # x0[dimM+dimX+10] = 0.01
-    # x0[dimM+dimX+11] = 0.01
-    # x0[dimM+dimX+12] = 0.01
-    # x0[dimM+dimX+13] = 0.01
-    # x0[dimM+dimX+14] = 0.0001
-    # x0[dimM+dimX+15] = 0.0001
-    # x0[dimM+dimX+16] = 0.01
-    # x0[dimM+dimX+17] = 0.01
-    # x0[dimM+dimX+18] = 0.01
-    # x0[dimM+dimX+19] = 0.01
-    # x0[dimM+dimX+20] = 0.001
-    # x0[dimM+dimX+21] = 0.001
-    # x0[dimM+dimX+22] = 0.0001
-    # x0[dimM+dimX+23] = 0
+    if(change_L == 0):
+        for i in range(dimC):
+            x0[dimM+dimX+i] = 0
+    elif(change_L == 1):
+        x0[dimM+dimX] = 0.001
+        x0[dimM+dimX+1] = 0.001
+        x0[dimM+dimX+2] = 0.001
+        x0[dimM+dimX+3] = 0.001
+        x0[dimM+dimX+4] = 0.001
+        x0[dimM+dimX+5] = 0.001
+        x0[dimM+dimX+6] = 0.0001
+        x0[dimM+dimX+7] = 0.0001
+        x0[dimM+dimX+8] = 0.0001
+        x0[dimM+dimX+9] = 0.0001
+        x0[dimM+dimX+10] = 0.01
+        x0[dimM+dimX+11] = 0.01
+        x0[dimM+dimX+12] = 0.01
+        x0[dimM+dimX+13] = 0.01
+        x0[dimM+dimX+14] = 0.0001
+        x0[dimM+dimX+15] = 0.0001
+        x0[dimM+dimX+16] = 0.01
+        x0[dimM+dimX+17] = 0.01
+        x0[dimM+dimX+18] = 0.01
+        x0[dimM+dimX+19] = 0.01
+        x0[dimM+dimX+20] = 0.001
+        x0[dimM+dimX+21] = 0.001
+        x0[dimM+dimX+22] = 0.0001
+        x0[dimM+dimX+23] = 0
+    elif(change_L == 2):
+        x0[dimM+dimX] = 1./10000
+        x0[dimM+dimX+1] = 1./10000
+        x0[dimM+dimX+2] = 1./10000
+        x0[dimM+dimX+3] = 1./10000
+        x0[dimM+dimX+4] = 1./1000
+        x0[dimM+dimX+5] = 1./1000
+        x0[dimM+dimX+6] = 1./10000
+        x0[dimM+dimX+7] = 1./10000
+        x0[dimM+dimX+8] = 1./10000
+        x0[dimM+dimX+9] = 1./10000
+        x0[dimM+dimX+10] = 1./10000
+        x0[dimM+dimX+11] = 1./10000
+        x0[dimM+dimX+12] = 1./1000
+        x0[dimM+dimX+13] = 1./1000
+        x0[dimM+dimX+14] = 1./10000
+        x0[dimM+dimX+15] = 1./10000
+        x0[dimM+dimX+16] = 1./10000
+        x0[dimM+dimX+17] = 1./10000
+        x0[dimM+dimX+18] = 1./1000
+        x0[dimM+dimX+19] = 1./1000
+        x0[dimM+dimX+20] = 1./10000
+        x0[dimM+dimX+21] = 1./10000
+        x0[dimM+dimX+22] = 1./100000
+        x0[dimM+dimX+23] = 1./100000
 
     return x0
 
@@ -2443,6 +2470,16 @@ def run_solver(init, year, species, line, BV_offline, params, use_generalised_re
 
     x0 =  x_initial_estimate(init, BV_offline, species, params)
 
+    p3pi1z = x0[8]
+    p3pi2z = x0[15]    
+    ptau1z = x0[dimM+9]
+    ptau2z = x0[dimM+17]
+
+    if(ptau1z < p3pi1z):
+        x0[dimM+9] = p3pi1z
+    if(ptau2z < p3pi2z):
+        x0[dimM+17] = p3pi2z
+
     try:
         run_fdfsolver(year, species, line, x0, params, use_generalised_region, max_iter, eps)
     except:
@@ -2453,11 +2490,12 @@ def run_solver(init, year, species, line, BV_offline, params, use_generalised_re
 
     pass_second_test = second_derivative_test(x,params)
 
-    if(status == 0):
-        if(pass_second_test):
-            status = 0
-        else:
-            status = 1
+    max_sum = np.max(np.abs(f))
+
+    if((max_sum < 0.1) and pass_second_test):
+        status = 0
+    elif((max_sum < 0.1) and (not pass_second_test)):
+        status = 1
     else:
         status = 2
 
@@ -2470,6 +2508,7 @@ def lowest_chi2(year, species, line, BV_offline, params, init_list, max_iter, ep
     nIter_list = []
     sum_list = []
     chi2_list = []
+    mass_list = []
 
     N = len(init_list)
 
@@ -2479,13 +2518,23 @@ def lowest_chi2(year, species, line, BV_offline, params, init_list, max_iter, ep
         run_solver(a, year, species, line, BV_offline, params, True, max_iter, eps)
         if(status != 0):
             run_solver(a, year, species, line, BV_offline, params, False, max_iter, eps)
-
+        
         x_list.append(x)
         f_list.append(f)
         status_list.append(status)
         nIter_list.append(nIter)
         sum_list.append(absolute_sum(f))
         chi2_list.append(chisquare_value(x,params))
+
+        mass_squared = x[dimM+6]
+        if(mass_squared > 0):
+            mass = np.sqrt(mass_squared)
+        else:
+            mass = -np.sqrt( -mass_squared )
+
+        mass_list.append(mass)
+
+        # print("init = ", i, "status = ", status, "chi2 = ", chi2_list[i], "tol = ", sum_list[i], "mB = ", mass, "max sum = ", np.max(np.abs(f)))
 
         nIter = 0
 
@@ -2503,13 +2552,16 @@ def lowest_chi2(year, species, line, BV_offline, params, init_list, max_iter, ep
     if(all_fail): # If all fail, returns the one with the lowest value for the sum
         for i in range(N):
             if( sum_list[i] < f_min ):
-                F_min = sum_list[i]
+                f_min = sum_list[i]
                 i_min = i
     else: # if one or more passes, from the ones that pass return the one that gives the lowest value for the chi^2
         for i in range(N):
             if( (status_list[i] == 0) and (chi2_list[i] < chi2_min) ):
                 chi2_min = chi2_list[i]
                 i_min = i
+    
+    # for i in range(N):
+    #     print("init = ", i, "status = ", status_list[i], "chi2 = ", chi2_list[i], "sum = ", sum_list[i], "mass = ", mass_list[i])
 
     x = x_list[i_min]
     f = f_list[i_min]
@@ -2563,7 +2615,7 @@ def run_fdfsolver(year, species, line, x0, params, use_generalised_region, max_i
         chi2 = chisquare_value(x,params)
         tol  = absolute_sum(f)
 
-        print("iter = ", iter, "status = ", status, "chi2 = ", chi2, "tol = ", tol, "mB = ", mass)
+        # print("iter = ", iter, "status = ", status, "chi2 = ", chi2, "tol = ", tol, "mB = ", mass, "max sum = ", max(f))
 
         if status == errno.GSL_SUCCESS:
             print("Converged")
@@ -2768,7 +2820,7 @@ def main(argv):
     V = np.zeros((dimM,dimM))
 
     num_entries = t.GetEntries()
-    for evt in range(1):
+    for evt in range(num_entries):
         print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", " evt = ", evt, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
         global nIter, status
 
@@ -2865,54 +2917,29 @@ def main(argv):
 
         params = [m, W, RPz, eventNumber]
 
-        # MLP initialisation
-        # init[0] = 0
-        # run_solver(0, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-        # if(status != 0):
-        #     run_solver(0, year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
+        global change_L
+        change_L = 0
 
-        # x0 = x_initial_estimate(-1,BV_offline,species,params)
-        # f0 = np.zeros(dimC)
-        # for i in range(dimC):
-        #     f0 [i]= equations_f(x0,params)[dimM+dimX+i]*x0[dimM+dimX+i]
-        # print(f0)
-
-        # True initialisation
-        init[0] = -1
-        run_solver(-1, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.0001)
+        # Single initialisation
+        # init[0] = -1
+        # run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
         # if(status != 0):
-        #     run_solver(-1, year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
-
-        # RD initialisation
-        # init[0] = 4
-        # run_solver(4, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+        #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
         # if(status != 0):
-        #     run_solver(4, year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
+        #     change_L = 1
+        #     run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+        # if(status != 0):
+        #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
+        # if(status != 0):
+        #     change_L = 2
+        #     run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+        # if(status != 0):
+        #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
 
         # Lowest chi2 (DEFAULT)
-        # lowest_chi2(year, species, line, BV_offline, params, [0,3,11,12], max_iter=10000, eps=0.000001) 
+        lowest_chi2(year, species, line, BV_offline, params, [0,1,2,3,4], max_iter=10000, eps=0.000001) 
 
-        # if(status != 0):
-        #     lowest_chi2(year, species, line, BV_offline, params, max_iter=10000, eps=0.001, N=10)
-        # if(status != 0):
-        #     lowest_chi2(year, species, line, BV_offline, params, max_iter=10000, eps=1, N=10)
-        # if(status != 0):
-        #     lowest_chi2(year, species, line, BV_offline, params, max_iter=10000, eps=10, N=10)
-
-        # New init
-        # run_solver(12, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-        # if(status != 0):
-        #     run_solver(12, year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
-        
-        # D0D0K measured info
-        # run_solver(14, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-        # lowest_chi2(year, species, line, BV_offline, params, [1,2,3,4], max_iter=10000, eps=0.000001) 
-
-        try:
-            U = U_cov(x,params,V)
-        except:
-            status = 3
-            print("ERROR: Problem encountered when computing errors")
+        U = U_cov(x,params,V)
 
         for i in range(dimM+dimX):
             X[i][0] = x[i]
@@ -2936,12 +2963,7 @@ def main(argv):
             dMB_squared = np.sqrt(U[dimM+6][dimM+6])
             dMB[0] =  dMB_squared/(2*np.abs(MB[0]))
 
-        max_sum = max(f)
-        i_max = np.where(f == max_sum)[0]
-
-        print("i = ", i_max, " max sum = ", max_sum)
-
-        print("init = ", init[0], "status = ", STATUS[0], "MB = ", MB[0], "dMB = ", dMB[0], "chi2 = ", chi2[0], "sum = ", tolerance[0], "nIter = ", nIter)
+        print("init = ", init[0], "status = ", STATUS[0], "MB = ", MB[0], "dMB = ", dMB[0], "chi2 = ", chi2[0], "sum = ", tolerance[0], "max sum = ", np.max(np.abs(f)),  "nIter = ", nIter)
 
         ######################################################################
 
