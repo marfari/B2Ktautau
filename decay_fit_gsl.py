@@ -1095,8 +1095,8 @@ def x_initial_estimate(init, BV, species, params):
         u2 = (DV2 - BV).Unit()
 
         # Use the maximum value of theta: neutrino takes the maximum portion of momentum from the tau
-        theta1 = np.arcsin( ( np.sqrt( (mtau**2 + m3pi1**2 - mnu**2)**2 - 4*(mtau**2)*(m3pi1**2) ) )/( 2*mtau*np.sqrt( p3pi1.Mag2() ) ) )
-        theta2 = np.arcsin( ( np.sqrt( (mtau**2 + m3pi2**2 - mnu**2)**2 - 4*(mtau**2)*(m3pi2**2) ) )/( 2*mtau*np.sqrt( p3pi2.Mag2() ) ) )
+        theta1 = np.arcsin( ( np.sqrt( np.abs((mtau**2 + m3pi1**2 - mnu**2)**2 - 4*(mtau**2)*(m3pi1**2) )) )/( 2*mtau*np.sqrt( p3pi1.Mag2() ) ) )
+        theta2 = np.arcsin( ( np.sqrt( np.abs((mtau**2 + m3pi2**2 - mnu**2)**2 - 4*(mtau**2)*(m3pi2**2) )) )/( 2*mtau*np.sqrt( p3pi2.Mag2() ) ) )
 
         ptau1_mag = ( (mtau**2 + m3pi1**2 - mnu**2)*np.sqrt(p3pi1.Mag2())*np.cos(theta1) )/( 2*( E3pi1**2 - p3pi1.Mag2()*np.cos(theta1)**2 ) )
         ptau2_mag = ( (mtau**2 + m3pi2**2 - mnu**2)*np.sqrt(p3pi2.Mag2())*np.cos(theta2) )/( 2*( E3pi2**2 - p3pi2.Mag2()*np.cos(theta2)**2 ) )
@@ -2490,14 +2490,20 @@ def run_solver(init, year, species, line, BV_offline, params, use_generalised_re
 
     pass_second_test = second_derivative_test(x,params)
 
-    max_sum = np.max(np.abs(f))
-
-    if((max_sum < 0.1) and pass_second_test):
+    if((status == 0) and (pass_second_test)):
         status = 0
-    elif((max_sum < 0.1) and (not pass_second_test)):
+    elif((status == 0) and (not pass_second_test)):
         status = 1
     else:
         status = 2
+
+    # max_sum = np.max(np.abs(f))
+    # if((max_sum < 0.1) and pass_second_test):
+    #     status = 0
+    # elif((max_sum < 0.1) and (not pass_second_test)):
+    #     status = 1
+    # else:
+    #     status = 2
 
 def lowest_chi2(year, species, line, BV_offline, params, init_list, max_iter, eps):
     global x, f, status, nIter, chi2_value, tol_value, init
@@ -2540,9 +2546,8 @@ def lowest_chi2(year, species, line, BV_offline, params, init_list, max_iter, ep
 
     # Return solution with lowest chi2
     all_fail = True
-
     for i in range(N):
-        if( status_list[i] != 0 ):
+        if( status_list[i] == 0 ):
             all_fail = False
 
     chi2_min = 100000000000000000
@@ -2560,6 +2565,8 @@ def lowest_chi2(year, species, line, BV_offline, params, init_list, max_iter, ep
                 chi2_min = chi2_list[i]
                 i_min = i
     
+    # print("all fail = ", all_fail)
+
     # for i in range(N):
     #     print("init = ", i, "status = ", status_list[i], "chi2 = ", chi2_list[i], "sum = ", sum_list[i], "mass = ", mass_list[i])
 
@@ -2839,13 +2846,6 @@ def main(argv):
                     V[i][j] = getattr(t, "df_Vprime_{0}_{1}".format(i+1,j+1)) 
                 else:
                     V[i][j] = getattr(t, "df_V_{0}_{1}".format(i+1,j+1))
-        
-        # D0D0K with 1 miss K
-        # if isD0D0K:
-        #     for i in range(7):
-        #         m[i+3] = getattr(t, "df_m_{0}".format(i+1+3))
-        #         for j in range(7):
-        #             V[i+3][j+3] = getattr(t, "df_V_{0}_{1}".format(i+1+3,j+1+3)) 
 
         # true measured values
         # m[0] = getattr(t, "Bp_TRUEORIGINVERTEX_X")
@@ -2943,8 +2943,7 @@ def main(argv):
 
         for i in range(dimM+dimX):
             X[i][0] = x[i]
-            if(status != 3):
-                X_ERR[i][0] = np.sqrt(U[i][i])
+            X_ERR[i][0] = np.sqrt(U[i][i])
         for i in range(dimM+dimX+dimC):
             F[i][0] = f[i]
 
@@ -2959,14 +2958,12 @@ def main(argv):
         else:
             MB[0] = - np.sqrt( -mass_squared )
 
-        if(status != 3):
-            dMB_squared = np.sqrt(U[dimM+6][dimM+6])
-            dMB[0] =  dMB_squared/(2*np.abs(MB[0]))
+        dMB_squared = np.sqrt(U[dimM+6][dimM+6])
+        dMB[0] =  dMB_squared/(2*np.abs(MB[0]))
 
         print("init = ", init[0], "status = ", STATUS[0], "MB = ", MB[0], "dMB = ", dMB[0], "chi2 = ", chi2[0], "sum = ", tolerance[0], "max sum = ", np.max(np.abs(f)),  "nIter = ", nIter)
 
         ######################################################################
-
         # MB0[0] = run_solver(0, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
         # MB1[0] = run_solver(1, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
         # MB2[0] = run_solver(2, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
