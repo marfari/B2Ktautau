@@ -1017,24 +1017,6 @@ else:
 	DaVinci().TupleFile = 'DVntuple_data_BuDDKp_cocktail_'+year+'_'+pol+'.root'
 	# DaVinci().TupleFile = '/panfs/felician/BuDDKp_cocktail//DVntuple_data_'+year+'_'+pol+'.root'
 """
-string2_BuDDK0 = """
-# Configure DaVinci
-if isMC:
-	DaVinci().TupleFile = 'DVntuple_MC_BuDDK0_cocktail_'+year+'_'+pol+'.root'
-	# DaVinci().TupleFile = '/panfs/felician/BuDDK0_cocktail/DVntuple_MC_'+year+'_'+pol+'.root'
-else:
-	DaVinci().TupleFile = 'DVntuple_data_BuDDK0_cocktail_'+year+'_'+pol+'.root'
-	# DaVinci().TupleFile = '/panfs/felician/BuDDK0_cocktail//DVntuple_data_'+year+'_'+pol+'.root'
-"""
-string2_BuDD = """
-# Configure DaVinci
-if isMC:
-	DaVinci().TupleFile = 'DVntuple_MC_BuDD_cocktail_'+year+'_'+pol+'.root'
-	# DaVinci().TupleFile = '/panfs/felician/BuDD_cocktail/DVntuple_MC_'+year+'_'+pol+'.root'
-else:
-	DaVinci().TupleFile = 'DVntuple_data_BuDD_cocktail_'+year+'_'+pol+'.root'
-	# DaVinci().TupleFile = '/panfs/felician/BuDD_cocktail//DVntuple_data_'+year+'_'+pol+'.root'
-"""
 string2_BdDDKp = """
 # Configure DaVinci
 if isMC:
@@ -1044,6 +1026,24 @@ else:
 	DaVinci().TupleFile = 'DVntuple_data_BdDDKp_cocktail_'+year+'_'+pol+'.root'
 	# DaVinci().TupleFile = '/panfs/felician/BdDDKp_cocktail//DVntuple_data_'+year+'_'+pol+'.root'
 """
+string2_BsDDKp = """
+# Configure DaVinci
+if isMC:
+	DaVinci().TupleFile = 'DVntuple_MC_BsDDKp_cocktail_'+year+'_'+pol+'.root'
+	# DaVinci().TupleFile = '/panfs/felician/BsDDKp_cocktail/DVntuple_MC_'+year+'_'+pol+'.root'
+else:
+	DaVinci().TupleFile = 'DVntuple_data_BdDDKp_cocktail_'+year+'_'+pol+'.root'
+	# DaVinci().TupleFile = '/panfs/felician/BdDDKp_cocktail//DVntuple_data_'+year+'_'+pol+'.root'
+"""
+string2_BuDDK0 = """
+# Configure DaVinci
+if isMC:
+	DaVinci().TupleFile = 'DVntuple_MC_BuDDK0_cocktail_'+year+'_'+pol+'.root'
+	# DaVinci().TupleFile = '/panfs/felician/BuDDK0_cocktail/DVntuple_MC_'+year+'_'+pol+'.root'
+else:
+	DaVinci().TupleFile = 'DVntuple_data_BuDDK0_cocktail_'+year+'_'+pol+'.root'
+	# DaVinci().TupleFile = '/panfs/felician/BuDDK0_cocktail//DVntuple_data_'+year+'_'+pol+'.root'
+"""
 string2_BdDDK0 = """
 # Configure DaVinci
 if isMC:
@@ -1052,6 +1052,15 @@ if isMC:
 else:
 	DaVinci().TupleFile = 'DVntuple_data_BdDDKp_cocktail_'+year+'_'+pol+'.root'
 	# DaVinci().TupleFile = '/panfs/felician/BdDDK0_cocktail//DVntuple_data_'+year+'_'+pol+'.root'
+"""
+string2_BuDD = """
+# Configure DaVinci
+if isMC:
+	DaVinci().TupleFile = 'DVntuple_MC_BuDD_cocktail_'+year+'_'+pol+'.root'
+	# DaVinci().TupleFile = '/panfs/felician/BuDD_cocktail/DVntuple_MC_'+year+'_'+pol+'.root'
+else:
+	DaVinci().TupleFile = 'DVntuple_data_BuDD_cocktail_'+year+'_'+pol+'.root'
+	# DaVinci().TupleFile = '/panfs/felician/BuDD_cocktail//DVntuple_data_'+year+'_'+pol+'.root'
 """
 string2_BdDD = """
 # Configure DaVinci
@@ -1140,7 +1149,6 @@ mcdtt_3pi_3pipi0 = MCDecayTreeTuple('mc_ntuple_3pi_3pipi0')
 mcdtt_3pipi0_3pi = MCDecayTreeTuple('mc_ntuple_3pipi0_3pi')
 mcdtt_3pipi0_3pipi0 = MCDecayTreeTuple('mc_ntuple_3pipi0_3pipi0')
 """
-
 string4_others = "mcdtt = MCDecayTreeTuple('mc_ntuple')"
 
 string5 = """
@@ -1189,12 +1197,13 @@ mcdtt_3pipi0_3pi.Decay = '[B+ => ^(tau+ => ^pi+ ^pi- ^pi+ ^nu_tau~ ^pi0) ^(tau- 
 mcdtt_3pipi0_3pipi0.Decay = '[B+ => ^(tau+ => ^pi+ ^pi- ^pi+ ^nu_tau~ ^pi0) ^(tau- => ^pi- ^pi+ ^pi- ^nu_tau ^pi0) ^K+]CC'
 """
 string6_BuDDKp = "mcdtt.Decay = '[B+ => ^(Charm ==> ^pi+ ^pi- ^pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ^(Charm ==> ^pi- ^pi+ ^pi- {X} {X} {X} {X} {X} {X} {X} {X}) ^K+]CC'"
-string6_BuDDK0 = "mcdtt.Decay = '[B+ => ^(Charm ==> ^pi+ ^pi- ^pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ^(Charm ==> ^pi- ^pi+ ^pi- {X} {X} {X} {X} {X} {X} {X} {X}) ^K0]CC'"
-string6_BuDD = "mcdtt.Decay = '[B+ => ^(Charm ==> ^pi+ ^pi- ^pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ^(Charm ==> ^pi- ^pi+ ^pi- {X} {X} {X} {X} {X} {X} {X} {X})]CC'"
 string6_BdDDKp = "mcdtt.Decay = '[B0 => ^(Charm ==> ^pi+ ^pi- ^pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ^(Charm ==> ^pi- ^pi+ ^pi- {X} {X} {X} {X} {X} {X} {X} {X}) ^K+]CC'"
+string6_BsDDKp = "mcdtt.Decay = '[B_s0 => ^(Charm ==> ^pi+ ^pi- ^pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ^(Charm ==> ^pi- ^pi+ ^pi- {X} {X} {X} {X} {X} {X} {X} {X}) ^K+]CC'"
+string6_BuDDK0 = "mcdtt.Decay = '[B+ => ^(Charm ==> ^pi+ ^pi- ^pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ^(Charm ==> ^pi- ^pi+ ^pi- {X} {X} {X} {X} {X} {X} {X} {X}) ^K0]CC'"
 string6_BdDDK0 = "mcdtt.Decay = '[B0 => ^(Charm ==> ^pi+ ^pi- ^pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ^(Charm ==> ^pi- ^pi+ ^pi- {X} {X} {X} {X} {X} {X} {X} {X}) ^K0]CC'"
+string6_BuDD = "mcdtt.Decay = '[B+ => ^(Charm ==> ^pi+ ^pi- ^pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ^(Charm ==> ^pi- ^pi+ ^pi- {X} {X} {X} {X} {X} {X} {X} {X})]CC'"
 string6_BdDD = "mcdtt.Decay = '[B0 => ^(Charm ==> ^pi+ ^pi- ^pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ^(Charm ==> ^pi- ^pi+ ^pi- {X} {X} {X} {X} {X} {X} {X} {X})]CC'"
-string6_BsDD = "mcdtt.Decay = '[B0s => ^(Charm ==> ^pi+ ^pi- ^pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ^(Charm ==> ^pi- ^pi+ ^pi- {X} {X} {X} {X} {X} {X} {X} {X})]CC'"
+string6_BsDD = "mcdtt.Decay = '[B_s0 => ^(Charm ==> ^pi+ ^pi- ^pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ^(Charm ==> ^pi- ^pi+ ^pi- {X} {X} {X} {X} {X} {X} {X} {X})]CC'"
 
 string7 = """
 
@@ -1278,8 +1287,57 @@ IOHelper('ROOT').inputFiles([
 	'/panfs/felician/SimulationJobs/12693500/2016/Sim10c/MagDown/50evts_s28r2p2_806121001.dst',
 ], clear=True)
 """
+string11_BdDDKp = """
+# Use the local input data
+from GaudiConf import IOHelper
+IOHelper('ROOT').inputFiles([
+	'/panfs/felician/SimulationJobs/12693500/2016/Sim10c/MagDown/50evts_s28r2p2_806121001.dst',
+], clear=True)
+"""
+string11_BsDDKp = """
+# Use the local input data
+from GaudiConf import IOHelper
+IOHelper('ROOT').inputFiles([
+	'/panfs/felician/SimulationJobs/12693500/2016/Sim10c/MagDown/50evts_s28r2p2_806121001.dst',
+], clear=True)
+"""
+string11_BuDDK0 = """
+# Use the local input data
+from GaudiConf import IOHelper
+IOHelper('ROOT').inputFiles([
+	'/panfs/felician/SimulationJobs/12693500/2016/Sim10c/MagDown/50evts_s28r2p2_806121001.dst',
+], clear=True)
+"""
+string11_BdDDK0 = """
+# Use the local input data
+from GaudiConf import IOHelper
+IOHelper('ROOT').inputFiles([
+	'/panfs/felician/SimulationJobs/12693500/2016/Sim10c/MagDown/50evts_s28r2p2_806121001.dst',
+], clear=True)
+"""
+string11_BuDD = """
+# Use the local input data
+from GaudiConf import IOHelper
+IOHelper('ROOT').inputFiles([
+	'/panfs/felician/SimulationJobs/12693500/2016/Sim10c/MagDown/50evts_s28r2p2_806121001.dst',
+], clear=True)
+"""
+string11_BdDD = """
+# Use the local input data
+from GaudiConf import IOHelper
+IOHelper('ROOT').inputFiles([
+	'/panfs/felician/SimulationJobs/12693500/2016/Sim10c/MagDown/50evts_s28r2p2_806121001.dst',
+], clear=True)
+"""
+string11_BsDD = """
+# Use the local input data
+from GaudiConf import IOHelper
+IOHelper('ROOT').inputFiles([
+	'/panfs/felician/SimulationJobs/12693500/2016/Sim10c/MagDown/50evts_s28r2p2_806121001.dst',
+], clear=True)
+"""
 
-
+# B+ -> tau+ tau- K+
 fileOut_BuKtautau = open('ntuple_options.py', 'w')
 fileOut_BuKtautau.write(string1)
 fileOut_BuKtautau.write(string2_BuKtautau)
@@ -1294,6 +1352,7 @@ fileOut_BuKtautau.write(string10_BuKtautau)
 fileOut_BuKtautau.write(string11_BuKtautau)
 fileOut_BuKtautau.close()
 
+# B+ -> DD K+
 fileOut_BuDDKp = open('ntuple_options_BuDDKp_cocktail.py', 'w')
 fileOut_BuDDKp.write(string1)
 fileOut_BuDDKp.write(string2_BuDDKp)
@@ -1308,32 +1367,7 @@ fileOut_BuDDKp.write(string10_others)
 fileOut_BuDDKp.write(string11_BuDDKp)
 fileOut_BuDDKp.close()
 
-fileOut_BuDDK0 = open('ntuple_options_BuDDK0_cocktail.py', 'w')
-fileOut_BuDDK0.write(string1)
-fileOut_BuDDK0.write(string2_BuDDK0)
-fileOut_BuDDK0.write(string3)
-fileOut_BuDDK0.write(string4_others)
-fileOut_BuDDK0.write(string5)
-fileOut_BuDDK0.write(string6_BuDDK0)
-fileOut_BuDDK0.write(string7)
-fileOut_BuDDK0.write(string8_others)
-fileOut_BuDDK0.write(string9)
-fileOut_BuDDK0.write(string10_others)
-fileOut_BuDDK0.close()
-
-fileOut_BuDD = open('ntuple_options_BuDD_cocktail.py', 'w')
-fileOut_BuDD.write(string1)
-fileOut_BuDD.write(string2_BuDD)
-fileOut_BuDD.write(string3)
-fileOut_BuDD.write(string4_others)
-fileOut_BuDD.write(string5)
-fileOut_BuDD.write(string6_BuDD)
-fileOut_BuDD.write(string7)
-fileOut_BuDD.write(string8_others)
-fileOut_BuDD.write(string9)
-fileOut_BuDD.write(string10_others)
-fileOut_BuDD.close()
-
+# B0 -> DD K+
 fileOut_BdDDKp = open('ntuple_options_BdDDKp_cocktail.py', 'w')
 fileOut_BdDDKp.write(string1)
 fileOut_BdDDKp.write(string2_BdDDKp)
@@ -1345,8 +1379,40 @@ fileOut_BdDDKp.write(string7)
 fileOut_BdDDKp.write(string8_others)
 fileOut_BdDDKp.write(string9)
 fileOut_BdDDKp.write(string10_others)
+fileOut_BdDDKp.write(string11_BdDDKp)
 fileOut_BdDDKp.close()
 
+# Bs -> DD K+
+fileOut_BsDDKp = open('ntuple_options_BsDDKp_cocktail.py', 'w')
+fileOut_BsDDKp.write(string1)
+fileOut_BsDDKp.write(string2_BsDDKp)
+fileOut_BsDDKp.write(string3)
+fileOut_BsDDKp.write(string4_others)
+fileOut_BsDDKp.write(string5)
+fileOut_BsDDKp.write(string6_BsDDKp)
+fileOut_BsDDKp.write(string7)
+fileOut_BsDDKp.write(string8_others)
+fileOut_BsDDKp.write(string9)
+fileOut_BsDDKp.write(string10_others)
+fileOut_BsDDKp.write(string11_BsDDKp)
+fileOut_BsDDKp.close()
+
+# B+ -> DD K0
+fileOut_BuDDK0 = open('ntuple_options_BuDDK0_cocktail.py', 'w')
+fileOut_BuDDK0.write(string1)
+fileOut_BuDDK0.write(string2_BuDDK0)
+fileOut_BuDDK0.write(string3)
+fileOut_BuDDK0.write(string4_others)
+fileOut_BuDDK0.write(string5)
+fileOut_BuDDK0.write(string6_BuDDK0)
+fileOut_BuDDK0.write(string7)
+fileOut_BuDDK0.write(string8_others)
+fileOut_BuDDK0.write(string9)
+fileOut_BuDDK0.write(string10_others)
+fileOut_BuDDK0.write(string11_BuDDK0)
+fileOut_BuDDK0.close()
+
+# B0 -> DD K0
 fileOut_BdDDK0 = open('ntuple_options_BdDDK0_cocktail.py', 'w')
 fileOut_BdDDK0.write(string1)
 fileOut_BdDDK0.write(string2_BdDDK0)
@@ -1358,8 +1424,25 @@ fileOut_BdDDK0.write(string7)
 fileOut_BdDDK0.write(string8_others)
 fileOut_BdDDK0.write(string9)
 fileOut_BdDDK0.write(string10_others)
+fileOut_BdDDK0.write(string11_BdDDK0)
 fileOut_BdDDK0.close()
 
+# B+ -> DD
+fileOut_BuDD = open('ntuple_options_BuDD_cocktail.py', 'w')
+fileOut_BuDD.write(string1)
+fileOut_BuDD.write(string2_BuDD)
+fileOut_BuDD.write(string3)
+fileOut_BuDD.write(string4_others)
+fileOut_BuDD.write(string5)
+fileOut_BuDD.write(string6_BuDD)
+fileOut_BuDD.write(string7)
+fileOut_BuDD.write(string8_others)
+fileOut_BuDD.write(string9)
+fileOut_BuDD.write(string10_others)
+fileOut_BuDD.write(string11_BuDD)
+fileOut_BuDD.close()
+
+# B0 -> DD
 fileOut_BdDD = open('ntuple_options_BdDD_cocktail.py', 'w')
 fileOut_BdDD.write(string1)
 fileOut_BdDD.write(string2_BdDD)
@@ -1371,8 +1454,10 @@ fileOut_BdDD.write(string7)
 fileOut_BdDD.write(string8_others)
 fileOut_BdDD.write(string9)
 fileOut_BdDD.write(string10_others)
+fileOut_BdDD.write(string11_BdDD)
 fileOut_BdDD.close()
 
+# Bs -> DD
 fileOut_BsDD = open('ntuple_options_BsDD_cocktail.py', 'w')
 fileOut_BsDD.write(string1)
 fileOut_BsDD.write(string2_BsDD)
@@ -1384,4 +1469,5 @@ fileOut_BsDD.write(string7)
 fileOut_BsDD.write(string8_others)
 fileOut_BsDD.write(string9)
 fileOut_BsDD.write(string10_others)
+fileOut_BsDD.write(string11_BsDD)
 fileOut_BsDD.close()
