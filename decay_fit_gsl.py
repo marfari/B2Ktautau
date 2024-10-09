@@ -66,6 +66,14 @@ lambdify_bH = 0
 computeDerivatives = False
 change_L = 0
 
+# Local minima
+N_local_minima = array('i', [0])
+M_local_minima = []
+Chi2_local_minima = []
+kMaxN = 20
+M_local = array('d', [0]*kMaxN)
+Chi2_local = array('d', [0]*kMaxN)
+
 m_symbols = sp.IndexedBase('m_symbols')
 W_symbols = sp.IndexedBase('W_symbols')
 RPz_symbol = sp.Symbol('RPz_symbol')
@@ -217,8 +225,8 @@ def bordered_Hessian(params):
     return df
 
 def get_principal_minor(H, i):
-    A = np.delete(H,np.s_[i+1:dimM+dimX+dimC],axis=1)
-    B = np.delete(A,np.s_[i+1:dimM+dimX+dimC],axis=0)
+    A = np.delete(H,np.s_[i:dimM+dimX+dimC],axis=1)
+    B = np.delete(A,np.s_[i:dimM+dimX+dimC],axis=0)
 
     return B
 
@@ -240,15 +248,14 @@ def second_derivative_test(x,params):
 
     global D
 
-    for i in range(2*dimC,dimM+dimX+dimC):
-        # print("Minor ", i+1)
-        # print( np.sign( np.linalg.det(get_principal_minor(H,i)) ) )
-
+    for i in range(49,69+1):
         s = np.sign( np.linalg.det(get_principal_minor(H,i)) ) 
-        D[i-2*dimC][0] = s
+        D[i-49][0] = s
+
         if( s < 0 ):
+            # print(np.linalg.det(get_principal_minor(H,i)))
             passes_test = False
-    
+
     return passes_test
 
 ##njit
@@ -857,7 +864,7 @@ def x_initial_estimate(init, BV, species, params):
 
         ptau1 = makeTransformation_vec( pK, RP, ptau1_t, True )
         ptau2 = makeTransformation_vec( pK, RP, ptau2_t, True )
-        BV = makeTransformation_point( pK, RP, BV_t, True )
+        BV_Anne = makeTransformation_point( pK, RP, BV_t, True )
 
         pnu1 = ptau1 - p3pi1
         pnu2 = ptau2 - p3pi2
@@ -871,9 +878,9 @@ def x_initial_estimate(init, BV, species, params):
         EB = Etau1 + Etau2 + EK
         MB_squared = EB**2 - pB.Mag2()
 
-        x0[dimM] = BV.x()
-        x0[dimM+1] = BV.y()
-        x0[dimM+2] = BV.z()
+        x0[dimM] = BV_Anne.x()
+        x0[dimM+1] = BV_Anne.y()
+        x0[dimM+2] = BV_Anne.z()
         x0[dimM+3] = pB.x()
         x0[dimM+4] = pB.y()
         x0[dimM+5] = pB.z()
@@ -895,14 +902,7 @@ def x_initial_estimate(init, BV, species, params):
         x0[dimM+21] = pnu2.z()
         x0[dimM+22] = Enu2
 
-    elif(init == 2): # B->K* tautau initialisation taus direction based on vertices
-        BVz_MLP = pow(MLP_taum_PX/MLP_taum_PZ - MLP_taup_PX/MLP_taup_PZ,-1)*( DV1.x() - DV2.x() - (MLP_taup_PX/MLP_taup_PZ)*DV1.z() + (MLP_taum_PX/MLP_taum_PZ)*DV2.z() )
-        BVx_MLP = DV1.x() - (MLP_taup_PX/MLP_taup_PZ)*(DV1.z() - BVz_MLP)
-        BVy_MLP = DV1.y() - (MLP_taup_PY/MLP_taup_PZ)*(DV1.z() - BVz_MLP)
-        BV_MLP = ROOT.Math.XYZPoint( BVx_MLP, BVy_MLP, BVz_MLP )
-
-        BV = BV_MLP
-
+    elif(init == 2): # B->K* tautau initialisation taus direction based on vertices    
         # Magnitude of 3pi momenta
         p3pi1_mag = p3pi1.r()
         p3pi2_mag = p3pi2.r()
@@ -990,13 +990,6 @@ def x_initial_estimate(init, BV, species, params):
         x0[dimM+22] = Enu2
     
     elif(init == 3): #  B->K* tautau initialisation taus direction based on visible 3pi momenta
-        BVz_MLP = pow(MLP_taum_PX/MLP_taum_PZ - MLP_taup_PX/MLP_taup_PZ,-1)*( DV1.x() - DV2.x() - (MLP_taup_PX/MLP_taup_PZ)*DV1.z() + (MLP_taum_PX/MLP_taum_PZ)*DV2.z() )
-        BVx_MLP = DV1.x() - (MLP_taup_PX/MLP_taup_PZ)*(DV1.z() - BVz_MLP)
-        BVy_MLP = DV1.y() - (MLP_taup_PY/MLP_taup_PZ)*(DV1.z() - BVz_MLP)
-        BV_MLP = ROOT.Math.XYZPoint( BVx_MLP, BVy_MLP, BVz_MLP )
-
-        BV = BV_MLP
-
         # Magnitude of 3pi momenta
         p3pi1_mag = p3pi1.r()
         p3pi2_mag = p3pi2.r()
@@ -1084,13 +1077,6 @@ def x_initial_estimate(init, BV, species, params):
         x0[dimM+22] = Enu2
 
     elif(init == 4): # RD initialisation
-        BVz_MLP = pow(MLP_taum_PX/MLP_taum_PZ - MLP_taup_PX/MLP_taup_PZ,-1)*( DV1.x() - DV2.x() - (MLP_taup_PX/MLP_taup_PZ)*DV1.z() + (MLP_taum_PX/MLP_taum_PZ)*DV2.z() )
-        BVx_MLP = DV1.x() - (MLP_taup_PX/MLP_taup_PZ)*(DV1.z() - BVz_MLP)
-        BVy_MLP = DV1.y() - (MLP_taup_PY/MLP_taup_PZ)*(DV1.z() - BVz_MLP)
-        BV_MLP = ROOT.Math.XYZPoint( BVx_MLP, BVy_MLP, BVz_MLP )
-
-        BV = BV_MLP
-
         u1 = (DV1 - BV).Unit()
         u2 = (DV2 - BV).Unit()
 
@@ -1641,237 +1627,6 @@ def x_initial_estimate(init, BV, species, params):
         x0[dimM+22] = Enu2
 
     elif(init == 11): # MLP, K*tautau pions
-        ROOT.TMVA.Tools.Instance()
-        reader_taup_PX = ROOT.TMVA.Reader( "V:Color:Silent" )
-        reader_taup_PY = ROOT.TMVA.Reader( "V:Color:Silent" ) 
-        reader_taup_PZ = ROOT.TMVA.Reader( "V:Color:Silent" ) 
-
-        weightfile_taup_PX = ""
-        weightfile_taup_PY = ""
-        weightfile_taup_PZ = ""
-
-        if((species == 1) or (species == 10) or (species == 11) or (species == 12) or (species == 2) or (species == 3)): # Ktautau
-            weightfile_taup_PX = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taup_PX/dataset/weights/TMVARegression_taup_TRUEP_X_MLP.weights.xml"
-            weightfile_taup_PY = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taup_PY/dataset/weights/TMVARegression_taup_TRUEP_Y_MLP.weights.xml"
-            weightfile_taup_PZ = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taup_PZ/dataset/weights/TMVARegression_taup_TRUEP_Z_MLP.weights.xml"
-        elif( (species == 4) or (species == 5) or (species == 6)): # D+D-K+
-            weightfile_taup_PX = "/panfs/felician/MLP_weights/DDK_MLP_Train_taup_PX/dataset/weights/TMVARegression_Dp_TRUEP_X_MLP.weights.xml"
-            weightfile_taup_PY = "/panfs/felician/MLP_weights/DDK_MLP_Train_taup_PY/dataset/weights/TMVARegression_Dp_TRUEP_Y_MLP.weights.xml"
-            weightfile_taup_PZ = "/panfs/felician/MLP_weights/DDK_MLP_Train_taup_PZ/dataset/weights/TMVARegression_Dp_TRUEP_Z_MLP.weights.xml"
-        elif( (species == 9) or (species == 0) or (species == -1) ):
-            weightfile_taup_PX = "/panfs/felician/MLP_weights/D0D0K_MLP_Train_D0bar_PX/dataset/weights/TMVARegression_D0bar_TRUEP_X_MLP.weights.xml"
-            weightfile_taup_PY = "/panfs/felician/MLP_weights/D0D0K_MLP_Train_D0bar_PY/dataset/weights/TMVARegression_D0bar_TRUEP_Y_MLP.weights.xml"
-            weightfile_taup_PZ = "/panfs/felician/MLP_weights/D0D0K_MLP_Train_D0bar_PZ/dataset/weights/TMVARegression_D0bar_TRUEP_Z_MLP.weights.xml"
-
-        arr_m_1 = array('f', [0])
-        arr_m_2 = array('f', [0])
-        arr_m_3 = array('f', [0])
-        arr_m_4 = array('f', [0])
-        arr_m_5 = array('f', [0])
-        arr_m_6 = array('f', [0])
-        arr_m_7 = array('f', [0])
-        arr_m_8 = array('f', [0])
-        arr_m_9 = array('f', [0])
-        arr_m_10 = array('f', [0])
-        arr_m_11 = array('f', [0])
-        arr_m_12 = array('f', [0])
-        arr_m_13 = array('f', [0])
-        arr_m_14 = array('f', [0])
-        arr_m_15 = array('f', [0])
-        arr_m_16 = array('f', [0])
-        arr_m_17 = array('f', [0])
-        arr_m_18 = array('f', [0])
-        arr_m_19 = array('f', [0])
-        arr_m_20 = array('f', [0])
-        arr_m_21 = array('f', [0])
-        arr_m_22 = array('f', [0])
-        arr_Kp_RP_Z = array('f', [0])
-        arr_eventNumber = array('i', [0])
-
-        if((species == 9) or (species == 0) or (species == -1)):
-            reader_taup_PX.AddVariable("df_mprime_1", arr_m_1)
-            reader_taup_PX.AddVariable("df_mprime_2", arr_m_2)
-            reader_taup_PX.AddVariable("df_mprime_3", arr_m_3)
-            reader_taup_PX.AddVariable("df_mprime_4", arr_m_4)
-            reader_taup_PX.AddVariable("df_mprime_5", arr_m_5)
-            reader_taup_PX.AddVariable("df_mprime_6", arr_m_6)
-            reader_taup_PX.AddVariable("df_mprime_7", arr_m_7)
-            reader_taup_PX.AddVariable("df_mprime_8", arr_m_8)
-            reader_taup_PX.AddVariable("df_mprime_9", arr_m_9)
-            reader_taup_PX.AddVariable("df_mprime_10", arr_m_10)
-            reader_taup_PX.AddVariable("df_mprime_11", arr_m_11)
-            reader_taup_PX.AddVariable("df_mprime_12", arr_m_12)
-            reader_taup_PX.AddVariable("df_mprime_13", arr_m_13)
-            reader_taup_PX.AddVariable("df_mprime_14", arr_m_14)
-            reader_taup_PX.AddVariable("df_mprime_15", arr_m_15)
-            reader_taup_PX.AddVariable("df_mprime_16", arr_m_16)
-            reader_taup_PX.AddVariable("df_mprime_17", arr_m_17)
-            reader_taup_PX.AddVariable("df_mprime_18", arr_m_18)
-            reader_taup_PX.AddVariable("df_mprime_19", arr_m_19)
-            reader_taup_PX.AddVariable("df_mprime_20", arr_m_20)
-            reader_taup_PX.AddVariable("df_mprime_21", arr_m_21)
-            reader_taup_PX.AddVariable("df_mprime_22", arr_m_22)
-            reader_taup_PX.AddVariable("Kp_RP_Z", arr_Kp_RP_Z)
-            reader_taup_PX.AddSpectator("eventNumber", arr_eventNumber)
-
-            reader_taup_PY.AddVariable("df_mprime_1", arr_m_1)
-            reader_taup_PY.AddVariable("df_mprime_2", arr_m_2)
-            reader_taup_PY.AddVariable("df_mprime_3", arr_m_3)
-            reader_taup_PY.AddVariable("df_mprime_4", arr_m_4)
-            reader_taup_PY.AddVariable("df_mprime_5", arr_m_5)
-            reader_taup_PY.AddVariable("df_mprime_6", arr_m_6)
-            reader_taup_PY.AddVariable("df_mprime_7", arr_m_7)
-            reader_taup_PY.AddVariable("df_mprime_8", arr_m_8)
-            reader_taup_PY.AddVariable("df_mprime_9", arr_m_9)
-            reader_taup_PY.AddVariable("df_mprime_10", arr_m_10)
-            reader_taup_PY.AddVariable("df_mprime_11", arr_m_11)
-            reader_taup_PY.AddVariable("df_mprime_12", arr_m_12)
-            reader_taup_PY.AddVariable("df_mprime_13", arr_m_13)
-            reader_taup_PY.AddVariable("df_mprime_14", arr_m_14)
-            reader_taup_PY.AddVariable("df_mprime_15", arr_m_15)
-            reader_taup_PY.AddVariable("df_mprime_16", arr_m_16)
-            reader_taup_PY.AddVariable("df_mprime_17", arr_m_17)
-            reader_taup_PY.AddVariable("df_mprime_18", arr_m_18)
-            reader_taup_PY.AddVariable("df_mprime_19", arr_m_19)
-            reader_taup_PY.AddVariable("df_mprime_20", arr_m_20)
-            reader_taup_PY.AddVariable("df_mprime_21", arr_m_21)
-            reader_taup_PY.AddVariable("df_mprime_22", arr_m_22)
-            reader_taup_PY.AddVariable("Kp_RP_Z", arr_Kp_RP_Z)
-            reader_taup_PY.AddSpectator("eventNumber", arr_eventNumber)
-
-            reader_taup_PZ.AddVariable("df_mprime_1", arr_m_1)
-            reader_taup_PZ.AddVariable("df_mprime_2", arr_m_2)
-            reader_taup_PZ.AddVariable("df_mprime_3", arr_m_3)
-            reader_taup_PZ.AddVariable("df_mprime_4", arr_m_4)
-            reader_taup_PZ.AddVariable("df_mprime_5", arr_m_5)
-            reader_taup_PZ.AddVariable("df_mprime_6", arr_m_6)
-            reader_taup_PZ.AddVariable("df_mprime_7", arr_m_7)
-            reader_taup_PZ.AddVariable("df_mprime_8", arr_m_8)
-            reader_taup_PZ.AddVariable("df_mprime_9", arr_m_9)
-            reader_taup_PZ.AddVariable("df_mprime_10", arr_m_10)
-            reader_taup_PZ.AddVariable("df_mprime_11", arr_m_11)
-            reader_taup_PZ.AddVariable("df_mprime_12", arr_m_12)
-            reader_taup_PZ.AddVariable("df_mprime_13", arr_m_13)
-            reader_taup_PZ.AddVariable("df_mprime_14", arr_m_14)
-            reader_taup_PZ.AddVariable("df_mprime_15", arr_m_15)
-            reader_taup_PZ.AddVariable("df_mprime_16", arr_m_16)
-            reader_taup_PZ.AddVariable("df_mprime_17", arr_m_17)
-            reader_taup_PZ.AddVariable("df_mprime_18", arr_m_18)
-            reader_taup_PZ.AddVariable("df_mprime_19", arr_m_19)
-            reader_taup_PZ.AddVariable("df_mprime_20", arr_m_20)
-            reader_taup_PZ.AddVariable("df_mprime_21", arr_m_21)
-            reader_taup_PZ.AddVariable("df_mprime_22", arr_m_22)
-            reader_taup_PZ.AddVariable("Kp_RP_Z", arr_Kp_RP_Z)
-            reader_taup_PZ.AddSpectator("eventNumber", arr_eventNumber)
-        else:
-            reader_taup_PX.AddVariable("df_m_1", arr_m_1)
-            reader_taup_PX.AddVariable("df_m_2", arr_m_2)
-            reader_taup_PX.AddVariable("df_m_3", arr_m_3)
-            reader_taup_PX.AddVariable("df_m_4", arr_m_4)
-            reader_taup_PX.AddVariable("df_m_5", arr_m_5)
-            reader_taup_PX.AddVariable("df_m_6", arr_m_6)
-            reader_taup_PX.AddVariable("df_m_7", arr_m_7)
-            reader_taup_PX.AddVariable("df_m_8", arr_m_8)
-            reader_taup_PX.AddVariable("df_m_9", arr_m_9)
-            reader_taup_PX.AddVariable("df_m_10", arr_m_10)
-            reader_taup_PX.AddVariable("df_m_11", arr_m_11)
-            reader_taup_PX.AddVariable("df_m_12", arr_m_12)
-            reader_taup_PX.AddVariable("df_m_13", arr_m_13)
-            reader_taup_PX.AddVariable("df_m_14", arr_m_14)
-            reader_taup_PX.AddVariable("df_m_15", arr_m_15)
-            reader_taup_PX.AddVariable("df_m_16", arr_m_16)
-            reader_taup_PX.AddVariable("df_m_17", arr_m_17)
-            reader_taup_PX.AddVariable("df_m_18", arr_m_18)
-            reader_taup_PX.AddVariable("df_m_19", arr_m_19)
-            reader_taup_PX.AddVariable("df_m_20", arr_m_20)
-            reader_taup_PX.AddVariable("df_m_21", arr_m_21)
-            reader_taup_PX.AddVariable("df_m_22", arr_m_22)
-            reader_taup_PX.AddVariable("Kp_RP_Z", arr_Kp_RP_Z)
-            reader_taup_PX.AddSpectator("eventNumber", arr_eventNumber)
-
-            reader_taup_PY.AddVariable("df_m_1", arr_m_1)
-            reader_taup_PY.AddVariable("df_m_2", arr_m_2)
-            reader_taup_PY.AddVariable("df_m_3", arr_m_3)
-            reader_taup_PY.AddVariable("df_m_4", arr_m_4)
-            reader_taup_PY.AddVariable("df_m_5", arr_m_5)
-            reader_taup_PY.AddVariable("df_m_6", arr_m_6)
-            reader_taup_PY.AddVariable("df_m_7", arr_m_7)
-            reader_taup_PY.AddVariable("df_m_8", arr_m_8)
-            reader_taup_PY.AddVariable("df_m_9", arr_m_9)
-            reader_taup_PY.AddVariable("df_m_10", arr_m_10)
-            reader_taup_PY.AddVariable("df_m_11", arr_m_11)
-            reader_taup_PY.AddVariable("df_m_12", arr_m_12)
-            reader_taup_PY.AddVariable("df_m_13", arr_m_13)
-            reader_taup_PY.AddVariable("df_m_14", arr_m_14)
-            reader_taup_PY.AddVariable("df_m_15", arr_m_15)
-            reader_taup_PY.AddVariable("df_m_16", arr_m_16)
-            reader_taup_PY.AddVariable("df_m_17", arr_m_17)
-            reader_taup_PY.AddVariable("df_m_18", arr_m_18)
-            reader_taup_PY.AddVariable("df_m_19", arr_m_19)
-            reader_taup_PY.AddVariable("df_m_20", arr_m_20)
-            reader_taup_PY.AddVariable("df_m_21", arr_m_21)
-            reader_taup_PY.AddVariable("df_m_22", arr_m_22)
-            reader_taup_PY.AddVariable("Kp_RP_Z", arr_Kp_RP_Z)
-            reader_taup_PY.AddSpectator("eventNumber", arr_eventNumber)
-
-            reader_taup_PZ.AddVariable("df_m_1", arr_m_1)
-            reader_taup_PZ.AddVariable("df_m_2", arr_m_2)
-            reader_taup_PZ.AddVariable("df_m_3", arr_m_3)
-            reader_taup_PZ.AddVariable("df_m_4", arr_m_4)
-            reader_taup_PZ.AddVariable("df_m_5", arr_m_5)
-            reader_taup_PZ.AddVariable("df_m_6", arr_m_6)
-            reader_taup_PZ.AddVariable("df_m_7", arr_m_7)
-            reader_taup_PZ.AddVariable("df_m_8", arr_m_8)
-            reader_taup_PZ.AddVariable("df_m_9", arr_m_9)
-            reader_taup_PZ.AddVariable("df_m_10", arr_m_10)
-            reader_taup_PZ.AddVariable("df_m_11", arr_m_11)
-            reader_taup_PZ.AddVariable("df_m_12", arr_m_12)
-            reader_taup_PZ.AddVariable("df_m_13", arr_m_13)
-            reader_taup_PZ.AddVariable("df_m_14", arr_m_14)
-            reader_taup_PZ.AddVariable("df_m_15", arr_m_15)
-            reader_taup_PZ.AddVariable("df_m_16", arr_m_16)
-            reader_taup_PZ.AddVariable("df_m_17", arr_m_17)
-            reader_taup_PZ.AddVariable("df_m_18", arr_m_18)
-            reader_taup_PZ.AddVariable("df_m_19", arr_m_19)
-            reader_taup_PZ.AddVariable("df_m_20", arr_m_20)
-            reader_taup_PZ.AddVariable("df_m_21", arr_m_21)
-            reader_taup_PZ.AddVariable("df_m_22", arr_m_22)
-            reader_taup_PZ.AddVariable("Kp_RP_Z", arr_Kp_RP_Z)
-            reader_taup_PZ.AddSpectator("eventNumber", arr_eventNumber)
-
-        reader_taup_PX.BookMVA("MLP", weightfile_taup_PX)
-        reader_taup_PY.BookMVA("MLP", weightfile_taup_PY)
-        reader_taup_PZ.BookMVA("MLP", weightfile_taup_PZ)
-
-        arr_m_1[0] = m[0]
-        arr_m_2[0] = m[1]
-        arr_m_3[0] = m[2]
-        arr_m_4[0] = m[3]
-        arr_m_5[0] = m[4]
-        arr_m_6[0] = m[5]
-        arr_m_7[0] = m[6]
-        arr_m_8[0] = m[7]
-        arr_m_9[0] = m[8]
-        arr_m_10[0] = m[9]
-        arr_m_11[0] = m[10]
-        arr_m_12[0] = m[11]
-        arr_m_13[0] = m[12]
-        arr_m_14[0] = m[13]
-        arr_m_15[0] = m[14]
-        arr_m_16[0] = m[15]
-        arr_m_17[0] = m[16]
-        arr_m_18[0] = m[17]
-        arr_m_19[0] = m[18]
-        arr_m_20[0] = m[19]
-        arr_m_21[0] = m[20]
-        arr_m_22[0] = m[21]
-        arr_Kp_RP_Z[0] = RPz
-        arr_eventNumber[0] = (eventNumber%100)
-
-        MLP_taup_PX = reader_taup_PX.EvaluateRegression("MLP")[0]
-        MLP_taup_PY = reader_taup_PY.EvaluateRegression("MLP")[0]
-        MLP_taup_PZ = reader_taup_PZ.EvaluateRegression("MLP")[0]
-
         ptau1 = ROOT.Math.XYZVector( MLP_taup_PX, MLP_taup_PY, MLP_taup_PZ )        
 
         # Magnitude of 3pi momenta
@@ -1918,8 +1673,6 @@ def x_initial_estimate(init, BV, species, params):
         # Total tau momentum vector
         ptau2 = p_tau2_perp + ROOT.Math.XYZVector(pMag_tau2_long * bDir.x(), pMag_tau2_long * bDir.y(), pMag_tau2_long * bDir.z())
 
-        p3pi1 = ROOT.Math.XYZVector( m[6], m[7], m[8] )
-        p3pi2 = ROOT.Math.XYZVector( m[13], m[14], m[15] )
         pnu1 = ptau1 - p3pi1
         pnu2 = ptau2 - p3pi2
 
@@ -1960,237 +1713,6 @@ def x_initial_estimate(init, BV, species, params):
         x0[dimM+22] = Enu2
 
     elif(init == 12): # K*tautau (pions), MLP
-        ROOT.TMVA.Tools.Instance()
-        reader_taum_PX = ROOT.TMVA.Reader( "V:Color:Silent" ) 
-        reader_taum_PY = ROOT.TMVA.Reader( "V:Color:Silent" ) 
-        reader_taum_PZ = ROOT.TMVA.Reader( "V:Color:Silent" ) 
-        
-        weightfile_taum_PX = ""
-        weightfile_taum_PY = ""
-        weightfile_taum_PZ = ""
-
-        if((species == 1) or (species == 10) or (species == 11) or (species == 12) or (species == 2) or (species == 3)): # Ktautau
-            weightfile_taum_PX = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taum_PX/dataset/weights/TMVARegression_taum_TRUEP_X_MLP.weights.xml"
-            weightfile_taum_PY = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taum_PY/dataset/weights/TMVARegression_taum_TRUEP_Y_MLP.weights.xml"
-            weightfile_taum_PZ = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taum_PZ/dataset/weights/TMVARegression_taum_TRUEP_Z_MLP.weights.xml"
-        elif( (species == 4) or (species == 5) or (species == 6)): # D+D-K+
-            weightfile_taum_PX = "/panfs/felician/MLP_weights/DDK_MLP_Train_taum_PX/dataset/weights/TMVARegression_Dm_TRUEP_X_MLP.weights.xml"
-            weightfile_taum_PY = "/panfs/felician/MLP_weights/DDK_MLP_Train_taum_PY/dataset/weights/TMVARegression_Dm_TRUEP_Y_MLP.weights.xml"
-            weightfile_taum_PZ = "/panfs/felician/MLP_weights/DDK_MLP_Train_taum_PZ/dataset/weights/TMVARegression_Dm_TRUEP_Z_MLP.weights.xml"
-        elif( (species == 9) or (species == 0) or (species == -1) ):
-            weightfile_taum_PX = "/panfs/felician/MLP_weights/D0D0K_MLP_Train_D0_PX/dataset/weights/TMVARegression_D0_TRUEP_X_MLP.weights.xml"
-            weightfile_taum_PY = "/panfs/felician/MLP_weights/D0D0K_MLP_Train_D0_PY/dataset/weights/TMVARegression_D0_TRUEP_Y_MLP.weights.xml"
-            weightfile_taum_PZ = "/panfs/felician/MLP_weights/D0D0K_MLP_Train_D0_PZ/dataset/weights/TMVARegression_D0_TRUEP_Z_MLP.weights.xml"
-        
-        arr_m_1 = array('f', [0])
-        arr_m_2 = array('f', [0])
-        arr_m_3 = array('f', [0])
-        arr_m_4 = array('f', [0])
-        arr_m_5 = array('f', [0])
-        arr_m_6 = array('f', [0])
-        arr_m_7 = array('f', [0])
-        arr_m_8 = array('f', [0])
-        arr_m_9 = array('f', [0])
-        arr_m_10 = array('f', [0])
-        arr_m_11 = array('f', [0])
-        arr_m_12 = array('f', [0])
-        arr_m_13 = array('f', [0])
-        arr_m_14 = array('f', [0])
-        arr_m_15 = array('f', [0])
-        arr_m_16 = array('f', [0])
-        arr_m_17 = array('f', [0])
-        arr_m_18 = array('f', [0])
-        arr_m_19 = array('f', [0])
-        arr_m_20 = array('f', [0])
-        arr_m_21 = array('f', [0])
-        arr_m_22 = array('f', [0])
-        arr_Kp_RP_Z = array('f', [0])
-        arr_eventNumber = array('i', [0])
-
-        if((species == 9) or (species == 0) or (species == -1)):
-            reader_taum_PX.AddVariable("df_mprime_1", arr_m_1)
-            reader_taum_PX.AddVariable("df_mprime_2", arr_m_2)
-            reader_taum_PX.AddVariable("df_mprime_3", arr_m_3)
-            reader_taum_PX.AddVariable("df_mprime_4", arr_m_4)
-            reader_taum_PX.AddVariable("df_mprime_5", arr_m_5)
-            reader_taum_PX.AddVariable("df_mprime_6", arr_m_6)
-            reader_taum_PX.AddVariable("df_mprime_7", arr_m_7)
-            reader_taum_PX.AddVariable("df_mprime_8", arr_m_8)
-            reader_taum_PX.AddVariable("df_mprime_9", arr_m_9)
-            reader_taum_PX.AddVariable("df_mprime_10", arr_m_10)
-            reader_taum_PX.AddVariable("df_mprime_11", arr_m_11)
-            reader_taum_PX.AddVariable("df_mprime_12", arr_m_12)
-            reader_taum_PX.AddVariable("df_mprime_13", arr_m_13)
-            reader_taum_PX.AddVariable("df_mprime_14", arr_m_14)
-            reader_taum_PX.AddVariable("df_mprime_15", arr_m_15)
-            reader_taum_PX.AddVariable("df_mprime_16", arr_m_16)
-            reader_taum_PX.AddVariable("df_mprime_17", arr_m_17)
-            reader_taum_PX.AddVariable("df_mprime_18", arr_m_18)
-            reader_taum_PX.AddVariable("df_mprime_19", arr_m_19)
-            reader_taum_PX.AddVariable("df_mprime_20", arr_m_20)
-            reader_taum_PX.AddVariable("df_mprime_21", arr_m_21)
-            reader_taum_PX.AddVariable("df_mprime_22", arr_m_22)
-            reader_taum_PX.AddVariable("Kp_RP_Z", arr_Kp_RP_Z)
-            reader_taum_PX.AddSpectator("eventNumber", arr_eventNumber)
-
-            reader_taum_PY.AddVariable("df_mprime_1", arr_m_1)
-            reader_taum_PY.AddVariable("df_mprime_2", arr_m_2)
-            reader_taum_PY.AddVariable("df_mprime_3", arr_m_3)
-            reader_taum_PY.AddVariable("df_mprime_4", arr_m_4)
-            reader_taum_PY.AddVariable("df_mprime_5", arr_m_5)
-            reader_taum_PY.AddVariable("df_mprime_6", arr_m_6)
-            reader_taum_PY.AddVariable("df_mprime_7", arr_m_7)
-            reader_taum_PY.AddVariable("df_mprime_8", arr_m_8)
-            reader_taum_PY.AddVariable("df_mprime_9", arr_m_9)
-            reader_taum_PY.AddVariable("df_mprime_10", arr_m_10)
-            reader_taum_PY.AddVariable("df_mprime_11", arr_m_11)
-            reader_taum_PY.AddVariable("df_mprime_12", arr_m_12)
-            reader_taum_PY.AddVariable("df_mprime_13", arr_m_13)
-            reader_taum_PY.AddVariable("df_mprime_14", arr_m_14)
-            reader_taum_PY.AddVariable("df_mprime_15", arr_m_15)
-            reader_taum_PY.AddVariable("df_mprime_16", arr_m_16)
-            reader_taum_PY.AddVariable("df_mprime_17", arr_m_17)
-            reader_taum_PY.AddVariable("df_mprime_18", arr_m_18)
-            reader_taum_PY.AddVariable("df_mprime_19", arr_m_19)
-            reader_taum_PY.AddVariable("df_mprime_20", arr_m_20)
-            reader_taum_PY.AddVariable("df_mprime_21", arr_m_21)
-            reader_taum_PY.AddVariable("df_mprime_22", arr_m_22)
-            reader_taum_PY.AddVariable("Kp_RP_Z", arr_Kp_RP_Z)
-            reader_taum_PY.AddSpectator("eventNumber", arr_eventNumber)
-
-            reader_taum_PZ.AddVariable("df_mprime_1", arr_m_1)
-            reader_taum_PZ.AddVariable("df_mprime_2", arr_m_2)
-            reader_taum_PZ.AddVariable("df_mprime_3", arr_m_3)
-            reader_taum_PZ.AddVariable("df_mprime_4", arr_m_4)
-            reader_taum_PZ.AddVariable("df_mprime_5", arr_m_5)
-            reader_taum_PZ.AddVariable("df_mprime_6", arr_m_6)
-            reader_taum_PZ.AddVariable("df_mprime_7", arr_m_7)
-            reader_taum_PZ.AddVariable("df_mprime_8", arr_m_8)
-            reader_taum_PZ.AddVariable("df_mprime_9", arr_m_9)
-            reader_taum_PZ.AddVariable("df_mprime_10", arr_m_10)
-            reader_taum_PZ.AddVariable("df_mprime_11", arr_m_11)
-            reader_taum_PZ.AddVariable("df_mprime_12", arr_m_12)
-            reader_taum_PZ.AddVariable("df_mprime_13", arr_m_13)
-            reader_taum_PZ.AddVariable("df_mprime_14", arr_m_14)
-            reader_taum_PZ.AddVariable("df_mprime_15", arr_m_15)
-            reader_taum_PZ.AddVariable("df_mprime_16", arr_m_16)
-            reader_taum_PZ.AddVariable("df_mprime_17", arr_m_17)
-            reader_taum_PZ.AddVariable("df_mprime_18", arr_m_18)
-            reader_taum_PZ.AddVariable("df_mprime_19", arr_m_19)
-            reader_taum_PZ.AddVariable("df_mprime_20", arr_m_20)
-            reader_taum_PZ.AddVariable("df_mprime_21", arr_m_21)
-            reader_taum_PZ.AddVariable("df_mprime_22", arr_m_22)
-            reader_taum_PZ.AddVariable("Kp_RP_Z", arr_Kp_RP_Z)
-            reader_taum_PZ.AddSpectator("eventNumber", arr_eventNumber)
-        else:
-            reader_taum_PX.AddVariable("df_m_1", arr_m_1)
-            reader_taum_PX.AddVariable("df_m_2", arr_m_2)
-            reader_taum_PX.AddVariable("df_m_3", arr_m_3)
-            reader_taum_PX.AddVariable("df_m_4", arr_m_4)
-            reader_taum_PX.AddVariable("df_m_5", arr_m_5)
-            reader_taum_PX.AddVariable("df_m_6", arr_m_6)
-            reader_taum_PX.AddVariable("df_m_7", arr_m_7)
-            reader_taum_PX.AddVariable("df_m_8", arr_m_8)
-            reader_taum_PX.AddVariable("df_m_9", arr_m_9)
-            reader_taum_PX.AddVariable("df_m_10", arr_m_10)
-            reader_taum_PX.AddVariable("df_m_11", arr_m_11)
-            reader_taum_PX.AddVariable("df_m_12", arr_m_12)
-            reader_taum_PX.AddVariable("df_m_13", arr_m_13)
-            reader_taum_PX.AddVariable("df_m_14", arr_m_14)
-            reader_taum_PX.AddVariable("df_m_15", arr_m_15)
-            reader_taum_PX.AddVariable("df_m_16", arr_m_16)
-            reader_taum_PX.AddVariable("df_m_17", arr_m_17)
-            reader_taum_PX.AddVariable("df_m_18", arr_m_18)
-            reader_taum_PX.AddVariable("df_m_19", arr_m_19)
-            reader_taum_PX.AddVariable("df_m_20", arr_m_20)
-            reader_taum_PX.AddVariable("df_m_21", arr_m_21)
-            reader_taum_PX.AddVariable("df_m_22", arr_m_22)
-            reader_taum_PX.AddVariable("Kp_RP_Z", arr_Kp_RP_Z)
-            reader_taum_PX.AddSpectator("eventNumber", arr_eventNumber)
-
-            reader_taum_PY.AddVariable("df_m_1", arr_m_1)
-            reader_taum_PY.AddVariable("df_m_2", arr_m_2)
-            reader_taum_PY.AddVariable("df_m_3", arr_m_3)
-            reader_taum_PY.AddVariable("df_m_4", arr_m_4)
-            reader_taum_PY.AddVariable("df_m_5", arr_m_5)
-            reader_taum_PY.AddVariable("df_m_6", arr_m_6)
-            reader_taum_PY.AddVariable("df_m_7", arr_m_7)
-            reader_taum_PY.AddVariable("df_m_8", arr_m_8)
-            reader_taum_PY.AddVariable("df_m_9", arr_m_9)
-            reader_taum_PY.AddVariable("df_m_10", arr_m_10)
-            reader_taum_PY.AddVariable("df_m_11", arr_m_11)
-            reader_taum_PY.AddVariable("df_m_12", arr_m_12)
-            reader_taum_PY.AddVariable("df_m_13", arr_m_13)
-            reader_taum_PY.AddVariable("df_m_14", arr_m_14)
-            reader_taum_PY.AddVariable("df_m_15", arr_m_15)
-            reader_taum_PY.AddVariable("df_m_16", arr_m_16)
-            reader_taum_PY.AddVariable("df_m_17", arr_m_17)
-            reader_taum_PY.AddVariable("df_m_18", arr_m_18)
-            reader_taum_PY.AddVariable("df_m_19", arr_m_19)
-            reader_taum_PY.AddVariable("df_m_20", arr_m_20)
-            reader_taum_PY.AddVariable("df_m_21", arr_m_21)
-            reader_taum_PY.AddVariable("df_m_22", arr_m_22)
-            reader_taum_PY.AddVariable("Kp_RP_Z", arr_Kp_RP_Z)
-            reader_taum_PY.AddSpectator("eventNumber", arr_eventNumber)
-
-            reader_taum_PZ.AddVariable("df_m_1", arr_m_1)
-            reader_taum_PZ.AddVariable("df_m_2", arr_m_2)
-            reader_taum_PZ.AddVariable("df_m_3", arr_m_3)
-            reader_taum_PZ.AddVariable("df_m_4", arr_m_4)
-            reader_taum_PZ.AddVariable("df_m_5", arr_m_5)
-            reader_taum_PZ.AddVariable("df_m_6", arr_m_6)
-            reader_taum_PZ.AddVariable("df_m_7", arr_m_7)
-            reader_taum_PZ.AddVariable("df_m_8", arr_m_8)
-            reader_taum_PZ.AddVariable("df_m_9", arr_m_9)
-            reader_taum_PZ.AddVariable("df_m_10", arr_m_10)
-            reader_taum_PZ.AddVariable("df_m_11", arr_m_11)
-            reader_taum_PZ.AddVariable("df_m_12", arr_m_12)
-            reader_taum_PZ.AddVariable("df_m_13", arr_m_13)
-            reader_taum_PZ.AddVariable("df_m_14", arr_m_14)
-            reader_taum_PZ.AddVariable("df_m_15", arr_m_15)
-            reader_taum_PZ.AddVariable("df_m_16", arr_m_16)
-            reader_taum_PZ.AddVariable("df_m_17", arr_m_17)
-            reader_taum_PZ.AddVariable("df_m_18", arr_m_18)
-            reader_taum_PZ.AddVariable("df_m_19", arr_m_19)
-            reader_taum_PZ.AddVariable("df_m_20", arr_m_20)
-            reader_taum_PZ.AddVariable("df_m_21", arr_m_21)
-            reader_taum_PZ.AddVariable("df_m_22", arr_m_22)
-            reader_taum_PZ.AddVariable("Kp_RP_Z", arr_Kp_RP_Z)
-            reader_taum_PZ.AddSpectator("eventNumber", arr_eventNumber)
-
-        reader_taum_PX.BookMVA("MLP", weightfile_taum_PX)
-        reader_taum_PY.BookMVA("MLP", weightfile_taum_PY)
-        reader_taum_PZ.BookMVA("MLP", weightfile_taum_PZ)
-
-        arr_m_1[0] = m[0]
-        arr_m_2[0] = m[1]
-        arr_m_3[0] = m[2]
-        arr_m_4[0] = m[3]
-        arr_m_5[0] = m[4]
-        arr_m_6[0] = m[5]
-        arr_m_7[0] = m[6]
-        arr_m_8[0] = m[7]
-        arr_m_9[0] = m[8]
-        arr_m_10[0] = m[9]
-        arr_m_11[0] = m[10]
-        arr_m_12[0] = m[11]
-        arr_m_13[0] = m[12]
-        arr_m_14[0] = m[13]
-        arr_m_15[0] = m[14]
-        arr_m_16[0] = m[15]
-        arr_m_17[0] = m[16]
-        arr_m_18[0] = m[17]
-        arr_m_19[0] = m[18]
-        arr_m_20[0] = m[19]
-        arr_m_21[0] = m[20]
-        arr_m_22[0] = m[21]
-        arr_Kp_RP_Z[0] = RPz
-        arr_eventNumber[0] = (eventNumber%100)
-
-        MLP_taum_PX = reader_taum_PX.EvaluateRegression("MLP")[0]
-        MLP_taum_PY = reader_taum_PY.EvaluateRegression("MLP")[0]
-        MLP_taum_PZ = reader_taum_PZ.EvaluateRegression("MLP")[0]
-
         ptau2 = ROOT.Math.XYZVector( MLP_taum_PX, MLP_taum_PY, MLP_taum_PZ )
 
         # Magnitude of 3pi momenta
@@ -2237,8 +1759,6 @@ def x_initial_estimate(init, BV, species, params):
         # Total tau momentum vector
         ptau1 = p_tau1_perp + ROOT.Math.XYZVector(pMag_tau1_long * bDir.x(), pMag_tau1_long * bDir.y(), pMag_tau1_long * bDir.z())
 
-        p3pi1 = ROOT.Math.XYZVector( m[6], m[7], m[8] )
-        p3pi2 = ROOT.Math.XYZVector( m[13], m[14], m[15] )
         pnu1 = ptau1 - p3pi1
         pnu2 = ptau2 - p3pi2
 
@@ -2279,6 +1799,97 @@ def x_initial_estimate(init, BV, species, params):
         x0[dimM+22] = Enu2
 
     elif(init == 13):
+        ptau1 = ROOT.Math.XYZVector( MLP_taup_PX, MLP_taup_PY, MLP_taup_PZ )
+
+        u2 = (DV2 - BV).Unit()
+        theta2 = np.arcsin( ( np.sqrt( np.abs((mtau**2 + m3pi2**2 - mnu**2)**2 - 4*(mtau**2)*(m3pi2**2) )) )/( 2*mtau*np.sqrt( p3pi2.Mag2() ) ) )
+        ptau2_mag = ( (mtau**2 + m3pi2**2 - mnu**2)*np.sqrt(p3pi2.Mag2())*np.cos(theta2) )/( 2*( E3pi2**2 - p3pi2.Mag2()*np.cos(theta2)**2 ) )
+        ptau2 = ROOT.Math.XYZVector(ptau2_mag * u2.x(), ptau2_mag * u2.y(), ptau2_mag * u2.z())
+
+        pnu1 = ptau1 - p3pi1
+        pnu2 = ptau2 - p3pi2
+
+        Etau1 = np.sqrt( mtau**2 + ptau1.Mag2() )
+        Etau2 = np.sqrt( mtau**2 + ptau2.Mag2() )
+
+        Enu1 = np.sqrt( pnu1.Mag2() )
+        Enu2 = np.sqrt( mnu**2 + pnu2.Mag2() )
+
+        pK = ROOT.Math.XYZVector( m[19], m[20], m[21] )
+        EK = np.sqrt( mkaon**2 + pK.Mag2() )
+        pB = ptau1 + ptau2 + pK
+        EB = Etau1 + Etau2 + EK
+        MB_squared = EB**2 - pB.Mag2()
+
+        x0[dimM] = BV.x()
+        x0[dimM+1] = BV.y()
+        x0[dimM+2] = BV.z()
+        x0[dimM+3] = pB.x()
+        x0[dimM+4] = pB.y()
+        x0[dimM+5] = pB.z()
+        x0[dimM+6] = MB_squared
+        x0[dimM+7] = ptau1.x()
+        x0[dimM+8] = ptau1.y()
+        x0[dimM+9] = ptau1.z()
+        x0[dimM+10] = Etau1
+        x0[dimM+11] = pnu1.x()
+        x0[dimM+12] = pnu1.y()
+        x0[dimM+13] = pnu1.z()
+        x0[dimM+14] = Enu1
+        x0[dimM+15] = ptau2.x()
+        x0[dimM+16] = ptau2.y()
+        x0[dimM+17] = ptau2.z()
+        x0[dimM+18] = Etau2
+        x0[dimM+19] = pnu2.x()
+        x0[dimM+20] = pnu2.y()
+        x0[dimM+21] = pnu2.z()
+        x0[dimM+22] = Enu2
+
+    elif(init == 14):
+        ptau2 = ROOT.Math.XYZVector( MLP_taum_PX, MLP_taum_PY, MLP_taum_PZ )
+
+        u1 = (DV1 - BV).Unit()
+        theta1 = np.arcsin( ( np.sqrt( np.abs((mtau**2 + m3pi1**2 - mnu**2)**2 - 4*(mtau**2)*(m3pi1**2) )) )/( 2*mtau*np.sqrt( p3pi1.Mag2() ) ) )
+        ptau1_mag = ( (mtau**2 + m3pi1**2 - mnu**2)*np.sqrt(p3pi1.Mag2())*np.cos(theta1) )/( 2*( E3pi1**2 - p3pi1.Mag2()*np.cos(theta1)**2 ) )
+        ptau1 = ROOT.Math.XYZVector(ptau1_mag * u1.x(), ptau1_mag * u1.y(), ptau1_mag * u1.z())
+
+        pnu1 = ptau1 - p3pi1
+        pnu2 = ptau2 - p3pi2
+
+        Etau1 = np.sqrt( mtau**2 + ptau1.Mag2() )
+        Etau2 = np.sqrt( mtau**2 + ptau2.Mag2() )
+        Enu1 = np.sqrt( mnu**2 + pnu1.Mag2() )
+        Enu2 = np.sqrt( mnu**2 + pnu2.Mag2() )
+
+        pB = pK + ptau1 + ptau2
+        EB = EK + Etau1 + Etau2
+        MB_squared = EB**2 - pB.Mag2()
+
+        x0[dimM] = BV.x()
+        x0[dimM+1] = BV.y()
+        x0[dimM+2] = BV.z()
+        x0[dimM+3] = pB.x()
+        x0[dimM+4] = pB.y()
+        x0[dimM+5] = pB.z()
+        x0[dimM+6] = MB_squared
+        x0[dimM+7] = ptau1.x()
+        x0[dimM+8] = ptau1.y()
+        x0[dimM+9] = ptau1.z()
+        x0[dimM+10] = Etau1
+        x0[dimM+11] = pnu1.x()
+        x0[dimM+12] = pnu1.y()
+        x0[dimM+13] = pnu1.z()
+        x0[dimM+14] = Enu1
+        x0[dimM+15] = ptau2.x()
+        x0[dimM+16] = ptau2.y()
+        x0[dimM+17] = ptau2.z()
+        x0[dimM+18] = Etau2
+        x0[dimM+19] = pnu2.x()
+        x0[dimM+20] = pnu2.y()
+        x0[dimM+21] = pnu2.z()
+        x0[dimM+22] = Enu2
+
+    elif(init == -2):
         # With the offline estimate for the BVz we can obtain all other unknown parameters
         BVz = BV.z()
 
@@ -2506,7 +2117,7 @@ def run_solver(init, year, species, line, BV_offline, params, use_generalised_re
     #     status = 2
 
 def lowest_chi2(year, species, line, BV_offline, params, init_list, max_iter, eps):
-    global x, f, status, nIter, chi2_value, tol_value, init
+    global x, f, status, nIter, chi2_value, tol_value, init, N_local_minima, M_local_minima, Chi2_local_minima
 
     x_list = []
     f_list = []
@@ -2540,7 +2151,7 @@ def lowest_chi2(year, species, line, BV_offline, params, init_list, max_iter, ep
 
         mass_list.append(mass)
 
-        # print("init = ", i, "status = ", status, "chi2 = ", chi2_list[i], "tol = ", sum_list[i], "mB = ", mass, "max sum = ", np.max(np.abs(f)))
+        # print("init = ", i, "status = ", status, "chi2 = ", chi2_list[i], "tol = ", sum_list[i], "mB = ", mass)
 
         nIter = 0
 
@@ -2550,25 +2161,50 @@ def lowest_chi2(year, species, line, BV_offline, params, init_list, max_iter, ep
         if( status_list[i] == 0 ):
             all_fail = False
 
-    chi2_min = 100000000000000000
-    f_min = 100
-
-    i_min = 0
-    if(all_fail): # If all fail, returns the one with the lowest value for the sum
-        for i in range(N):
-            if( sum_list[i] < f_min ):
-                f_min = sum_list[i]
-                i_min = i
-    else: # if one or more passes, from the ones that pass return the one that gives the lowest value for the chi^2
-        for i in range(N):
-            if( (status_list[i] == 0) and (chi2_list[i] < chi2_min) ):
-                chi2_min = chi2_list[i]
-                i_min = i
+    if(all_fail): # return solution with lowest value for the sum
+        sum_index_sort = np.argsort(sum_list)
+        i_min = sum_index_sort[0]
+        N_local_minima[0] = 0
+    else: # return solution with lowest chi2 value
+        for i in range(N): # ingore failed fits
+            if(status_list[i] != 0):
+                chi2_list[i] = 1000000000000000000000000000000
+                sum_list[i] = 1000000000000000000000000000000
     
-    # print("all fail = ", all_fail)
+        # Number of local minima 
+        mass_pass = []
+        for i in range(N):
+            if(status_list[i] == 0):
+                mass_pass.append(mass_list[i])
+        mass_sort = np.sort(mass_pass)
 
-    # for i in range(N):
-    #     print("init = ", i, "status = ", status_list[i], "chi2 = ", chi2_list[i], "sum = ", sum_list[i], "mass = ", mass_list[i])
+        M_local_minima.append(mass_sort[0])
+        N_local_minima[0] = 1
+        for i in range(len(mass_sort)-1):
+            if( int(mass_sort[i]) != int(mass_sort[i+1]) ):
+                N_local_minima[0] += 1
+                M_local_minima.append(mass_sort[i+1])
+
+        for i in range(N_local_minima[0]):
+            idx = np.where(mass_list == M_local_minima[i])[0][0]
+            Chi2_local_minima.append(chi2_list[idx])
+
+        chi2_index_sort = np.argsort(chi2_list)
+        i_min = chi2_index_sort[0] 
+
+    # chi2_min = 100000000000000000
+    # f_min = 100
+    # i_min = 0
+    # if(all_fail): # If all fail, returns the one with the lowest value for the sum
+    #     for i in range(N):
+    #         if( sum_list[i] < f_min ):
+    #             f_min = sum_list[i]
+    #             i_min = i
+    # else: # if one or more passes, from the ones that pass return the one that gives the lowest value for the chi^2
+    #     for i in range(N):
+    #         if( (status_list[i] == 0) and (chi2_list[i] < chi2_min) ):
+    #             chi2_min = chi2_list[i]
+    #             i_min = i
 
     x = x_list[i_min]
     f = f_list[i_min]
@@ -2816,12 +2452,15 @@ def main(argv):
     tree.Branch("df_chi2", chi2, "df_chi2/D")
     tree.Branch("df_tolerance", tolerance, "df_tolerance/D")
     tree.Branch("df_init", init, "df_init/i")
+    tree.Branch("df_N_local_min", N_local_minima, "df_N_local_min/i")
+    tree.Branch("df_M_local_min", M_local, "df_M_local_min[df_N_local_min]/D")
+    tree.Branch("df_chi2_local_min", Chi2_local, "df_chi2_local_min[df_N_local_min]/D")
 
-    tree.Branch("df_MB0", MB0, "df_MB0/D")
-    tree.Branch("df_MB1", MB1, "df_MB1/D")
-    tree.Branch("df_MB2", MB2, "df_MB2/D")
-    tree.Branch("df_MB3", MB3, "df_MB3/D")
-    tree.Branch("df_MB4", MB4, "df_MB4/D")
+    # tree.Branch("df_MB0", MB0, "df_MB0/D")
+    # tree.Branch("df_MB1", MB1, "df_MB1/D")
+    # tree.Branch("df_MB2", MB2, "df_MB2/D")
+    # tree.Branch("df_MB3", MB3, "df_MB3/D")
+    # tree.Branch("df_MB4", MB4, "df_MB4/D")
 
     m = np.zeros(dimM)
     V = np.zeros((dimM,dimM))
@@ -2921,7 +2560,7 @@ def main(argv):
         change_L = 0
 
         # Single initialisation
-        # init[0] = -1
+        # init[0] = 14
         # run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
         # if(status != 0):
         #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
@@ -2938,6 +2577,10 @@ def main(argv):
 
         # Lowest chi2 (DEFAULT)
         lowest_chi2(year, species, line, BV_offline, params, [0,1,2,3,4], max_iter=10000, eps=0.000001) 
+
+        for i in range(N_local_minima[0]):
+            M_local[i] =  M_local_minima[i]
+            Chi2_local[i] = Chi2_local_minima[i]
 
         U = U_cov(x,params,V)
 
@@ -2961,7 +2604,7 @@ def main(argv):
         dMB_squared = np.sqrt(U[dimM+6][dimM+6])
         dMB[0] =  dMB_squared/(2*np.abs(MB[0]))
 
-        print("init = ", init[0], "status = ", STATUS[0], "MB = ", MB[0], "dMB = ", dMB[0], "chi2 = ", chi2[0], "sum = ", tolerance[0], "max sum = ", np.max(np.abs(f)),  "nIter = ", nIter)
+        print("init = ", init[0], "status = ", STATUS[0], "MB = ", MB[0], "dMB = ", dMB[0], "chi2 = ", chi2[0], "sum = ", tolerance[0], "N_local = ", N_local_minima[0])
 
         ######################################################################
         # MB0[0] = run_solver(0, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
@@ -2972,6 +2615,8 @@ def main(argv):
 
         tree.Fill()
         x_true.clear()
+        M_local_minima.clear()
+        Chi2_local_minima.clear()
         nIter = 0
 
     file.cd()
