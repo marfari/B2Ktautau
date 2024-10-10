@@ -2,24 +2,24 @@ localrules: make_TMVA_training, compare_TMVA, compute_bkg_yield, get_run_numbers
 
 rule all:
     input:
-        expand('/panfs/felician/B2Ktautau/workflow/bdt_reweighter/201{year}/DDs_correction/Species_{species}/tree_with_weights.root', year=8, species=7)
-        # expand('/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/201{year}/DDs_correction/Species_{species}/MC_unweighted/var_0.pdf', year=6, species=7)
-        # expand('/panfs/felician/B2Ktautau/workflow/addWeight/DDs_correction/201{year}/Species_{species}/tree_with_weight.root', year=6, species=7)
-        # expand('/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/201{year}/DDs_correction/Species_{species}/MC_reweighted/var_0.pdf', year=6, species=7)
+        expand('/panfs/felician/B2Ktautau/workflow/standalone_fitter/201{year}/Species_{species}/{line}.root', year=6, species=10, line=1)
 
-###################################################### Reconstruction ############################################################################
-# rule test_analytical_reconstruction:
-#     ''' Tests the analytical reconstruction calculations in MC (gen / reco) and in data '''
+# Every time grid files are updated need to:
+# - run pidgen for ktautau / DDs over the pre-selection files (signal + normalisation channel)
+# - seperate mc components in Ktautau
+# - create pre-selection tree
+
+# rule pid_correction:
+#     ''' Runs PIDGen over MC (resampling) '''
 #     input:
-#         'analytic_reconstruction.C',
-#         RECO_files = '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{year}/Species_{species}/pre_sel_tree.txt',
+#         'PIDCalib/pid_resampling.py'
 #     output:
-#         '/panfs/felician/B2Ktautau/workflow/analytical_reco/201{year}/ana_reco_vars_{species}.root'
+#         '/panfs/felician/B2Ktautau/workflow/PIDCalib/201{year}/Species_{species}/pid_corr_{line}_K_ProbNNk.root'
 #     log:
-#         '/panfs/felician/B2Ktautau/workflow/analytical_reco/201{year}/ana_reco_{species}.log'
+#         '/panfs/felician/B2Ktautau/workflow/PIDCalib/201{year}/Species_{species}/{line}.log'
 #     shell:
-#         'root -l -b -q \' analytic_reconstruction.C( {wildcards.year}, \"{input.RECO_files}\", {wildcards.species} ) \' &> {log}'
-###################################################################################################################################################
+#         'lb-conda pidgen;'
+#         'python PIDCalib/pid_resampling.py {wildcards.year} {wildcards.species} {wildcards.line} 2>&1 | tee {log}'
 
 rule separate_reco_mc_components:
     ''' Creates a .root file with 1 branch (component) that allows to separate the 3pi3pi (component = 0), 3pi3pipi0 (component = 1) and 3pi3pi2pi0 (component = 2) components in the reco MC based on the true knowledge from gen MC '''
@@ -67,15 +67,13 @@ rule create_pre_selection_tree:
 rule compare_vars:
     ''' Compares variables between 2 files (e.g. signal MC vs WS data) '''
     input:
-        'compare_vars.C',
-        FILES1 = "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{year}/Species_9/pre_sel_tree.txt", 
-        FILES2 = "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{year}/Species_0/pre_sel_tree.txt"   
+        'compare_vars.C'
     output:
-        '/panfs/felician/B2Ktautau/workflow/compare_vars/201{year}/D0D0K_Dstar_Dstar/var_0.pdf'
+        '/panfs/felician/B2Ktautau/workflow/compare_vars/201{year}/Ktautau_sig_vs_bkg/var_0.pdf'
     log:
-        '/panfs/felician/B2Ktautau/workflow/compare_vars/201{year}/D0D0K_Dstar_Dstar/out.log'
+        '/panfs/felician/B2Ktautau/workflow/compare_vars/201{year}/Ktautau_sig_vs_bkg/out.log'
     shell:
-        'root -l -b -q \' compare_vars.C( {wildcards.year}, \"{input.FILES1}\", \"{input.FILES2}\" ) \' &> {log}'
+        'root -l -b -q \' compare_vars.C( {wildcards.year} ) \' &> {log}'
 
 rule make_MLP_regression:
     ''' TMVA regression for MLP initialisation '''
@@ -145,15 +143,13 @@ rule make_TMVA_training:
     # background proxy = 0 (RS data, right sideband); (WS data, signal region)
     # FILES1 (signal), FILES2 (background) -> files containing the 2 species we want to separate (CHANGE ME for each tmva_type && background_proxy)
     input:
-        'TMVA/TMVA_training.C',
-        FILES1 = '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{year}/Species_9/pre_sel_tree.txt',
-        FILES2 = '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{year}/Species_0/pre_sel_tree.txt',
+        'TMVA/TMVA_training.C'
     output:
         '/panfs/felician/B2Ktautau/workflow/TMVA_training/201{year}/tmva_output_type{tmva_type}_method{tmva_method}_vars{tmva_vars}_bkgProxy{background_proxy}.root' 
     log:
         '/panfs/felician/B2Ktautau/workflow/TMVA_training/201{year}/tmva_output_type{tmva_type}_method{tmva_method}_vars{tmva_vars}_bkgProxy{background_proxy}.log' 
     shell:
-        'root -l -b -q \'TMVA/TMVA_training.C( {wildcards.year}, {wildcards.tmva_type}, {wildcards.tmva_vars}, {wildcards.tmva_method}, {wildcards.background_proxy}, \"{input.FILES1}\", \"{input.FILES2}\" )\' &> {log};'
+        'root -l -b -q \'TMVA/TMVA_training.C( {wildcards.year}, {wildcards.tmva_type}, {wildcards.tmva_vars}, {wildcards.tmva_method}, {wildcards.background_proxy} )\' &> {log};'
         'rm -rf /panfs/felician/B2Ktautau/workflow/TMVA_training/201{wildcards.year}/tmva_output_type{wildcards.tmva_type}_method{wildcards.tmva_method}_vars{wildcards.tmva_vars}_bkgProxy{wildcards.background_proxy};' 
         'mv tmva_output_type{wildcards.tmva_type}_method{wildcards.tmva_method}_vars{wildcards.tmva_vars}_bkgProxy{wildcards.background_proxy} /panfs/felician/B2Ktautau/workflow/TMVA_training/201{wildcards.year}'
 
@@ -235,13 +231,6 @@ rule convert_tree_to_pandas:
     shell:
         'python lumin/make_pandas_df.py {wildcards.year} {wildcards.species} {wildcards.lumin_type} \"{input.MC_0_files}\" \"{input.MC_1_files}\" \"{input.MC_2_files}\" \"{input.MC_files}\" \"{input.RS_data_files}\" \"{input.WS_data_files}\" > {log}'
 
-# rule make_LUMIN_training:
-#     ''' Does the lumin training '''
-#     input:
-#         'lumin/B2Ktautau_classification.py',
-#         '/panfs/felician/B2Ktautau/workflow/LUMIN_pandas/201{year}/species{species}_lumin_type{lumin_type}.csv'
-#     output:
-
 ##############################################################################################################################################################################
 ############################################################################## Do mass fit ####################################################################
 
@@ -275,7 +264,7 @@ rule fit_mass:
         # 'root -l -b -q \'fit_mass.C( 0, {wildcards.species} )\' &> {log}'
     
 rule make_sPlot_histos:
-    ''' Saves RooDataSet with sWeights '''
+    ''' Saves RooDataSet with sWeights. Species refers to data. '''
     input:
         'make_sPlot_histos.C',
         FIT_workspace = '/panfs/felician/B2Ktautau/workflow/fit_mass/201{year}/Species_{species}/mass_fit_result.root',
@@ -295,11 +284,10 @@ rule compare_MC_sWeighted_data:
     input:
         'compare_MC_sWeighted_data.C',
         '/panfs/felician/B2Ktautau/workflow/create_dataset/201{year}/Species_{species}/mass_dataset.root',
-        '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201{year}/Species_8/splot_result.root'
-        # '/panfs/felician/B2Ktautau/workflow/bdt_reweighter/201{year}/DDs_correction/Species_{species}/tree_with_weights.root'
+        '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201{year}/Species_8/splot_result.root',
+        '/panfs/felician/B2Ktautau/workflow/bdt_reweighter/201{year}/DDs_correction/Species_{species}/tree_with_weights.root'
     output:
-        '/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/201{year}/DDs_correction/Species_{species}/MC_reweighted/var_0.pdf',
-        '/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/201{year}/DDs_correction/Species_{species}/weights.root'
+        '/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/201{year}/DDs_correction/Species_{species}/MC_reweighted/var_0.pdf'
     log:
         '/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/201{year}/DDs_correction/Species_{species}/MC_reweighted/out.log'
     shell:
