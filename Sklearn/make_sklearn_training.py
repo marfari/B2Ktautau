@@ -52,12 +52,10 @@ def draw_variables(sig_data, bkg_data, mc_weights, columns, first_step):
             xlim = [0,20]
         elif(column == "tau_FD_BV_max"):
             xlim = [0,30]
-        elif(column == "log_Kp_ProbNNk"):
-            xlim = [-2,0]
-        elif(column == "log_taup_pi1_ProbNNpi"):
-            xlim = [-1.5,0]
         elif(column == "taum_pi2_IPCHI2_OWNPV"):
             xlim = [0,6000]
+        elif(column == "DV1_DV2_distance_chi2"):
+            xlim = [0,5]
         else:
             xlim = np.percentile(np.hstack([sig_data[column]]), [0.01, 99.99])
     
@@ -126,11 +124,11 @@ def correlation_matrix(data, name, first_step, **kwds):
 def do_cross_validation(name, clf, X_dev, y_dev, X_val, y_val, X_dev_weights):
     # Optimise hyper-parameters
     if(name == "AdaBDT"):
-        param_grid = {'learning_rate': [0.1, 0.5, 1.0], 'n_estimators': [100,500,1000]}
+        param_grid = {'learning_rate': [0.1, 0.5, 1.0], 'n_estimators': [100,500,800]}
     elif(name == "GradBDT"):
-        param_grid = {'learning_rate': [0.1, 0.5, 1.0], 'n_estimators': [100,500,1000], 'max_depth': [3,5,10]}
+        param_grid = {'learning_rate': [0.1, 0.5, 1.0], 'n_estimators': [100,500,800], 'max_depth': [1,3,6]}
     elif(name == "RForest"):
-        param_grid = {'n_estimators': [100, 500, 1000], 'max_depth': [3,5,10]}
+        param_grid = {'n_estimators': [100, 500, 800], 'max_depth': [1,3,6,9]}
 
     print("Performing grid search for hyper-paramter optimisation of "+name)
     # RandomizedSearchCV samples from distributions of the hyper-parameters and evaluates random points. It can be quicker than GridSearchCV
@@ -243,7 +241,6 @@ def bdt_2d_cut(X_test, y_test, thresholds_1st_step, thresholds_2nd_step, decisio
     #     signal = pd.concat([signal,bdt_output_values_signal], axis=1)
     #     background = pd.concat([background,bdt_output_values_background], axis=1)
 
-
 def draw_signal_significance_vs_bdt_cut(name, fpr, tpr, thresholds, N_bkg, first_step):
     eps_s = tpr
     B = fpr*N_bkg
@@ -252,8 +249,8 @@ def draw_signal_significance_vs_bdt_cut(name, fpr, tpr, thresholds, N_bkg, first
     metric = eps_s/(a/2 + np.sqrt(B))
 
     plt.plot(thresholds, metric*20, color='g', label='Punzi (x20)')
-    plt.plot(thresholds, tpr, color='r', label='Signal eff.')
-    plt.plot(thresholds, fpr, color='b', label='Background eff.')
+    plt.plot(thresholds, tpr, color='b', label='Signal eff.')
+    plt.plot(thresholds, fpr, color='r', label='Background eff.')
     plt.xlabel('BDT cut value')
     plt.grid()
     plt.legend()
@@ -289,11 +286,11 @@ def compare_train_test(name, clf, X_train, y_train, X_test, y_test, first_step, 
     low_high = (low,high)
     
     plt.hist(decisions[0],
-             color='r', alpha=0.5, range=low_high, bins=bins,
+             color='b', alpha=0.5, range=low_high, bins=bins,
              histtype='stepfilled', density=True,
              label='S (train)')
     plt.hist(decisions[1],
-             color='b', alpha=0.5, range=low_high, bins=bins,
+             color='r', alpha=0.5, range=low_high, bins=bins,
              histtype='stepfilled', density=True,
              label='B (train)')
 
@@ -303,13 +300,13 @@ def compare_train_test(name, clf, X_train, y_train, X_test, y_test, first_step, 
     
     width = (bins[1] - bins[0])
     center = (bins[:-1] + bins[1:]) / 2
-    plt.errorbar(center, hist, yerr=err, fmt='o', c='r', label='S (test)')
+    plt.errorbar(center, hist, yerr=err, fmt='o', c='b', label='S (test)')
     
     hist, bins = np.histogram(decisions[3], bins=bins, range=low_high, density=True)
     scale = len(decisions[2]) / sum(hist)
     err = np.sqrt(hist * scale) / scale
 
-    plt.errorbar(center, hist, yerr=err, fmt='o', c='b', label='B (test)')
+    plt.errorbar(center, hist, yerr=err, fmt='o', c='r', label='B (test)')
 
     # if(name == "RForest"): 
     #     twoclass_output = clf.predict_proba(X_train)
@@ -370,6 +367,7 @@ def make_classification(sig_df, bkg_df, output, cut, first_step, draw_input_feat
         sig = sig_df.AsNumpy(branch_names)
         bkg = bkg_df.AsNumpy(branch_names)  
 
+        # SIGNAL
         signal['VTXISODCHI2ONETRACK_B'] = sig['Bp_VTXISODCHI2ONETRACK_B']
         signal['VTXISODCHI2MASSONETRACK_B'] = sig['Bp_VTXISODCHI2MASSONETRACK_B']
         signal['VTXISODCHI2TWOTRACK_B'] = sig['Bp_VTXISODCHI2TWOTRACK_B']
@@ -385,6 +383,7 @@ def make_classification(sig_df, bkg_df, output, cut, first_step, draw_input_feat
         signal['CC_05_PTASYM_tau_max'] = np.maximum( sig['Bp_CC_05_PTASYM_taup'], sig['Bp_CC_05_PTASYM_taum'] )
         # signal['CCNC_05_IT_tau_min'] = np.minimum( sig['Bp_CCNC_05_IT_taup'], sig['Bp_CCNC_05_IT_taum'] )
 
+        # BACKGROUND
         background['VTXISODCHI2ONETRACK_B'] = bkg['Bp_VTXISODCHI2ONETRACK_B']
         background['VTXISODCHI2MASSONETRACK_B'] = bkg['Bp_VTXISODCHI2MASSONETRACK_B']
         background['VTXISODCHI2TWOTRACK_B'] = bkg['Bp_VTXISODCHI2TWOTRACK_B']
@@ -404,11 +403,12 @@ def make_classification(sig_df, bkg_df, output, cut, first_step, draw_input_feat
 
     else:
         branch_names = ['taup_M12', 'taum_M12', 'taup_M23', 'taum_M23', 'taup_M13', 'taum_M13', 'taup_DIRA_ORIVX', 'taum_DIRA_ORIVX', 'Bp_DIRA_OWNPV',
-                        'df_BVx', 'df_BVy', 'df_BVz', 'df_DV1x', 'df_DV1y', 'df_DV1z', 'df_DV2x', 'df_DV2y', 'df_DV2z',
-                        'df_Kp_PX', 'df_Kp_PY', 'df_Kp_PZ', 'df_PVx', 'df_PVy', 'df_PVz', 'taup_M', 'taum_M', 'df_chi2', 'Kp_IPCHI2_OWNPV', 'taum_pi2_IPCHI2_OWNPV']
+                        'df_BVx', 'df_BVy', 'df_BVz', 'df_DV1x', 'df_DV1y', 'df_DV1z', 'df_DV2x', 'df_DV2y', 'df_DV2z', 'df_PVx', 'df_PVy', 'df_PVz',
+                        'df_BVx_err', 'df_BVy_err', 'df_BVz_err', 'df_DV1x_err', 'df_DV1y_err', 'df_DV1z_err', 'df_DV2x_err', 'df_DV2y_err', 'df_DV2z_err', 'df_PVx_err', 'df_PVy_err', 'df_PVz_err',
+                        'df_Kp_PX', 'df_Kp_PY', 'df_Kp_PZ', 'taup_M', 'taum_M', 'df_chi2', 'Kp_IPCHI2_OWNPV', 'taum_pi2_IPCHI2_OWNPV']
         
-        bkg = bkg_df.AsNumpy(branch_names+['Kp_ProbNNk', 'taup_pi1_ProbNNpi'])
         sig = sig_df.AsNumpy(branch_names+['Kp_ProbNNk_pidgen_default', 'taup_pi1_ProbNNpi_pidgen_default'])
+        bkg = bkg_df.AsNumpy(branch_names+['Kp_ProbNNk', 'taup_pi1_ProbNNpi'])
 
         # SIGNAL:
         signal['tau_M_max'] = np.maximum( sig['taup_M'], sig['taum_M'] )
@@ -417,23 +417,24 @@ def make_classification(sig_df, bkg_df, output, cut, first_step, draw_input_feat
         signal['tau_M12_M23_max_min'] = np.maximum( np.minimum( sig['taup_M12'], sig['taup_M23'] ), np.minimum( sig['taum_M12'], sig['taum_M23'] ) )
         signal['tau_M12_M23_min_max'] = np.minimum( np.maximum( sig['taup_M12'], sig['taup_M23'] ), np.maximum( sig['taum_M12'], sig['taum_M23'] ) )
         signal['tau_M12_M23_min_min'] = np.minimum( np.minimum( sig['taup_M12'], sig['taup_M23'] ), np.minimum( sig['taum_M12'], sig['taum_M23'] ) )
-        signal['tau_M13_max'] = np.maximum( sig['taup_M13'], sig['taum_M13'] )
-        signal['tau_M13_min'] = np.minimum( sig['taup_M13'], sig['taum_M13'] )
+        # signal['tau_M13_max'] = np.maximum( sig['taup_M13'], sig['taum_M13'] )
+        # signal['tau_M13_min'] = np.minimum( sig['taup_M13'], sig['taum_M13'] )
         # signal['log_1_minus_tau_DIRA_BV_max'] = np.maximum( np.log(1 - np.abs(sig['taup_DIRA_ORIVX'] ))*np.sign( sig['taup_DIRA_ORIVX']),  np.log(1 - np.abs(sig['taum_DIRA_ORIVX'] ))*np.sign( sig['taup_DIRA_ORIVX'] ) )
         signal['log_1_minus_tau_DIRA_BV_min'] = np.minimum( np.log(1 - np.abs(sig['taup_DIRA_ORIVX'] ))*np.sign( sig['taup_DIRA_ORIVX']),  np.log(1 - np.abs(sig['taum_DIRA_ORIVX'] ))*np.sign( sig['taup_DIRA_ORIVX'] ) )
         signal['log_1_minus_B_DIRA_PV'] = np.log(1 - np.abs(sig['Bp_DIRA_OWNPV']) )
         # signal['B_FD_PV'] = np.sqrt( (sig['df_BVx'] - sig['df_PVx'])**2 + (sig['df_BVy'] - sig['df_PVy'])**2 + (sig['df_BVz'] - sig['df_PVz'])**2 )
-        signal['tau_FD_BV_max'] = np.maximum( np.sqrt( (sig['df_DV1x'] - sig['df_BVx'])**2 + (sig['df_DV1y'] - sig['df_BVy'])**2 + (sig['df_DV1z'] - sig['df_BVz'])**2 ), np.sqrt( (sig['df_DV2x'] - sig['df_BVx'])**2 + (sig['df_DV2y'] - sig['df_BVy'])**2 + (sig['df_DV2z'] - sig['df_BVz'])**2 ) )
+        signal['B_FD_PV_chi2'] = np.sqrt( (sig['df_BVx'] - sig['df_PVx'])**2 + (sig['df_BVy'] - sig['df_PVy'])**2 + (sig['df_BVz'] - sig['df_PVz'])**2 )/( np.abs( sig['df_BVx'] - sig['df_PVx'] )*np.sqrt( sig['df_BVx_err']**2 + sig['df_PVx_err']**2  ) + np.abs( sig['df_BVy'] - sig['df_PVy'] )*np.sqrt( sig['df_BVy_err']**2 + sig['df_PVy_err']**2 ) + np.abs( sig['df_BVz'] - sig['df_PVz'] )*np.sqrt( sig['df_BVz_err']**2 + sig['df_PVz_err']**2 ) )
+        # signal['tau_FD_BV_max'] = np.maximum( np.sqrt( (sig['df_DV1x'] - sig['df_BVx'])**2 + (sig['df_DV1y'] - sig['df_BVy'])**2 + (sig['df_DV1z'] - sig['df_BVz'])**2 ), np.sqrt( (sig['df_DV2x'] - sig['df_BVx'])**2 + (sig['df_DV2y'] - sig['df_BVy'])**2 + (sig['df_DV2z'] - sig['df_BVz'])**2 ) )
         signal['tau_FD_BV_min'] = np.minimum( np.sqrt( (sig['df_DV1x'] - sig['df_BVx'])**2 + (sig['df_DV1y'] - sig['df_BVy'])**2 + (sig['df_DV1z'] - sig['df_BVz'])**2 ), np.sqrt( (sig['df_DV2x'] - sig['df_BVx'])**2 + (sig['df_DV2y'] - sig['df_BVy'])**2 + (sig['df_DV2z'] - sig['df_BVz'])**2 ) )
-        signal['tau_FD_BV_chi2_max'] = np.maximum( np.sqrt( (sig['df_DV1x'] - sig['df_BVx'])**2 + (sig['df_DV1y'] - sig['df_BVy'])**2 + (sig['df_DV1z'] - sig['df_BVz'])**2 )/(  np.abs( sig['df_DV1x'] - sig['df_BVx'] )*np.sqrt( sig['df_DV1x']**2 + sig['df_BVx']**2  ) + np.abs( sig['df_DV1y'] - sig['df_BVy'] )*np.sqrt( sig['df_DV1y']**2 + sig['df_BVy']**2 ) + np.abs( sig['df_DV1z'] - sig['df_BVz'] )*np.sqrt( sig['df_DV1z']**2 + sig['df_BVz']**2 ) ) , np.sqrt( (sig['df_DV2x'] - sig['df_BVx'])**2 + (sig['df_DV2y'] - sig['df_BVy'])**2 + (sig['df_DV2z'] - sig['df_BVz'])**2 )/( np.abs( sig['df_DV2x'] - sig['df_BVx'] )*np.sqrt( sig['df_DV2x']**2 + sig['df_BVx']**2 ) + np.abs( sig['df_DV2y'] - sig['df_BVy'] )*np.sqrt( sig['df_DV2y']**2 + sig['df_BVy']**2 ) + np.abs( sig['df_DV2z'] - sig['df_BVz'] )*np.abs( sig['df_DV2z']**2 + sig['df_BVz']**2 ) ) )        
-        signal['tau_FD_BV_chi2_min'] = np.minimum( np.sqrt( (sig['df_DV1x'] - sig['df_BVx'])**2 + (sig['df_DV1y'] - sig['df_BVy'])**2 + (sig['df_DV1z'] - sig['df_BVz'])**2 )/(  np.abs( sig['df_DV1x'] - sig['df_BVx'] )*np.sqrt( sig['df_DV1x']**2 + sig['df_BVx']**2  ) + np.abs( sig['df_DV1y'] - sig['df_BVy'] )*np.sqrt( sig['df_DV1y']**2 + sig['df_BVy']**2 ) + np.abs( sig['df_DV1z'] - sig['df_BVz'] )*np.sqrt( sig['df_DV1z']**2 + sig['df_BVz']**2 ) ) , np.sqrt( (sig['df_DV2x'] - sig['df_BVx'])**2 + (sig['df_DV2y'] - sig['df_BVy'])**2 + (sig['df_DV2z'] - sig['df_BVz'])**2 )/( np.abs( sig['df_DV2x'] - sig['df_BVx'] )*np.sqrt( sig['df_DV2x']**2 + sig['df_BVx']**2 ) + np.abs( sig['df_DV2y'] - sig['df_BVy'] )*np.sqrt( sig['df_DV2y']**2 + sig['df_BVy']**2 ) + np.abs( sig['df_DV2z'] - sig['df_BVz'] )*np.abs( sig['df_DV2z']**2 + sig['df_BVz']**2 ) ) )
+        # signal['tau_FD_BV_chi2_max'] = np.maximum( np.sqrt( (sig['df_DV1x'] - sig['df_BVx'])**2 + (sig['df_DV1y'] - sig['df_BVy'])**2 + (sig['df_DV1z'] - sig['df_BVz'])**2 )/(  np.abs( sig['df_DV1x'] - sig['df_BVx'] )*np.sqrt( sig['df_DV1x_err']**2 + sig['df_BVx_err']**2  ) + np.abs( sig['df_DV1y'] - sig['df_BVy'] )*np.sqrt( sig['df_DV1y_err']**2 + sig['df_BVy_err']**2 ) + np.abs( sig['df_DV1z'] - sig['df_BVz'] )*np.sqrt( sig['df_DV1z_err']**2 + sig['df_BVz_err']**2 ) ) , np.sqrt( (sig['df_DV2x'] - sig['df_BVx'])**2 + (sig['df_DV2y'] - sig['df_BVy'])**2 + (sig['df_DV2z'] - sig['df_BVz'])**2 )/( np.abs( sig['df_DV2x'] - sig['df_BVx'] )*np.sqrt( sig['df_DV2x_err']**2 + sig['df_BVx_err']**2 ) + np.abs( sig['df_DV2y'] - sig['df_BVy'] )*np.sqrt( sig['df_DV2y_err']**2 + sig['df_BVy_err']**2 ) + np.abs( sig['df_DV2z'] - sig['df_BVz'] )*np.abs( sig['df_DV2z_err']**2 + sig['df_BVz_err']**2 ) ) )        
+        # signal['tau_FD_BV_chi2_min'] = np.minimum( np.sqrt( (sig['df_DV1x'] - sig['df_BVx'])**2 + (sig['df_DV1y'] - sig['df_BVy'])**2 + (sig['df_DV1z'] - sig['df_BVz'])**2 )/(  np.abs( sig['df_DV1x'] - sig['df_BVx'] )*np.sqrt( sig['df_DV1x_err']**2 + sig['df_BVx_err']**2  ) + np.abs( sig['df_DV1y'] - sig['df_BVy'] )*np.sqrt( sig['df_DV1y_err']**2 + sig['df_BVy_err']**2 ) + np.abs( sig['df_DV1z'] - sig['df_BVz'] )*np.sqrt( sig['df_DV1z_err']**2 + sig['df_BVz_err']**2 ) ) , np.sqrt( (sig['df_DV2x'] - sig['df_BVx'])**2 + (sig['df_DV2y'] - sig['df_BVy'])**2 + (sig['df_DV2z'] - sig['df_BVz'])**2 )/( np.abs( sig['df_DV2x'] - sig['df_BVx'] )*np.sqrt( sig['df_DV2x_err']**2 + sig['df_BVx_err']**2 ) + np.abs( sig['df_DV2y'] - sig['df_BVy'] )*np.sqrt( sig['df_DV2y_err']**2 + sig['df_BVy_err']**2 ) + np.abs( sig['df_DV2z'] - sig['df_BVz'] )*np.abs( sig['df_DV2z_err']**2 + sig['df_BVz_err']**2 ) ) )
         signal['DV1_DV2_distance'] = np.sqrt( (sig['df_DV1x'] - sig['df_DV2x'])**2 + (sig['df_DV1y'] - sig['df_DV2y'])**2 + (sig['df_DV1z'] - sig['df_DV2z'])**2 )
-        signal['DV1_DV2_distance_chi2'] = np.sqrt( (sig['df_DV1x'] - sig['df_DV2x'])**2 + (sig['df_DV1y'] - sig['df_DV2y'])**2 + (sig['df_DV1z'] - sig['df_DV2z'])**2 ) / (   np.abs( sig['df_DV1x'] - sig['df_DV2x'] )*np.sqrt( sig['df_DV1x']**2 + sig['df_DV2x']**2 ) + np.abs( sig['df_DV1y'] - sig['df_DV2y'] )*np.sqrt( sig['df_DV1y']**2 + sig['df_DV2y']**2 ) + np.abs( sig['df_DV1z'] - sig['df_DV2z'] )*np.sqrt( sig['df_DV1z']**2 + sig['df_DV2z']**2  ) )
+        # signal['DV1_DV2_distance_chi2'] = np.sqrt( (sig['df_DV1x'] - sig['df_DV2x'])**2 + (sig['df_DV1y'] - sig['df_DV2y'])**2 + (sig['df_DV1z'] - sig['df_DV2z'])**2 ) / (   np.abs( sig['df_DV1x'] - sig['df_DV2x'] )*np.sqrt( sig['df_DV1x_err']**2 + sig['df_DV2x_err']**2 ) + np.abs( sig['df_DV1y'] - sig['df_DV2y'] )*np.sqrt( sig['df_DV1y_err']**2 + sig['df_DV2y_err']**2 ) + np.abs( sig['df_DV1z'] - sig['df_DV2z'] )*np.sqrt( sig['df_DV1z_err']**2 + sig['df_DV2z_err']**2  ) )
         signal['df_chi2'] = sig['df_chi2']
-        signal['log_Kp_ProbNNk'] = np.log( sig['Kp_ProbNNk_pidgen_default'] )
-        signal['log_taup_pi1_ProbNNpi'] = np.log( sig['taup_pi1_ProbNNpi_pidgen_default'] )
-        signal['Kp_IPCHI2_OWNPV'] = sig['Kp_IPCHI2_OWNPV']
-        signal['taum_pi2_IPCHI2_OWNPV'] = sig['taum_pi2_IPCHI2_OWNPV']
+        signal['log10_Kp_ProbNNk'] = np.log10( sig['Kp_ProbNNk_pidgen_default'] )
+        signal['log10_taup_pi1_ProbNNpi'] = np.log10( sig['taup_pi1_ProbNNpi_pidgen_default'] )
+        # signal['Kp_IPCHI2_OWNPV'] = sig['Kp_IPCHI2_OWNPV']
+        # signal['taum_pi2_IPCHI2_OWNPV'] = sig['taum_pi2_IPCHI2_OWNPV']
 
         Cx_taup_sig =  (sig['df_DV1y'] - sig['df_BVy'])*sig['df_Kp_PZ']  - ( sig['df_DV1z'] - sig['df_BVz'])*sig['df_Kp_PY']
         Cy_taup_sig =  (sig['df_DV1z'] - sig['df_BVz'])*sig['df_Kp_PX']  - ( sig['df_DV1x'] - sig['df_BVx'])*sig['df_Kp_PZ']
@@ -463,23 +464,24 @@ def make_classification(sig_df, bkg_df, output, cut, first_step, draw_input_feat
         background['tau_M12_M23_max_min'] = np.maximum( np.minimum( bkg['taup_M12'], bkg['taup_M23'] ), np.minimum( bkg['taum_M12'], bkg['taum_M23'] ) )
         background['tau_M12_M23_min_max'] = np.minimum( np.maximum( bkg['taup_M12'], bkg['taup_M23'] ), np.maximum( bkg['taum_M12'], bkg['taum_M23'] ) )
         background['tau_M12_M23_min_min'] = np.minimum( np.minimum( bkg['taup_M12'], bkg['taup_M23'] ), np.minimum( bkg['taum_M12'], bkg['taum_M23'] ) )
-        background['tau_M13_max'] = np.maximum( bkg['taup_M13'], bkg['taum_M13'] )
-        background['tau_M13_min'] = np.minimum( bkg['taup_M13'], bkg['taum_M13'] )
+        # background['tau_M13_max'] = np.maximum( bkg['taup_M13'], bkg['taum_M13'] )
+        # background['tau_M13_min'] = np.minimum( bkg['taup_M13'], bkg['taum_M13'] )
         # background['log_1_minus_tau_DIRA_BV_max'] = np.maximum( np.log(1 - np.abs(bkg['taup_DIRA_ORIVX'] ))*np.sign( bkg['taup_DIRA_ORIVX']),  np.log(1 - np.abs(bkg['taum_DIRA_ORIVX'] ))*np.sign( bkg['taup_DIRA_ORIVX'] ) )
         background['log_1_minus_tau_DIRA_BV_min'] = np.minimum( np.log(1 - np.abs(bkg['taup_DIRA_ORIVX'] ))*np.sign( bkg['taup_DIRA_ORIVX']),  np.log(1 - np.abs(bkg['taum_DIRA_ORIVX'] ))*np.sign( bkg['taup_DIRA_ORIVX'] ) )
         background['log_1_minus_B_DIRA_PV'] = np.log(1 - np.abs(bkg['Bp_DIRA_OWNPV']) )
         # background['B_FD_PV'] = np.sqrt( (bkg['df_BVx'] - bkg['df_PVx'])**2 + (bkg['df_BVy'] - bkg['df_PVy'])**2 + (bkg['df_BVz'] - bkg['df_PVz'])**2 )
-        background['tau_FD_BV_max'] = np.maximum( np.sqrt( (bkg['df_DV1x'] - bkg['df_BVx'])**2 + (bkg['df_DV1y'] - bkg['df_BVy'])**2 + (bkg['df_DV1z'] - bkg['df_BVz'])**2 ), np.sqrt( (bkg['df_DV2x'] - bkg['df_BVx'])**2 + (bkg['df_DV2y'] - bkg['df_BVy'])**2 + (bkg['df_DV2z'] - bkg['df_BVz'])**2 ) )
+        background['B_FD_PV_chi2'] = np.sqrt( (bkg['df_BVx'] - bkg['df_PVx'])**2 + (bkg['df_BVy'] - bkg['df_PVy'])**2 + (bkg['df_BVz'] - bkg['df_PVz'])**2 )/( np.abs( bkg['df_BVx'] - bkg['df_PVx'] )*np.sqrt( bkg['df_BVx_err']**2 + bkg['df_PVx_err']**2  ) + np.abs( bkg['df_BVy'] - bkg['df_PVy'] )*np.sqrt( bkg['df_BVy_err']**2 + bkg['df_PVy_err']**2 ) + np.abs( bkg['df_BVz'] - bkg['df_PVz'] )*np.sqrt( bkg['df_BVz_err']**2 + bkg['df_PVz_err']**2 ) )
+        # background['tau_FD_BV_max'] = np.maximum( np.sqrt( (bkg['df_DV1x'] - bkg['df_BVx'])**2 + (bkg['df_DV1y'] - bkg['df_BVy'])**2 + (bkg['df_DV1z'] - bkg['df_BVz'])**2 ), np.sqrt( (bkg['df_DV2x'] - bkg['df_BVx'])**2 + (bkg['df_DV2y'] - bkg['df_BVy'])**2 + (bkg['df_DV2z'] - bkg['df_BVz'])**2 ) )
         background['tau_FD_BV_min'] = np.minimum( np.sqrt( (bkg['df_DV1x'] - bkg['df_BVx'])**2 + (bkg['df_DV1y'] - bkg['df_BVy'])**2 + (bkg['df_DV1z'] - bkg['df_BVz'])**2 ), np.sqrt( (bkg['df_DV2x'] - bkg['df_BVx'])**2 + (bkg['df_DV2y'] - bkg['df_BVy'])**2 + (bkg['df_DV2z'] - bkg['df_BVz'])**2 ) )
-        background['tau_FD_BV_chi2_max'] = np.maximum( np.sqrt( (bkg['df_DV1x'] - bkg['df_BVx'])**2 + (bkg['df_DV1y'] - bkg['df_BVy'])**2 + (bkg['df_DV1z'] - bkg['df_BVz'])**2 )/(  np.abs( bkg['df_DV1x'] - bkg['df_BVx'] )*np.sqrt( bkg['df_DV1x']**2 + bkg['df_BVx']**2  ) + np.abs( bkg['df_DV1y'] - bkg['df_BVy'] )*np.sqrt( bkg['df_DV1y']**2 + bkg['df_BVy']**2 ) + np.abs( bkg['df_DV1z'] - bkg['df_BVz'] )*np.sqrt( bkg['df_DV1z']**2 + bkg['df_BVz']**2 ) ) , np.sqrt( (bkg['df_DV2x'] - bkg['df_BVx'])**2 + (bkg['df_DV2y'] - bkg['df_BVy'])**2 + (bkg['df_DV2z'] - bkg['df_BVz'])**2 )/( np.abs( bkg['df_DV2x'] - bkg['df_BVx'] )*np.sqrt( bkg['df_DV2x']**2 + bkg['df_BVx']**2 ) + np.abs( bkg['df_DV2y'] - bkg['df_BVy'] )*np.sqrt( bkg['df_DV2y']**2 + bkg['df_BVy']**2 ) + np.abs( bkg['df_DV2z'] - bkg['df_BVz'] )*np.abs( bkg['df_DV2z']**2 + bkg['df_BVz']**2 ) ) )        
-        background['tau_FD_BV_chi2_min'] = np.minimum( np.sqrt( (bkg['df_DV1x'] - bkg['df_BVx'])**2 + (bkg['df_DV1y'] - bkg['df_BVy'])**2 + (bkg['df_DV1z'] - bkg['df_BVz'])**2 )/(  np.abs( bkg['df_DV1x'] - bkg['df_BVx'] )*np.sqrt( bkg['df_DV1x']**2 + bkg['df_BVx']**2  ) + np.abs( bkg['df_DV1y'] - bkg['df_BVy'] )*np.sqrt( bkg['df_DV1y']**2 + bkg['df_BVy']**2 ) + np.abs( bkg['df_DV1z'] - bkg['df_BVz'] )*np.sqrt( bkg['df_DV1z']**2 + bkg['df_BVz']**2 ) ) , np.sqrt( (bkg['df_DV2x'] - bkg['df_BVx'])**2 + (bkg['df_DV2y'] - bkg['df_BVy'])**2 + (bkg['df_DV2z'] - bkg['df_BVz'])**2 )/( np.abs( bkg['df_DV2x'] - bkg['df_BVx'] )*np.sqrt( bkg['df_DV2x']**2 + bkg['df_BVx']**2 ) + np.abs( bkg['df_DV2y'] - bkg['df_BVy'] )*np.sqrt( bkg['df_DV2y']**2 + bkg['df_BVy']**2 ) + np.abs( bkg['df_DV2z'] - bkg['df_BVz'] )*np.abs( bkg['df_DV2z']**2 + bkg['df_BVz']**2 ) ) )
+        # background['tau_FD_BV_chi2_max'] = np.maximum( np.sqrt( (bkg['df_DV1x'] - bkg['df_BVx'])**2 + (bkg['df_DV1y'] - bkg['df_BVy'])**2 + (bkg['df_DV1z'] - bkg['df_BVz'])**2 )/(  np.abs( bkg['df_DV1x'] - bkg['df_BVx'] )*np.sqrt( bkg['df_DV1x_err']**2 + bkg['df_BVx_err']**2  ) + np.abs( bkg['df_DV1y'] - bkg['df_BVy'] )*np.sqrt( bkg['df_DV1y_err']**2 + bkg['df_BVy_err']**2 ) + np.abs( bkg['df_DV1z'] - bkg['df_BVz'] )*np.sqrt( bkg['df_DV1z_err']**2 + bkg['df_BVz_err']**2 ) ) , np.sqrt( (bkg['df_DV2x'] - bkg['df_BVx'])**2 + (bkg['df_DV2y'] - bkg['df_BVy'])**2 + (bkg['df_DV2z'] - bkg['df_BVz'])**2 )/( np.abs( bkg['df_DV2x'] - bkg['df_BVx'] )*np.sqrt( bkg['df_DV2x_err']**2 + bkg['df_BVx_err']**2 ) + np.abs( bkg['df_DV2y'] - bkg['df_BVy'] )*np.sqrt( bkg['df_DV2y_err']**2 + bkg['df_BVy_err']**2 ) + np.abs( bkg['df_DV2z'] - bkg['df_BVz'] )*np.abs( bkg['df_DV2z_err']**2 + bkg['df_BVz_err']**2 ) ) )        
+        # background['tau_FD_BV_chi2_min'] = np.minimum( np.sqrt( (bkg['df_DV1x'] - bkg['df_BVx'])**2 + (bkg['df_DV1y'] - bkg['df_BVy'])**2 + (bkg['df_DV1z'] - bkg['df_BVz'])**2 )/(  np.abs( bkg['df_DV1x'] - bkg['df_BVx'] )*np.sqrt( bkg['df_DV1x_err']**2 + bkg['df_BVx_err']**2  ) + np.abs( bkg['df_DV1y'] - bkg['df_BVy'] )*np.sqrt( bkg['df_DV1y_err']**2 + bkg['df_BVy_err']**2 ) + np.abs( bkg['df_DV1z'] - bkg['df_BVz'] )*np.sqrt( bkg['df_DV1z_err']**2 + bkg['df_BVz_err']**2 ) ) , np.sqrt( (bkg['df_DV2x'] - bkg['df_BVx'])**2 + (bkg['df_DV2y'] - bkg['df_BVy'])**2 + (bkg['df_DV2z'] - bkg['df_BVz'])**2 )/( np.abs( bkg['df_DV2x'] - bkg['df_BVx'] )*np.sqrt( bkg['df_DV2x_err']**2 + bkg['df_BVx_err']**2 ) + np.abs( bkg['df_DV2y'] - bkg['df_BVy'] )*np.sqrt( bkg['df_DV2y_err']**2 + bkg['df_BVy_err']**2 ) + np.abs( bkg['df_DV2z'] - bkg['df_BVz'] )*np.abs( bkg['df_DV2z_err']**2 + bkg['df_BVz_err']**2 ) ) )
         background['DV1_DV2_distance'] = np.sqrt( (bkg['df_DV1x'] - bkg['df_DV2x'])**2 + (bkg['df_DV1y'] - bkg['df_DV2y'])**2 + (bkg['df_DV1z'] - bkg['df_DV2z'])**2 )
-        background['DV1_DV2_distance_chi2'] = np.sqrt( (bkg['df_DV1x'] - bkg['df_DV2x'])**2 + (bkg['df_DV1y'] - bkg['df_DV2y'])**2 + (bkg['df_DV1z'] - bkg['df_DV2z'])**2 ) / (   np.abs( bkg['df_DV1x'] - bkg['df_DV2x'] )*np.sqrt( bkg['df_DV1x']**2 + bkg['df_DV2x']**2 ) + np.abs( bkg['df_DV1y'] - bkg['df_DV2y'] )*np.sqrt( bkg['df_DV1y']**2 + bkg['df_DV2y']**2 ) + np.abs( bkg['df_DV1z'] - bkg['df_DV2z'] )*np.sqrt( bkg['df_DV1z']**2 + bkg['df_DV2z']**2  ) )
+        # background['DV1_DV2_distance_chi2'] = np.sqrt( (bkg['df_DV1x'] - bkg['df_DV2x'])**2 + (bkg['df_DV1y'] - bkg['df_DV2y'])**2 + (bkg['df_DV1z'] - bkg['df_DV2z'])**2 ) / (   np.abs( bkg['df_DV1x'] - bkg['df_DV2x'] )*np.sqrt( bkg['df_DV1x_err']**2 + bkg['df_DV2x_err']**2 ) + np.abs( bkg['df_DV1y'] - bkg['df_DV2y'] )*np.sqrt( bkg['df_DV1y_err']**2 + bkg['df_DV2y_err']**2 ) + np.abs( bkg['df_DV1z'] - bkg['df_DV2z'] )*np.sqrt( bkg['df_DV1z_err']**2 + bkg['df_DV2z_err']**2  ) )
         background['df_chi2'] = bkg['df_chi2']
-        background['log_Kp_ProbNNk'] = np.log( bkg['Kp_ProbNNk'] )
-        background['log_taup_pi1_ProbNNpi'] = np.log( bkg['taup_pi1_ProbNNpi'] )
-        background['Kp_IPCHI2_OWNPV'] = bkg['Kp_IPCHI2_OWNPV']
-        background['taum_pi2_IPCHI2_OWNPV'] = bkg['taum_pi2_IPCHI2_OWNPV']
+        background['log10_Kp_ProbNNk'] = np.log10( bkg['Kp_ProbNNk'] )
+        background['log10_taup_pi1_ProbNNpi'] = np.log10( bkg['taup_pi1_ProbNNpi'] )
+        # background['Kp_IPCHI2_OWNPV'] = bkg['Kp_IPCHI2_OWNPV']
+        # background['taum_pi2_IPCHI2_OWNPV'] = bkg['taum_pi2_IPCHI2_OWNPV']
 
         Cx_taup_bkg =  (bkg['df_DV1y'] - bkg['df_BVy'])*bkg['df_Kp_PZ']  - ( bkg['df_DV1z'] - bkg['df_BVz'])*bkg['df_Kp_PY']
         Cy_taup_bkg =  (bkg['df_DV1z'] - bkg['df_BVz'])*bkg['df_Kp_PX']  - ( bkg['df_DV1x'] - bkg['df_BVx'])*bkg['df_Kp_PZ']
@@ -602,15 +604,15 @@ def make_classification(sig_df, bkg_df, output, cut, first_step, draw_input_feat
     ###################################################### Train a classifier ####################################################################
     # I am using the optimised hyper-parameters here:
     # classifiers = best_classifiers
-    names = ["AdaBDT"] # "GradBDT", "RForest"
+    names = ["AdaBDT", "GradBDT", "RForest"]
     if(first_step):
-        classifiers = [ AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.1, n_estimators=400, algorithm='SAMME', random_state=42)]
-                        # GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=400, random_state=42), # for GB classifiers it is not necessary to use a class_weight parameter
-                        # RandomForestClassifier(class_weight='balanced',max_depth=6, n_estimators=800, random_state=42) ]
+        classifiers = [ AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.1, n_estimators=400, algorithm='SAMME', random_state=42),
+                        GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=400, random_state=42), 
+                        RandomForestClassifier(class_weight='balanced', max_depth=6, n_estimators=800, random_state=42) ]
     else:
-        classifiers = [ AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.1, n_estimators=400, algorithm='SAMME', random_state=42)]
-                        # GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=400, random_state=42), # for GB classifiers it is not necessary to use a class_weight parameter
-                        # RandomForestClassifier(class_weight='balanced',max_depth=6, n_estimators=800, random_state=42) ] 
+        classifiers = [ AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.1, n_estimators=400, algorithm='SAMME', random_state=42),
+                        GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=400, random_state=42),
+                        RandomForestClassifier(class_weight='balanced', max_depth=6, n_estimators=800, random_state=42)] 
 
     clf_fpr = []
     clf_tpr = []
@@ -671,26 +673,25 @@ def make_classification(sig_df, bkg_df, output, cut, first_step, draw_input_feat
         cuts.append(bdt_cut)
         metrics.append(significance)
 
-    print("Drawing feature importances for AdaBDT")
-    draw_feature_importance("AdaBDT", classifiers[0], first_step, input_features)
+    # print("Drawing feature importances for AdaBDT")
+    # draw_feature_importance("AdaBDT", classifiers[0], first_step, input_features)
 
     # find which classifier gives the maximum value for the metric
     # idx = np.argmax( metrics )
-
     # if(names[idx] == "RForest"):
     #     decisions = classifiers[idx].predict_proba(X)[:, 1]
     # else:
     #     decisions = classifiers[idx].decision_function(X)
 
-    # # Write trained classifiers to a file
-    # if(first_step):
-    #     with open('/panfs/felician/B2Ktautau/workflow/sklearn_training/clf_first_step.pkl', 'wb') as f:
-    #         for i in range(len(classifiers)):
-    #             pickle.dump(classifiers[i], f)
-    # else:
-    #     with open('/panfs/felician/B2Ktautau/workflow/sklearn_training/clf_second_step.pkl', 'wb') as f:
-    #         for i in range(len(classifiers)):
-    #             pickle.dump(classifiers[i], f)
+    # Write trained classifiers to a file
+    if(first_step):
+        with open('/panfs/felician/B2Ktautau/workflow/sklearn_training/clf_first_step.pkl', 'wb') as f:
+            for i in range(len(classifiers)):
+                pickle.dump(classifiers[i], f)
+    else:
+        with open('/panfs/felician/B2Ktautau/workflow/sklearn_training/clf_second_step.pkl', 'wb') as f:
+            for i in range(len(classifiers)):
+                pickle.dump(classifiers[i], f)
 
     decisions =  classifiers[0].decision_function(X_test)
 
@@ -746,8 +747,8 @@ def main():
     t_sig.AddFriend(t_sig1_2016)
 
     # Background proxy: WS data (signal region) for both steps (only 2016 for now)
-    fc_bkg = ROOT.TFileCollection("fc_bkg", "fc_bkg", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_3/pre_sel_tree.txt", 15) # 150
-    fc_bkg1 = ROOT.TFileCollection("fc_bkg1", "fc_bkg1", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_3/fit_results.txt", 15) # 150
+    fc_bkg = ROOT.TFileCollection("fc_bkg", "fc_bkg", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_3/pre_sel_tree.txt", 50) 
+    fc_bkg1 = ROOT.TFileCollection("fc_bkg1", "fc_bkg1", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_3/fit_results.txt", 50) 
 
     t_bkg = ROOT.TChain("DecayTree")
     t_bkg1 = ROOT.TChain("DecayTree")
@@ -772,12 +773,11 @@ def main():
     # print((sig_df.Count()).GetValue())
     # print((bkg_df.Count()).GetValue())
 
-    # 1st BDT step
-    # print("1st step")
-    # decisions_first_step, thresholds_1st_step, X_test_1st_step, y_test_1st_step = make_classification(sig_df, bkg_df, output=None, cut=None, first_step=True, draw_input_features=False, cross_validation=False)
+    print("1st step")
+    decisions_first_step, thresholds_1st_step, X_test_1st_step, y_test_1st_step = make_classification(sig_df, bkg_df, output=None, cut=None, first_step=True, draw_input_features=False, cross_validation=False)
 
     print("2nd step")
-    decisions_second_step, thresholds_2nd_step, X_test_2nd_step, y_test_2nd_step = make_classification(sig_df, bkg_df, output=None, cut=None, first_step=False, draw_input_features=True, cross_validation=False)
+    decisions_second_step, thresholds_2nd_step, X_test_2nd_step, y_test_2nd_step = make_classification(sig_df, bkg_df, output=None, cut=None, first_step=False, draw_input_features=False, cross_validation=False)
 
     # bdt_2d_cut(X_test_1st_step, y_test_1st_step, thresholds_1st_step, thresholds_2nd_step, decisions_first_step, decisions_second_step)
 
