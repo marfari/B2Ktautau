@@ -1,3 +1,4 @@
+
 from Configurables import DecayTreeTuple
 from DecayTreeTuple.Configuration import *
 from Configurables import LoKi__Hybrid__TupleTool
@@ -6,10 +7,12 @@ from Configurables import DaVinci
 from PhysConf.Selections import FilterSelection
 from PhysSelPython.Wrappers import AutomaticData
 
-isMC = False
-year = '2018'
-pol = 'MagDown'
+isMC = True
+year = '2016'
+pol = 'MagUp'
 applySel = False
+if(not isMC):
+	applySel = True
 
 # redefine addBranches and setDescriptorTemplate because of weird bug in DV
 def addBranches(self, branches):
@@ -26,10 +29,6 @@ def addBranches(self, branches):
 
     instances = {}
     for branch in branches:
-        # check for whitespace
-        #for char in ""\t\r\s":
-        	#if char in branch:
-                #raise NameError('You have tried to add a branch named \'' + branch + '\',which contains whitespace. This is not permitted.')
         self.Branches[branch] = branches[branch]
         self.addTool(TupleToolDecay, branch)
         instances[branch] = getattr(self, branch)
@@ -85,12 +84,16 @@ def addMInfo( branch ):
 	MInfo.Variables = {
 		"M12" : "M12",
 		"M23" : "M23",
-		"M13" : "M13"
-	}
+		"M13" : "M13",
+		"AMAXDOCA": "PFUNA(AMAXDOCA('LoKi::TrgDistanceCalculator'))",
+		"AMINDOCA": "PFUNA(AMINDOCA('LoKi::TrgDistanceCalculator'))",
+		"DOCACHI2MAX" : "DOCACHI2MAX"
+}
 
 def addSubmassInfo( branch ):
 	SubmassInfo = branch.addTupleTool("TupleToolSubMass")
 	SubmassInfo.SetMax = 3
+	SubmassInfo.SubVertexFit = False
 
 # Isolation information (stripping line output isolation variables)
 def addIsoInfo(branch, stream, line, year):
@@ -297,532 +300,532 @@ def addIsoInfo(branch, stream, line, year):
 		"CCNC_05_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone05', 'CCNC_IT', -100.)".format(stream, line),
 
 		# B+ (cone size = 1.0)
-		"CC_10_ANGLE_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_ANGLE', -100.)".format(stream, line),
-		"CC_10_MULT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_MULT', -100.)".format(stream, line),
-		"CC_10_SPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_SPT', -100.)".format(stream, line),
-		"CC_10_VPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_VPT', -100.)".format(stream, line),
-		"CC_10_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
-		"CC_10_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PY', -100.)".format(stream, line),
-		"CC_10_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PZ', -100.)".format(stream, line),
-		"CC_10_PASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PASYM', -100.)".format(stream, line),
-		"CC_10_PTASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PTASYM', -100.)".format(stream, line),
-		"CC_10_PXASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PXASYM', -100.)".format(stream, line),
-		"CC_10_PYASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PYASYM', -100.)".format(stream, line),
-		"CC_10_PZASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PZASYM', -100.)".format(stream, line),
-		"CC_10_DELTAETA_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_DELTAETA', -100.)".format(stream, line),
-		"CC_10_DELTAPHI_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_DELTAPHI', -100.)".format(stream, line),
-		"CC_10_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
-		"CC_10_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_IT', -100.)".format(stream, line),
-		"CC_10_MAXPT_Q_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_MAXPT_Q', -100.)".format(stream, line),
-		"CC_10_MAXPT_PT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_MAXPT_PT', -100.)".format(stream, line),
-		"CC_10_MAXPT_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_MAXPT_PX', -100.)".format(stream, line),
-		"CC_10_MAXPT_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_MAXPT_PY', -100.)".format(stream, line),
-		"CC_10_MAXPT_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_MAXPT_PZ', -100.)".format(stream, line),
-		"CC_10_MAXPT_PE_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_MAXPT_PE', -100.)".format(stream, line),
-		"NC_10_ANGLE_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_ANGLE', -100.)".format(stream, line),
-		"NC_10_MULT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_MULT', -100.)".format(stream, line),
-		"NC_10_SPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_SPT', -100.)".format(stream, line),
-		"NC_10_VPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_VPT', -100.)".format(stream, line),
-		"NC_10_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_PX', -100.)".format(stream, line),
-		"NC_10_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_PY', -100.)".format(stream, line),
-		"NC_10_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_PZ', -100.)".format(stream, line),
-		"NC_10_PASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_PASYM', -100.)".format(stream, line),
-		"NC_10_PTASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_PTASYM', -100.)".format(stream, line),
-		"NC_10_PXASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_PXASYM', -100.)".format(stream, line),
-		"NC_10_PYASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_PYASYM', -100.)".format(stream, line),
-		"NC_10_PZASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_PZASYM', -100.)".format(stream, line),
-		"NC_10_DELTAETA_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_DELTAETA', -100.)".format(stream, line),
-		"NC_10_DELTAPHI_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_DELTAPHI', -100.)".format(stream, line),
-		"NC_10_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_IT', -100.)".format(stream, line),
-		"NC_10_MAXPT_PT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_MAXPT_PT', -100.)".format(stream, line),
-		"NC_10_MAXPT_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_MAXPT_PX', -100.)".format(stream, line),
-		"NC_10_MAXPT_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_MAXPT_PY', -100.)".format(stream, line),
-		"NC_10_MAXPT_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_MAXPT_PZ', -100.)".format(stream, line),
-		"CCNC_10_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CCNC_IT', -100.)".format(stream, line),
+		# "CC_10_ANGLE_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_ANGLE', -100.)".format(stream, line),
+		# "CC_10_MULT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_MULT', -100.)".format(stream, line),
+		# "CC_10_SPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_SPT', -100.)".format(stream, line),
+		# "CC_10_VPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_VPT', -100.)".format(stream, line),
+		# "CC_10_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
+		# "CC_10_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PY', -100.)".format(stream, line),
+		# "CC_10_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PZ', -100.)".format(stream, line),
+		# "CC_10_PASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PASYM', -100.)".format(stream, line),
+		# "CC_10_PTASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PTASYM', -100.)".format(stream, line),
+		# "CC_10_PXASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PXASYM', -100.)".format(stream, line),
+		# "CC_10_PYASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PYASYM', -100.)".format(stream, line),
+		# "CC_10_PZASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PZASYM', -100.)".format(stream, line),
+		# "CC_10_DELTAETA_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_DELTAETA', -100.)".format(stream, line),
+		# "CC_10_DELTAPHI_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_DELTAPHI', -100.)".format(stream, line),
+		# "CC_10_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
+		# "CC_10_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_IT', -100.)".format(stream, line),
+		# "CC_10_MAXPT_Q_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_MAXPT_Q', -100.)".format(stream, line),
+		# "CC_10_MAXPT_PT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_MAXPT_PT', -100.)".format(stream, line),
+		# "CC_10_MAXPT_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_MAXPT_PX', -100.)".format(stream, line),
+		# "CC_10_MAXPT_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_MAXPT_PY', -100.)".format(stream, line),
+		# "CC_10_MAXPT_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CC_10_MAXPT_PE_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_MAXPT_PE', -100.)".format(stream, line),
+		# "NC_10_ANGLE_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_ANGLE', -100.)".format(stream, line),
+		# "NC_10_MULT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_MULT', -100.)".format(stream, line),
+		# "NC_10_SPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_SPT', -100.)".format(stream, line),
+		# "NC_10_VPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_VPT', -100.)".format(stream, line),
+		# "NC_10_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_PX', -100.)".format(stream, line),
+		# "NC_10_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_PY', -100.)".format(stream, line),
+		# "NC_10_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_PZ', -100.)".format(stream, line),
+		# "NC_10_PASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_PASYM', -100.)".format(stream, line),
+		# "NC_10_PTASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_PTASYM', -100.)".format(stream, line),
+		# "NC_10_PXASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_PXASYM', -100.)".format(stream, line),
+		# "NC_10_PYASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_PYASYM', -100.)".format(stream, line),
+		# "NC_10_PZASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_PZASYM', -100.)".format(stream, line),
+		# "NC_10_DELTAETA_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_DELTAETA', -100.)".format(stream, line),
+		# "NC_10_DELTAPHI_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_DELTAPHI', -100.)".format(stream, line),
+		# "NC_10_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_IT', -100.)".format(stream, line),
+		# "NC_10_MAXPT_PT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_MAXPT_PT', -100.)".format(stream, line),
+		# "NC_10_MAXPT_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_MAXPT_PX', -100.)".format(stream, line),
+		# "NC_10_MAXPT_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_MAXPT_PY', -100.)".format(stream, line),
+		# "NC_10_MAXPT_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'NC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CCNC_10_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CCNC_IT', -100.)".format(stream, line),
 
-		# K+ (cone size = 1.0)
-		"CC_10_ANGLE_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_ANGLE', -100.)".format(stream, line),
-		"CC_10_MULT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_MULT', -100.)".format(stream, line),
-		"CC_10_SPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_SPT', -100.)".format(stream, line),
-		"CC_10_VPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_VPT', -100.)".format(stream, line),
-		"CC_10_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
-		"CC_10_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PY', -100.)".format(stream, line),
-		"CC_10_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PZ', -100.)".format(stream, line),
-		"CC_10_PASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PASYM', -100.)".format(stream, line),
-		"CC_10_PTASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PTASYM', -100.)".format(stream, line),
-		"CC_10_PXASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PXASYM', -100.)".format(stream, line),
-		"CC_10_PYASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PYASYM', -100.)".format(stream, line),
-		"CC_10_PZASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PZASYM', -100.)".format(stream, line),
-		"CC_10_DELTAETA_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_DELTAETA', -100.)".format(stream, line),
-		"CC_10_DELTAPHI_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_DELTAPHI', -100.)".format(stream, line),
-		"CC_10_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
-		"CC_10_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_IT', -100.)".format(stream, line),
-		"CC_10_MAXPT_Q_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_MAXPT_Q', -100.)".format(stream, line),
-		"CC_10_MAXPT_PT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_MAXPT_PT', -100.)".format(stream, line),
-		"CC_10_MAXPT_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_MAXPT_PX', -100.)".format(stream, line),
-		"CC_10_MAXPT_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_MAXPT_PY', -100.)".format(stream, line),
-		"CC_10_MAXPT_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_MAXPT_PZ', -100.)".format(stream, line),
-		"CC_10_MAXPT_PE_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_MAXPT_PE', -100.)".format(stream, line),
-		"NC_10_ANGLE_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_ANGLE', -100.)".format(stream, line),
-		"NC_10_MULT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_MULT', -100.)".format(stream, line),
-		"NC_10_SPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_SPT', -100.)".format(stream, line),
-		"NC_10_VPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_VPT', -100.)".format(stream, line),
-		"NC_10_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_PX', -100.)".format(stream, line),
-		"NC_10_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_PY', -100.)".format(stream, line),
-		"NC_10_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_PZ', -100.)".format(stream, line),
-		"NC_10_PASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_PASYM', -100.)".format(stream, line),
-		"NC_10_PTASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_PTASYM', -100.)".format(stream, line),
-		"NC_10_PXASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_PXASYM', -100.)".format(stream, line),
-		"NC_10_PYASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_PYASYM', -100.)".format(stream, line),
-		"NC_10_PZASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_PZASYM', -100.)".format(stream, line),
-		"NC_10_DELTAETA_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_DELTAETA', -100.)".format(stream, line),
-		"NC_10_DELTAPHI_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_DELTAPHI', -100.)".format(stream, line),
-		"NC_10_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_IT', -100.)".format(stream, line),
-		"NC_10_MAXPT_PT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_MAXPT_PT', -100.)".format(stream, line),
-		"NC_10_MAXPT_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_MAXPT_PX', -100.)".format(stream, line),
-		"NC_10_MAXPT_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_MAXPT_PY', -100.)".format(stream, line),
-		"NC_10_MAXPT_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_MAXPT_PZ', -100.)".format(stream, line),
-		"CCNC_10_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CCNC_IT', -100.)".format(stream, line),
+		# # K+ (cone size = 1.0)
+		# "CC_10_ANGLE_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_ANGLE', -100.)".format(stream, line),
+		# "CC_10_MULT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_MULT', -100.)".format(stream, line),
+		# "CC_10_SPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_SPT', -100.)".format(stream, line),
+		# "CC_10_VPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_VPT', -100.)".format(stream, line),
+		# "CC_10_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
+		# "CC_10_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PY', -100.)".format(stream, line),
+		# "CC_10_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PZ', -100.)".format(stream, line),
+		# "CC_10_PASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PASYM', -100.)".format(stream, line),
+		# "CC_10_PTASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PTASYM', -100.)".format(stream, line),
+		# "CC_10_PXASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PXASYM', -100.)".format(stream, line),
+		# "CC_10_PYASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PYASYM', -100.)".format(stream, line),
+		# "CC_10_PZASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PZASYM', -100.)".format(stream, line),
+		# "CC_10_DELTAETA_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_DELTAETA', -100.)".format(stream, line),
+		# "CC_10_DELTAPHI_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_DELTAPHI', -100.)".format(stream, line),
+		# "CC_10_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
+		# "CC_10_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_IT', -100.)".format(stream, line),
+		# "CC_10_MAXPT_Q_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_MAXPT_Q', -100.)".format(stream, line),
+		# "CC_10_MAXPT_PT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_MAXPT_PT', -100.)".format(stream, line),
+		# "CC_10_MAXPT_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_MAXPT_PX', -100.)".format(stream, line),
+		# "CC_10_MAXPT_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_MAXPT_PY', -100.)".format(stream, line),
+		# "CC_10_MAXPT_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CC_10_MAXPT_PE_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_MAXPT_PE', -100.)".format(stream, line),
+		# "NC_10_ANGLE_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_ANGLE', -100.)".format(stream, line),
+		# "NC_10_MULT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_MULT', -100.)".format(stream, line),
+		# "NC_10_SPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_SPT', -100.)".format(stream, line),
+		# "NC_10_VPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_VPT', -100.)".format(stream, line),
+		# "NC_10_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_PX', -100.)".format(stream, line),
+		# "NC_10_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_PY', -100.)".format(stream, line),
+		# "NC_10_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_PZ', -100.)".format(stream, line),
+		# "NC_10_PASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_PASYM', -100.)".format(stream, line),
+		# "NC_10_PTASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_PTASYM', -100.)".format(stream, line),
+		# "NC_10_PXASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_PXASYM', -100.)".format(stream, line),
+		# "NC_10_PYASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_PYASYM', -100.)".format(stream, line),
+		# "NC_10_PZASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_PZASYM', -100.)".format(stream, line),
+		# "NC_10_DELTAETA_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_DELTAETA', -100.)".format(stream, line),
+		# "NC_10_DELTAPHI_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_DELTAPHI', -100.)".format(stream, line),
+		# "NC_10_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_IT', -100.)".format(stream, line),
+		# "NC_10_MAXPT_PT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_MAXPT_PT', -100.)".format(stream, line),
+		# "NC_10_MAXPT_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_MAXPT_PX', -100.)".format(stream, line),
+		# "NC_10_MAXPT_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_MAXPT_PY', -100.)".format(stream, line),
+		# "NC_10_MAXPT_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'NC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CCNC_10_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CCNC_IT', -100.)".format(stream, line),
 
-		# tau+ (cone size = 1.0)
-		"CC_10_ANGLE_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_ANGLE', -100.)".format(stream, line),
-		"CC_10_MULT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_MULT', -100.)".format(stream, line),
-		"CC_10_SPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_SPT', -100.)".format(stream, line),
-		"CC_10_VPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_VPT', -100.)".format(stream, line),
-		"CC_10_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
-		"CC_10_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PY', -100.)".format(stream, line),
-		"CC_10_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PZ', -100.)".format(stream, line),
-		"CC_10_PASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PASYM', -100.)".format(stream, line),
-		"CC_10_PTASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PTASYM', -100.)".format(stream, line),
-		"CC_10_PXASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PXASYM', -100.)".format(stream, line),
-		"CC_10_PYASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PYASYM', -100.)".format(stream, line),
-		"CC_10_PZASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PZASYM', -100.)".format(stream, line),
-		"CC_10_DELTAETA_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_DELTAETA', -100.)".format(stream, line),
-		"CC_10_DELTAPHI_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_DELTAPHI', -100.)".format(stream, line),
-		"CC_10_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
-		"CC_10_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_IT', -100.)".format(stream, line),
-		"CC_10_MAXPT_Q_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_MAXPT_Q', -100.)".format(stream, line),
-		"CC_10_MAXPT_PT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_MAXPT_PT', -100.)".format(stream, line),
-		"CC_10_MAXPT_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_MAXPT_PX', -100.)".format(stream, line),
-		"CC_10_MAXPT_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_MAXPT_PY', -100.)".format(stream, line),
-		"CC_10_MAXPT_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_MAXPT_PZ', -100.)".format(stream, line),
-		"CC_10_MAXPT_PE_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_MAXPT_PE', -100.)".format(stream, line),
-		"NC_10_ANGLE_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_ANGLE', -100.)".format(stream, line),
-		"NC_10_MULT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_MULT', -100.)".format(stream, line),
-		"NC_10_SPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_SPT', -100.)".format(stream, line),
-		"NC_10_VPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_VPT', -100.)".format(stream, line),
-		"NC_10_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_PX', -100.)".format(stream, line),
-		"NC_10_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_PY', -100.)".format(stream, line),
-		"NC_10_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_PZ', -100.)".format(stream, line),
-		"NC_10_PASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_PASYM', -100.)".format(stream, line),
-		"NC_10_PTASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_PTASYM', -100.)".format(stream, line),
-		"NC_10_PXASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_PXASYM', -100.)".format(stream, line),
-		"NC_10_PYASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_PYASYM', -100.)".format(stream, line),
-		"NC_10_PZASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_PZASYM', -100.)".format(stream, line),
-		"NC_10_DELTAETA_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_DELTAETA', -100.)".format(stream, line),
-		"NC_10_DELTAPHI_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_DELTAPHI', -100.)".format(stream, line),
-		"NC_10_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_IT', -100.)".format(stream, line),
-		"NC_10_MAXPT_PT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_MAXPT_PT', -100.)".format(stream, line),
-		"NC_10_MAXPT_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_MAXPT_PX', -100.)".format(stream, line),
-		"NC_10_MAXPT_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_MAXPT_PY', -100.)".format(stream, line),
-		"NC_10_MAXPT_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_MAXPT_PZ', -100.)".format(stream, line),
-		"CCNC_10_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CCNC_IT', -100.)".format(stream, line),
+		# # tau+ (cone size = 1.0)
+		# "CC_10_ANGLE_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_ANGLE', -100.)".format(stream, line),
+		# "CC_10_MULT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_MULT', -100.)".format(stream, line),
+		# "CC_10_SPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_SPT', -100.)".format(stream, line),
+		# "CC_10_VPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_VPT', -100.)".format(stream, line),
+		# "CC_10_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
+		# "CC_10_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PY', -100.)".format(stream, line),
+		# "CC_10_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PZ', -100.)".format(stream, line),
+		# "CC_10_PASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PASYM', -100.)".format(stream, line),
+		# "CC_10_PTASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PTASYM', -100.)".format(stream, line),
+		# "CC_10_PXASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PXASYM', -100.)".format(stream, line),
+		# "CC_10_PYASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PYASYM', -100.)".format(stream, line),
+		# "CC_10_PZASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PZASYM', -100.)".format(stream, line),
+		# "CC_10_DELTAETA_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_DELTAETA', -100.)".format(stream, line),
+		# "CC_10_DELTAPHI_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_DELTAPHI', -100.)".format(stream, line),
+		# "CC_10_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
+		# "CC_10_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_IT', -100.)".format(stream, line),
+		# "CC_10_MAXPT_Q_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_MAXPT_Q', -100.)".format(stream, line),
+		# "CC_10_MAXPT_PT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_MAXPT_PT', -100.)".format(stream, line),
+		# "CC_10_MAXPT_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_MAXPT_PX', -100.)".format(stream, line),
+		# "CC_10_MAXPT_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_MAXPT_PY', -100.)".format(stream, line),
+		# "CC_10_MAXPT_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CC_10_MAXPT_PE_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_MAXPT_PE', -100.)".format(stream, line),
+		# "NC_10_ANGLE_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_ANGLE', -100.)".format(stream, line),
+		# "NC_10_MULT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_MULT', -100.)".format(stream, line),
+		# "NC_10_SPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_SPT', -100.)".format(stream, line),
+		# "NC_10_VPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_VPT', -100.)".format(stream, line),
+		# "NC_10_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_PX', -100.)".format(stream, line),
+		# "NC_10_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_PY', -100.)".format(stream, line),
+		# "NC_10_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_PZ', -100.)".format(stream, line),
+		# "NC_10_PASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_PASYM', -100.)".format(stream, line),
+		# "NC_10_PTASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_PTASYM', -100.)".format(stream, line),
+		# "NC_10_PXASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_PXASYM', -100.)".format(stream, line),
+		# "NC_10_PYASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_PYASYM', -100.)".format(stream, line),
+		# "NC_10_PZASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_PZASYM', -100.)".format(stream, line),
+		# "NC_10_DELTAETA_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_DELTAETA', -100.)".format(stream, line),
+		# "NC_10_DELTAPHI_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_DELTAPHI', -100.)".format(stream, line),
+		# "NC_10_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_IT', -100.)".format(stream, line),
+		# "NC_10_MAXPT_PT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_MAXPT_PT', -100.)".format(stream, line),
+		# "NC_10_MAXPT_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_MAXPT_PX', -100.)".format(stream, line),
+		# "NC_10_MAXPT_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_MAXPT_PY', -100.)".format(stream, line),
+		# "NC_10_MAXPT_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'NC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CCNC_10_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CCNC_IT', -100.)".format(stream, line),
 
-		# tau- (cone size = 1.0)
-		"CC_10_ANGLE_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_ANGLE', -100.)".format(stream, line),
-		"CC_10_MULT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_MULT', -100.)".format(stream, line),
-		"CC_10_SPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_SPT', -100.)".format(stream, line),
-		"CC_10_VPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_VPT', -100.)".format(stream, line),
-		"CC_10_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
-		"CC_10_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PY', -100.)".format(stream, line),
-		"CC_10_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PZ', -100.)".format(stream, line),
-		"CC_10_PASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PASYM', -100.)".format(stream, line),
-		"CC_10_PTASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PTASYM', -100.)".format(stream, line),
-		"CC_10_PXASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PXASYM', -100.)".format(stream, line),
-		"CC_10_PYASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PYASYM', -100.)".format(stream, line),
-		"CC_10_PZASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PZASYM', -100.)".format(stream, line),
-		"CC_10_DELTAETA_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_DELTAETA', -100.)".format(stream, line),
-		"CC_10_DELTAPHI_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_DELTAPHI', -100.)".format(stream, line),
-		"CC_10_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
-		"CC_10_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_IT', -100.)".format(stream, line),
-		"CC_10_MAXPT_Q_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_MAXPT_Q', -100.)".format(stream, line),
-		"CC_10_MAXPT_PT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_MAXPT_PT', -100.)".format(stream, line),
-		"CC_10_MAXPT_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_MAXPT_PX', -100.)".format(stream, line),
-		"CC_10_MAXPT_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_MAXPT_PY', -100.)".format(stream, line),
-		"CC_10_MAXPT_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_MAXPT_PZ', -100.)".format(stream, line),
-		"CC_10_MAXPT_PE_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_MAXPT_PE', -100.)".format(stream, line),
-		"NC_10_ANGLE_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_ANGLE', -100.)".format(stream, line),
-		"NC_10_MULT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_MULT', -100.)".format(stream, line),
-		"NC_10_SPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_SPT', -100.)".format(stream, line),
-		"NC_10_VPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_VPT', -100.)".format(stream, line),
-		"NC_10_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_PX', -100.)".format(stream, line),
-		"NC_10_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_PY', -100.)".format(stream, line),
-		"NC_10_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_PZ', -100.)".format(stream, line),
-		"NC_10_PASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_PASYM', -100.)".format(stream, line),
-		"NC_10_PTASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_PTASYM', -100.)".format(stream, line),
-		"NC_10_PXASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_PXASYM', -100.)".format(stream, line),
-		"NC_10_PYASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_PYASYM', -100.)".format(stream, line),
-		"NC_10_PZASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_PZASYM', -100.)".format(stream, line),
-		"NC_10_DELTAETA_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_DELTAETA', -100.)".format(stream, line),
-		"NC_10_DELTAPHI_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_DELTAPHI', -100.)".format(stream, line),
-		"NC_10_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_IT', -100.)".format(stream, line),
-		"NC_10_MAXPT_PT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_MAXPT_PT', -100.)".format(stream, line),
-		"NC_10_MAXPT_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_MAXPT_PX', -100.)".format(stream, line),
-		"NC_10_MAXPT_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_MAXPT_PY', -100.)".format(stream, line),
-		"NC_10_MAXPT_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_MAXPT_PZ', -100.)".format(stream, line),
-		"CCNC_10_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CCNC_IT', -100.)".format(stream, line),
+		# # tau- (cone size = 1.0)
+		# "CC_10_ANGLE_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_ANGLE', -100.)".format(stream, line),
+		# "CC_10_MULT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_MULT', -100.)".format(stream, line),
+		# "CC_10_SPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_SPT', -100.)".format(stream, line),
+		# "CC_10_VPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_VPT', -100.)".format(stream, line),
+		# "CC_10_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
+		# "CC_10_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PY', -100.)".format(stream, line),
+		# "CC_10_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PZ', -100.)".format(stream, line),
+		# "CC_10_PASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PASYM', -100.)".format(stream, line),
+		# "CC_10_PTASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PTASYM', -100.)".format(stream, line),
+		# "CC_10_PXASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PXASYM', -100.)".format(stream, line),
+		# "CC_10_PYASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PYASYM', -100.)".format(stream, line),
+		# "CC_10_PZASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PZASYM', -100.)".format(stream, line),
+		# "CC_10_DELTAETA_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_DELTAETA', -100.)".format(stream, line),
+		# "CC_10_DELTAPHI_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_DELTAPHI', -100.)".format(stream, line),
+		# "CC_10_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
+		# "CC_10_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_IT', -100.)".format(stream, line),
+		# "CC_10_MAXPT_Q_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_MAXPT_Q', -100.)".format(stream, line),
+		# "CC_10_MAXPT_PT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_MAXPT_PT', -100.)".format(stream, line),
+		# "CC_10_MAXPT_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_MAXPT_PX', -100.)".format(stream, line),
+		# "CC_10_MAXPT_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_MAXPT_PY', -100.)".format(stream, line),
+		# "CC_10_MAXPT_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CC_10_MAXPT_PE_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_MAXPT_PE', -100.)".format(stream, line),
+		# "NC_10_ANGLE_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_ANGLE', -100.)".format(stream, line),
+		# "NC_10_MULT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_MULT', -100.)".format(stream, line),
+		# "NC_10_SPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_SPT', -100.)".format(stream, line),
+		# "NC_10_VPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_VPT', -100.)".format(stream, line),
+		# "NC_10_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_PX', -100.)".format(stream, line),
+		# "NC_10_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_PY', -100.)".format(stream, line),
+		# "NC_10_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_PZ', -100.)".format(stream, line),
+		# "NC_10_PASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_PASYM', -100.)".format(stream, line),
+		# "NC_10_PTASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_PTASYM', -100.)".format(stream, line),
+		# "NC_10_PXASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_PXASYM', -100.)".format(stream, line),
+		# "NC_10_PYASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_PYASYM', -100.)".format(stream, line),
+		# "NC_10_PZASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_PZASYM', -100.)".format(stream, line),
+		# "NC_10_DELTAETA_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_DELTAETA', -100.)".format(stream, line),
+		# "NC_10_DELTAPHI_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_DELTAPHI', -100.)".format(stream, line),
+		# "NC_10_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_IT', -100.)".format(stream, line),
+		# "NC_10_MAXPT_PT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_MAXPT_PT', -100.)".format(stream, line),
+		# "NC_10_MAXPT_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_MAXPT_PX', -100.)".format(stream, line),
+		# "NC_10_MAXPT_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_MAXPT_PY', -100.)".format(stream, line),
+		# "NC_10_MAXPT_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'NC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CCNC_10_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CCNC_IT', -100.)".format(stream, line),
 
-		# B+ (cone size = 1.5)
-		"CC_15_ANGLE_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_ANGLE', -100.)".format(stream, line),
-		"CC_15_MULT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_MULT', -100.)".format(stream, line),
-		"CC_15_SPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_SPT', -100.)".format(stream, line),
-		"CC_15_VPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_VPT', -100.)".format(stream, line),
-		"CC_15_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
-		"CC_15_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PY', -100.)".format(stream, line),
-		"CC_15_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PZ', -100.)".format(stream, line),
-		"CC_15_PASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PASYM', -100.)".format(stream, line),
-		"CC_15_PTASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PTASYM', -100.)".format(stream, line),
-		"CC_15_PXASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PXASYM', -100.)".format(stream, line),
-		"CC_15_PYASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PYASYM', -100.)".format(stream, line),
-		"CC_15_PZASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PZASYM', -100.)".format(stream, line),
-		"CC_15_DELTAETA_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_DELTAETA', -100.)".format(stream, line),
-		"CC_15_DELTAPHI_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_DELTAPHI', -100.)".format(stream, line),
-		"CC_15_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
-		"CC_15_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_IT', -100.)".format(stream, line),
-		"CC_15_MAXPT_Q_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_MAXPT_Q', -100.)".format(stream, line),
-		"CC_15_MAXPT_PT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_MAXPT_PT', -100.)".format(stream, line),
-		"CC_15_MAXPT_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_MAXPT_PX', -100.)".format(stream, line),
-		"CC_15_MAXPT_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_MAXPT_PY', -100.)".format(stream, line),
-		"CC_15_MAXPT_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_MAXPT_PZ', -100.)".format(stream, line),
-		"CC_15_MAXPT_PE_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_MAXPT_PE', -100.)".format(stream, line),
-		"NC_15_ANGLE_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_ANGLE', -100.)".format(stream, line),
-		"NC_15_MULT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_MULT', -100.)".format(stream, line),
-		"NC_15_SPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_SPT', -100.)".format(stream, line),
-		"NC_15_VPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_VPT', -100.)".format(stream, line),
-		"NC_15_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_PX', -100.)".format(stream, line),
-		"NC_15_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_PY', -100.)".format(stream, line),
-		"NC_15_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_PZ', -100.)".format(stream, line),
-		"NC_15_PASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_PASYM', -100.)".format(stream, line),
-		"NC_15_PTASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_PTASYM', -100.)".format(stream, line),
-		"NC_15_PXASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_PXASYM', -100.)".format(stream, line),
-		"NC_15_PYASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_PYASYM', -100.)".format(stream, line),
-		"NC_15_PZASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_PZASYM', -100.)".format(stream, line),
-		"NC_15_DELTAETA_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_DELTAETA', -100.)".format(stream, line),
-		"NC_15_DELTAPHI_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_DELTAPHI', -100.)".format(stream, line),
-		"NC_15_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_IT', -100.)".format(stream, line),
-		"NC_15_MAXPT_PT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_MAXPT_PT', -100.)".format(stream, line),
-		"NC_15_MAXPT_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_MAXPT_PX', -100.)".format(stream, line),
-		"NC_15_MAXPT_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_MAXPT_PY', -100.)".format(stream, line),
-		"NC_15_MAXPT_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_MAXPT_PZ', -100.)".format(stream, line),
-		"CCNC_15_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CCNC_IT', -100.)".format(stream, line),
+		# # B+ (cone size = 1.5)
+		# "CC_15_ANGLE_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_ANGLE', -100.)".format(stream, line),
+		# "CC_15_MULT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_MULT', -100.)".format(stream, line),
+		# "CC_15_SPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_SPT', -100.)".format(stream, line),
+		# "CC_15_VPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_VPT', -100.)".format(stream, line),
+		# "CC_15_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
+		# "CC_15_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PY', -100.)".format(stream, line),
+		# "CC_15_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PZ', -100.)".format(stream, line),
+		# "CC_15_PASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PASYM', -100.)".format(stream, line),
+		# "CC_15_PTASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PTASYM', -100.)".format(stream, line),
+		# "CC_15_PXASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PXASYM', -100.)".format(stream, line),
+		# "CC_15_PYASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PYASYM', -100.)".format(stream, line),
+		# "CC_15_PZASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PZASYM', -100.)".format(stream, line),
+		# "CC_15_DELTAETA_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_DELTAETA', -100.)".format(stream, line),
+		# "CC_15_DELTAPHI_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_DELTAPHI', -100.)".format(stream, line),
+		# "CC_15_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
+		# "CC_15_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_IT', -100.)".format(stream, line),
+		# "CC_15_MAXPT_Q_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_MAXPT_Q', -100.)".format(stream, line),
+		# "CC_15_MAXPT_PT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_MAXPT_PT', -100.)".format(stream, line),
+		# "CC_15_MAXPT_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_MAXPT_PX', -100.)".format(stream, line),
+		# "CC_15_MAXPT_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_MAXPT_PY', -100.)".format(stream, line),
+		# "CC_15_MAXPT_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CC_15_MAXPT_PE_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_MAXPT_PE', -100.)".format(stream, line),
+		# "NC_15_ANGLE_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_ANGLE', -100.)".format(stream, line),
+		# "NC_15_MULT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_MULT', -100.)".format(stream, line),
+		# "NC_15_SPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_SPT', -100.)".format(stream, line),
+		# "NC_15_VPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_VPT', -100.)".format(stream, line),
+		# "NC_15_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_PX', -100.)".format(stream, line),
+		# "NC_15_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_PY', -100.)".format(stream, line),
+		# "NC_15_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_PZ', -100.)".format(stream, line),
+		# "NC_15_PASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_PASYM', -100.)".format(stream, line),
+		# "NC_15_PTASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_PTASYM', -100.)".format(stream, line),
+		# "NC_15_PXASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_PXASYM', -100.)".format(stream, line),
+		# "NC_15_PYASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_PYASYM', -100.)".format(stream, line),
+		# "NC_15_PZASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_PZASYM', -100.)".format(stream, line),
+		# "NC_15_DELTAETA_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_DELTAETA', -100.)".format(stream, line),
+		# "NC_15_DELTAPHI_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_DELTAPHI', -100.)".format(stream, line),
+		# "NC_15_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_IT', -100.)".format(stream, line),
+		# "NC_15_MAXPT_PT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_MAXPT_PT', -100.)".format(stream, line),
+		# "NC_15_MAXPT_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_MAXPT_PX', -100.)".format(stream, line),
+		# "NC_15_MAXPT_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_MAXPT_PY', -100.)".format(stream, line),
+		# "NC_15_MAXPT_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'NC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CCNC_15_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CCNC_IT', -100.)".format(stream, line),
 
-		# K+ (cone size = 1.5)
-		"CC_15_ANGLE_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_ANGLE', -100.)".format(stream, line),
-		"CC_15_MULT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_MULT', -100.)".format(stream, line),
-		"CC_15_SPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_SPT', -100.)".format(stream, line),
-		"CC_15_VPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_VPT', -100.)".format(stream, line),
-		"CC_15_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
-		"CC_15_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PY', -100.)".format(stream, line),
-		"CC_15_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PZ', -100.)".format(stream, line),
-		"CC_15_PASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PASYM', -100.)".format(stream, line),
-		"CC_15_PTASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PTASYM', -100.)".format(stream, line),
-		"CC_15_PXASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PXASYM', -100.)".format(stream, line),
-		"CC_15_PYASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PYASYM', -100.)".format(stream, line),
-		"CC_15_PZASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PZASYM', -100.)".format(stream, line),
-		"CC_15_DELTAETA_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_DELTAETA', -100.)".format(stream, line),
-		"CC_15_DELTAPHI_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_DELTAPHI', -100.)".format(stream, line),
-		"CC_15_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
-		"CC_15_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_IT', -100.)".format(stream, line),
-		"CC_15_MAXPT_Q_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_MAXPT_Q', -100.)".format(stream, line),
-		"CC_15_MAXPT_PT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_MAXPT_PT', -100.)".format(stream, line),
-		"CC_15_MAXPT_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_MAXPT_PX', -100.)".format(stream, line),
-		"CC_15_MAXPT_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_MAXPT_PY', -100.)".format(stream, line),
-		"CC_15_MAXPT_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_MAXPT_PZ', -100.)".format(stream, line),
-		"CC_15_MAXPT_PE_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_MAXPT_PE', -100.)".format(stream, line),
-		"NC_15_ANGLE_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_ANGLE', -100.)".format(stream, line),
-		"NC_15_MULT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_MULT', -100.)".format(stream, line),
-		"NC_15_SPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_SPT', -100.)".format(stream, line),
-		"NC_15_VPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_VPT', -100.)".format(stream, line),
-		"NC_15_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_PX', -100.)".format(stream, line),
-		"NC_15_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_PY', -100.)".format(stream, line),
-		"NC_15_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_PZ', -100.)".format(stream, line),
-		"NC_15_PASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_PASYM', -100.)".format(stream, line),
-		"NC_15_PTASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_PTASYM', -100.)".format(stream, line),
-		"NC_15_PXASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_PXASYM', -100.)".format(stream, line),
-		"NC_15_PYASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_PYASYM', -100.)".format(stream, line),
-		"NC_15_PZASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_PZASYM', -100.)".format(stream, line),
-		"NC_15_DELTAETA_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_DELTAETA', -100.)".format(stream, line),
-		"NC_15_DELTAPHI_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_DELTAPHI', -100.)".format(stream, line),
-		"NC_15_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_IT', -100.)".format(stream, line),
-		"NC_15_MAXPT_PT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_MAXPT_PT', -100.)".format(stream, line),
-		"NC_15_MAXPT_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_MAXPT_PX', -100.)".format(stream, line),
-		"NC_15_MAXPT_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_MAXPT_PY', -100.)".format(stream, line),
-		"NC_15_MAXPT_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_MAXPT_PZ', -100.)".format(stream, line),
-		"CCNC_15_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CCNC_IT', -100.)".format(stream, line),
+		# # K+ (cone size = 1.5)
+		# "CC_15_ANGLE_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_ANGLE', -100.)".format(stream, line),
+		# "CC_15_MULT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_MULT', -100.)".format(stream, line),
+		# "CC_15_SPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_SPT', -100.)".format(stream, line),
+		# "CC_15_VPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_VPT', -100.)".format(stream, line),
+		# "CC_15_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
+		# "CC_15_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PY', -100.)".format(stream, line),
+		# "CC_15_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PZ', -100.)".format(stream, line),
+		# "CC_15_PASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PASYM', -100.)".format(stream, line),
+		# "CC_15_PTASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PTASYM', -100.)".format(stream, line),
+		# "CC_15_PXASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PXASYM', -100.)".format(stream, line),
+		# "CC_15_PYASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PYASYM', -100.)".format(stream, line),
+		# "CC_15_PZASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PZASYM', -100.)".format(stream, line),
+		# "CC_15_DELTAETA_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_DELTAETA', -100.)".format(stream, line),
+		# "CC_15_DELTAPHI_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_DELTAPHI', -100.)".format(stream, line),
+		# "CC_15_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
+		# "CC_15_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_IT', -100.)".format(stream, line),
+		# "CC_15_MAXPT_Q_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_MAXPT_Q', -100.)".format(stream, line),
+		# "CC_15_MAXPT_PT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_MAXPT_PT', -100.)".format(stream, line),
+		# "CC_15_MAXPT_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_MAXPT_PX', -100.)".format(stream, line),
+		# "CC_15_MAXPT_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_MAXPT_PY', -100.)".format(stream, line),
+		# "CC_15_MAXPT_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CC_15_MAXPT_PE_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_MAXPT_PE', -100.)".format(stream, line),
+		# "NC_15_ANGLE_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_ANGLE', -100.)".format(stream, line),
+		# "NC_15_MULT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_MULT', -100.)".format(stream, line),
+		# "NC_15_SPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_SPT', -100.)".format(stream, line),
+		# "NC_15_VPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_VPT', -100.)".format(stream, line),
+		# "NC_15_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_PX', -100.)".format(stream, line),
+		# "NC_15_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_PY', -100.)".format(stream, line),
+		# "NC_15_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_PZ', -100.)".format(stream, line),
+		# "NC_15_PASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_PASYM', -100.)".format(stream, line),
+		# "NC_15_PTASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_PTASYM', -100.)".format(stream, line),
+		# "NC_15_PXASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_PXASYM', -100.)".format(stream, line),
+		# "NC_15_PYASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_PYASYM', -100.)".format(stream, line),
+		# "NC_15_PZASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_PZASYM', -100.)".format(stream, line),
+		# "NC_15_DELTAETA_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_DELTAETA', -100.)".format(stream, line),
+		# "NC_15_DELTAPHI_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_DELTAPHI', -100.)".format(stream, line),
+		# "NC_15_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_IT', -100.)".format(stream, line),
+		# "NC_15_MAXPT_PT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_MAXPT_PT', -100.)".format(stream, line),
+		# "NC_15_MAXPT_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_MAXPT_PX', -100.)".format(stream, line),
+		# "NC_15_MAXPT_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_MAXPT_PY', -100.)".format(stream, line),
+		# "NC_15_MAXPT_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'NC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CCNC_15_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CCNC_IT', -100.)".format(stream, line),
 
-		# tau+ (cone size = 1.5)
-		"CC_15_ANGLE_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_ANGLE', -100.)".format(stream, line),
-		"CC_15_MULT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_MULT', -100.)".format(stream, line),
-		"CC_15_SPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_SPT', -100.)".format(stream, line),
-		"CC_15_VPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_VPT', -100.)".format(stream, line),
-		"CC_15_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
-		"CC_15_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PY', -100.)".format(stream, line),
-		"CC_15_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PZ', -100.)".format(stream, line),
-		"CC_15_PASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PASYM', -100.)".format(stream, line),
-		"CC_15_PTASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PTASYM', -100.)".format(stream, line),
-		"CC_15_PXASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PXASYM', -100.)".format(stream, line),
-		"CC_15_PYASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PYASYM', -100.)".format(stream, line),
-		"CC_15_PZASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PZASYM', -100.)".format(stream, line),
-		"CC_15_DELTAETA_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_DELTAETA', -100.)".format(stream, line),
-		"CC_15_DELTAPHI_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_DELTAPHI', -100.)".format(stream, line),
-		"CC_15_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
-		"CC_15_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_IT', -100.)".format(stream, line),
-		"CC_15_MAXPT_Q_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_MAXPT_Q', -100.)".format(stream, line),
-		"CC_15_MAXPT_PT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_MAXPT_PT', -100.)".format(stream, line),
-		"CC_15_MAXPT_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_MAXPT_PX', -100.)".format(stream, line),
-		"CC_15_MAXPT_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_MAXPT_PY', -100.)".format(stream, line),
-		"CC_15_MAXPT_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_MAXPT_PZ', -100.)".format(stream, line),
-		"CC_15_MAXPT_PE_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_MAXPT_PE', -100.)".format(stream, line),
-		"NC_15_ANGLE_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_ANGLE', -100.)".format(stream, line),
-		"NC_15_MULT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_MULT', -100.)".format(stream, line),
-		"NC_15_SPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_SPT', -100.)".format(stream, line),
-		"NC_15_VPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_VPT', -100.)".format(stream, line),
-		"NC_15_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_PX', -100.)".format(stream, line),
-		"NC_15_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_PY', -100.)".format(stream, line),
-		"NC_15_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_PZ', -100.)".format(stream, line),
-		"NC_15_PASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_PASYM', -100.)".format(stream, line),
-		"NC_15_PTASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_PTASYM', -100.)".format(stream, line),
-		"NC_15_PXASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_PXASYM', -100.)".format(stream, line),
-		"NC_15_PYASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_PYASYM', -100.)".format(stream, line),
-		"NC_15_PZASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_PZASYM', -100.)".format(stream, line),
-		"NC_15_DELTAETA_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_DELTAETA', -100.)".format(stream, line),
-		"NC_15_DELTAPHI_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_DELTAPHI', -100.)".format(stream, line),
-		"NC_15_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_IT', -100.)".format(stream, line),
-		"NC_15_MAXPT_PT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_MAXPT_PT', -100.)".format(stream, line),
-		"NC_15_MAXPT_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_MAXPT_PX', -100.)".format(stream, line),
-		"NC_15_MAXPT_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_MAXPT_PY', -100.)".format(stream, line),
-		"NC_15_MAXPT_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_MAXPT_PZ', -100.)".format(stream, line),
-		"CCNC_15_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CCNC_IT', -100.)".format(stream, line),
+		# # tau+ (cone size = 1.5)
+		# "CC_15_ANGLE_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_ANGLE', -100.)".format(stream, line),
+		# "CC_15_MULT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_MULT', -100.)".format(stream, line),
+		# "CC_15_SPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_SPT', -100.)".format(stream, line),
+		# "CC_15_VPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_VPT', -100.)".format(stream, line),
+		# "CC_15_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
+		# "CC_15_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PY', -100.)".format(stream, line),
+		# "CC_15_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PZ', -100.)".format(stream, line),
+		# "CC_15_PASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PASYM', -100.)".format(stream, line),
+		# "CC_15_PTASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PTASYM', -100.)".format(stream, line),
+		# "CC_15_PXASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PXASYM', -100.)".format(stream, line),
+		# "CC_15_PYASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PYASYM', -100.)".format(stream, line),
+		# "CC_15_PZASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PZASYM', -100.)".format(stream, line),
+		# "CC_15_DELTAETA_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_DELTAETA', -100.)".format(stream, line),
+		# "CC_15_DELTAPHI_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_DELTAPHI', -100.)".format(stream, line),
+		# "CC_15_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
+		# "CC_15_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_IT', -100.)".format(stream, line),
+		# "CC_15_MAXPT_Q_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_MAXPT_Q', -100.)".format(stream, line),
+		# "CC_15_MAXPT_PT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_MAXPT_PT', -100.)".format(stream, line),
+		# "CC_15_MAXPT_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_MAXPT_PX', -100.)".format(stream, line),
+		# "CC_15_MAXPT_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_MAXPT_PY', -100.)".format(stream, line),
+		# "CC_15_MAXPT_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CC_15_MAXPT_PE_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_MAXPT_PE', -100.)".format(stream, line),
+		# "NC_15_ANGLE_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_ANGLE', -100.)".format(stream, line),
+		# "NC_15_MULT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_MULT', -100.)".format(stream, line),
+		# "NC_15_SPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_SPT', -100.)".format(stream, line),
+		# "NC_15_VPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_VPT', -100.)".format(stream, line),
+		# "NC_15_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_PX', -100.)".format(stream, line),
+		# "NC_15_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_PY', -100.)".format(stream, line),
+		# "NC_15_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_PZ', -100.)".format(stream, line),
+		# "NC_15_PASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_PASYM', -100.)".format(stream, line),
+		# "NC_15_PTASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_PTASYM', -100.)".format(stream, line),
+		# "NC_15_PXASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_PXASYM', -100.)".format(stream, line),
+		# "NC_15_PYASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_PYASYM', -100.)".format(stream, line),
+		# "NC_15_PZASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_PZASYM', -100.)".format(stream, line),
+		# "NC_15_DELTAETA_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_DELTAETA', -100.)".format(stream, line),
+		# "NC_15_DELTAPHI_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_DELTAPHI', -100.)".format(stream, line),
+		# "NC_15_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_IT', -100.)".format(stream, line),
+		# "NC_15_MAXPT_PT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_MAXPT_PT', -100.)".format(stream, line),
+		# "NC_15_MAXPT_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_MAXPT_PX', -100.)".format(stream, line),
+		# "NC_15_MAXPT_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_MAXPT_PY', -100.)".format(stream, line),
+		# "NC_15_MAXPT_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'NC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CCNC_15_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CCNC_IT', -100.)".format(stream, line),
 
-		# tau- (cone size = 1.5)
-		"CC_15_ANGLE_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_ANGLE', -100.)".format(stream, line),
-		"CC_15_MULT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_MULT', -100.)".format(stream, line),
-		"CC_15_SPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_SPT', -100.)".format(stream, line),
-		"CC_15_VPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_VPT', -100.)".format(stream, line),
-		"CC_15_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
-		"CC_15_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PY', -100.)".format(stream, line),
-		"CC_15_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PZ', -100.)".format(stream, line),
-		"CC_15_PASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PASYM', -100.)".format(stream, line),
-		"CC_15_PTASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PTASYM', -100.)".format(stream, line),
-		"CC_15_PXASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PXASYM', -100.)".format(stream, line),
-		"CC_15_PYASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PYASYM', -100.)".format(stream, line),
-		"CC_15_PZASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PZASYM', -100.)".format(stream, line),
-		"CC_15_DELTAETA_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_DELTAETA', -100.)".format(stream, line),
-		"CC_15_DELTAPHI_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_DELTAPHI', -100.)".format(stream, line),
-		"CC_15_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
-		"CC_15_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_IT', -100.)".format(stream, line),
-		"CC_15_MAXPT_Q_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_MAXPT_Q', -100.)".format(stream, line),
-		"CC_15_MAXPT_PT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_MAXPT_PT', -100.)".format(stream, line),
-		"CC_15_MAXPT_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_MAXPT_PX', -100.)".format(stream, line),
-		"CC_15_MAXPT_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_MAXPT_PY', -100.)".format(stream, line),
-		"CC_15_MAXPT_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_MAXPT_PZ', -100.)".format(stream, line),
-		"CC_15_MAXPT_PE_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_MAXPT_PE', -100.)".format(stream, line),
-		"NC_15_ANGLE_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_ANGLE', -100.)".format(stream, line),
-		"NC_15_MULT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_MULT', -100.)".format(stream, line),
-		"NC_15_SPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_SPT', -100.)".format(stream, line),
-		"NC_15_VPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_VPT', -100.)".format(stream, line),
-		"NC_15_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_PX', -100.)".format(stream, line),
-		"NC_15_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_PY', -100.)".format(stream, line),
-		"NC_15_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_PZ', -100.)".format(stream, line),
-		"NC_15_PASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_PASYM', -100.)".format(stream, line),
-		"NC_15_PTASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_PTASYM', -100.)".format(stream, line),
-		"NC_15_PXASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_PXASYM', -100.)".format(stream, line),
-		"NC_15_PYASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_PYASYM', -100.)".format(stream, line),
-		"NC_15_PZASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_PZASYM', -100.)".format(stream, line),
-		"NC_15_DELTAETA_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_DELTAETA', -100.)".format(stream, line),
-		"NC_15_DELTAPHI_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_DELTAPHI', -100.)".format(stream, line),
-		"NC_15_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_IT', -100.)".format(stream, line),
-		"NC_15_MAXPT_PT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_MAXPT_PT', -100.)".format(stream, line),
-		"NC_15_MAXPT_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_MAXPT_PX', -100.)".format(stream, line),
-		"NC_15_MAXPT_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_MAXPT_PY', -100.)".format(stream, line),
-		"NC_15_MAXPT_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_MAXPT_PZ', -100.)".format(stream, line),
-		"CCNC_15_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CCNC_IT', -100.)".format(stream, line),
+		# # tau- (cone size = 1.5)
+		# "CC_15_ANGLE_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_ANGLE', -100.)".format(stream, line),
+		# "CC_15_MULT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_MULT', -100.)".format(stream, line),
+		# "CC_15_SPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_SPT', -100.)".format(stream, line),
+		# "CC_15_VPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_VPT', -100.)".format(stream, line),
+		# "CC_15_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
+		# "CC_15_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PY', -100.)".format(stream, line),
+		# "CC_15_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PZ', -100.)".format(stream, line),
+		# "CC_15_PASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PASYM', -100.)".format(stream, line),
+		# "CC_15_PTASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PTASYM', -100.)".format(stream, line),
+		# "CC_15_PXASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PXASYM', -100.)".format(stream, line),
+		# "CC_15_PYASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PYASYM', -100.)".format(stream, line),
+		# "CC_15_PZASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PZASYM', -100.)".format(stream, line),
+		# "CC_15_DELTAETA_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_DELTAETA', -100.)".format(stream, line),
+		# "CC_15_DELTAPHI_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_DELTAPHI', -100.)".format(stream, line),
+		# "CC_15_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
+		# "CC_15_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_IT', -100.)".format(stream, line),
+		# "CC_15_MAXPT_Q_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_MAXPT_Q', -100.)".format(stream, line),
+		# "CC_15_MAXPT_PT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_MAXPT_PT', -100.)".format(stream, line),
+		# "CC_15_MAXPT_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_MAXPT_PX', -100.)".format(stream, line),
+		# "CC_15_MAXPT_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_MAXPT_PY', -100.)".format(stream, line),
+		# "CC_15_MAXPT_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CC_15_MAXPT_PE_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_MAXPT_PE', -100.)".format(stream, line),
+		# "NC_15_ANGLE_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_ANGLE', -100.)".format(stream, line),
+		# "NC_15_MULT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_MULT', -100.)".format(stream, line),
+		# "NC_15_SPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_SPT', -100.)".format(stream, line),
+		# "NC_15_VPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_VPT', -100.)".format(stream, line),
+		# "NC_15_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_PX', -100.)".format(stream, line),
+		# "NC_15_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_PY', -100.)".format(stream, line),
+		# "NC_15_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_PZ', -100.)".format(stream, line),
+		# "NC_15_PASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_PASYM', -100.)".format(stream, line),
+		# "NC_15_PTASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_PTASYM', -100.)".format(stream, line),
+		# "NC_15_PXASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_PXASYM', -100.)".format(stream, line),
+		# "NC_15_PYASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_PYASYM', -100.)".format(stream, line),
+		# "NC_15_PZASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_PZASYM', -100.)".format(stream, line),
+		# "NC_15_DELTAETA_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_DELTAETA', -100.)".format(stream, line),
+		# "NC_15_DELTAPHI_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_DELTAPHI', -100.)".format(stream, line),
+		# "NC_15_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_IT', -100.)".format(stream, line),
+		# "NC_15_MAXPT_PT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_MAXPT_PT', -100.)".format(stream, line),
+		# "NC_15_MAXPT_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_MAXPT_PX', -100.)".format(stream, line),
+		# "NC_15_MAXPT_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_MAXPT_PY', -100.)".format(stream, line),
+		# "NC_15_MAXPT_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'NC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CCNC_15_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CCNC_IT', -100.)".format(stream, line),
 
-		# B+ (cone size = 2.0)
-		"CC_20_ANGLE_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_ANGLE', -100.)".format(stream, line),
-		"CC_20_MULT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_MULT', -100.)".format(stream, line),
-		"CC_20_SPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_SPT', -100.)".format(stream, line),
-		"CC_20_VPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_VPT', -100.)".format(stream, line),
-		"CC_20_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
-		"CC_20_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PY', -100.)".format(stream, line),
-		"CC_20_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PZ', -100.)".format(stream, line),
-		"CC_20_PASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PASYM', -100.)".format(stream, line),
-		"CC_20_PTASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PTASYM', -100.)".format(stream, line),
-		"CC_20_PXASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PXASYM', -100.)".format(stream, line),
-		"CC_20_PYASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PYASYM', -100.)".format(stream, line),
-		"CC_20_PZASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PZASYM', -100.)".format(stream, line),
-		"CC_20_DELTAETA_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_DELTAETA', -100.)".format(stream, line),
-		"CC_20_DELTAPHI_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_DELTAPHI', -100.)".format(stream, line),
-		"CC_20_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
-		"CC_20_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_IT', -100.)".format(stream, line),
-		"CC_20_MAXPT_Q_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_MAXPT_Q', -100.)".format(stream, line),
-		"CC_20_MAXPT_PT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_MAXPT_PT', -100.)".format(stream, line),
-		"CC_20_MAXPT_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_MAXPT_PX', -100.)".format(stream, line),
-		"CC_20_MAXPT_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_MAXPT_PY', -100.)".format(stream, line),
-		"CC_20_MAXPT_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_MAXPT_PZ', -100.)".format(stream, line),
-		"CC_20_MAXPT_PE_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_MAXPT_PE', -100.)".format(stream, line),
-		"NC_20_ANGLE_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_ANGLE', -100.)".format(stream, line),
-		"NC_20_MULT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_MULT', -100.)".format(stream, line),
-		"NC_20_SPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_SPT', -100.)".format(stream, line),
-		"NC_20_VPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_VPT', -100.)".format(stream, line),
-		"NC_20_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_PX', -100.)".format(stream, line),
-		"NC_20_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_PY', -100.)".format(stream, line),
-		"NC_20_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_PZ', -100.)".format(stream, line),
-		"NC_20_PASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_PASYM', -100.)".format(stream, line),
-		"NC_20_PTASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_PTASYM', -100.)".format(stream, line),
-		"NC_20_PXASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_PXASYM', -100.)".format(stream, line),
-		"NC_20_PYASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_PYASYM', -100.)".format(stream, line),
-		"NC_20_PZASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_PZASYM', -100.)".format(stream, line),
-		"NC_20_DELTAETA_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_DELTAETA', -100.)".format(stream, line),
-		"NC_20_DELTAPHI_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_DELTAPHI', -100.)".format(stream, line),
-		"NC_20_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_IT', -100.)".format(stream, line),
-		"NC_20_MAXPT_PT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_MAXPT_PT', -100.)".format(stream, line),
-		"NC_20_MAXPT_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_MAXPT_PX', -100.)".format(stream, line),
-		"NC_20_MAXPT_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_MAXPT_PY', -100.)".format(stream, line),
-		"NC_20_MAXPT_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_MAXPT_PZ', -100.)".format(stream, line),
-		"CCNC_20_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CCNC_IT', -100.)".format(stream, line),
+		# # B+ (cone size = 2.0)
+		# "CC_20_ANGLE_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_ANGLE', -100.)".format(stream, line),
+		# "CC_20_MULT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_MULT', -100.)".format(stream, line),
+		# "CC_20_SPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_SPT', -100.)".format(stream, line),
+		# "CC_20_VPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_VPT', -100.)".format(stream, line),
+		# "CC_20_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
+		# "CC_20_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PY', -100.)".format(stream, line),
+		# "CC_20_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PZ', -100.)".format(stream, line),
+		# "CC_20_PASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PASYM', -100.)".format(stream, line),
+		# "CC_20_PTASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PTASYM', -100.)".format(stream, line),
+		# "CC_20_PXASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PXASYM', -100.)".format(stream, line),
+		# "CC_20_PYASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PYASYM', -100.)".format(stream, line),
+		# "CC_20_PZASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PZASYM', -100.)".format(stream, line),
+		# "CC_20_DELTAETA_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_DELTAETA', -100.)".format(stream, line),
+		# "CC_20_DELTAPHI_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_DELTAPHI', -100.)".format(stream, line),
+		# "CC_20_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
+		# "CC_20_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_IT', -100.)".format(stream, line),
+		# "CC_20_MAXPT_Q_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_MAXPT_Q', -100.)".format(stream, line),
+		# "CC_20_MAXPT_PT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_MAXPT_PT', -100.)".format(stream, line),
+		# "CC_20_MAXPT_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_MAXPT_PX', -100.)".format(stream, line),
+		# "CC_20_MAXPT_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_MAXPT_PY', -100.)".format(stream, line),
+		# "CC_20_MAXPT_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CC_20_MAXPT_PE_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_MAXPT_PE', -100.)".format(stream, line),
+		# "NC_20_ANGLE_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_ANGLE', -100.)".format(stream, line),
+		# "NC_20_MULT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_MULT', -100.)".format(stream, line),
+		# "NC_20_SPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_SPT', -100.)".format(stream, line),
+		# "NC_20_VPT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_VPT', -100.)".format(stream, line),
+		# "NC_20_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_PX', -100.)".format(stream, line),
+		# "NC_20_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_PY', -100.)".format(stream, line),
+		# "NC_20_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_PZ', -100.)".format(stream, line),
+		# "NC_20_PASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_PASYM', -100.)".format(stream, line),
+		# "NC_20_PTASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_PTASYM', -100.)".format(stream, line),
+		# "NC_20_PXASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_PXASYM', -100.)".format(stream, line),
+		# "NC_20_PYASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_PYASYM', -100.)".format(stream, line),
+		# "NC_20_PZASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_PZASYM', -100.)".format(stream, line),
+		# "NC_20_DELTAETA_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_DELTAETA', -100.)".format(stream, line),
+		# "NC_20_DELTAPHI_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_DELTAPHI', -100.)".format(stream, line),
+		# "NC_20_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_IT', -100.)".format(stream, line),
+		# "NC_20_MAXPT_PT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_MAXPT_PT', -100.)".format(stream, line),
+		# "NC_20_MAXPT_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_MAXPT_PX', -100.)".format(stream, line),
+		# "NC_20_MAXPT_PY_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_MAXPT_PY', -100.)".format(stream, line),
+		# "NC_20_MAXPT_PZ_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'NC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CCNC_20_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CCNC_IT', -100.)".format(stream, line),
 
-		# K+ (cone size = 2.0)
-		"CC_20_ANGLE_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_ANGLE', -100.)".format(stream, line),
-		"CC_20_MULT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_MULT', -100.)".format(stream, line),
-		"CC_20_SPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_SPT', -100.)".format(stream, line),
-		"CC_20_VPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_VPT', -100.)".format(stream, line),
-		"CC_20_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
-		"CC_20_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PY', -100.)".format(stream, line),
-		"CC_20_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PZ', -100.)".format(stream, line),
-		"CC_20_PASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PASYM', -100.)".format(stream, line),
-		"CC_20_PTASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PTASYM', -100.)".format(stream, line),
-		"CC_20_PXASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PXASYM', -100.)".format(stream, line),
-		"CC_20_PYASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PYASYM', -100.)".format(stream, line),
-		"CC_20_PZASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PZASYM', -100.)".format(stream, line),
-		"CC_20_DELTAETA_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_DELTAETA', -100.)".format(stream, line),
-		"CC_20_DELTAPHI_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_DELTAPHI', -100.)".format(stream, line),
-		"CC_20_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
-		"CC_20_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_IT', -100.)".format(stream, line),
-		"CC_20_MAXPT_Q_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_MAXPT_Q', -100.)".format(stream, line),
-		"CC_20_MAXPT_PT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_MAXPT_PT', -100.)".format(stream, line),
-		"CC_20_MAXPT_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_MAXPT_PX', -100.)".format(stream, line),
-		"CC_20_MAXPT_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_MAXPT_PY', -100.)".format(stream, line),
-		"CC_20_MAXPT_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_MAXPT_PZ', -100.)".format(stream, line),
-		"CC_20_MAXPT_PE_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_MAXPT_PE', -100.)".format(stream, line),
-		"NC_20_ANGLE_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_ANGLE', -100.)".format(stream, line),
-		"NC_20_MULT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_MULT', -100.)".format(stream, line),
-		"NC_20_SPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_SPT', -100.)".format(stream, line),
-		"NC_20_VPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_VPT', -100.)".format(stream, line),
-		"NC_20_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_PX', -100.)".format(stream, line),
-		"NC_20_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_PY', -100.)".format(stream, line),
-		"NC_20_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_PZ', -100.)".format(stream, line),
-		"NC_20_PASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_PASYM', -100.)".format(stream, line),
-		"NC_20_PTASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_PTASYM', -100.)".format(stream, line),
-		"NC_20_PXASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_PXASYM', -100.)".format(stream, line),
-		"NC_20_PYASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_PYASYM', -100.)".format(stream, line),
-		"NC_20_PZASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_PZASYM', -100.)".format(stream, line),
-		"NC_20_DELTAETA_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_DELTAETA', -100.)".format(stream, line),
-		"NC_20_DELTAPHI_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_DELTAPHI', -100.)".format(stream, line),
-		"NC_20_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_IT', -100.)".format(stream, line),
-		"NC_20_MAXPT_PT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_MAXPT_PT', -100.)".format(stream, line),
-		"NC_20_MAXPT_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_MAXPT_PX', -100.)".format(stream, line),
-		"NC_20_MAXPT_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_MAXPT_PY', -100.)".format(stream, line),
-		"NC_20_MAXPT_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_MAXPT_PZ', -100.)".format(stream, line),
-		"CCNC_20_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CCNC_IT', -100.)".format(stream, line),
+		# # K+ (cone size = 2.0)
+		# "CC_20_ANGLE_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_ANGLE', -100.)".format(stream, line),
+		# "CC_20_MULT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_MULT', -100.)".format(stream, line),
+		# "CC_20_SPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_SPT', -100.)".format(stream, line),
+		# "CC_20_VPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_VPT', -100.)".format(stream, line),
+		# "CC_20_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
+		# "CC_20_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PY', -100.)".format(stream, line),
+		# "CC_20_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PZ', -100.)".format(stream, line),
+		# "CC_20_PASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PASYM', -100.)".format(stream, line),
+		# "CC_20_PTASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PTASYM', -100.)".format(stream, line),
+		# "CC_20_PXASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PXASYM', -100.)".format(stream, line),
+		# "CC_20_PYASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PYASYM', -100.)".format(stream, line),
+		# "CC_20_PZASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PZASYM', -100.)".format(stream, line),
+		# "CC_20_DELTAETA_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_DELTAETA', -100.)".format(stream, line),
+		# "CC_20_DELTAPHI_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_DELTAPHI', -100.)".format(stream, line),
+		# "CC_20_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
+		# "CC_20_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_IT', -100.)".format(stream, line),
+		# "CC_20_MAXPT_Q_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_MAXPT_Q', -100.)".format(stream, line),
+		# "CC_20_MAXPT_PT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_MAXPT_PT', -100.)".format(stream, line),
+		# "CC_20_MAXPT_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_MAXPT_PX', -100.)".format(stream, line),
+		# "CC_20_MAXPT_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_MAXPT_PY', -100.)".format(stream, line),
+		# "CC_20_MAXPT_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CC_20_MAXPT_PE_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_MAXPT_PE', -100.)".format(stream, line),
+		# "NC_20_ANGLE_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_ANGLE', -100.)".format(stream, line),
+		# "NC_20_MULT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_MULT', -100.)".format(stream, line),
+		# "NC_20_SPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_SPT', -100.)".format(stream, line),
+		# "NC_20_VPT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_VPT', -100.)".format(stream, line),
+		# "NC_20_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_PX', -100.)".format(stream, line),
+		# "NC_20_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_PY', -100.)".format(stream, line),
+		# "NC_20_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_PZ', -100.)".format(stream, line),
+		# "NC_20_PASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_PASYM', -100.)".format(stream, line),
+		# "NC_20_PTASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_PTASYM', -100.)".format(stream, line),
+		# "NC_20_PXASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_PXASYM', -100.)".format(stream, line),
+		# "NC_20_PYASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_PYASYM', -100.)".format(stream, line),
+		# "NC_20_PZASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_PZASYM', -100.)".format(stream, line),
+		# "NC_20_DELTAETA_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_DELTAETA', -100.)".format(stream, line),
+		# "NC_20_DELTAPHI_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_DELTAPHI', -100.)".format(stream, line),
+		# "NC_20_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_IT', -100.)".format(stream, line),
+		# "NC_20_MAXPT_PT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_MAXPT_PT', -100.)".format(stream, line),
+		# "NC_20_MAXPT_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_MAXPT_PX', -100.)".format(stream, line),
+		# "NC_20_MAXPT_PY_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_MAXPT_PY', -100.)".format(stream, line),
+		# "NC_20_MAXPT_PZ_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'NC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CCNC_20_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CCNC_IT', -100.)".format(stream, line),
 
-		# tau+ (cone size = 2.0)
-		"CC_20_ANGLE_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_ANGLE', -100.)".format(stream, line),
-		"CC_20_MULT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_MULT', -100.)".format(stream, line),
-		"CC_20_SPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_SPT', -100.)".format(stream, line),
-		"CC_20_VPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_VPT', -100.)".format(stream, line),
-		"CC_20_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
-		"CC_20_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PY', -100.)".format(stream, line),
-		"CC_20_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PZ', -100.)".format(stream, line),
-		"CC_20_PASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PASYM', -100.)".format(stream, line),
-		"CC_20_PTASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PTASYM', -100.)".format(stream, line),
-		"CC_20_PXASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PXASYM', -100.)".format(stream, line),
-		"CC_20_PYASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PYASYM', -100.)".format(stream, line),
-		"CC_20_PZASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PZASYM', -100.)".format(stream, line),
-		"CC_20_DELTAETA_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_DELTAETA', -100.)".format(stream, line),
-		"CC_20_DELTAPHI_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_DELTAPHI', -100.)".format(stream, line),
-		"CC_20_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
-		"CC_20_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_IT', -100.)".format(stream, line),
-		"CC_20_MAXPT_Q_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_MAXPT_Q', -100.)".format(stream, line),
-		"CC_20_MAXPT_PT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_MAXPT_PT', -100.)".format(stream, line),
-		"CC_20_MAXPT_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_MAXPT_PX', -100.)".format(stream, line),
-		"CC_20_MAXPT_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_MAXPT_PY', -100.)".format(stream, line),
-		"CC_20_MAXPT_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_MAXPT_PZ', -100.)".format(stream, line),
-		"CC_20_MAXPT_PE_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_MAXPT_PE', -100.)".format(stream, line),
-		"NC_20_ANGLE_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_ANGLE', -100.)".format(stream, line),
-		"NC_20_MULT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_MULT', -100.)".format(stream, line),
-		"NC_20_SPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_SPT', -100.)".format(stream, line),
-		"NC_20_VPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_VPT', -100.)".format(stream, line),
-		"NC_20_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_PX', -100.)".format(stream, line),
-		"NC_20_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_PY', -100.)".format(stream, line),
-		"NC_20_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_PZ', -100.)".format(stream, line),
-		"NC_20_PASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_PASYM', -100.)".format(stream, line),
-		"NC_20_PTASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_PTASYM', -100.)".format(stream, line),
-		"NC_20_PXASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_PXASYM', -100.)".format(stream, line),
-		"NC_20_PYASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_PYASYM', -100.)".format(stream, line),
-		"NC_20_PZASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_PZASYM', -100.)".format(stream, line),
-		"NC_20_DELTAETA_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_DELTAETA', -100.)".format(stream, line),
-		"NC_20_DELTAPHI_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_DELTAPHI', -100.)".format(stream, line),
-		"NC_20_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_IT', -100.)".format(stream, line),
-		"NC_20_MAXPT_PT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_MAXPT_PT', -100.)".format(stream, line),
-		"NC_20_MAXPT_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_MAXPT_PX', -100.)".format(stream, line),
-		"NC_20_MAXPT_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_MAXPT_PY', -100.)".format(stream, line),
-		"NC_20_MAXPT_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_MAXPT_PZ', -100.)".format(stream, line),
-		"CCNC_20_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CCNC_IT', -100.)".format(stream, line),
+		# # tau+ (cone size = 2.0)
+		# "CC_20_ANGLE_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_ANGLE', -100.)".format(stream, line),
+		# "CC_20_MULT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_MULT', -100.)".format(stream, line),
+		# "CC_20_SPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_SPT', -100.)".format(stream, line),
+		# "CC_20_VPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_VPT', -100.)".format(stream, line),
+		# "CC_20_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
+		# "CC_20_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PY', -100.)".format(stream, line),
+		# "CC_20_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PZ', -100.)".format(stream, line),
+		# "CC_20_PASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PASYM', -100.)".format(stream, line),
+		# "CC_20_PTASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PTASYM', -100.)".format(stream, line),
+		# "CC_20_PXASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PXASYM', -100.)".format(stream, line),
+		# "CC_20_PYASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PYASYM', -100.)".format(stream, line),
+		# "CC_20_PZASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PZASYM', -100.)".format(stream, line),
+		# "CC_20_DELTAETA_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_DELTAETA', -100.)".format(stream, line),
+		# "CC_20_DELTAPHI_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_DELTAPHI', -100.)".format(stream, line),
+		# "CC_20_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
+		# "CC_20_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_IT', -100.)".format(stream, line),
+		# "CC_20_MAXPT_Q_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_MAXPT_Q', -100.)".format(stream, line),
+		# "CC_20_MAXPT_PT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_MAXPT_PT', -100.)".format(stream, line),
+		# "CC_20_MAXPT_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_MAXPT_PX', -100.)".format(stream, line),
+		# "CC_20_MAXPT_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_MAXPT_PY', -100.)".format(stream, line),
+		# "CC_20_MAXPT_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CC_20_MAXPT_PE_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_MAXPT_PE', -100.)".format(stream, line),
+		# "NC_20_ANGLE_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_ANGLE', -100.)".format(stream, line),
+		# "NC_20_MULT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_MULT', -100.)".format(stream, line),
+		# "NC_20_SPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_SPT', -100.)".format(stream, line),
+		# "NC_20_VPT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_VPT', -100.)".format(stream, line),
+		# "NC_20_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_PX', -100.)".format(stream, line),
+		# "NC_20_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_PY', -100.)".format(stream, line),
+		# "NC_20_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_PZ', -100.)".format(stream, line),
+		# "NC_20_PASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_PASYM', -100.)".format(stream, line),
+		# "NC_20_PTASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_PTASYM', -100.)".format(stream, line),
+		# "NC_20_PXASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_PXASYM', -100.)".format(stream, line),
+		# "NC_20_PYASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_PYASYM', -100.)".format(stream, line),
+		# "NC_20_PZASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_PZASYM', -100.)".format(stream, line),
+		# "NC_20_DELTAETA_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_DELTAETA', -100.)".format(stream, line),
+		# "NC_20_DELTAPHI_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_DELTAPHI', -100.)".format(stream, line),
+		# "NC_20_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_IT', -100.)".format(stream, line),
+		# "NC_20_MAXPT_PT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_MAXPT_PT', -100.)".format(stream, line),
+		# "NC_20_MAXPT_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_MAXPT_PX', -100.)".format(stream, line),
+		# "NC_20_MAXPT_PY_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_MAXPT_PY', -100.)".format(stream, line),
+		# "NC_20_MAXPT_PZ_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'NC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CCNC_20_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CCNC_IT', -100.)".format(stream, line),
 
-		# tau- (cone size = 2.0)
-		"CC_20_ANGLE_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_ANGLE', -100.)".format(stream, line),
-		"CC_20_MULT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_MULT', -100.)".format(stream, line),
-		"CC_20_SPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_SPT', -100.)".format(stream, line),
-		"CC_20_VPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_VPT', -100.)".format(stream, line),
-		"CC_20_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
-		"CC_20_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PY', -100.)".format(stream, line),
-		"CC_20_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PZ', -100.)".format(stream, line),
-		"CC_20_PASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PASYM', -100.)".format(stream, line),
-		"CC_20_PTASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PTASYM', -100.)".format(stream, line),
-		"CC_20_PXASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PXASYM', -100.)".format(stream, line),
-		"CC_20_PYASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PYASYM', -100.)".format(stream, line),
-		"CC_20_PZASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PZASYM', -100.)".format(stream, line),
-		"CC_20_DELTAETA_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_DELTAETA', -100.)".format(stream, line),
-		"CC_20_DELTAPHI_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_DELTAPHI', -100.)".format(stream, line),
-		"CC_20_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
-		"CC_20_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_IT', -100.)".format(stream, line),
-		"CC_20_MAXPT_Q_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_MAXPT_Q', -100.)".format(stream, line),
-		"CC_20_MAXPT_PT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_MAXPT_PT', -100.)".format(stream, line),
-		"CC_20_MAXPT_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_MAXPT_PX', -100.)".format(stream, line),
-		"CC_20_MAXPT_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_MAXPT_PY', -100.)".format(stream, line),
-		"CC_20_MAXPT_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_MAXPT_PZ', -100.)".format(stream, line),
-		"CC_20_MAXPT_PE_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_MAXPT_PE', -100.)".format(stream, line),
-		"NC_20_ANGLE_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_ANGLE', -100.)".format(stream, line),
-		"NC_20_MULT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_MULT', -100.)".format(stream, line),
-		"NC_20_SPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_SPT', -100.)".format(stream, line),
-		"NC_20_VPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_VPT', -100.)".format(stream, line),
-		"NC_20_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_PX', -100.)".format(stream, line),
-		"NC_20_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_PY', -100.)".format(stream, line),
-		"NC_20_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_PZ', -100.)".format(stream, line),
-		"NC_20_PASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_PASYM', -100.)".format(stream, line),
-		"NC_20_PTASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_PTASYM', -100.)".format(stream, line),
-		"NC_20_PXASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_PXASYM', -100.)".format(stream, line),
-		"NC_20_PYASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_PYASYM', -100.)".format(stream, line),
-		"NC_20_PZASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_PZASYM', -100.)".format(stream, line),
-		"NC_20_DELTAETA_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_DELTAETA', -100.)".format(stream, line),
-		"NC_20_DELTAPHI_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_DELTAPHI', -100.)".format(stream, line),
-		"NC_20_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_IT', -100.)".format(stream, line),
-		"NC_20_MAXPT_PT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_MAXPT_PT', -100.)".format(stream, line),
-		"NC_20_MAXPT_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_MAXPT_PX', -100.)".format(stream, line),
-		"NC_20_MAXPT_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_MAXPT_PY', -100.)".format(stream, line),
-		"NC_20_MAXPT_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_MAXPT_PZ', -100.)".format(stream, line),
-		"CCNC_20_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CCNC_IT', -100.)".format(stream, line),
+		# # tau- (cone size = 2.0)
+		# "CC_20_ANGLE_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_ANGLE', -100.)".format(stream, line),
+		# "CC_20_MULT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_MULT', -100.)".format(stream, line),
+		# "CC_20_SPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_SPT', -100.)".format(stream, line),
+		# "CC_20_VPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_VPT', -100.)".format(stream, line),
+		# "CC_20_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
+		# "CC_20_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PY', -100.)".format(stream, line),
+		# "CC_20_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PZ', -100.)".format(stream, line),
+		# "CC_20_PASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PASYM', -100.)".format(stream, line),
+		# "CC_20_PTASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PTASYM', -100.)".format(stream, line),
+		# "CC_20_PXASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PXASYM', -100.)".format(stream, line),
+		# "CC_20_PYASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PYASYM', -100.)".format(stream, line),
+		# "CC_20_PZASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PZASYM', -100.)".format(stream, line),
+		# "CC_20_DELTAETA_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_DELTAETA', -100.)".format(stream, line),
+		# "CC_20_DELTAPHI_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_DELTAPHI', -100.)".format(stream, line),
+		# "CC_20_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
+		# "CC_20_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_IT', -100.)".format(stream, line),
+		# "CC_20_MAXPT_Q_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_MAXPT_Q', -100.)".format(stream, line),
+		# "CC_20_MAXPT_PT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_MAXPT_PT', -100.)".format(stream, line),
+		# "CC_20_MAXPT_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_MAXPT_PX', -100.)".format(stream, line),
+		# "CC_20_MAXPT_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_MAXPT_PY', -100.)".format(stream, line),
+		# "CC_20_MAXPT_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CC_20_MAXPT_PE_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_MAXPT_PE', -100.)".format(stream, line),
+		# "NC_20_ANGLE_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_ANGLE', -100.)".format(stream, line),
+		# "NC_20_MULT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_MULT', -100.)".format(stream, line),
+		# "NC_20_SPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_SPT', -100.)".format(stream, line),
+		# "NC_20_VPT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_VPT', -100.)".format(stream, line),
+		# "NC_20_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_PX', -100.)".format(stream, line),
+		# "NC_20_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_PY', -100.)".format(stream, line),
+		# "NC_20_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_PZ', -100.)".format(stream, line),
+		# "NC_20_PASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_PASYM', -100.)".format(stream, line),
+		# "NC_20_PTASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_PTASYM', -100.)".format(stream, line),
+		# "NC_20_PXASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_PXASYM', -100.)".format(stream, line),
+		# "NC_20_PYASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_PYASYM', -100.)".format(stream, line),
+		# "NC_20_PZASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_PZASYM', -100.)".format(stream, line),
+		# "NC_20_DELTAETA_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_DELTAETA', -100.)".format(stream, line),
+		# "NC_20_DELTAPHI_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_DELTAPHI', -100.)".format(stream, line),
+		# "NC_20_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_IT', -100.)".format(stream, line),
+		# "NC_20_MAXPT_PT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_MAXPT_PT', -100.)".format(stream, line),
+		# "NC_20_MAXPT_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_MAXPT_PX', -100.)".format(stream, line),
+		# "NC_20_MAXPT_PY_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_MAXPT_PY', -100.)".format(stream, line),
+		# "NC_20_MAXPT_PZ_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'NC_MAXPT_PZ', -100.)".format(stream, line),
+		# "CCNC_20_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CCNC_IT', -100.)".format(stream, line),
 
 		# Vertex isolation BDT
 		# B+
@@ -881,6 +884,13 @@ def addIsoInfo(branch, stream, line, year):
 		"TRKISOBDTSECONDVALUE_taum_pi3" : "RELINFO('/Event/{0}/Phys/{1}/Taum_pi3_TrackIsoBDTInfo', 'TRKISOBDTSECONDVALUE', -100.)".format(stream, line),
 		"TRKISOBDTTHIRDVALUE_taum_pi3" : "RELINFO('/Event/{0}/Phys/{1}/Taum_pi3_TrackIsoBDTInfo', 'TRKISOBDTTHIRDVALUE', -100.)".format(stream, line),
 
+		# B2Ksttautau tau isolation BDT
+		"B2Ksttautau_ISOBDTFIRSTVALUE_taup" : "RELINFO('/Event/{0}/Phys/{1}/B2KstTauTau_TauIsolationBDT', 'BKSTTAUTAUTAUISOBDTFIRSTVALUETAUP', -100.)".format(stream, line),
+		"B2Ksttautau_ISOBDTSECONDVALUE_taup" : "RELINFO('/Event/{0}/Phys/{1}/B2KstTauTau_TauIsolationBDT', 'BKSTTAUTAUTAUISOBDTSECONDVALUETAUP', -100.)".format(stream, line),
+		"B2Ksttautau_ISOBDTTHIRDVALUE_taup" : "RELINFO('/Event/{0}/Phys/{1}/B2KstTauTau_TauIsolationBDT', 'BKSTTAUTAUTAUISOBDTTHIRDVALUETAUP', -100.)".format(stream, line),
+		"B2Ksttautau_ISOBDTFIRSTVALUE_taum" : "RELINFO('/Event/{0}/Phys/{1}/B2KstTauTau_TauIsolationBDT', 'BKSTTAUTAUTAUISOBDTFIRSTVALUETAUM', -100.)".format(stream, line),
+		"B2Ksttautau_ISOBDTSECONDVALUE_taum" : "RELINFO('/Event/{0}/Phys/{1}/B2KstTauTau_TauIsolationBDT', 'BKSTTAUTAUTAUISOBDTSECONDVALUETAUM', -100.)".format(stream, line),
+		"B2Ksttautau_ISOBDTTHIRDVALUE_taum" : "RELINFO('/Event/{0}/Phys/{1}/B2KstTauTau_TauIsolationBDT', 'BKSTTAUTAUTAUISOBDTTHIRDVALUETAUM', -100.)".format(stream, line)
 	}
 
 def addTopInfo( branch ):
@@ -897,7 +907,7 @@ def addTopInfo( branch ):
         "BPVDIRA":"BPVDIRA",
         "BPVLTIME":"BPVLTIME()",
         "BPVZ":"BPV(VZ)",
-    	"VCHI2PDOF":"VFASPF(VCHI2PDOF)",
+    	"VCHI2PDOF":"VFASPF(VCHI2PDOF)"
         # "AM" : "PFUNA(AM)",
     }
 
@@ -927,13 +937,13 @@ def addDTF(branch):
 	# dtf_mlp.init = 0
 
 	# modified DTF (Low chi2 init)
-	dtf_low = branch.addTupleTool("TupleToolKTauTauDTF/dtf")
-	dtf_low.daughtersToConstrain = ['nu_tau', 'tau+']
-	dtf_low.UseFullTreeInName = True
-	dtf_low.UpdateDaughters = True
-	dtf_low.Verbose = True
-	dtf_low.constrainToOriginVertex = True
-	dtf_low.init = 1
+	# dtf_low = branch.addTupleTool("TupleToolKTauTauDTF/dtf")
+	# dtf_low.daughtersToConstrain = ['nu_tau', 'tau+']
+	# dtf_low.UseFullTreeInName = True
+	# dtf_low.UpdateDaughters = True
+	# dtf_low.Verbose = True
+	# dtf_low.constrainToOriginVertex = True
+	# dtf_low.init = 1
 
 def addTISTOS( branch ):
     ttb = branch.addTupleTool("TupleToolTISTOS")
@@ -974,7 +984,7 @@ def addTools( DecayTreeTuple, stream, line, year ):
     #add isolation info
     addIsoInfo(DecayTreeTuple, stream, line, year)
     #add submasses
-    addSubmassInfo(DecayTreeTuple.Bp)
+    #addSubmassInfo(DecayTreeTuple.Bp)
     #add helpful info for final state tracks
     addTrkInfo(DecayTreeTuple.taup_pi1)
     addTrkInfo(DecayTreeTuple.taup_pi2)
@@ -999,11 +1009,11 @@ def addTools( DecayTreeTuple, stream, line, year ):
 
 # Configure DaVinci
 if isMC:
-	DaVinci().TupleFile = 'DVntuple_MC_Ktautau_'+year+'_'+pol+'.root'
-	# DaVinci().TupleFile = '/panfs/felician/B2Ktautau/ROOT_Sim/DVntuple_MC_'+year+'_'+pol+'.root'
+	# DaVinci().TupleFile = 'DVntuple_MC_BuKtautau_'+year+'_'+pol+'.root'
+	DaVinci().TupleFile = '/panfs/felician/B2Ktautau/ROOT_Sim/DVntuple_MC_'+year+'_'+pol+'.root'
 else:
-	DaVinci().TupleFile = 'DVntuple_data_Ktautau_'+year+'_'+pol+'.root'
-	# DaVinci().TupleFile = '/panfs/felician/B2Ktautau/ROOT_Data/'+year+'/DVntuple_data_'+year+'_'+pol+'.root'
+	DaVinci().TupleFile = 'DVntuple_data_BuKtautau_'+year+'_'+pol+'.root'
+	# DaVinci().TupleFile = '/panfs/felician/B2Ktautau/ROOT_Data//DVntuple_data_'+year+'_'+pol+'.root'
 
 # Stream and stripping line we want to use
 if isMC:
@@ -1045,7 +1055,7 @@ DaVinci().PrintFreq = 1000
 DaVinci().DataType = year 
 
 DaVinci().Lumi = not DaVinci().Simulation # Only ask for luminosity information when not using simulated data
-DaVinci().EvtMax = 50000 # how many events to run over (-1 = runs over all events)
+DaVinci().EvtMax = 1000 # how many events to run over (-1 = runs over all events)
 
 # Add smearing to MC and momentum scaling to data
 if isMC:
@@ -1064,32 +1074,29 @@ else:
 # Create an ntuple to capture B+ decays from the StrippingLine line
 dtt = DecayTreeTuple('ntuple')
 dtt_SS = DecayTreeTuple('ntuple_SS')
+
 mcdtt_3pi_3pi = MCDecayTreeTuple('mc_ntuple_3pi_3pi')
 mcdtt_3pi_3pipi0 = MCDecayTreeTuple('mc_ntuple_3pi_3pipi0')
 mcdtt_3pipi0_3pi = MCDecayTreeTuple('mc_ntuple_3pipi0_3pi')
 mcdtt_3pipi0_3pipi0 = MCDecayTreeTuple('mc_ntuple_3pipi0_3pipi0')
 
-# Loose preselections to reduce the size of the tuples (in data)
-# These (rectangular) selections are applied to MC offline
-# filter code (will be updated)
-filtercode = " (NINGENERATION( (M < 3400) & (ABSID=='B+') , 0) == 0)  "\
-			 "& (NINGENERATION( (M > 5000) & (ABSID=='B+') , 0) == 0) "\
-			 "& (NINGENERATION( (M < 800) & (ABSID=='tau+') , 1) == 0) "\
-			 "& (NINGENERATION( (M > 1600) & (ABSID=='tau+') , 1) == 0) "
+
+# Preselections to reduce the size of the tuples (in data)
+filtercode = "(NINGENERATION( (M < 750) & (ABSID=='tau+') , 1) == 0) & (NINGENERATION( (M > 1650) & (ABSID=='tau+') , 1) == 0) & (NINGENERATION( (BPVVD < 4) & (ABSID=='B+') , 0) == 0) & ( ((RELINFO('/Event/{0}/Phys/{1}/BVars_VertexIsoInfo', 'VTXISODCHI2MASSONETRACK', -100) > 3600) & (RELINFO('/Event/{0}/Phys/{1}/BVars_VertexIsoBDTInfo', 'VTXISOBDTHARDFIRSTVALUE', -100.) < 0) ) | ((RELINFO('/Event/{0}/Phys/{2}/BVars_VertexIsoInfo', 'VTXISODCHI2MASSONETRACK', -100) > 3600) & (RELINFO('/Event/{0}/Phys/{2}/BVars_VertexIsoBDTInfo', 'VTXISOBDTHARDFIRSTVALUE', -100.) < 0) ) )".format(stream,line,line_SS)
 
 if applySel:
-	if isMC:
-		b_strip = AutomaticData('/Event/{0}/Phys/{1}/Particles'.format(stream, line))
-	if not isMC:
-		b_strip    = AutomaticData('/Phys/{0}/Particles'.format(line)) 
-		b_strip_SS = AutomaticData('/Phys/{0}/Particles'.format(line_SS)) 
+	# if isMC:
+	# 	b_strip = AutomaticData('/Event/{0}/Phys/{1}/Particles'.format(stream, line))
+	# if not isMC:
+	b_strip    = AutomaticData('/Phys/{0}/Particles'.format(line)) 
+	b_strip_SS = AutomaticData('/Phys/{0}/Particles'.format(line_SS)) 
 
 	b_Filter    = FilterSelection("b_Filter", b_strip, Code = filtercode)
 	dtt.Inputs = [b_Filter.outputLocation()]
 
-	if not isMC:
-		b_Filter_SS = FilterSelection("b_Filter_SS", b_strip_SS, Code = filtercode)
-		dtt_SS.Inputs = [b_Filter_SS.outputLocation()]
+	# if not isMC:
+	b_Filter_SS = FilterSelection("b_Filter_SS", b_strip_SS, Code = filtercode)
+	dtt_SS.Inputs = [b_Filter_SS.outputLocation()]
 
 # Do not apply rectangular cuts to MC @ DaVinci stage:
 if not applySel:
@@ -1103,11 +1110,13 @@ dtt.setDescriptorTemplate('${Bp}[B+ -> ${taup}(tau+ -> ${taup_pi1}pi+ ${taup_pi2
 dtt_SS.setDescriptorTemplate('(${Bp}[B+ -> ${taup}(tau+ -> ${taup_pi1}pi+ ${taup_pi2}pi- ${taup_pi3}pi+) ${taum}(tau+ -> ${taum_pi1}pi+ ${taum_pi2}pi- ${taum_pi3}pi+) ${Kp}K+]CC)'
 						  '|| (${Bp}[B+ -> ${taup}(tau+ -> ${taup_pi1}pi+ ${taup_pi2}pi- ${taup_pi3}pi+) ${taum}(tau+ -> ${taum_pi1}pi+ ${taum_pi2}pi- ${taum_pi3}pi+) ${Kp}K-]CC)')
 
-# Generated (Acceptance cut: DaughtersInLHCb)
+# Generated 
+
 mcdtt_3pi_3pi.Decay = '[B+ => ^(tau+ => ^pi+ ^pi- ^pi+ ^nu_tau~) ^(tau- => ^pi- ^pi+ ^pi- ^nu_tau) ^K+]CC' 
 mcdtt_3pi_3pipi0.Decay = '[B+ => ^(tau+ => ^pi+ ^pi- ^pi+ ^nu_tau~) ^(tau- => ^pi- ^pi+ ^pi- ^nu_tau ^pi0) ^K+]CC'
 mcdtt_3pipi0_3pi.Decay = '[B+ => ^(tau+ => ^pi+ ^pi- ^pi+ ^nu_tau~ ^pi0) ^(tau- => ^pi- ^pi+ ^pi- ^nu_tau) ^K+]CC'
 mcdtt_3pipi0_3pipi0.Decay = '[B+ => ^(tau+ => ^pi+ ^pi- ^pi+ ^nu_tau~ ^pi0) ^(tau- => ^pi- ^pi+ ^pi- ^nu_tau ^pi0) ^K+]CC'
+
 
 # TUPLE TOOLS
 ToolList = ['TupleToolTrackInfo', 'TupleToolVtxIsoln', 'TupleToolPrimaries', 'TupleToolCorrectedMass', 'TupleToolPropertime', 'TupleToolAngles', 'TupleToolL0Calo', 'TupleToolRecoStats']
@@ -1115,8 +1124,9 @@ dtt.ToolList += ToolList
 if not isMC:
 	dtt_SS.ToolList += ToolList
 if isMC:
-	dtt.addTupleTool('TupleToolMCTruth')
-	dtt.addTupleTool('TupleToolMCBackgroundInfo')
+	dtt.ToolList += ['TupleToolMCTruth','TupleToolMCBackgroundInfo']
+	dtt.addTool(TupleToolMCTruth())
+	dtt.TupleToolMCTruth.ToolList += ['MCTupleToolHierarchy']
 
 # Adds several tupletools, including DTF
 addTools(dtt, stream, line, year)
@@ -1124,6 +1134,7 @@ if not isMC:
 	addTools(dtt_SS, stream, line_SS, year)
 
 GENToolList = ['MCTupleToolKinematic', 'MCTupleToolHierarchy', 'TupleToolEventInfo']
+
 if isMC:
 	mcdtt_3pi_3pi.ToolList += GENToolList
 	mcdtt_3pi_3pipi0.ToolList += GENToolList
@@ -1134,6 +1145,8 @@ if isMC:
 from PhysConf.Filters import LoKi_Filters
 fltrs = LoKi_Filters (
     STRIP_Code = "HLT_PASS_RE('StrippingB2KTauTau(Line|SSLine)Decision')"
+	# HLT1_Code = "(HLT_PASS_RE('Hlt1TrackMVADecision')) | (HLT_PASS_RE('Hlt1TwoTrackMVADecision'))",
+	# HLT2_Code = "(HLT_PASS_RE('Hlt2Topo2BodyDecision')) | (HLT_PASS_RE('Hlt2Topo3BodyDecision')) | (HLT_PASS_RE('Hlt2Topo4BodyDecision'))"
 )
 if not isMC:
 	DaVinci().EventPreFilters = fltrs.filters('Filters')
@@ -1147,17 +1160,18 @@ if applySel:
 		DaVinci().UserAlgorithms += [b_Filter_SS]
 
 DaVinci().UserAlgorithms += [dtt]
+
 if isMC:
 	DaVinci().UserAlgorithms += [mcdtt_3pi_3pi]
 	DaVinci().UserAlgorithms += [mcdtt_3pi_3pipi0]
 	DaVinci().UserAlgorithms += [mcdtt_3pipi0_3pi]
 	DaVinci().UserAlgorithms += [mcdtt_3pipi0_3pipi0]
-if not isMC:
-	DaVinci().UserAlgorithms += [dtt_SS]
+else:
+    DaVinci().UserAlgorithms += [dtt_SS]
 
 # Use the local input data
-# from GaudiConf import IOHelper
-# IOHelper('ROOT').inputFiles([
-# 	'/panfs/felician/B2Ktautau/ROOT_Sim/DST_2016_MagUp/00210914_00000023_1.b2ktautau.strip.dst',
-# 	'/panfs/felician/B2Ktautau/ROOT_Sim/DST_2016_MagUp/00210914_00000020_1.b2ktautau.strip.dst'
-# ], clear=True)
+from GaudiConf import IOHelper
+IOHelper('ROOT').inputFiles([
+	'/panfs/felician/B2Ktautau/ROOT_Sim/DST_2016_MagUp/00210914_00000023_1.b2ktautau.strip.dst',
+	'/panfs/felician/B2Ktautau/ROOT_Sim/DST_2016_MagUp/00210914_00000020_1.b2ktautau.strip.dst'
+], clear=True)
