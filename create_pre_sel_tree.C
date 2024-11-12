@@ -1,37 +1,62 @@
 
 Double_t eps_error(Double_t Num, Double_t Den);
-
-Bool_t addFit = false;
+TCut DD_cut(TString name, Int_t mother_ID);
 
 void create_pre_sel_tree(int year, int species, int line, bool createTable)
 {   
-    TString path;
-    if(createTable)
-    {
-        path = Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/pre_sel_table_species_%i.tex",year,species);
-    }
-    else
-    {
-        path = "";
-    }
-    std::ofstream file(path);
-
+    // TString path = Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/Species_%i/Num_entries/%i.txt",year,species,line);
+    // std::ofstream file(path);
     Bool_t isKtautauMC = false;
-    if( (species == 10) || (species == 11) || (species == 12) || (species == 1) )
-    {
-        isKtautauMC = true;
-    }
+    Bool_t isBuDDKp_cocktail = false;
+    Bool_t isBdDDKp_cocktail = false;
+    Bool_t isBsDDKp_cocktail = false;
+    Bool_t isBuDDK0_cocktail = false;
+    Bool_t isBdDDK0_cocktail = false;
+    Bool_t isBuDD_cocktail = false;
+    Bool_t isBdDD_cocktail = false;
+    Bool_t isBsDD_cocktail = false;
 
-    // if(isKtautauMC || (species == 2) || (species == 3))
+    // if( (species == 10) || (species == 11) || (species == 12) || (species == 1) )
     // {
-    //     addFit = true;
+    //     isKtautauMC = true;
+    // }
+    // if( (species == 100) || (species == 101) || (species == 102) )
+    // {
+    //     isBuDDKp_cocktail = true;
+    // }
+    // if(species == 110)
+    // {
+    //     isBdDDKp_cocktail = true;
+    // }
+    // if(species == 120)
+    // {
+    //     isBsDDKp_cocktail = true;
+    // }
+    // if(species == 130)
+    // {
+    //     isBuDDK0_cocktail = true;
+    // }
+    // if( (species == 140) || (species == 141) )
+    // {
+    //     isBdDDK0_cocktail = true;
+    // }
+    // if( (species == 150) || (species == 151) )
+    // {
+    //     isBuDD_cocktail = true;
+    // }
+    // if( (species == 160) || (species == 161) || (species == 162) || (species == 163) )
+    // {
+    //     isBdDD_cocktail = true;
+    // }
+    // if( (species == 170) || (species == 171) || (species == 172) || (species == 173) )
+    // {
+    //     isBsDD_cocktail = true;
     // }
 
     TString FILES;
     if(isKtautauMC) // Ktautau MC
     {
-        // FILES = Form("Files_on_grid/MC_201%i.txt",year);
-        FILES = Form("Files_on_grid/MC_201%i_pidcorr.txt",year);
+        FILES = Form("/panfs/felician/B2Ktautau/workflow/PIDCalib/201%i/Species_1/pid_corr.txt",year);
     }
     else if(species == 4) // DDK MC
     {
@@ -47,7 +72,7 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     }
     else if( (species == 7) || (species == 71))
     {
-        FILES = Form("Files_on_grid/MC_D0Dps_201%i_pidcorr.txt",year);
+        FILES = Form("/panfs/felician/B2Ktautau/workflow/PIDCalib/201%i/Species_7/pid_corr.txt",year);
     }
     else if((species == 8) || (species == 81) || (species == 82) || (species == 83))
     {
@@ -61,6 +86,38 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     {
         FILES = Form("Files_on_grid/data_D0D0K_201%i.txt",year);
     }
+    else if(isBuDDKp_cocktail)
+    {
+        FILES = Form("/panfs/felician/BuDDKp_cocktail/root_files_201%i.txt",year);
+    }
+    else if(isBdDDKp_cocktail)
+    {
+        FILES = Form("/panfs/felician/BdDDKp_cocktail/root_files_201%i.txt",year);   
+    }
+    else if(isBsDDKp_cocktail)
+    {
+        FILES = Form("/panfs/felician/BsDDKp_cocktail/root_files_201%i.txt",year);  
+    }
+    else if(isBuDDK0_cocktail)
+    {
+        FILES = Form("/panfs/felician/BuDDK0_cocktail/root_files_201%i.txt",year);  
+    }
+    else if(isBdDDK0_cocktail)
+    {
+        FILES = Form("/panfs/felician/BdDDK0_cocktail/root_files_201%i.txt",year); 
+    }
+    else if(isBuDD_cocktail)
+    {
+        FILES = Form("/panfs/felician/BuDD_cocktail/root_files_201%i.txt",year);
+    }
+    else if(isBdDD_cocktail)
+    {
+        FILES = Form("/panfs/felician/BdDD_cocktail/root_files_201%i.txt",year);
+    }
+    else if(isBsDD_cocktail)
+    {
+        FILES = Form("/panfs/felician/BsDD_cocktail/root_files_201%i.txt",year);
+    }
 
     TString MC_component_file;
     if(isKtautauMC)
@@ -68,14 +125,126 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
         MC_component_file = Form("/panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201%i/%i.root",year,line);
     }
 
-    // TString FILES_fit;
-    // if(addFit)
-    // {
-    //     FILES_fit = Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/fit_results.txt",year,species);
-    // }
+    /////////////////////////////////////////////////// TRUTH MATCH CUTS ///////////////////////////////////////////////////////////////////////
+    TCut final_state = "(abs(taup_pi1_TRUEID) == 211) && (abs(taup_pi2_TRUEID) == 211) && (abs(taup_pi3_TRUEID) == 211) && (abs(taum_pi1_TRUEID) == 211) && (abs(taum_pi2_TRUEID) == 211) && (abs(taum_pi3_TRUEID) == 211) && (abs(Kp_TRUEID ) == 321)";
 
-    // Pre-selection cuts
-    // MC truth-match
+    // BuDDKp
+    // B+ -> D0D0K+
+    TCut BuD0D0Kp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("D0_D0",521); 
+    TCut BuD0starD0Kp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("D0star_D0",521);
+    TCut BuD0D0starKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("D0_D0star",521);
+    TCut BuD0starD0starKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("D0star_D0star",521);
+
+    // B+ -> D+D-K+
+    TCut BuDpDmKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dp_Dm",521);
+    TCut BuDpstarDmKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dpstar_Dm",521);
+    TCut BuDpDmstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dp_Dmstar",521);
+    TCut BuDpstarDmstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dpstar_Dmstar",521);
+
+    // B+ -> Ds+Ds-K+
+    TCut BuDsDsKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Ds_Ds",521);
+    TCut BuDsstarDsKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dsstar_Ds",521);
+    TCut BuDsDsstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Ds_Dsstar",521);
+    TCut BuDsstarDsstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dsstar_Dsstar",521);
+
+    // BdDDKp
+    // B0 -> D-D0K+
+    TCut BdDmD0Kp = "(abs(Bp_TRUEID) == 511)"+final_state+DD_cut("Dp_D0",511);
+    TCut BdDmstarD0Kp = "(abs(Bp_TRUEID) == 511)"+final_state+DD_cut("Dpstar_D0",511);
+    TCut BdDmD0starKp = "(abs(Bp_TRUEID) == 511)"+final_state+DD_cut("Dp_D0star",511);
+    TCut BdDmstarD0starKp = "(abs(Bp_TRUEID) == 511)"+final_state+DD_cut("Dpstar_D0star",511);
+
+    // BsDDKp
+    // Bs -> Ds-D0K+
+    TCut BsDsD0Kp = "(abs(Bp_TRUEID) == 531)"+final_state+DD_cut("D0_Ds",531);
+    TCut BsDsstarD0Kp = "(abs(Bp_TRUEID) == 531)"+final_state+DD_cut("D0_Dsstar",531);
+    TCut BsDsD0starKp = "(abs(Bp_TRUEID) == 531)"+final_state+DD_cut("D0star_Ds",531);
+    TCut BsDsstarD0starKp = "(abs(Bp_TRUEID) == 531)"+final_state+DD_cut("D0star_Dsstar",531);
+
+    // BuDDK0
+    // B+ -> D0D+K0
+    TCut BuD0DpK0 = final_state+DD_cut("Dp_D0",521);
+    TCut BuD0starDpK0 = final_state+DD_cut("Dp_D0star",521);
+    TCut BuD0DpstarK0 = final_state+DD_cut("Dpstar_D0",521);
+    TCut BuD0starDpstarK0 = final_state+DD_cut("Dpstar_D0star",521);
+
+    // BdDDK0
+    // B0 -> D+D-K0
+    TCut BdDpDmK0 = final_state+DD_cut("Dp_Dm",511);
+    TCut BdDpstarDmK0 = final_state+DD_cut("Dpstar_Dm",511);
+    TCut BdDpDmstarK0 = final_state+DD_cut("Dp_Dmstar",511);
+    TCut BdDpstarDmstarK0 = final_state+DD_cut("Dpstar_Dmstar",511);
+
+    // B0 -> D0D0K0
+    TCut BdD0D0K0 = final_state+DD_cut("D0_D0",511);
+    TCut BdD0starD0K0 = final_state+DD_cut("D0star_D0",511);
+    TCut BdD0D0starK0 = final_state+DD_cut("D0_D0star",511);
+    TCut BdD0starD0starK0 = final_state+DD_cut("D0star_D0star",511);
+
+    // BuDD
+    // B+ -> D0Ds+
+    TCut BuD0Ds = final_state+DD_cut("D0_Ds",521);
+    TCut BuD0starDs = final_state+DD_cut("D0star_Ds",521);
+    TCut BuD0Dsstar = final_state+DD_cut("D0_Dsstar",521);
+    TCut BuD0starDsstar = final_state+DD_cut("D0star_Dsstar",521);
+
+    // B+ -> D0D+
+    TCut BuD0Dp = final_state+DD_cut("Dp_D0",521);
+    TCut BuD0starDp = final_state+DD_cut("Dp_D0star",521);
+    TCut BuD0Dpstar = final_state+DD_cut("Dpstar_D0",521);
+    TCut BuD0starDpstar = final_state+DD_cut("Dpstar_D0star",521);
+
+    // BdDD
+    // B0 -> D0D0
+    TCut BdD0D0 = final_state+DD_cut("D0_D0",511);
+    TCut BdD0starD0 = final_state+DD_cut("D0star_D0",511);
+    TCut BdD0D0star = final_state+DD_cut("D0_D0star",511);
+    TCut BdD0starD0star = final_state+DD_cut("D0star_D0star",511);
+
+    // B0 -> D+D-
+    TCut BdDpDm = final_state+DD_cut("Dp_Dm",511);
+    TCut BdDpstarDm = final_state+DD_cut("Dpstar_Dm",511);
+    TCut BdDpDmstar = final_state+DD_cut("Dp_Dmstar",511);
+    TCut BdDpstarDmstar = final_state+DD_cut("Dpstar_Dmstar",511);
+
+    // B0 -> D-Ds+
+    TCut BdDpDs = final_state+DD_cut("Dp_Ds",511);
+    TCut BdDpstarDs = final_state+DD_cut("Dpstar_Ds",511);
+    TCut BdDpDsstar = final_state+DD_cut("Dp_Dsstar",511);
+    TCut BdDpstarDsstar = final_state+DD_cut("Dpstar_Dsstar",511);
+
+    // B0 -> Ds+Ds-
+    TCut BdDsDs = final_state+DD_cut("Ds_Ds",511);
+    TCut BdDsstarDs = final_state+DD_cut("Dsstar_Ds",511);
+    TCut BdDsDsstar = final_state+DD_cut("Ds_Dsstar",511);
+    TCut BdDsstarDsstar = final_state+DD_cut("Dsstar_Dsstar",511);
+
+    // Bs -> DD
+    // Bs -> Ds+Ds-
+    TCut BsDsDs = final_state+DD_cut("Ds_Ds",531);
+    TCut BsDsstarDs = final_state+DD_cut("Dsstar_Ds",531);
+    TCut BsDsDsstar = final_state+DD_cut("Ds_Dsstar",531);
+    TCut BsDsstarDsstar = final_state+DD_cut("Dsstar_Dsstar",531);
+
+    // Bs -> D-Ds+
+    TCut BsDpDs = final_state+DD_cut("Dp_Ds",531);
+    TCut BsDpstarDs = final_state+DD_cut("Dpstar_Ds",531);
+    TCut BsDpDsstar = final_state+DD_cut("Dp_Dsstar",531);
+    TCut BsDpstarDsstar = final_state+DD_cut("Dsstar_Dsstar",531);
+
+    // Bs -> D+D-
+    TCut BsDpDm = final_state+DD_cut("Dp_Dm",531);
+    TCut BsDpstarDm = final_state+DD_cut("Dpstar_Dm",531);
+    TCut BsDpDmstar = final_state+DD_cut("Dp_Dmstar",531);
+    TCut BsDpstarDmstar = final_state+DD_cut("Dpstar_Dmstar",531);
+
+    // Bs -> D0D0
+    TCut BsD0D0 = final_state+DD_cut("D0_D0",531);
+    TCut BsD0starD0 = final_state+DD_cut("D0star_D0",531);
+    TCut BsD0D0star = final_state+DD_cut("D0_D0star",531);
+    TCut BsD0starD0star = final_state+DD_cut("D0star_D0star",531);
+
+    // Other MC:
     TCut truthMatch;
     if(isKtautauMC){
         truthMatch = "(abs(Kp_TRUEID) == 321) && (abs(taup_pi1_TRUEID) == 211) && (abs(taup_pi2_TRUEID) == 211) && (abs(taup_pi3_TRUEID) == 211) && (abs(taum_pi1_TRUEID) == 211) && (abs(taum_pi2_TRUEID) == 211) && (abs(taum_pi3_TRUEID) == 211) && (abs(taup_TRUEID) == 15) && (abs(taum_TRUEID) == 15) && (abs(Bp_TRUEID) == 521)";
@@ -93,20 +262,22 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
         truthMatch = "(abs(D0bar_K_TRUEID) == 321) && (abs(D0bar_pi1_TRUEID) == 211) && (abs(D0bar_pi2_TRUEID) == 211) && (abs(D0bar_pi3_TRUEID) == 211) && (abs(D0_K_TRUEID) == 321) && (abs(D0_pi1_TRUEID) == 211) && (abs(D0_pi2_TRUEID) == 211) && (abs(D0_pi3_TRUEID) == 211) && (abs(D0bar_TRUEID) == 421) && (abs(D0_TRUEID) == 421) && (abs(Kp_TRUEID) == 321) && (abs(Bp_TRUEID) == 521)";
     }
 
-    // Trigger cuts:
+    ///////////////////////////////////////////////////////// TRIGGER ////////////////////////////////////////////////////////////////////////////////////////
     TCut L0_trigger = "(Bp_L0HadronDecision_TOS==1) || ((Bp_L0HadronDecision_TIS==1) || (Bp_L0MuonDecision_TIS==1) || (Bp_L0ElectronDecision_TIS==1) || (Bp_L0PhotonDecision_TIS==1))";
     TCut HLT1_trigger = "(Bp_Hlt1TrackMVADecision_TOS==1) || (Bp_Hlt1TwoTrackMVADecision_TOS==1)";
     TCut HLT2_trigger = "(Bp_Hlt2Topo2BodyDecision_TOS==1) || (Bp_Hlt2Topo3BodyDecision_TOS==1) || (Bp_Hlt2Topo4BodyDecision_TOS==1)";
     TCut trigger = L0_trigger+HLT1_trigger+HLT2_trigger;
 
+    ///////////////////////////////////////////////////////// Rectangular cuts /////////////////////////////////////////////////////////////////////////////////
     TCut others;
     std::vector<TCut> other_cuts;
-    if(isKtautauMC || (species == 2) || (species == 3))
+    if(isKtautauMC || (species == 2) || (species == 3) || (isBuDDKp_cocktail) || (isBdDDKp_cocktail) || (isBsDDKp_cocktail) || (isBuDDK0_cocktail) || (isBdDDK0_cocktail) || (isBuDD_cocktail) || (isBdDD_cocktail) || (isBsDD_cocktail))
     {
-        other_cuts.push_back("(taup_M > 800) && (taup_M < 1600)");
-        other_cuts.push_back("(taum_M > 800) && (taum_M < 1600)");
-        other_cuts.push_back("(Bp_VTXISODCHI2MASSONETRACK_B > 3800)");
+        other_cuts.push_back("(taup_M > 750) && (taup_M < 1650)");
+        other_cuts.push_back("(taum_M > 750) && (taum_M < 1650)");
+        other_cuts.push_back("(Bp_VTXISODCHI2MASSONETRACK_B > 3600)");
         other_cuts.push_back("(Bp_VTXISOBDTHARDFIRSTVALUE_B < 0)");
+        other_cuts.push_back("(Bp_BPVVD > 4)");
         // other_cuts.push_back("(TMath::Sqrt( pow(df_BVx - df_PVx,2) + pow(df_BVy - df_PVy,2) + pow(df_BVz - df_PVz,2) ) > 2)");
     }
     if((species == 4) || (species == 5) || (species == 6)) // D+D-K+
@@ -169,10 +340,10 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     {
         others += other_cuts[i];
     }
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     TFileCollection* fc = new TFileCollection("fc", "fc", FILES, 1, line);
     TChain* t;
-
     if(isKtautauMC || (species == 7)) // Ktautau MC + normalisation channel (PID corrected)
     {
         t = new TChain("DecayTree");
@@ -203,13 +374,17 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     {
         pre_selections = MC_component+truthMatch+trigger+others;
     }
-    else if((species == 4) || (species == 7) || (species == 9)) // D+D-K+, D0barD+s, D0D0K MC
-    {
-        pre_selections = truthMatch+trigger+others;
-    }
     else if((species == 2) || (species == 3)) // Ktautau data
     {
         pre_selections = trigger+others;
+    }
+    else if((isBuDDKp_cocktail) || (isBdDDKp_cocktail) || (isBsDDKp_cocktail) || (isBuDDK0_cocktail) || (isBdDDK0_cocktail) || (isBuDD_cocktail) || (isBdDD_cocktail) || (isBsDD_cocktail))
+    {
+        pre_selections = truthMatch+trigger+others;
+    }
+    else if((species == 4) || (species == 7) || (species == 9)) // D+D-K+, D0barD+s, D0D0K MC
+    {
+        pre_selections = truthMatch+trigger+others+"(Bp_dtf_status[0]==0)";
     }
     else if((species == 5) || (species == 6) || (species == 8) || (species == 81) || (species == 82) || (species == 83) || (species == 0) || (species == -1)) // D+D-K+ and D0barD+s data
     {
@@ -217,40 +392,11 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     }
 
     TString fout_name = Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/Species_%i/%i.root",year,species,line);
-    // if(addFit)
-    // {
-    //     TTree* t_intermediate;
-    //     if(isKtautauMC)
-    //     {
-    //         t_intermediate = (TTree*)t->CopyTree(MC_component+truthMatch+trigger);
-
-    //         pre_selections = truthMatch+trigger+passDTF+others;
-    //     }
-    //     else
-    //     {
-    //         t_intermediate = (TTree*)t->CopyTree(trigger);   
-    //     }
-
-    //     // TFileCollection* fc_fit = new TFileCollection("fc_fit", "fc_fit", FILES_fit, 1, line);
-    //     // t_fit = new TChain("DecayTree");
-    //     // t_fit->AddFileInfoList((TCollection*)fc_fit->GetList());
-    //     TFile* f_fit = new TFile(Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/%i.root",year,species,line));
-    //     TTree* t_fit = (TTree*)f_fit->Get("DecayTree");
-
-    //     t_intermediate->AddFriend(t_fit, "fit");
-
-    //     ROOT::RDataFrame df(*t_intermediate);
-    //     df.Filter(pre_selections.GetTitle()).Snapshot("DecayTree", fout_name);
-    // }
-    // else
-    // {
-    // }
     TFile* fout = new TFile(fout_name, "RECREATE");   
     fout->cd();
     TTree* t_pre_sel = (TTree*)t->CopyTree(pre_selections);
     t_pre_sel->Write();
     fout->Close();
-    
 
     cout << "Finished successfully" << endl;
 
@@ -465,4 +611,144 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
 Double_t eps_error(Double_t Num, Double_t Den)
 {
     return (Num/Den)*sqrt( 1./Num + 1./Den )*100;
+}
+
+TCut DD_cut(TString name, Int_t mother_ID)
+{
+    // Ds+ Ds-
+    TCut Ds_Ds = Form("(abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)",mother_ID,mother_ID);
+    TCut Dsstar_Ds = Form("(abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==433) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)",mother_ID,mother_ID);
+    TCut Ds_Dsstar = Form("(abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==433) && (abs(taum_MC_GD_MOTHER_ID)==%i)",mother_ID,mother_ID);
+    TCut Dsstar_Dsstar = Form("(abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==433) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==433) && (abs(taum_MC_GD_MOTHER_ID)==%i)",mother_ID,mother_ID);
+
+    // D0bar D0
+    TCut D0_D0 = Form("(abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)",mother_ID,mother_ID);
+    TCut D0star_D0 = Form("(abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==423) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)",mother_ID,mother_ID);
+    TCut D0_D0star = Form("(abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==423) && (abs(taum_MC_GD_MOTHER_ID)==%i)",mother_ID,mother_ID);
+    TCut D0star_D0star = Form("(abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==423) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==423) && (abs(taum_MC_GD_MOTHER_ID)==%i)",mother_ID,mother_ID);
+
+    // D+ D-
+    TCut Dp_Dm = Form("(abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)",mother_ID,mother_ID);
+    TCut Dpstar_Dm = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut Dp_Dmstar = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut Dpstar_Dmstar = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID);
+
+    // D0 Ds
+    TCut D0_Ds = Form("( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut D0star_Ds = Form("( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==423) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==423) && (abs(taum_MC_GD_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut D0_Dsstar = Form("( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==433) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==433) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut D0star_Dsstar = Form("( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==423) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==433) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==433) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==423) && (abs(taum_MC_GD_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
+
+    // D+ D0
+    TCut Dp_D0 = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut Dpstar_D0 = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut Dp_D0star = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==423) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==423) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut Dpstar_D0star = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==423) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==423) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==423) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==423) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID);
+
+    // D+ Ds
+    TCut Dp_Ds = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut Dpstar_Ds = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) &&  (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut Dp_Dsstar = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==433) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==433) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut Dpstar_Dsstar = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==433) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==433) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==433) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==433) && (abs(taup_MC_GD_MOTHER_ID)==%i) &&  (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID);
+
+    if(name == "Ds_Ds") // Ds+Ds-
+    {
+        return Ds_Ds;
+    }
+    else if(name == "Dsstar_Ds")
+    {
+        return Dsstar_Ds;
+    }
+    else if(name == "Ds_Dsstar")
+    {
+        return Ds_Dsstar;
+    }
+    else if(name == "Dsstar_Dsstar")
+    {
+        return Dsstar_Dsstar;
+    }
+    else if(name == "D0_D0") // D0barD0
+    {
+        return D0_D0;
+    }
+    else if(name == "D0star_D0")
+    {
+        return D0star_D0;
+    }
+    else if(name == "D0_D0star")
+    {
+        return D0_D0star;
+    }
+    else if(name == "D0star_D0star")
+    {
+        return D0star_D0star;
+    }
+    else if(name == "Dp_Dm") // D+D-
+    {
+        return Dp_Dm;
+    }
+    else if(name == "Dpstar_Dm")
+    {
+        return Dpstar_Dm;
+    }
+    else if(name == "Dp_Dmstar")
+    {
+        return Dp_Dmstar;
+    }
+    else if(name == "Dp_Dmstar")
+    {
+        return Dp_Dmstar;
+    }
+    else if(name == "Dpstar_Dmstar")
+    {
+        return Dpstar_Dmstar;
+    }
+    else if(name == "D0_Ds") // D0barDs+
+    {
+        return D0_Ds;
+    }
+    else if(name == "D0star_Ds")
+    {
+        return D0star_Ds;
+    }
+    else if(name == "D0_Dsstar")
+    {
+        return D0_Dsstar;
+    }
+    else if(name == "D0star_Dsstar")
+    {
+        return D0star_Dsstar;
+    }
+    else if(name == "Dp_D0") // D+D+
+    {
+        return Dp_D0;
+    }
+    else if(name == "Dpstar_D0")
+    {
+        return Dpstar_D0;
+    }
+    else if(name == "Dp_D0star")
+    {
+        return Dp_D0star;
+    }
+    else if(name == "Dpstar_D0star")
+    {
+        return Dpstar_D0star;
+    }
+    else if(name == "Dp_Ds") // D+Ds-
+    {
+        return Dp_Ds;
+    }
+    else if(name == "Dpstar_Ds")
+    {
+        return Dpstar_Ds;
+    }
+    else if(name == "Dp_Dsstar")
+    {
+        return Dp_Dsstar;
+    }
+    else if(name == "Dpstar_Dsstar")
+    {
+        return Dpstar_Dsstar;
+    }
 }
