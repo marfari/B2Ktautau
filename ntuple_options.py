@@ -7,9 +7,9 @@ from Configurables import DaVinci
 from PhysConf.Selections import FilterSelection
 from PhysSelPython.Wrappers import AutomaticData
 
-isMC = True
-year = '2016'
-pol = 'MagUp'
+isMC = False 
+year = '2018'
+pol = 'MagDown'
 applySel = False
 if(not isMC):
 	applySel = True
@@ -138,7 +138,6 @@ def addIsoInfo(branch, stream, line, year):
 		"CC_05_PZASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone05', 'CC_PZASYM', -100.)".format(stream, line),
 		"CC_05_DELTAETA_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone05', 'CC_DELTAETA', -100.)".format(stream, line),
 		"CC_05_DELTAPHI_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone05', 'CC_DELTAPHI', -100.)".format(stream, line),
-		"CC_05_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone05', 'CC_PX', -100.)".format(stream, line),
 		"CC_05_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone05', 'CC_IT', -100.)".format(stream, line),
 		"CC_05_MAXPT_Q_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone05', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		"CC_05_MAXPT_PT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone05', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -182,7 +181,6 @@ def addIsoInfo(branch, stream, line, year):
 		"CC_05_PZASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone05', 'CC_PZASYM', -100.)".format(stream, line),
 		"CC_05_DELTAETA_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone05', 'CC_DELTAETA', -100.)".format(stream, line),
 		"CC_05_DELTAPHI_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone05', 'CC_DELTAPHI', -100.)".format(stream, line),
-		"CC_05_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone05', 'CC_PX', -100.)".format(stream, line),
 		"CC_05_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone05', 'CC_IT', -100.)".format(stream, line),
 		"CC_05_MAXPT_Q_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone05', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		"CC_05_MAXPT_PT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone05', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -226,7 +224,6 @@ def addIsoInfo(branch, stream, line, year):
 		"CC_05_PZASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone05', 'CC_PZASYM', -100.)".format(stream, line),
 		"CC_05_DELTAETA_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone05', 'CC_DELTAETA', -100.)".format(stream, line),
 		"CC_05_DELTAPHI_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone05', 'CC_DELTAPHI', -100.)".format(stream, line),
-		"CC_05_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone05', 'CC_PX', -100.)".format(stream, line),
 		"CC_05_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone05', 'CC_IT', -100.)".format(stream, line),
 		"CC_05_MAXPT_Q_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone05', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		"CC_05_MAXPT_PT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone05', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -270,7 +267,6 @@ def addIsoInfo(branch, stream, line, year):
 		"CC_05_PZASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone05', 'CC_PZASYM', -100.)".format(stream, line),
 		"CC_05_DELTAETA_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone05', 'CC_DELTAETA', -100.)".format(stream, line),
 		"CC_05_DELTAPHI_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone05', 'CC_DELTAPHI', -100.)".format(stream, line),
-		"CC_05_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone05', 'CC_PX', -100.)".format(stream, line),
 		"CC_05_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone05', 'CC_IT', -100.)".format(stream, line),
 		"CC_05_MAXPT_Q_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone05', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		"CC_05_MAXPT_PT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone05', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -314,7 +310,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_10_PZASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_10_DELTAETA_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_10_DELTAPHI_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_10_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
 		# "CC_10_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_IT', -100.)".format(stream, line),
 		# "CC_10_MAXPT_Q_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_10_MAXPT_PT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -358,7 +353,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_10_PZASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_10_DELTAETA_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_10_DELTAPHI_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_10_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
 		# "CC_10_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_IT', -100.)".format(stream, line),
 		# "CC_10_MAXPT_Q_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_10_MAXPT_PT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -402,7 +396,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_10_PZASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_10_DELTAETA_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_10_DELTAPHI_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_10_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
 		# "CC_10_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_IT', -100.)".format(stream, line),
 		# "CC_10_MAXPT_Q_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_10_MAXPT_PT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -446,7 +439,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_10_PZASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_10_DELTAETA_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_10_DELTAPHI_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_10_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
 		# "CC_10_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_IT', -100.)".format(stream, line),
 		# "CC_10_MAXPT_Q_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_10_MAXPT_PT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -490,7 +482,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_15_PZASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_15_DELTAETA_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_15_DELTAPHI_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_15_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
 		# "CC_15_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_IT', -100.)".format(stream, line),
 		# "CC_15_MAXPT_Q_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_15_MAXPT_PT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -534,7 +525,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_15_PZASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_15_DELTAETA_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_15_DELTAPHI_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_15_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
 		# "CC_15_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_IT', -100.)".format(stream, line),
 		# "CC_15_MAXPT_Q_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_15_MAXPT_PT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -578,7 +568,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_15_PZASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_15_DELTAETA_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_15_DELTAPHI_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_15_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
 		# "CC_15_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_IT', -100.)".format(stream, line),
 		# "CC_15_MAXPT_Q_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_15_MAXPT_PT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -622,7 +611,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_15_PZASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_15_DELTAETA_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_15_DELTAPHI_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_15_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
 		# "CC_15_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_IT', -100.)".format(stream, line),
 		# "CC_15_MAXPT_Q_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_15_MAXPT_PT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -666,7 +654,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_20_PZASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_20_DELTAETA_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_20_DELTAPHI_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_20_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
 		# "CC_20_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_IT', -100.)".format(stream, line),
 		# "CC_20_MAXPT_Q_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_20_MAXPT_PT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -710,7 +697,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_20_PZASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_20_DELTAETA_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_20_DELTAPHI_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_20_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
 		# "CC_20_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_IT', -100.)".format(stream, line),
 		# "CC_20_MAXPT_Q_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_20_MAXPT_PT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -754,7 +740,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_20_PZASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_20_DELTAETA_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_20_DELTAPHI_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_20_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
 		# "CC_20_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_IT', -100.)".format(stream, line),
 		# "CC_20_MAXPT_Q_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_20_MAXPT_PT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -798,7 +783,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_20_PZASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_20_DELTAETA_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_20_DELTAPHI_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_20_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
 		# "CC_20_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_IT', -100.)".format(stream, line),
 		# "CC_20_MAXPT_Q_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_20_MAXPT_PT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -937,13 +921,13 @@ def addDTF(branch):
 	# dtf_mlp.init = 0
 
 	# modified DTF (Low chi2 init)
-	# dtf_low = branch.addTupleTool("TupleToolKTauTauDTF/dtf")
-	# dtf_low.daughtersToConstrain = ['nu_tau', 'tau+']
-	# dtf_low.UseFullTreeInName = True
-	# dtf_low.UpdateDaughters = True
-	# dtf_low.Verbose = True
-	# dtf_low.constrainToOriginVertex = True
-	# dtf_low.init = 1
+	dtf_low = branch.addTupleTool("TupleToolKTauTauDTF/dtf")
+	dtf_low.daughtersToConstrain = ['nu_tau', 'tau+']
+	dtf_low.UseFullTreeInName = True
+	dtf_low.UpdateDaughters = True
+	dtf_low.Verbose = True
+	dtf_low.constrainToOriginVertex = True
+	dtf_low.init = 1
 
 def addTISTOS( branch ):
     ttb = branch.addTupleTool("TupleToolTISTOS")
@@ -1009,8 +993,8 @@ def addTools( DecayTreeTuple, stream, line, year ):
 
 # Configure DaVinci
 if isMC:
-	# DaVinci().TupleFile = 'DVntuple_MC_BuKtautau_'+year+'_'+pol+'.root'
-	DaVinci().TupleFile = '/panfs/felician/B2Ktautau/ROOT_Sim/DVntuple_MC_'+year+'_'+pol+'.root'
+	DaVinci().TupleFile = 'DVntuple_MC_BuKtautau_'+year+'_'+pol+'.root'
+	# DaVinci().TupleFile = '/panfs/felician/B2Ktautau/ROOT_Sim/DVntuple_MC_'+year+'_'+pol+'.root'
 else:
 	DaVinci().TupleFile = 'DVntuple_data_BuKtautau_'+year+'_'+pol+'.root'
 	# DaVinci().TupleFile = '/panfs/felician/B2Ktautau/ROOT_Data//DVntuple_data_'+year+'_'+pol+'.root'
@@ -1055,7 +1039,8 @@ DaVinci().PrintFreq = 1000
 DaVinci().DataType = year 
 
 DaVinci().Lumi = not DaVinci().Simulation # Only ask for luminosity information when not using simulated data
-DaVinci().EvtMax = 1000 # how many events to run over (-1 = runs over all events)
+# DaVinci().SkipEvents = 1015
+DaVinci().EvtMax = -1 # how many events to run over (-1 = runs over all events)
 
 # Add smearing to MC and momentum scaling to data
 if isMC:
@@ -1079,7 +1064,7 @@ mcdtt_3pi_3pi = MCDecayTreeTuple('mc_ntuple_3pi_3pi')
 mcdtt_3pi_3pipi0 = MCDecayTreeTuple('mc_ntuple_3pi_3pipi0')
 mcdtt_3pipi0_3pi = MCDecayTreeTuple('mc_ntuple_3pipi0_3pi')
 mcdtt_3pipi0_3pipi0 = MCDecayTreeTuple('mc_ntuple_3pipi0_3pipi0')
-
+# mcdtt = MCDecayTreeTuple('mc_ntuple')
 
 # Preselections to reduce the size of the tuples (in data)
 filtercode = "(NINGENERATION( (M < 750) & (ABSID=='tau+') , 1) == 0) & (NINGENERATION( (M > 1650) & (ABSID=='tau+') , 1) == 0) & (NINGENERATION( (BPVVD < 4) & (ABSID=='B+') , 0) == 0) & ( ((RELINFO('/Event/{0}/Phys/{1}/BVars_VertexIsoInfo', 'VTXISODCHI2MASSONETRACK', -100) > 3600) & (RELINFO('/Event/{0}/Phys/{1}/BVars_VertexIsoBDTInfo', 'VTXISOBDTHARDFIRSTVALUE', -100.) < 0) ) | ((RELINFO('/Event/{0}/Phys/{2}/BVars_VertexIsoInfo', 'VTXISODCHI2MASSONETRACK', -100) > 3600) & (RELINFO('/Event/{0}/Phys/{2}/BVars_VertexIsoBDTInfo', 'VTXISOBDTHARDFIRSTVALUE', -100.) < 0) ) )".format(stream,line,line_SS)
@@ -1116,7 +1101,7 @@ mcdtt_3pi_3pi.Decay = '[B+ => ^(tau+ => ^pi+ ^pi- ^pi+ ^nu_tau~) ^(tau- => ^pi- 
 mcdtt_3pi_3pipi0.Decay = '[B+ => ^(tau+ => ^pi+ ^pi- ^pi+ ^nu_tau~) ^(tau- => ^pi- ^pi+ ^pi- ^nu_tau ^pi0) ^K+]CC'
 mcdtt_3pipi0_3pi.Decay = '[B+ => ^(tau+ => ^pi+ ^pi- ^pi+ ^nu_tau~ ^pi0) ^(tau- => ^pi- ^pi+ ^pi- ^nu_tau) ^K+]CC'
 mcdtt_3pipi0_3pipi0.Decay = '[B+ => ^(tau+ => ^pi+ ^pi- ^pi+ ^nu_tau~ ^pi0) ^(tau- => ^pi- ^pi+ ^pi- ^nu_tau ^pi0) ^K+]CC'
-
+# mcdtt.Decay = '[B+ => ^tau+ ^tau- ^K+]CC'
 
 # TUPLE TOOLS
 ToolList = ['TupleToolTrackInfo', 'TupleToolVtxIsoln', 'TupleToolPrimaries', 'TupleToolCorrectedMass', 'TupleToolPropertime', 'TupleToolAngles', 'TupleToolL0Calo', 'TupleToolRecoStats']
@@ -1133,6 +1118,18 @@ addTools(dtt, stream, line, year)
 if not isMC:
 	addTools(dtt_SS, stream, line_SS, year)
 
+# from Configurables import PrintMCTree, PrintMCDecayTreeTool
+# mctree = PrintMCTree("PrintTrueBp")
+# mctree.addTool( PrintMCDecayTreeTool, name = "PrintMC" )
+# mctree.PrintMC.Information = "Name M P Px Py Pz Pt"
+# mctree.ParticleNames = [ "B+", "B-" ]
+
+# from Configurables import PrintDecayTree, PrintDecayTreeTool
+# tree = PrintDecayTree("tree")
+# tree.Inputs = ['/Phys/{0}/Particles'.format(line)]
+# tree.addTool(PrintDecayTreeTool, name="PrintDecay")
+# tree.PrintDecay.Information = "Name M P"
+
 GENToolList = ['MCTupleToolKinematic', 'MCTupleToolHierarchy', 'TupleToolEventInfo']
 
 if isMC:
@@ -1140,6 +1137,7 @@ if isMC:
 	mcdtt_3pi_3pipi0.ToolList += GENToolList
 	mcdtt_3pipi0_3pi.ToolList += GENToolList
 	mcdtt_3pipi0_3pipi0.ToolList += GENToolList
+	# mcdtt.ToolList += GENToolList
 
 # Stripping filter
 from PhysConf.Filters import LoKi_Filters
@@ -1166,12 +1164,12 @@ if isMC:
 	DaVinci().UserAlgorithms += [mcdtt_3pi_3pipi0]
 	DaVinci().UserAlgorithms += [mcdtt_3pipi0_3pi]
 	DaVinci().UserAlgorithms += [mcdtt_3pipi0_3pipi0]
+	# DaVinci().UserAlgorithms += [mcdtt]
 else:
     DaVinci().UserAlgorithms += [dtt_SS]
 
 # Use the local input data
-from GaudiConf import IOHelper
-IOHelper('ROOT').inputFiles([
-	'/panfs/felician/B2Ktautau/ROOT_Sim/DST_2016_MagUp/00210914_00000023_1.b2ktautau.strip.dst',
-	'/panfs/felician/B2Ktautau/ROOT_Sim/DST_2016_MagUp/00210914_00000020_1.b2ktautau.strip.dst'
-], clear=True)
+# from GaudiConf import IOHelper
+# IOHelper('ROOT').inputFiles([
+# 	'/panfs/felician/B2Ktautau/ROOT_Sim/DST_2017_MagUp/00210902_00000021_1.b2ktautau.strip.dst'
+# ], clear=True)
