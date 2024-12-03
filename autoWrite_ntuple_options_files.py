@@ -142,7 +142,6 @@ def addIsoInfo(branch, stream, line, year):
 		"CC_05_PZASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone05', 'CC_PZASYM', -100.)".format(stream, line),
 		"CC_05_DELTAETA_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone05', 'CC_DELTAETA', -100.)".format(stream, line),
 		"CC_05_DELTAPHI_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone05', 'CC_DELTAPHI', -100.)".format(stream, line),
-		"CC_05_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone05', 'CC_PX', -100.)".format(stream, line),
 		"CC_05_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone05', 'CC_IT', -100.)".format(stream, line),
 		"CC_05_MAXPT_Q_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone05', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		"CC_05_MAXPT_PT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone05', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -186,7 +185,6 @@ def addIsoInfo(branch, stream, line, year):
 		"CC_05_PZASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone05', 'CC_PZASYM', -100.)".format(stream, line),
 		"CC_05_DELTAETA_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone05', 'CC_DELTAETA', -100.)".format(stream, line),
 		"CC_05_DELTAPHI_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone05', 'CC_DELTAPHI', -100.)".format(stream, line),
-		"CC_05_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone05', 'CC_PX', -100.)".format(stream, line),
 		"CC_05_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone05', 'CC_IT', -100.)".format(stream, line),
 		"CC_05_MAXPT_Q_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone05', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		"CC_05_MAXPT_PT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone05', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -230,7 +228,6 @@ def addIsoInfo(branch, stream, line, year):
 		"CC_05_PZASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone05', 'CC_PZASYM', -100.)".format(stream, line),
 		"CC_05_DELTAETA_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone05', 'CC_DELTAETA', -100.)".format(stream, line),
 		"CC_05_DELTAPHI_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone05', 'CC_DELTAPHI', -100.)".format(stream, line),
-		"CC_05_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone05', 'CC_PX', -100.)".format(stream, line),
 		"CC_05_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone05', 'CC_IT', -100.)".format(stream, line),
 		"CC_05_MAXPT_Q_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone05', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		"CC_05_MAXPT_PT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone05', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -274,7 +271,6 @@ def addIsoInfo(branch, stream, line, year):
 		"CC_05_PZASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone05', 'CC_PZASYM', -100.)".format(stream, line),
 		"CC_05_DELTAETA_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone05', 'CC_DELTAETA', -100.)".format(stream, line),
 		"CC_05_DELTAPHI_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone05', 'CC_DELTAPHI', -100.)".format(stream, line),
-		"CC_05_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone05', 'CC_PX', -100.)".format(stream, line),
 		"CC_05_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone05', 'CC_IT', -100.)".format(stream, line),
 		"CC_05_MAXPT_Q_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone05', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		"CC_05_MAXPT_PT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone05', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -318,7 +314,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_10_PZASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_10_DELTAETA_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_10_DELTAPHI_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_10_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
 		# "CC_10_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_IT', -100.)".format(stream, line),
 		# "CC_10_MAXPT_Q_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_10_MAXPT_PT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone10', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -362,7 +357,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_10_PZASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_10_DELTAETA_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_10_DELTAPHI_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_10_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
 		# "CC_10_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_IT', -100.)".format(stream, line),
 		# "CC_10_MAXPT_Q_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_10_MAXPT_PT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone10', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -406,7 +400,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_10_PZASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_10_DELTAETA_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_10_DELTAPHI_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_10_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
 		# "CC_10_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_IT', -100.)".format(stream, line),
 		# "CC_10_MAXPT_Q_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_10_MAXPT_PT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone10', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -450,7 +443,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_10_PZASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_10_DELTAETA_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_10_DELTAPHI_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_10_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_PX', -100.)".format(stream, line),
 		# "CC_10_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_IT', -100.)".format(stream, line),
 		# "CC_10_MAXPT_Q_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_10_MAXPT_PT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone10', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -494,7 +486,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_15_PZASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_15_DELTAETA_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_15_DELTAPHI_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_15_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
 		# "CC_15_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_IT', -100.)".format(stream, line),
 		# "CC_15_MAXPT_Q_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_15_MAXPT_PT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone15', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -538,7 +529,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_15_PZASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_15_DELTAETA_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_15_DELTAPHI_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_15_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
 		# "CC_15_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_IT', -100.)".format(stream, line),
 		# "CC_15_MAXPT_Q_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_15_MAXPT_PT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone15', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -582,7 +572,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_15_PZASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_15_DELTAETA_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_15_DELTAPHI_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_15_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
 		# "CC_15_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_IT', -100.)".format(stream, line),
 		# "CC_15_MAXPT_Q_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_15_MAXPT_PT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone15', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -626,7 +615,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_15_PZASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_15_DELTAETA_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_15_DELTAPHI_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_15_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_PX', -100.)".format(stream, line),
 		# "CC_15_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_IT', -100.)".format(stream, line),
 		# "CC_15_MAXPT_Q_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_15_MAXPT_PT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone15', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -670,7 +658,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_20_PZASYM_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_20_DELTAETA_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_20_DELTAPHI_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_20_PX_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
 		# "CC_20_IT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_IT', -100.)".format(stream, line),
 		# "CC_20_MAXPT_Q_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_20_MAXPT_PT_B" : "RELINFO('/Event/{0}/Phys/{1}/BVars_ConeIsoInfo_Cone20', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -714,7 +701,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_20_PZASYM_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_20_DELTAETA_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_20_DELTAPHI_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_20_PX_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
 		# "CC_20_IT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_IT', -100.)".format(stream, line),
 		# "CC_20_MAXPT_Q_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_20_MAXPT_PT_K" : "RELINFO('/Event/{0}/Phys/{1}/H_ConeIsoInfo_Cone20', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -758,7 +744,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_20_PZASYM_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_20_DELTAETA_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_20_DELTAPHI_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_20_PX_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
 		# "CC_20_IT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_IT', -100.)".format(stream, line),
 		# "CC_20_MAXPT_Q_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_20_MAXPT_PT_taup" : "RELINFO('/Event/{0}/Phys/{1}/Taup_ConeIsoInfo_Cone20', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -802,7 +787,6 @@ def addIsoInfo(branch, stream, line, year):
 		# "CC_20_PZASYM_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PZASYM', -100.)".format(stream, line),
 		# "CC_20_DELTAETA_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_DELTAETA', -100.)".format(stream, line),
 		# "CC_20_DELTAPHI_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_DELTAPHI', -100.)".format(stream, line),
-		# "CC_20_PX_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_PX', -100.)".format(stream, line),
 		# "CC_20_IT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_IT', -100.)".format(stream, line),
 		# "CC_20_MAXPT_Q_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_MAXPT_Q', -100.)".format(stream, line),
 		# "CC_20_MAXPT_PT_taum" : "RELINFO('/Event/{0}/Phys/{1}/Taum_ConeIsoInfo_Cone20', 'CC_MAXPT_PT', -100.)".format(stream, line),
@@ -1199,19 +1183,19 @@ dtt_SS.setDescriptorTemplate('(${Bp}[B+ -> ${taup}(tau+ -> ${taup_pi1}pi+ ${taup
 """
 
 string6_BuKtautau = """
-mcdtt_3pi_3pi.Decay = '[B+ => ^(tau+ => ^pi+ ^pi- ^pi+ ^nu_tau~) ^(tau- => ^pi- ^pi+ ^pi- ^nu_tau) ^K+]CC' 
-mcdtt_3pi_3pipi0.Decay = '[B+ => ^(tau+ => ^pi+ ^pi- ^pi+ ^nu_tau~) ^(tau- => ^pi- ^pi+ ^pi- ^nu_tau ^pi0) ^K+]CC'
-mcdtt_3pipi0_3pi.Decay = '[B+ => ^(tau+ => ^pi+ ^pi- ^pi+ ^nu_tau~ ^pi0) ^(tau- => ^pi- ^pi+ ^pi- ^nu_tau) ^K+]CC'
-mcdtt_3pipi0_3pipi0.Decay = '[B+ => ^(tau+ => ^pi+ ^pi- ^pi+ ^nu_tau~ ^pi0) ^(tau- => ^pi- ^pi+ ^pi- ^nu_tau ^pi0) ^K+]CC'
+mcdtt_3pi_3pi.setDescriptorTemplate('${Bp}[B+ => ${taup}(tau+ => ${taup_pi1}pi+ ${taup_pi2}pi- ${taup_pi3}pi+ ${taup_nutau}nu_tau~) ${taum}(tau- => ${taum_pi1}pi- ${taum_pi2}pi+ ${taum_pi3}pi- ${taum_nutau}nu_tau) ${Kp}K+]CC')
+mcdtt_3pi_3pipi0.Decay = '${Bp}[B+ => ${taup}(tau+ => ${taup_pi1}pi+ ${taup_pi2}pi- ${taup_pi3}pi+ ${taup_nutau}nu_tau~) ${taum}(tau- => ${taum_pi1}pi- ${taum_pi2}pi+ ${taum_pi3}pi- ${taum_nutau}nu_tau ${taum_pi0}pi0) ${Kp}K+]CC'
+mcdtt_3pipi0_3pi.Decay = '${Bp}[B+ => ${taup}(tau+ => ${taup_pi1}pi+ ${taup_pi2}pi- ${taup_pi3}pi+ ${taup_nutau}nu_tau~ ${taup_pi0}pi0) ${taum}(tau- => ${taum_pi1}pi- ${taum_pi2}pi+ ${taum_pi3}pi- ${taum_nutau}nu_tau) ${Kp}K+]CC'
+mcdtt_3pipi0_3pipi0.Decay = '${Bp}[B+ => ${taup}(tau+ => ${taup_pi1}pi+ ${taup_pi2}pi- ${taup_pi3}pi+ ${taup_nutau}nu_tau~ ${taup_pi0}pi0) ${taum}(tau- => ${taum_pi1}pi- ${taum_pi2}pi+ ${taum_pi3}pi- ${taum_nutau}nu_tau ${taum_pi0}pi0) ${Kp}K+]CC'
 """
-string6_BuDDKp = "mcdtt.Decay = '[B+ => ^(Charm ==> ^pi+ ^pi- ^pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ^(Charm ==> ^pi- ^pi+ ^pi- {X} {X} {X} {X} {X} {X} {X} {X}) ^K+]CC'"
-string6_BdDDKp = "mcdtt.Decay = '[B0 => ^(Charm ==> ^pi+ ^pi- ^pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ^(Charm ==> ^pi- ^pi+ ^pi- {X} {X} {X} {X} {X} {X} {X} {X}) ^K+]CC'"
-string6_BsDDKp = "mcdtt.Decay = '[B_s0 => ^(Charm ==> ^pi+ ^pi- ^pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ^(Charm ==> ^pi- ^pi+ ^pi- {X} {X} {X} {X} {X} {X} {X} {X}) ^K+]CC'"
-string6_BuDDK0 = "mcdtt.Decay = '[B+ => ^(Charm ==> ^pi+ ^pi- ^pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ^(Charm ==> ^pi- ^pi+ ^pi- {X} {X} {X} {X} {X} {X} {X} {X}) ^K0]CC'"
-string6_BdDDK0 = "mcdtt.Decay = '[B0 => ^(Charm ==> ^pi+ ^pi- ^pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ^(Charm ==> ^pi- ^pi+ ^pi- {X} {X} {X} {X} {X} {X} {X} {X}) ^K0]CC'"
-string6_BuDD = "mcdtt.Decay = '[B+ => ^(Charm ==> ^pi+ ^pi- ^pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ^(Charm ==> ^pi- ^pi+ ^pi- {X} {X} {X} {X} {X} {X} {X} {X})]CC'"
-string6_BdDD = "mcdtt.Decay = '[B0 => ^(Charm ==> ^pi+ ^pi- ^pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ^(Charm ==> ^pi- ^pi+ ^pi- {X} {X} {X} {X} {X} {X} {X} {X})]CC'"
-string6_BsDD = "mcdtt.Decay = '[B_s0 => ^(Charm ==> ^pi+ ^pi- ^pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ^(Charm ==> ^pi- ^pi+ ^pi- {X} {X} {X} {X} {X} {X} {X} {X})]CC'"
+string6_BuDDKp = "mcdtt.setDescriptorTemplate('${Bp}[B+ => ${charm1}(Charm ==> ${charm1_pi1}pi+ ${charm1_pi2}pi- ${charm1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ${charm2}(Charm ==> ${charm2_pi1}pi- ${charm2_pi2}pi+ ${charm2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC')"
+string6_BdDDKp = "mcdtt.setDescriptorTemplate('${B0}[B0 => ${charm1}(Charm ==> ${charm1_pi1}pi+ ${charm1_pi2}pi- ${charm1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X})  ${charm2}(Charm ==> ${charm2_pi1}pi- ${charm2_pi2}pi+ ${charm2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC')"
+string6_BsDDKp = "mcdtt.setDescriptorTemplate('${Bs}[B_s0 => ${charm1}(Charm ==> ${charm1_pi1}pi+ ${charm1_pi2}pi- ${charm1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ${charm2}(Charm ==> ${charm2_pi1}pi- ${charm2_pi2}pi+ ${charm2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC')"
+string6_BuDDK0 = "mcdtt.setDescriptorTemplate('${Bp}[B+ => ${charm1}(Charm ==> ${charm1_pi1}pi+ ${charm1_pi2}pi- ${charm1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ${charm2}(Charm ==> ${charm2_pi1}pi- ${charm2_pi2}pi+ ${charm2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC')"
+string6_BdDDK0 = "mcdtt.setDescriptorTemplate('${B0}[B0 => ${charm1}(Charm ==> ${charm1_pi1}pi+ ${charm1_pi2}pi- ${charm1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ${charm2}(Charm ==> ${charm2_pi1}pi- ${charm2_pi2}pi+ ${charm2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC')"
+string6_BuDD = "mcdtt.setDescriptorTemplate('${Bp}[B+ => ${charm1}(Charm ==> ${charm1_pi1}pi+ ${charm1_pi2}pi- ${charm1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ${charm2}(Charm ==> ${charm2_pi1}pi- ${charm2_pi2}pi+ ${charm2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X})]CC')"
+string6_BdDD = "mcdtt.setDescriptorTemplate('${B0}[B0 => ${charm1}(Charm ==> ${charm1_pi1}pi+ ${charm1_pi2}pi- ${charm1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ${charm2}(Charm ==> ${charm2_pi1}pi- ${charm2_pi2}pi+ ${charm2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X})]CC')"
+string6_BsDD = "mcdtt.setDescriptorTemplate('${Bs}[B_s0 => ${charm1}(Charm ==> ${charm1_pi1}pi+ ${charm1_pi2}pi- ${charm1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ${charm2}(Charm ==> ${charm2_pi1}pi- ${charm2_pi2}pi+ ${charm2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X})]CC')"
 
 string7 = """
 
@@ -1229,6 +1213,18 @@ if isMC:
 addTools(dtt, stream, line, year)
 if not isMC:
 	addTools(dtt_SS, stream, line_SS, year)
+
+# from Configurables import PrintMCTree, PrintMCDecayTreeTool
+# mctree = PrintMCTree("PrintTrueBp")
+# mctree.addTool( PrintMCDecayTreeTool, name = "PrintMC" )
+# mctree.PrintMC.Information = "Name M P Px Py Pz Pt"
+# mctree.ParticleNames = [ "B+", "B-" ]
+
+# from Configurables import PrintDecayTree, PrintDecayTreeTool
+# tree = PrintDecayTree("tree")
+# tree.Inputs = ['/Phys/{0}/Particles'.format(line)]
+# tree.addTool(PrintDecayTreeTool, name="PrintDecay")
+# tree.PrintDecay.Information = "Name M P"
 
 GENToolList = ['MCTupleToolKinematic', 'MCTupleToolHierarchy', 'TupleToolEventInfo']
 """
@@ -1294,58 +1290,66 @@ string11_BuKtautau = """
 string11_BuDDKp = """
 # Use the local input data
 from GaudiConf import IOHelper
-IOHelper('ROOT').inputFiles([
-	'/panfs/felician/SimulationJobs/12693500/2016/Sim10c/MagDown/50evts_s28r2p2_806121001.dst',
-], clear=True)
+filename = '/panfs/felician/SimulationJobs/12693500/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
+with open(filename) as file:
+    input_files = [line.rstrip() for line in file]
+IOHelper('ROOT').inputFiles(input_files, clear=True)
 """
 string11_BdDDKp = """
 # Use the local input data
 from GaudiConf import IOHelper
-IOHelper('ROOT').inputFiles([
-	'/panfs/felician/SimulationJobs/12693500/2016/Sim10c/MagDown/50evts_s28r2p2_806121001.dst',
-], clear=True)
+filename = '/panfs/felician/SimulationJobs/11293500/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
+with open(filename) as file:
+    input_files = [line.rstrip() for line in file]
+IOHelper('ROOT').inputFiles(input_files, clear=True)
 """
 string11_BsDDKp = """
 # Use the local input data
 from GaudiConf import IOHelper
-IOHelper('ROOT').inputFiles([
-	'/panfs/felician/SimulationJobs/12693500/2016/Sim10c/MagDown/50evts_s28r2p2_806121001.dst',
-], clear=True)
+filename = '/panfs/felician/SimulationJobs/13297500/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
+with open(filename) as file:
+    input_files = [line.rstrip() for line in file]
+IOHelper('ROOT').inputFiles(input_files, clear=True)
 """
 string11_BuDDK0 = """
 # Use the local input data
 from GaudiConf import IOHelper
-IOHelper('ROOT').inputFiles([
-	'/panfs/felician/SimulationJobs/12693500/2016/Sim10c/MagDown/50evts_s28r2p2_806121001.dst',
-], clear=True)
+filename = '/panfs/felician/SimulationJobs/12293500/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
+with open(filename) as file:
+    input_files = [line.rstrip() for line in file]
+IOHelper('ROOT').inputFiles(input_files, clear=True)
 """
 string11_BdDDK0 = """
 # Use the local input data
 from GaudiConf import IOHelper
-IOHelper('ROOT').inputFiles([
-	'/panfs/felician/SimulationJobs/12693500/2016/Sim10c/MagDown/50evts_s28r2p2_806121001.dst',
-], clear=True)
+filename = '/panfs/felician/SimulationJobs/11294100/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
+with open(filename) as file:
+    input_files = [line.rstrip() for line in file]
+IOHelper('ROOT').inputFiles(input_files, clear=True)
 """
 string11_BuDD = """
 # Use the local input data
 from GaudiConf import IOHelper
-IOHelper('ROOT').inputFiles([
-	'/panfs/felician/SimulationJobs/12693500/2016/Sim10c/MagDown/50evts_s28r2p2_806121001.dst',
-], clear=True)
+filename = '/panfs/felician/SimulationJobs/12696700/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
+with open(filename) as file:
+    input_files = [line.rstrip() for line in file]
+IOHelper('ROOT').inputFiles(input_files, clear=True)
 """
 string11_BdDD = """
 # Use the local input data
 from GaudiConf import IOHelper
-IOHelper('ROOT').inputFiles([
-	'/panfs/felician/SimulationJobs/12693500/2016/Sim10c/MagDown/50evts_s28r2p2_806121001.dst',
-], clear=True)
+filename = '/panfs/felician/SimulationJobs/11697700/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
+with open(filename) as file:
+    input_files = [line.rstrip() for line in file]
+IOHelper('ROOT').inputFiles(input_files, clear=True)
 """
 string11_BsDD = """
 # Use the local input data
 from GaudiConf import IOHelper
-IOHelper('ROOT').inputFiles([
-	'/panfs/felician/SimulationJobs/12693500/2016/Sim10c/MagDown/50evts_s28r2p2_806121001.dst',
-], clear=True)
+filename = '/panfs/felician/SimulationJobs/13699600/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
+with open(filename) as file:
+    input_files = [line.rstrip() for line in file]
+IOHelper('ROOT').inputFiles(input_files, clear=True)
 """
 
 # B+ -> tau+ tau- K+
