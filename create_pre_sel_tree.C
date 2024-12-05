@@ -20,38 +20,44 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     {
         isKtautauMC = true;
     }
-    // if( (species == 100) || (species == 101) || (species == 102) )
-    // {
-    //     isBuDDKp_cocktail = true;
-    // }
-    // if(species == 110)
-    // {
-    //     isBdDDKp_cocktail = true;
-    // }
-    // if(species == 120)
-    // {
-    //     isBsDDKp_cocktail = true;
-    // }
-    // if(species == 130)
-    // {
-    //     isBuDDK0_cocktail = true;
-    // }
-    // if( (species == 140) || (species == 141) )
-    // {
-    //     isBdDDK0_cocktail = true;
-    // }
-    // if( (species == 150) || (species == 151) )
-    // {
-    //     isBuDD_cocktail = true;
-    // }
-    // if( (species == 160) || (species == 161) || (species == 162) || (species == 163) )
-    // {
-    //     isBdDD_cocktail = true;
-    // }
-    // if( (species == 170) || (species == 171) || (species == 172) || (species == 173) )
-    // {
-    //     isBsDD_cocktail = true;
-    // }
+    if( (species == 100) || (species == 101) || (species == 102) )
+    {
+        isBuDDKp_cocktail = true;
+    }
+    if(species == 110)
+    {
+        isBdDDKp_cocktail = true;
+    }
+    if(species == 120)
+    {
+        isBsDDKp_cocktail = true;
+    }
+    if(species == 130)
+    {
+        isBuDDK0_cocktail = true;
+    }
+    if( (species == 140) || (species == 141) )
+    {
+        isBdDDK0_cocktail = true;
+    }
+    if( (species == 150) || (species == 151) )
+    {
+        isBuDD_cocktail = true;
+    }
+    if( (species == 160) || (species == 161) || (species == 162) || (species == 163) )
+    {
+        isBdDD_cocktail = true;
+    }
+    if( (species == 170) || (species == 171) || (species == 172) || (species == 173) )
+    {
+        isBsDD_cocktail = true;
+    }
+
+    Bool_t is_cocktailMC = false;
+    if(isBuDDKp_cocktail || isBdDDKp_cocktail || isBsDDKp_cocktail || isBuDDK0_cocktail || isBdDDK0_cocktail || isBuDD_cocktail || isBdDD_cocktail || isBsDD_cocktail)
+    {
+        is_cocktailMC = true;
+    }
 
     TString FILES;
     if(isKtautauMC) // Ktautau MC
@@ -126,124 +132,6 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     }
 
     /////////////////////////////////////////////////// TRUTH MATCH CUTS ///////////////////////////////////////////////////////////////////////
-    TCut final_state = "(abs(taup_pi1_TRUEID) == 211) && (abs(taup_pi2_TRUEID) == 211) && (abs(taup_pi3_TRUEID) == 211) && (abs(taum_pi1_TRUEID) == 211) && (abs(taum_pi2_TRUEID) == 211) && (abs(taum_pi3_TRUEID) == 211) && (abs(Kp_TRUEID ) == 321)";
-
-    // BuDDKp
-    // B+ -> D0D0K+
-    TCut BuD0D0Kp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("D0_D0",521); 
-    TCut BuD0starD0Kp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("D0star_D0",521);
-    TCut BuD0D0starKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("D0_D0star",521);
-    TCut BuD0starD0starKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("D0star_D0star",521);
-
-    // B+ -> D+D-K+
-    TCut BuDpDmKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dp_Dm",521);
-    TCut BuDpstarDmKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dpstar_Dm",521);
-    TCut BuDpDmstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dp_Dmstar",521);
-    TCut BuDpstarDmstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dpstar_Dmstar",521);
-
-    // B+ -> Ds+Ds-K+
-    TCut BuDsDsKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Ds_Ds",521);
-    TCut BuDsstarDsKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dsstar_Ds",521);
-    TCut BuDsDsstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Ds_Dsstar",521);
-    TCut BuDsstarDsstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dsstar_Dsstar",521);
-
-    // BdDDKp
-    // B0 -> D-D0K+
-    TCut BdDmD0Kp = "(abs(Bp_TRUEID) == 511)"+final_state+DD_cut("Dp_D0",511);
-    TCut BdDmstarD0Kp = "(abs(Bp_TRUEID) == 511)"+final_state+DD_cut("Dpstar_D0",511);
-    TCut BdDmD0starKp = "(abs(Bp_TRUEID) == 511)"+final_state+DD_cut("Dp_D0star",511);
-    TCut BdDmstarD0starKp = "(abs(Bp_TRUEID) == 511)"+final_state+DD_cut("Dpstar_D0star",511);
-
-    // BsDDKp
-    // Bs -> Ds-D0K+
-    TCut BsDsD0Kp = "(abs(Bp_TRUEID) == 531)"+final_state+DD_cut("D0_Ds",531);
-    TCut BsDsstarD0Kp = "(abs(Bp_TRUEID) == 531)"+final_state+DD_cut("D0_Dsstar",531);
-    TCut BsDsD0starKp = "(abs(Bp_TRUEID) == 531)"+final_state+DD_cut("D0star_Ds",531);
-    TCut BsDsstarD0starKp = "(abs(Bp_TRUEID) == 531)"+final_state+DD_cut("D0star_Dsstar",531);
-
-    // BuDDK0
-    // B+ -> D0D+K0
-    TCut BuD0DpK0 = final_state+DD_cut("Dp_D0",521);
-    TCut BuD0starDpK0 = final_state+DD_cut("Dp_D0star",521);
-    TCut BuD0DpstarK0 = final_state+DD_cut("Dpstar_D0",521);
-    TCut BuD0starDpstarK0 = final_state+DD_cut("Dpstar_D0star",521);
-
-    // BdDDK0
-    // B0 -> D+D-K0
-    TCut BdDpDmK0 = final_state+DD_cut("Dp_Dm",511);
-    TCut BdDpstarDmK0 = final_state+DD_cut("Dpstar_Dm",511);
-    TCut BdDpDmstarK0 = final_state+DD_cut("Dp_Dmstar",511);
-    TCut BdDpstarDmstarK0 = final_state+DD_cut("Dpstar_Dmstar",511);
-
-    // B0 -> D0D0K0
-    TCut BdD0D0K0 = final_state+DD_cut("D0_D0",511);
-    TCut BdD0starD0K0 = final_state+DD_cut("D0star_D0",511);
-    TCut BdD0D0starK0 = final_state+DD_cut("D0_D0star",511);
-    TCut BdD0starD0starK0 = final_state+DD_cut("D0star_D0star",511);
-
-    // BuDD
-    // B+ -> D0Ds+
-    TCut BuD0Ds = final_state+DD_cut("D0_Ds",521);
-    TCut BuD0starDs = final_state+DD_cut("D0star_Ds",521);
-    TCut BuD0Dsstar = final_state+DD_cut("D0_Dsstar",521);
-    TCut BuD0starDsstar = final_state+DD_cut("D0star_Dsstar",521);
-
-    // B+ -> D0D+
-    TCut BuD0Dp = final_state+DD_cut("Dp_D0",521);
-    TCut BuD0starDp = final_state+DD_cut("Dp_D0star",521);
-    TCut BuD0Dpstar = final_state+DD_cut("Dpstar_D0",521);
-    TCut BuD0starDpstar = final_state+DD_cut("Dpstar_D0star",521);
-
-    // BdDD
-    // B0 -> D0D0
-    TCut BdD0D0 = final_state+DD_cut("D0_D0",511);
-    TCut BdD0starD0 = final_state+DD_cut("D0star_D0",511);
-    TCut BdD0D0star = final_state+DD_cut("D0_D0star",511);
-    TCut BdD0starD0star = final_state+DD_cut("D0star_D0star",511);
-
-    // B0 -> D+D-
-    TCut BdDpDm = final_state+DD_cut("Dp_Dm",511);
-    TCut BdDpstarDm = final_state+DD_cut("Dpstar_Dm",511);
-    TCut BdDpDmstar = final_state+DD_cut("Dp_Dmstar",511);
-    TCut BdDpstarDmstar = final_state+DD_cut("Dpstar_Dmstar",511);
-
-    // B0 -> D-Ds+
-    TCut BdDpDs = final_state+DD_cut("Dp_Ds",511);
-    TCut BdDpstarDs = final_state+DD_cut("Dpstar_Ds",511);
-    TCut BdDpDsstar = final_state+DD_cut("Dp_Dsstar",511);
-    TCut BdDpstarDsstar = final_state+DD_cut("Dpstar_Dsstar",511);
-
-    // B0 -> Ds+Ds-
-    TCut BdDsDs = final_state+DD_cut("Ds_Ds",511);
-    TCut BdDsstarDs = final_state+DD_cut("Dsstar_Ds",511);
-    TCut BdDsDsstar = final_state+DD_cut("Ds_Dsstar",511);
-    TCut BdDsstarDsstar = final_state+DD_cut("Dsstar_Dsstar",511);
-
-    // Bs -> DD
-    // Bs -> Ds+Ds-
-    TCut BsDsDs = final_state+DD_cut("Ds_Ds",531);
-    TCut BsDsstarDs = final_state+DD_cut("Dsstar_Ds",531);
-    TCut BsDsDsstar = final_state+DD_cut("Ds_Dsstar",531);
-    TCut BsDsstarDsstar = final_state+DD_cut("Dsstar_Dsstar",531);
-
-    // Bs -> D-Ds+
-    TCut BsDpDs = final_state+DD_cut("Dp_Ds",531);
-    TCut BsDpstarDs = final_state+DD_cut("Dpstar_Ds",531);
-    TCut BsDpDsstar = final_state+DD_cut("Dp_Dsstar",531);
-    TCut BsDpstarDsstar = final_state+DD_cut("Dsstar_Dsstar",531);
-
-    // Bs -> D+D-
-    TCut BsDpDm = final_state+DD_cut("Dp_Dm",531);
-    TCut BsDpstarDm = final_state+DD_cut("Dpstar_Dm",531);
-    TCut BsDpDmstar = final_state+DD_cut("Dp_Dmstar",531);
-    TCut BsDpstarDmstar = final_state+DD_cut("Dpstar_Dmstar",531);
-
-    // Bs -> D0D0
-    TCut BsD0D0 = final_state+DD_cut("D0_D0",531);
-    TCut BsD0starD0 = final_state+DD_cut("D0star_D0",531);
-    TCut BsD0D0star = final_state+DD_cut("D0_D0star",531);
-    TCut BsD0starD0star = final_state+DD_cut("D0star_D0star",531);
-
     // Other MC:
     TCut truthMatch;
     if(isKtautauMC){
@@ -271,7 +159,7 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     ///////////////////////////////////////////////////////// Rectangular cuts /////////////////////////////////////////////////////////////////////////////////
     TCut others;
     std::vector<TCut> other_cuts;
-    if(isKtautauMC || (species == 2) || (species == 3))
+    if(isKtautauMC || (species == 2) || (species == 3) || is_cocktailMC)
     {
         other_cuts.push_back("(taup_M > 750) && (taup_M < 1650)");
         other_cuts.push_back("(taum_M > 750) && (taum_M < 1650)");
@@ -412,12 +300,80 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     {
         pre_selections = trigger+"(Bp_dtf_status[0]==0)";
     }
+    else if(is_cocktailMC)
+    {
+        pre_selections = trigger+others;
+    }
 
     TString fout_name = Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/Species_%i/%i.root",year,species,line);
     TFile* fout = new TFile(fout_name, "RECREATE");   
     fout->cd();
-    TTree* t_pre_sel = (TTree*)t->CopyTree(pre_selections);
-    t_pre_sel->Write();
+    if(is_cocktailMC)
+    {
+        fout->mkdir("BuD0D0Kp");
+        fout->mkdir("BuD0starD0Kp");
+        fout->mkdir("BuD0D0starKp");
+        fout->mkdir("BuD0starD0starKp");
+
+        TTree* t_pre_sel_1 = (TTree*)t->CopyTree(pre_selections+BuD0D0Kp);
+        TTree* t_pre_sel_2 = (TTree*)t->CopyTree(pre_selections+BuD0starD0Kp);
+        TTree* t_pre_sel_3 = (TTree*)t->CopyTree(pre_selections+BuD0D0starKp);
+        TTree* t_pre_sel_4 = (TTree*)t->CopyTree(pre_selections+BuD0starD0starKp);
+
+        fout->cd("BuD0D0Kp");
+        t_pre_sel_1->Write();
+
+        fout->cd("BuD0starD0Kp");
+        t_pre_sel_2->Write();
+
+        fout->cd("BuD0D0starKp");
+        t_pre_sel_3->Write();
+
+        fout->cd("BuD0starD0starKp");
+        t_pre_sel_4->Write();
+    }
+    else if(species == 101)
+    {
+        fout->mkdir("BuDpDmKp");
+        fout->mkdir("BuD0starD0Kp");
+        fout->mkdir("BuD0D0starKp");
+        fout->mkdir("BuD0starD0starKp");
+
+        TTree* t_pre_sel_1 = (TTree*)t->CopyTree(pre_selections+BuDpDmKp);
+        TTree* t_pre_sel_2 = (TTree*)t->CopyTree(pre_selections+BuD0starD0Kp);
+        TTree* t_pre_sel_3 = (TTree*)t->CopyTree(pre_selections+BuD0D0starKp);
+        TTree* t_pre_sel_4 = (TTree*)t->CopyTree(pre_selections+BuD0starD0starKp);
+
+        fout->cd("BuDpDmKp");
+        t_pre_sel_1->Write();
+
+        fout->cd("BuD0starD0Kp");
+        t_pre_sel_2->Write();
+
+        fout->cd("BuD0D0starKp");
+        t_pre_sel_3->Write();
+
+        fout->cd("BuD0starD0starKp");
+        t_pre_sel_4->Write();
+    }
+
+    // B+ -> D+D-K+
+    TCut BuDpstarDmKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dpstar_Dm",521);
+    TCut BuDpDmstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dp_Dmstar",521);
+    TCut BuDpstarDmstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dpstar_Dmstar",521);
+
+    // B+ -> Ds+Ds-K+
+    TCut BuDsDsKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Ds_Ds",521);
+    TCut BuDsstarDsKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dsstar_Ds",521);
+    TCut BuDsDsstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Ds_Dsstar",521);
+    TCut BuDsstarDsstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dsstar_Dsstar",521);
+
+
+    else
+    {
+        TTree* t_pre_sel = (TTree*)t->CopyTree(pre_selections);
+        t_pre_sel->Write();
+    }
     fout->Close();
 
     cout << "Finished successfully" << endl;
@@ -635,43 +591,170 @@ Double_t eps_error(Double_t Num, Double_t Den)
     return (Num/Den)*sqrt( 1./Num + 1./Den )*100;
 }
 
+
+TCut truthMatch_cocktailMC(TString name)
+{
+    TCut final_state = "(abs(taup_pi1_TRUEID) == 211) && (abs(taup_pi2_TRUEID) == 211) && (abs(taup_pi3_TRUEID) == 211) && (abs(taum_pi1_TRUEID) == 211) && (abs(taum_pi2_TRUEID) == 211) && (abs(taum_pi3_TRUEID) == 211) && (abs(Kp_TRUEID ) == 321)";
+
+    // BuDDKp
+    // B+ -> D0D0K+
+    TCut BuD0D0Kp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("D0_D0",521); 
+    TCut BuD0starD0Kp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("D0star_D0",521);
+    TCut BuD0D0starKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("D0_D0star",521);
+    TCut BuD0starD0starKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("D0star_D0star",521);
+
+    // B+ -> D+D-K+
+    TCut BuDpDmKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dp_Dm",521);
+    TCut BuDpstarDmKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dpstar_Dm",521);
+    TCut BuDpDmstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dp_Dmstar",521);
+    TCut BuDpstarDmstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dpstar_Dmstar",521);
+
+    // B+ -> Ds+Ds-K+
+    TCut BuDsDsKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Ds_Ds",521);
+    TCut BuDsstarDsKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dsstar_Ds",521);
+    TCut BuDsDsstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Ds_Dsstar",521);
+    TCut BuDsstarDsstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dsstar_Dsstar",521);
+
+    // BdDDKp
+    // B0 -> D-D0K+
+    TCut BdDmD0Kp = "(abs(Bp_TRUEID) == 511)"+final_state+DD_cut("Dp_D0",511);
+    TCut BdDmstarD0Kp = "(abs(Bp_TRUEID) == 511)"+final_state+DD_cut("Dpstar_D0",511);
+    TCut BdDmD0starKp = "(abs(Bp_TRUEID) == 511)"+final_state+DD_cut("Dp_D0star",511);
+    TCut BdDmstarD0starKp = "(abs(Bp_TRUEID) == 511)"+final_state+DD_cut("Dpstar_D0star",511);
+
+    // BsDDKp
+    // Bs -> Ds-D0K+
+    TCut BsDsD0Kp = "(abs(Bp_TRUEID) == 531)"+final_state+DD_cut("D0_Ds",531);
+    TCut BsDsstarD0Kp = "(abs(Bp_TRUEID) == 531)"+final_state+DD_cut("D0_Dsstar",531);
+    TCut BsDsD0starKp = "(abs(Bp_TRUEID) == 531)"+final_state+DD_cut("D0star_Ds",531);
+    TCut BsDsstarD0starKp = "(abs(Bp_TRUEID) == 531)"+final_state+DD_cut("D0star_Dsstar",531);
+
+    // BuDDK0
+    // B+ -> D0D+K0
+    TCut BuD0DpK0 = final_state+DD_cut("Dp_D0",521);
+    TCut BuD0starDpK0 = final_state+DD_cut("Dp_D0star",521);
+    TCut BuD0DpstarK0 = final_state+DD_cut("Dpstar_D0",521);
+    TCut BuD0starDpstarK0 = final_state+DD_cut("Dpstar_D0star",521);
+
+    // BdDDK0
+    // B0 -> D+D-K0
+    TCut BdDpDmK0 = final_state+DD_cut("Dp_Dm",511);
+    TCut BdDpstarDmK0 = final_state+DD_cut("Dpstar_Dm",511);
+    TCut BdDpDmstarK0 = final_state+DD_cut("Dp_Dmstar",511);
+    TCut BdDpstarDmstarK0 = final_state+DD_cut("Dpstar_Dmstar",511);
+
+    // B0 -> D0D0K0
+    TCut BdD0D0K0 = final_state+DD_cut("D0_D0",511);
+    TCut BdD0starD0K0 = final_state+DD_cut("D0star_D0",511);
+    TCut BdD0D0starK0 = final_state+DD_cut("D0_D0star",511);
+    TCut BdD0starD0starK0 = final_state+DD_cut("D0star_D0star",511);
+
+    // BuDD
+    // B+ -> D0Ds+
+    TCut BuD0Ds = final_state+DD_cut("D0_Ds",521);
+    TCut BuD0starDs = final_state+DD_cut("D0star_Ds",521);
+    TCut BuD0Dsstar = final_state+DD_cut("D0_Dsstar",521);
+    TCut BuD0starDsstar = final_state+DD_cut("D0star_Dsstar",521);
+
+    // B+ -> D0D+
+    TCut BuD0Dp = final_state+DD_cut("Dp_D0",521);
+    TCut BuD0starDp = final_state+DD_cut("Dp_D0star",521);
+    TCut BuD0Dpstar = final_state+DD_cut("Dpstar_D0",521);
+    TCut BuD0starDpstar = final_state+DD_cut("Dpstar_D0star",521);
+
+    // BdDD
+    // B0 -> D0D0
+    TCut BdD0D0 = final_state+DD_cut("D0_D0",511);
+    TCut BdD0starD0 = final_state+DD_cut("D0star_D0",511);
+    TCut BdD0D0star = final_state+DD_cut("D0_D0star",511);
+    TCut BdD0starD0star = final_state+DD_cut("D0star_D0star",511);
+
+    // B0 -> D+D-
+    TCut BdDpDm = final_state+DD_cut("Dp_Dm",511);
+    TCut BdDpstarDm = final_state+DD_cut("Dpstar_Dm",511);
+    TCut BdDpDmstar = final_state+DD_cut("Dp_Dmstar",511);
+    TCut BdDpstarDmstar = final_state+DD_cut("Dpstar_Dmstar",511);
+
+    // B0 -> D-Ds+
+    TCut BdDpDs = final_state+DD_cut("Dp_Ds",511);
+    TCut BdDpstarDs = final_state+DD_cut("Dpstar_Ds",511);
+    TCut BdDpDsstar = final_state+DD_cut("Dp_Dsstar",511);
+    TCut BdDpstarDsstar = final_state+DD_cut("Dpstar_Dsstar",511);
+
+    // B0 -> Ds+Ds-
+    TCut BdDsDs = final_state+DD_cut("Ds_Ds",511);
+    TCut BdDsstarDs = final_state+DD_cut("Dsstar_Ds",511);
+    TCut BdDsDsstar = final_state+DD_cut("Ds_Dsstar",511);
+    TCut BdDsstarDsstar = final_state+DD_cut("Dsstar_Dsstar",511);
+
+    // Bs -> DD
+    // Bs -> Ds+Ds-
+    TCut BsDsDs = final_state+DD_cut("Ds_Ds",531);
+    TCut BsDsstarDs = final_state+DD_cut("Dsstar_Ds",531);
+    TCut BsDsDsstar = final_state+DD_cut("Ds_Dsstar",531);
+    TCut BsDsstarDsstar = final_state+DD_cut("Dsstar_Dsstar",531);
+
+    // Bs -> D-Ds+
+    TCut BsDpDs = final_state+DD_cut("Dp_Ds",531);
+    TCut BsDpstarDs = final_state+DD_cut("Dpstar_Ds",531);
+    TCut BsDpDsstar = final_state+DD_cut("Dp_Dsstar",531);
+    TCut BsDpstarDsstar = final_state+DD_cut("Dsstar_Dsstar",531);
+
+    // Bs -> D+D-
+    TCut BsDpDm = final_state+DD_cut("Dp_Dm",531);
+    TCut BsDpstarDm = final_state+DD_cut("Dpstar_Dm",531);
+    TCut BsDpDmstar = final_state+DD_cut("Dp_Dmstar",531);
+    TCut BsDpstarDmstar = final_state+DD_cut("Dpstar_Dmstar",531);
+
+    // Bs -> D0D0
+    TCut BsD0D0 = final_state+DD_cut("D0_D0",531);
+    TCut BsD0starD0 = final_state+DD_cut("D0star_D0",531);
+    TCut BsD0D0star = final_state+DD_cut("D0_D0star",531);
+    TCut BsD0starD0star = final_state+DD_cut("D0star_D0star",531);
+}
+
+TCut pionsPlus_mother(Int_t ID){return Form("(abs(taup_pi1_MC_MOTHER_ID)==%i) && (abs(taup_pi2_MC_MOTHER_ID)==%i) && (abs(taup_pi3_MC_MOTHER_ID)==%i)", ID, ID, ID);}
+TCut pionsMinus_mother(Int_t ID){return Form("(abs(taum_pi1_MC_MOTHER_ID)==%i) && (abs(taum_pi2_MC_MOTHER_ID)==%i) && (abs(taum_pi3_MC_MOTHER_ID)==%i)", ID, ID, ID);}
+TCut pionsPlus_motherDstarPlus(){return Form(" ((abs(taup_pi1_MC_MOTHER_ID)==%i) && (abs(taup_pi2_MC_MOTHER_ID)==%i) && (abs(taup_pi3_MC_MOTHER_ID)==%i)) || ((abs(taup_pi1_MC_MOTHER_ID)==%i) && (abs(taup_pi2_MC_MOTHER_ID)==%i) && (abs(taup_pi3_MC_MOTHER_ID)==%i)) || ((abs(taup_pi1_MC_MOTHER_ID)==%i) && (abs(taup_pi2_MC_MOTHER_ID)==%i) && (abs(taup_pi3_MC_MOTHER_ID)==%i))", 421, 421, 413, 421, 413, 421, 413, 421, 421);}
+TCut pionsMinus_motherDstarPlus(){return Form(" ((abs(taum_pi1_MC_MOTHER_ID)==%i) && (abs(taum_pi2_MC_MOTHER_ID)==%i) && (abs(taum_pi3_MC_MOTHER_ID)==%i)) || ((abs(taum_pi1_MC_MOTHER_ID)==%i) && (abs(taum_pi2_MC_MOTHER_ID)==%i) && (abs(taum_pi3_MC_MOTHER_ID)==%i)) || ((abs(taum_pi1_MC_MOTHER_ID)==%i) && (abs(taum_pi2_MC_MOTHER_ID)==%i) && (abs(taum_pi3_MC_MOTHER_ID)==%i))", 421, 421, 413, 421, 413, 421, 413, 421, 421);}
+
 TCut DD_cut(TString name, Int_t mother_ID)
 {
     // Ds+ Ds-
-    TCut Ds_Ds = Form("(abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)",mother_ID,mother_ID);
-    TCut Dsstar_Ds = Form("(abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==433) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)",mother_ID,mother_ID);
-    TCut Ds_Dsstar = Form("(abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==433) && (abs(taum_MC_GD_MOTHER_ID)==%i)",mother_ID,mother_ID);
-    TCut Dsstar_Dsstar = Form("(abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==433) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==433) && (abs(taum_MC_GD_MOTHER_ID)==%i)",mother_ID,mother_ID);
+    TCut Ds_Ds = Form("(abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)",mother_ID,mother_ID)+pionsPlus_mother(431)+pionsMinus_mother(431);
+    TCut Dsstar_Ds = Form("(abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==433) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)",mother_ID,mother_ID)+pionsPlus_mother(431)+pionsMinus_mother(431);
+    TCut Ds_Dsstar = Form("(abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==433) && (abs(taum_MC_GD_MOTHER_ID)==%i)",mother_ID,mother_ID)+pionsPlus_mother(431)+pionsMinus_mother(431);
+    TCut Dsstar_Dsstar = Form("(abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==433) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==433) && (abs(taum_MC_GD_MOTHER_ID)==%i)",mother_ID,mother_ID)+pionsPlus_mother(431)+pionsMinus_mother(431);
 
     // D0bar D0
-    TCut D0_D0 = Form("(abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)",mother_ID,mother_ID);
-    TCut D0star_D0 = Form("(abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==423) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)",mother_ID,mother_ID);
-    TCut D0_D0star = Form("(abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==423) && (abs(taum_MC_GD_MOTHER_ID)==%i)",mother_ID,mother_ID);
-    TCut D0star_D0star = Form("(abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==423) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==423) && (abs(taum_MC_GD_MOTHER_ID)==%i)",mother_ID,mother_ID);
+    TCut D0_D0 = Form("(abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)",mother_ID,mother_ID)+pionsPlus_mother(421)+pionsMinus_mother(421);
+    TCut D0star_D0 = Form("(abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==423) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)",mother_ID,mother_ID)+pionsPlus_mother(421)+pionsMinus_mother(421);
+    TCut D0_D0star = Form("(abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==423) && (abs(taum_MC_GD_MOTHER_ID)==%i)",mother_ID,mother_ID)+pionsPlus_mother(421)+pionsMinus_mother(421);
+    TCut D0star_D0star = Form("(abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==423) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==423) && (abs(taum_MC_GD_MOTHER_ID)==%i)",mother_ID,mother_ID)+pionsPlus_mother(421)+pionsMinus_mother(421);
 
     // D+ D-
-    TCut Dp_Dm = Form("(abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)",mother_ID,mother_ID);
-    TCut Dpstar_Dm = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
-    TCut Dp_Dmstar = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
-    TCut Dpstar_Dmstar = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut Dp_Dm = Form("(abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)",mother_ID,mother_ID)+pionsPlus_mother(411)+pionsMinus_mother(411);
+    TCut Dpstar_Dm = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) "+pionsPlus_mother(411)+" ) || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) "+pionsPlus_motherDstarPlus+")",mother_ID,mother_ID,mother_ID,mother_ID)+pionsMinus_mother(411);
+    TCut Dp_Dmstar = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i) "+pionsMinus_mother(411)+") || ( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) "+pionsMinus_motherDstarPlus+")",mother_ID,mother_ID,mother_ID,mother_ID)+pionsPlus_mother(411);
+    TCut Dpstar_Dmstar = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i)"+pionsPlus_mother(411)+pionsMinus_mother(411)+" ) || ( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)"+pionsPlus_motherDstarPlus+pionsMinus_mother(411)+" ) || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i) "+pionsMinus_motherDstarPlus+pionsPlus_mother(411)+" ) || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)"+pionsPlus_motherDstarPlus+pionsMinus_motherDstarPlus+" )",mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID);
 
     // D0 Ds
-    TCut D0_Ds = Form("( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
-    TCut D0star_Ds = Form("( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==423) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==423) && (abs(taum_MC_GD_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
-    TCut D0_Dsstar = Form("( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==433) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==433) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
-    TCut D0star_Dsstar = Form("( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==423) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==433) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==433) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==423) && (abs(taum_MC_GD_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut D0_Ds = Form("( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)"+pionsPlus_mother(421)+pionsMinus_mother(431)+" ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)"+pionsPlus_mother(431)+pionsMinus_mother(421)+")",mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut D0star_Ds = Form("( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==423) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)"+pionsPlus_mother(421)+pionsMinus_mother(431)+" ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==423) && (abs(taum_MC_GD_MOTHER_ID)==%i) "+pionsPlus_mother(431)+pionsMinus_mother(421)+")",mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut D0_Dsstar = Form("( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==433) && (abs(taum_MC_GD_MOTHER_ID)==%i)"+pionsPlus_mother(421)+pionsMinus_mother(431)+" ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==433) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) "+pionsPlus_mother(431)+pionsMinus_mother(421)+")",mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut D0star_Dsstar = Form("( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==423) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==433) && (abs(taum_MC_GD_MOTHER_ID)==%i)"+pionsPlus_mother(421)+pionsMinus_mother(431)+" ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==433) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==423) && (abs(taum_MC_GD_MOTHER_ID)==%i)"+pionsPlus_mother(431)+pionsMinus_mother(421)+")",mother_ID,mother_ID,mother_ID,mother_ID);
 
     // D+ D0
-    TCut Dp_D0 = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
-    TCut Dpstar_D0 = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID);
-    TCut Dp_D0star = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==423) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==423) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
-    TCut Dpstar_D0star = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==423) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==423) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==423) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==423) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut Dp_D0 = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)"+pionsPlus_mother(411)+pionsMinus_mother(421)+" ) || ( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)"+pionsPlus_mother(421)+pionsMinus_mother(411)+")",mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut Dpstar_D0 = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)"+pionsPlus_mother(411)+pionsMinus_mother(421)+") || ( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i)"+pionsPlus_mother(421)+pionsMinus_mother(411)") || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)"+pionsPlus_motherDstarPlus+pionsMinus_mother(421)+") || ( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)"+pionsMinus_motherDstarPlus+pionsPlus_mother(421)+")",mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut Dp_D0star = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==423) && (abs(taum_MC_GD_MOTHER_ID)==%i)"+pionsPlus_mother(411)+pionsMinus_mother(421)+") || ( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==423) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)"+pionsPlus_mother(421)+pionsMinus_mother(411)+")",mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut Dpstar_D0star = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==423) && (abs(taum_MC_GD_MOTHER_ID)==%i)"+pionsPlus_mother(411)+pionsMinus_mother(421)+" ) || ( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==423) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i)"+pionsPlus_mother(421)+pionsMinus_mother(411)+") || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 421) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==423) && (abs(taum_MC_GD_MOTHER_ID)==%i)"+pionsPlus_motherDstarPlus+pionsMinus_mother(421)+") || ( (abs(taup_TRUEID) == 421) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==423) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)"+pionsMinus_motherDstarPlus+pionsPlus_mother(421)+")",mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID);
 
     // D+ Ds
-    TCut Dp_Ds = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
-    TCut Dpstar_Ds = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) &&  (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID);
-    TCut Dp_Dsstar = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==433) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==433) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
-    TCut Dpstar_Dsstar = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==433) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==433) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==433) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==433) && (abs(taup_MC_GD_MOTHER_ID)==%i) &&  (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut Dp_Ds = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)"+pionsPlus_mother(411)+pionsMinus_mother(431)+") || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)"+pionsPlus_mother(431)+pionsMinus_mother(411)+")",mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut Dpstar_Ds = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)"+pionsPlus_mother(411)+pionsMinus_mother(431)+") || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) &&  (abs(taum_MC_GD_MOTHER_ID)==%i)"+pionsPlus_mother(431)+pionsMinus_mother(411)+") || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)"+pionsPlus_motherDstarPlus+pionsMinus_mother(431)+") || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)"+pionsMinus_motherDstarPlus+pionsPlus_mother(431)+")",mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut Dp_Dsstar = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==433) && (abs(taum_MC_GD_MOTHER_ID)==%i)"+pionsPlus_mother(411)+pionsMinus_mother(431)+") || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==433) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)"+pionsPlus_mother(431)+pionsMinus_mother(411)+")",mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut Dpstar_Dsstar = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==433) && (abs(taum_MC_GD_MOTHER_ID)==%i)"+pionsPlus_mother(411)+pionsMinus_mother(431)+") || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==433) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i)"+pionsPlus_mother(431)+pionsMinus_mother(411)+") || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 431) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==433) && (abs(taum_MC_GD_MOTHER_ID)==%i)"+pionsPlus_motherDstarPlus+pionsMinus_mother(431)+") || ( (abs(taup_TRUEID) == 431) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==433) && (abs(taup_MC_GD_MOTHER_ID)==%i) &&  (abs(taum_MC_MOTHER_ID)==%i)"+pionsMinus_motherDstarPlus+pionsPlus_mother(431)+")",mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID);
 
     if(name == "Ds_Ds") // Ds+Ds-
     {
