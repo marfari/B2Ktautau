@@ -1934,6 +1934,178 @@ def run_fdfsolver(year, species, line, x0, params, use_generalised_region, max_i
     else:
         raise ValueError
 
+def loop_over_tree(inTree, outTree, year, species, line, is_cocktailMC, isD0D0K, m, V, x_true_names):
+    global nIter, status, x_true, change_L
+
+    Big_start = time.time()
+    num_entries = inTree.GetEntries()
+
+    for evt in range(num_entries):
+
+        start = time.time()
+        print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", " evt = ", evt, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+
+        entry = inTree.GetEntry(evt) 
+
+        # Get vector m and covariance matrix V from TTree
+        for i in range(dimM):
+
+            if isD0D0K:
+                m[i] = getattr(inTree, "df_mprime_{0}".format(i+1))
+            else:
+                m[i] = getattr(inTree, "df_m_{0}".format(i+1)) 
+
+            for j in range(dimM):
+                if isD0D0K:
+                    if(j >= i):
+                        V[i][j] = getattr(inTree, "df_Vprime_{0}_{1}".format(i+1,j+1)) 
+                    else:
+                        V[i][j] = getattr(inTree, "df_Vprime_{0}_{1}".format(j+1,i+1)) 
+                else:
+                    if(j >= i):
+                        V[i][j] = getattr(inTree, "df_V_{0}_{1}".format(i+1,j+1))
+                    else:
+                        V[i][j] = getattr(inTree, "df_V_{0}_{1}".format(j+1,i+1))
+
+        # True measured values
+        # m[0] = getattr(inTree, "Bp_TRUEORIGINVERTEX_X")
+        # m[1] = getattr(inTree, "Bp_TRUEORIGINVERTEX_Y")
+        # m[2] = getattr(inTree, "Bp_TRUEORIGINVERTEX_Z")
+        # m[3] = getattr(inTree, "taup_TRUEENDVERTEX_X")
+        # m[4] = getattr(inTree, "taup_TRUEENDVERTEX_Y")
+        # m[5] = getattr(inTree, "taup_TRUEENDVERTEX_Z")
+        # pi1x = getattr(inTree, "taup_pi1_TRUEP_X")
+        # pi1y = getattr(inTree, "taup_pi1_TRUEP_Y")
+        # pi1z = getattr(inTree, "taup_pi1_TRUEP_Z")
+        # E1 = getattr(inTree, "taup_pi1_TRUEP_E")
+        # pi2x = getattr(inTree, "taup_pi2_TRUEP_X")
+        # pi2y = getattr(inTree, "taup_pi2_TRUEP_Y")
+        # pi2z = getattr(inTree, "taup_pi2_TRUEP_Z")
+        # E2 = getattr(inTree, "taup_pi2_TRUEP_E")
+        # pi3x = getattr(inTree, "taup_pi3_TRUEP_X")
+        # pi3y = getattr(inTree, "taup_pi3_TRUEP_Y")
+        # pi3z = getattr(inTree, "taup_pi3_TRUEP_Z")
+        # E3 = getattr(inTree, "taup_pi3_TRUEP_E")
+        # m[6] = pi1x + pi2x + pi3x
+        # m[7] = pi1y + pi2y + pi3y
+        # m[8] = pi1z + pi2z + pi3z
+        # m[9] = E1 + E2 + E3
+        # m[10] = getattr(inTree, "taum_TRUEENDVERTEX_X")
+        # m[11] = getattr(inTree, "taum_TRUEENDVERTEX_Y")
+        # m[12] = getattr(inTree, "taum_TRUEENDVERTEX_Z")
+        # pi4x = getattr(inTree, "taum_pi1_TRUEP_X")
+        # pi4y = getattr(inTree, "taum_pi1_TRUEP_Y")
+        # pi4z = getattr(inTree, "taum_pi1_TRUEP_Z")
+        # E4 = getattr(inTree, "taum_pi1_TRUEP_E")
+        # pi5x = getattr(inTree, "taum_pi2_TRUEP_X")
+        # pi5y = getattr(inTree, "taum_pi2_TRUEP_Y")
+        # pi5z = getattr(inTree, "taum_pi2_TRUEP_Z")
+        # E5 = getattr(inTree, "taum_pi2_TRUEP_E")
+        # pi6x = getattr(inTree, "taum_pi3_TRUEP_X")
+        # pi6y = getattr(inTree, "taum_pi3_TRUEP_Y")
+        # pi6z = getattr(inTree, "taum_pi3_TRUEP_Z")
+        # E6 = getattr(inTree, "taum_pi3_TRUEP_E")
+        # m[13] = pi4x + pi5x + pi6x
+        # m[14] = pi4y + pi5y + pi6y
+        # m[15] = pi4z + pi5z + pi6z
+        # m[16] = E4 + E5 + E6
+        # m[17] = getattr(inTree, "Bp_TRUEENDVERTEX_X")
+        # m[18] = getattr(inTree, "Bp_TRUEENDVERTEX_Y")
+        # m[19] = getattr(inTree, "Kp_TRUEP_X")
+        # m[20] = getattr(inTree, "Kp_TRUEP_Y")
+        # m[21] = getattr(inTree, "Kp_TRUEP_Z")
+        
+        if((species == 10) or (species == 11) or (species == 12) or (species == 1) or (species == 4) or (species == 9) or is_cocktailMC):
+            for i in range(len(x_true_names)):
+                x_true.append( getattr(inTree, x_true_names[i]) )
+        
+        RPz = getattr(inTree, "Kp_RP_Z")
+        # RPz = getattr(inTree, "Bp_TRUEENDVERTEX_Z")
+        eventNumber = getattr(inTree, "eventNumber")
+
+        # Invert matrix V
+        W = np.linalg.inv(V)
+        # print(np.dot(W,V))
+        # print(np.linalg.eig(V))
+
+        BVx = getattr(inTree, "Bp_ENDVERTEX_X")
+        BVy = getattr(inTree, "Bp_ENDVERTEX_Y")
+        BVz = getattr(inTree, "Bp_ENDVERTEX_Z")
+        # global BV_offline 
+        BV_offline = ROOT.Math.XYZPoint(BVx, BVy, BVz)
+
+        params = [m, W, RPz, eventNumber]
+
+        change_L = 0
+
+        # Single initialisation
+        # init[0] = 14
+        # run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+        # if(status != 0):
+        #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
+        # if(status != 0):
+        #     change_L = 1
+        #     run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+        # if(status != 0):
+        #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
+        # if(status != 0):
+        #     change_L = 2
+        #     run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+        # if(status != 0):
+        #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
+
+        # Lowest chi2 (DEFAULT)
+        lowest_chi2(year, species, line, BV_offline, params, [0,1,2,3,4], max_iter=10000, eps=0.000001) 
+
+        for i in range(N_local_minima[0]):
+            M_local[i] =  M_local_minima[i]
+            Chi2_local[i] = Chi2_local_minima[i]
+
+        U = U_cov(x,params,V)
+
+        for i in range(dimM+dimX):
+            X[i][0] = x[i]
+            X_ERR[i][0] = np.sqrt(U[i][i])
+        for i in range(dimM+dimX+dimC):
+            F[i][0] = f[i]
+
+        chi2[0] =  chi2_value
+        tolerance[0] = tol_value
+        STATUS[0] = status
+        NITER[0] = nIter
+
+        mass_squared = x[dimM+6]
+        if(mass_squared > 0):
+            MB[0] = np.sqrt( mass_squared )
+        else:
+            MB[0] = - np.sqrt( -mass_squared )
+
+        dMB_squared = np.sqrt(U[dimM+6][dimM+6])
+        dMB[0] =  dMB_squared/(2*np.abs(MB[0]))
+
+        print("init = ", init[0], "status = ", STATUS[0], "MB = ", MB[0], "dMB = ", dMB[0], "chi2 = ", chi2[0], "sum = ", tolerance[0], "N_local = ", N_local_minima[0])
+
+        ######################################################################
+        # MB0[0] = run_solver(0, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+        # MB1[0] = run_solver(1, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+        # MB2[0] = run_solver(2, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+        # MB3[0] = run_solver(3, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+        # MB4[0] = run_solver(4, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+
+        end = time.time()
+        theTime[0] = end-start
+        print("time = ", theTime[0], " s")
+
+        outTree.Fill()
+        x_true.clear()
+        M_local_minima.clear()
+        Chi2_local_minima.clear()
+        nIter = 0
+
+    Big_end = time.time()
+    print("Run in {0} s".format(Big_end-Big_start))
+
+
 def main(argv):
     global X, X_ERR, F, STATUS, NITER, MB, dMB, init, MB0, MB1, MB2, MB3, MB4
     global reader_taup_PX, reader_taup_PY, reader_taup_PZ, reader_taum_PX, reader_taum_PY, reader_taum_PZ
@@ -1964,7 +2136,37 @@ def main(argv):
     isDpDmK = False
     if((species == 4) or (species == 5) or (species == 6)):
         isDpDmK = True
-    
+
+    isBuDDKp_cocktail = False
+    isBdDDKp_cocktail = False
+    isBsDDKp_cocktail = False
+    isBuDDK0_cocktail = False
+    isBdDDK0_cocktail = False
+    isBuDD_cocktail = False
+    isBdDD_cocktail = False
+    isBsDD_cocktail = False
+
+    if( (species == 100) or (species == 101) or (species == 102) ):
+        isBuDDKp_cocktail = True
+    if(species == 110):
+        isBdDDKp_cocktail = True
+    if(species == 120):
+        isBsDDKp_cocktail = True
+    if(species == 130):
+        isBuDDK0_cocktail = True
+    if( (species == 140) or (species == 141) ):
+        isBdDDK0_cocktail = True
+    if( (species == 150) or (species == 151) ):
+        isBuDD_cocktail = True
+    if( (species == 160) or (species == 161) or (species == 162) or (species == 163) ):
+        isBdDD_cocktail = True
+    if( (species == 170) or (species == 171) or (species == 172) or (species == 173) ):
+        isBsDD_cocktail = True
+
+    is_cocktailMC = False
+    if(isBuDDKp_cocktail or isBdDDKp_cocktail or isBsDDKp_cocktail or isBuDDK0_cocktail or isBdDDK0_cocktail or isBuDD_cocktail or isBdDD_cocktail or isBsDD_cocktail):
+        is_cocktailMC = True
+
     global mtau, mnu
 
     if isD0D0K: # B+ -> D0 D0 K+
@@ -1979,7 +2181,7 @@ def main(argv):
         print("Computing 1st derivatives")
         symbolic_f = equations_f_exp(params)
         print("Finished computing 1st derivatives")
-        if isKtautau:
+        if isKtautau or is_cocktailMC:
             with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/first_derivatives_ktautau.npy", "wb") as first_derivative_file:
                 np.save(first_derivative_file, symbolic_f)
         if isDpDmK:
@@ -1992,7 +2194,7 @@ def main(argv):
         print("Computing 2nd derivatives")
         symbolic_df = equations_df_exp(params)
         print("Finished computing 2nd derivatives")
-        if isKtautau:
+        if isKtautau or is_cocktailMC:
             with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives_ktautau.npy", "wb") as second_derivative_file:
                 np.save(second_derivative_file, symbolic_df)
         if isDpDmK:
@@ -2005,7 +2207,7 @@ def main(argv):
         print("Computing 2nd derivatives wrt m")
         symbolic_dfm = equations_dfm_exp(params)
         print("Finished computing 2nd derivatives wrt m")
-        if isKtautau:
+        if isKtautau or is_cocktailMC:
             with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives_m_ktautau.npy", "wb") as second_derivative_m_file:
                 np.save(second_derivative_m_file, symbolic_dfm)
         if isDpDmK:
@@ -2017,7 +2219,7 @@ def main(argv):
 
         print("Computing chi2 expression")
         symbolic_chi2 = chisquare(params)
-        if isKtautau:
+        if isKtautau or is_cocktailMC:
             with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/chisquare_ktautau.npy", "wb") as chi2_file:
                 np.save(chi2_file, symbolic_chi2)
         if isDpDmK:
@@ -2030,7 +2232,7 @@ def main(argv):
         print("Computing bordered Hessian")
         symbolic_bH = bordered_Hessian(params)
         print("Finished computing bordered Hessian")
-        if isKtautau:
+        if isKtautau or is_cocktailMC:
             with open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/borderedHessian_ktautau.npy", "wb") as bordHess_file:
                 np.save(bordHess_file, symbolic_bH)
         if isDpDmK:
@@ -2048,7 +2250,7 @@ def main(argv):
         global lambdify_f, lambdify_df, lambdify_dfm, lambdify_chi2, lambdify_bH
 
         print("Loading 1st derivatives")
-        if isKtautau:
+        if isKtautau or is_cocktailMC:
             symbolic_f = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/first_derivatives_ktautau.npy")
         if isDpDmK:
             symbolic_f = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/first_derivatives_dpdmk.npy")
@@ -2057,7 +2259,7 @@ def main(argv):
         lambdify_f = sp.lambdify( (x_symbols, m_symbols, W_symbols, RPz_symbol), symbolic_f, "numpy")
 
         print("Loading 2nd derivatives")
-        if isKtautau:
+        if isKtautau or is_cocktailMC:
             symbolic_df = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives_ktautau.npy")
         if isDpDmK:
             symbolic_df = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives_dpdmk.npy") 
@@ -2066,7 +2268,7 @@ def main(argv):
         lambdify_df = sp.lambdify( (x_symbols, m_symbols, W_symbols, RPz_symbol), symbolic_df, "numpy")
 
         print("Loading 2nd derivatives wrt m")
-        if isKtautau:
+        if isKtautau or is_cocktailMC:
             symbolic_dfm = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives_m_ktautau.npy")
         if isDpDmK:
             symbolic_dfm = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/second_derivatives_m_dpdmk.npy")
@@ -2075,7 +2277,7 @@ def main(argv):
         lambdify_dfm = sp.lambdify( (x_symbols, m_symbols, W_symbols, RPz_symbol), symbolic_dfm, "numpy")
         
         print("Loading chi2 expression")
-        if isKtautau:
+        if isKtautau or is_cocktailMC:
             symbolic_chi2 = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/chisquare_ktautau.npy")
         if isDpDmK:
             symbolic_chi2 = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/chisquare_dpdmk.npy")
@@ -2084,7 +2286,7 @@ def main(argv):
         lambdify_chi2 = sp.lambdify( (x_symbols, m_symbols, W_symbols, RPz_symbol), symbolic_chi2, "numpy")
 
         print("Loading bordered Hessian expression")
-        if isKtautau:
+        if isKtautau or is_cocktailMC:
             symbolic_bH = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/borderedHessian_ktautau.npy")
         if isDpDmK:
             symbolic_bH = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/borderedHessian_dpdmk.npy")
@@ -2092,12 +2294,62 @@ def main(argv):
             symbolic_bH = np.load("/panfs/felician/B2Ktautau/workflow/standalone_fitter/borderedHessian_d0d0k.npy")
         lambdify_bH = sp.lambdify( (x_symbols_2nd_test, m_symbols, W_symbols, RPz_symbol), symbolic_bH, "numpy")
 
+    # Cocktail MC names
+    if(species == 100):
+        names = ["BuD0D0Kp", "BuD0starD0Kp", "BuD0D0starKp", "BuD0starD0starKp"] # B+ -> D0 D0 K+
+    elif(species == 101):
+        names = ["BuDpDmKp", "BuDpstarDmKp", "BuDpDmstarKp", "BuDpstarDmstarKp"] # B+ -> D+ D- K+
+    elif(species == 102):
+        names = ["BuDsDsKp", "BuDsstarDsKp", "BuDsDsstarKp", "BuDsstarDsstarKp"] # B+ -> Ds+ Ds- K+
+    elif(species == 110):
+        names = ["BdDmD0Kp", "BdDmstarD0Kp", "BdDmD0starKp", "BdDmstarD0starKp"] # B0 -> D- D0 K+
+    elif(species == 120):
+        names = ["BsDsD0Kp", "BsDsstarD0Kp", "BsDsD0starKp", "BsDsstarD0starKp"] # Bs -> Ds- D0 K+
+    elif(species == 130):
+        names = ["BuD0DpK0", "BuD0starDpK0", "BuD0DpstarK0", "BuD0starDpstarK0"] # B+ -> D0 D+ K0
+    elif(species == 140):
+        names = ["BdDpDmK0", "BdDpstarDmK0", "BdDpDmstarK0", "BdDpstarDmstarK0"] # B0 -> D+ D- K0
+    elif(species == 141):
+        names = ["BdD0D0K0", "BdD0starD0K0", "BdD0D0starK0", "BdD0starD0starK0"] # B0 -> D0 D0 K0
+    elif(species == 150):
+        names = ["BuD0Ds", "BuD0starDs", "BuD0Dsstar", "BuD0starDsstar"] # B+ -> D0 Ds+
+    elif(species == 151):
+        names = ["BuD0Dp", "BuD0starDp", "BuD0Dpstar", "BuD0starDpstar"] # B+ -> D0 D+
+    elif(species == 160):
+        names = ["BdD0D0", "BdD0starD0", "BdD0D0star", "BdD0starD0star"] # B0 -> D0 D0
+    elif(species == 161):
+        names = ["BdDpDm", "BdDpstarDm", "BdDpDmstar", "BdDpstarDmstar"] # B0 -> D+ D-
+    elif(species == 162):
+        names = ["BdDpDs", "BdDpstarDs", "BdDpDsstar", "BdDpstarDsstar"] # B0 -> D- Ds+
+    elif(species == 163):
+        names = ["BdDsDs", "BdDsstarDs", "BdDsDsstar", "BdDsstarDsstar"] # B0 -> Ds+ Ds
+    elif(species == 170):
+        names = ["BsDsDs", "BsDsstarDs", "BsDsDsstar", "BsDsstarDsstar"] # Bs -> Ds+ Ds-
+    elif(species == 171):
+        names = ["BsDpDs", "BsDpstarDs", "BsDpDsstar", "BsDpstarDsstar"] # Bs -> D- Ds+
+    elif(species == 172):
+        names = ["BsDpDm", "BsDpstarDm", "BsDpDmstar", "BsDpstarDmstar"] # Bs -> D+ D-
+    elif(species == 173):
+        names = ["BsD0D0", "BsD0starD0", "BsD0D0star", "BsD0starD0star"] # Bs -> D0 D0
+
     fc = ROOT.TFileCollection("fc", "fc", RECO_files, 1, line)
-    t = ROOT.TChain("DecayTree")
-    t.AddFileInfoList(fc.GetList())
+    if(is_cocktailMC):
+        inTrees = []
+        for i in range(4):
+            inTrees.append(ROOT.TChain(names[i]+"/DecayTree"))
+            inTrees[i].AddFileInfoList(fc.GetList())
+
+    else:
+        t = ROOT.TChain("DecayTree")
+        t.AddFileInfoList(fc.GetList())
 
     file = ROOT.TFile.Open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201{0}/Species_{1}/{2}.root".format(year,species,line), "UPDATE")
-    tree = ROOT.TTree("DecayTree", "DecayTree")
+    if(is_cocktailMC):
+        outTrees = []
+        for i in range(4):            
+            outTrees.append( ROOT.TTree("DecayTree", "DecayTree") )
+    else:
+        tree = ROOT.TTree("DecayTree", "DecayTree")
 
     x_names = ["df_PVx", "df_PVy", "df_PVz", "df_DV1x", "df_DV1y", "df_DV1z", "df_3pi1_PX", "df_3pi1_PY", "df_3pi1_PZ", "df_3pi1_PE", "df_DV2x", "df_DV2y", "df_DV2z", "df_3pi2_PX", "df_3pi2_PY", "df_3pi2_PZ", "df_3pi2_PE", "df_RPx", "df_RPy", "df_Kp_PX", "df_Kp_PY", "df_Kp_PZ", "df_BVx", "df_BVy", "df_BVz", "df_Bp_PX", "df_Bp_PY", "df_Bp_PZ", "df_Bp_M2", "df_taup_PX", "df_taup_PY", "df_taup_PZ", "df_taup_PE", "df_antinutau_PX", "df_antinutau_PY", "df_antinutau_PZ", "df_antinutau_PE", "df_taum_PX", "df_taum_PY", "df_taum_PZ", "df_taum_PE", "df_nutau_PX", "df_nutau_PY", "df_nutau_PZ", "df_nutau_PE"]
     x_err_names = ["df_PVx_err", "df_PVy_err", "df_PVz_err", "df_DV1x_err", "df_DV1y_err", "df_DV1z_err", "df_3pi1_PX_err", "df_3pi1_PY_err", "df_3pi1_PZ_err", "df_3pi1_PE_err", "df_DV2x_err", "df_DV2y_err", "df_DV2z_err", "df_3pi2_PX_err", "df_3pi2_PY_err", "df_3pi2_PZ_err", "df_3pi2_PE_err", "df_RPx_err", "df_RPy_err", "df_Kp_PX_err", "df_Kp_PY_err", "df_Kp_PZ_err", "df_BVx_err", "df_BVy_err", "df_BVz_err", "df_Bp_PX_err", "df_Bp_PY_err", "df_Bp_PZ_err", "df_Bp_M2_err", "df_taup_PX_err", "df_taup_PY_err", "df_taup_PZ_err", "df_taup_PE_err", "df_antinutau_PX_err", "df_antinutau_PY_err", "df_antinutau_PZ_err", "df_antinutau_PE_err", "df_taum_PX_err", "df_taum_PY_err", "df_taum_PZ_err", "df_taum_PE_err", "df_nutau_PX_err", "df_nutau_PY_err", "df_nutau_PZ_err", "df_nutau_PE_err"]
@@ -2107,29 +2359,49 @@ def main(argv):
     if isD0D0K:
         x_true_names = ["Bp_TRUEENDVERTEX_X", "Bp_TRUEENDVERTEX_Y", "Bp_TRUEENDVERTEX_Z", "Bp_TRUEP_X", "Bp_TRUEP_Y", "Bp_TRUEP_Z", "D0_TRUEP_X", "D0_TRUEP_Y", "D0_TRUEP_Z", "D0_TRUEP_E", "D0_pi1_TRUEP_X", "D0_pi1_TRUEP_Y", "D0_pi1_TRUEP_Z", "D0_pi1_TRUEP_E", "D0_pi2_TRUEP_X", "D0_pi2_TRUEP_Y", "D0_pi2_TRUEP_Z", "D0_pi2_TRUEP_E", "D0_pi3_TRUEP_X", "D0_pi3_TRUEP_Y", "D0_pi3_TRUEP_Z", "D0_pi3_TRUEP_E", "D0bar_TRUEP_X", "D0bar_TRUEP_Y", "D0bar_TRUEP_Z", "D0bar_TRUEP_E", "D0bar_pi1_TRUEP_X", "D0bar_pi1_TRUEP_Y", "D0bar_pi1_TRUEP_Z", "D0bar_pi1_TRUEP_E", "D0bar_pi2_TRUEP_X", "D0bar_pi2_TRUEP_Y", "D0bar_pi2_TRUEP_Z", "D0bar_pi2_TRUEP_E", "D0bar_pi3_TRUEP_X", "D0bar_pi3_TRUEP_Y", "D0bar_pi3_TRUEP_Z", "D0bar_pi3_TRUEP_E"]
 
-    for i in range(dimM+dimX):
-       tree.Branch(x_names[i], X[i], x_names[i]+"/D")
-       tree.Branch(x_err_names[i], X_ERR[i], x_err_names[i]+"/D")
-       # tree.Branch("df_det_{0}".format(i), D[i], "df_det_{0}/D".format(i))
-    for i in range(dimM+dimX+dimC):
-       tree.Branch("df_F_{0}".format(i), F[i], "df_F_{0}/D".format(i))
-    tree.Branch("df_status", STATUS, "df_status/i")
-    tree.Branch("df_nIter", NITER, "df_nIter/i")
-    tree.Branch("df_Bp_M", MB, "df_Bp_M/D")
-    tree.Branch("df_Bp_MERR", dMB, "df_Bp_MERR/D")
-    tree.Branch("df_chi2", chi2, "df_chi2/D")
-    tree.Branch("df_tolerance", tolerance, "df_tolerance/D")
-    tree.Branch("df_init", init, "df_init/i")
-    tree.Branch("df_N_local_min", N_local_minima, "df_N_local_min/i")
-    tree.Branch("df_M_local_min", M_local, "df_M_local_min[df_N_local_min]/D")
-    tree.Branch("df_chi2_local_min", Chi2_local, "df_chi2_local_min[df_N_local_min]/D")
-    tree.Branch("df_time", theTime, "df_time/D")
+    if(is_cocktailMC):
+        for k in range(4):
+            for i in range(dimM+dimX):
+                outTrees[k].Branch(x_names[i], X[i], x_names[i]+"/D")
+                outTrees[k].Branch(x_err_names[i], X_ERR[i], x_err_names[i]+"/D")
+            for i in range(dimM+dimX+dimC):
+                outTrees[k].Branch("df_F_{0}".format(i), F[i], "df_F_{0}/D".format(i))
+            outTrees[k].Branch("df_status", STATUS, "df_status/i")
+            outTrees[k].Branch("df_nIter", NITER, "df_nIter/i")
+            outTrees[k].Branch("df_Bp_M", MB, "df_Bp_M/D")
+            outTrees[k].Branch("df_Bp_MERR", dMB, "df_Bp_MERR/D")
+            outTrees[k].Branch("df_chi2", chi2, "df_chi2/D")
+            outTrees[k].Branch("df_tolerance", tolerance, "df_tolerance/D")
+            outTrees[k].Branch("df_init", init, "df_init/i")
+            outTrees[k].Branch("df_N_local_min", N_local_minima, "df_N_local_min/i")
+            outTrees[k].Branch("df_M_local_min", M_local, "df_M_local_min[df_N_local_min]/D")
+            outTrees[k].Branch("df_chi2_local_min", Chi2_local, "df_chi2_local_min[df_N_local_min]/D")
+            outTrees[k].Branch("df_time", theTime, "df_time/D")
+    else:
 
-    # tree.Branch("df_MB0", MB0, "df_MB0/D")
-    # tree.Branch("df_MB1", MB1, "df_MB1/D")
-    # tree.Branch("df_MB2", MB2, "df_MB2/D")
-    # tree.Branch("df_MB3", MB3, "df_MB3/D")
-    # tree.Branch("df_MB4", MB4, "df_MB4/D")
+        for i in range(dimM+dimX):
+            tree.Branch(x_names[i], X[i], x_names[i]+"/D")
+            tree.Branch(x_err_names[i], X_ERR[i], x_err_names[i]+"/D")
+            # tree.Branch("df_det_{0}".format(i), D[i], "df_det_{0}/D".format(i))
+        for i in range(dimM+dimX+dimC):
+            tree.Branch("df_F_{0}".format(i), F[i], "df_F_{0}/D".format(i))
+        tree.Branch("df_status", STATUS, "df_status/i")
+        tree.Branch("df_nIter", NITER, "df_nIter/i")
+        tree.Branch("df_Bp_M", MB, "df_Bp_M/D")
+        tree.Branch("df_Bp_MERR", dMB, "df_Bp_MERR/D")
+        tree.Branch("df_chi2", chi2, "df_chi2/D")
+        tree.Branch("df_tolerance", tolerance, "df_tolerance/D")
+        tree.Branch("df_init", init, "df_init/i")
+        tree.Branch("df_N_local_min", N_local_minima, "df_N_local_min/i")
+        tree.Branch("df_M_local_min", M_local, "df_M_local_min[df_N_local_min]/D")
+        tree.Branch("df_chi2_local_min", Chi2_local, "df_chi2_local_min[df_N_local_min]/D")
+        tree.Branch("df_time", theTime, "df_time/D")
+
+        # tree.Branch("df_MB0", MB0, "df_MB0/D")
+        # tree.Branch("df_MB1", MB1, "df_MB1/D")
+        # tree.Branch("df_MB2", MB2, "df_MB2/D")
+        # tree.Branch("df_MB3", MB3, "df_MB3/D")
+        # tree.Branch("df_MB4", MB4, "df_MB4/D")
 
     # Load TMVA library (once)
     ROOT.TMVA.Tools.Instance()
@@ -2147,7 +2419,7 @@ def main(argv):
     weightfile_taum_PY = ""
     weightfile_taum_PZ = ""
 
-    if((species == 1) or (species == 10) or (species == 11) or (species == 12) or (species == 2) or (species == 3)): # Ktautau
+    if(isKtautau or is_cocktailMC): # Ktautau
         weightfile_taup_PX = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taup_PX/dataset/weights/TMVARegression_taup_TRUEP_X_MLP.weights.xml"
         weightfile_taup_PY = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taup_PY/dataset/weights/TMVARegression_taup_TRUEP_Y_MLP.weights.xml"
         weightfile_taup_PZ = "/panfs/felician/MLP_weights/KTauTau_MLP_Train_taup_PZ/dataset/weights/TMVARegression_taup_TRUEP_Z_MLP.weights.xml"
@@ -2505,179 +2777,366 @@ def main(argv):
     m = np.zeros(dimM)
     V = np.zeros((dimM,dimM))
 
-    Big_start = time.time()
-    num_entries = t.GetEntries()
+    if(is_cocktailMC):
+        for k in range(4):
+            inTree = inTrees[k]
+            outTree = outTrees[k]
 
-    for evt in range(num_entries):
+            loop_over_tree(inTree, outTree, year, species, line, is_cocktailMC, isD0D0K, m, V, x_true_names, )
+    else:
+        loop_over_tree(t, tree, year, species, line, is_cocktailMC, isD0D0K, m, V, x_true_names)
 
-        start = time.time()
-        print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", " evt = ", evt, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-        global nIter, status
+    # if(is_cocktailMC):
 
-        entry = t.GetEntry(evt) 
+    #     for k in range(4):
+    #         t = inTrees[k]
 
-        # Get vector m and covariance matrix V from TTree
-        for i in range(dimM):
+    #         Big_start = time.time()
+    #         num_entries = t.GetEntries()
 
-            if isD0D0K:
-                m[i] = getattr(t, "df_mprime_{0}".format(i+1))
-            else:
-                m[i] = getattr(t, "df_m_{0}".format(i+1)) 
+    #         for evt in range(num_entries):
 
-            for j in range(dimM):
-                if isD0D0K:
-                    if(j >= i):
-                        V[i][j] = getattr(t, "df_Vprime_{0}_{1}".format(i+1,j+1)) 
-                    else:
-                        V[i][j] = getattr(t, "df_Vprime_{0}_{1}".format(j+1,i+1)) 
-                else:
-                    if(j >= i):
-                        V[i][j] = getattr(t, "df_V_{0}_{1}".format(i+1,j+1))
-                    else:
-                        V[i][j] = getattr(t, "df_V_{0}_{1}".format(j+1,i+1))
+    #             start = time.time()
+    #             print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", " evt = ", evt, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
 
-        # true measured values
-        # m[0] = getattr(t, "Bp_TRUEORIGINVERTEX_X")
-        # m[1] = getattr(t, "Bp_TRUEORIGINVERTEX_Y")
-        # m[2] = getattr(t, "Bp_TRUEORIGINVERTEX_Z")
-        # m[3] = getattr(t, "taup_TRUEENDVERTEX_X")
-        # m[4] = getattr(t, "taup_TRUEENDVERTEX_Y")
-        # m[5] = getattr(t, "taup_TRUEENDVERTEX_Z")
-        # pi1x = getattr(t, "taup_pi1_TRUEP_X")
-        # pi1y = getattr(t, "taup_pi1_TRUEP_Y")
-        # pi1z = getattr(t, "taup_pi1_TRUEP_Z")
-        # E1 = getattr(t, "taup_pi1_TRUEP_E")
-        # pi2x = getattr(t, "taup_pi2_TRUEP_X")
-        # pi2y = getattr(t, "taup_pi2_TRUEP_Y")
-        # pi2z = getattr(t, "taup_pi2_TRUEP_Z")
-        # E2 = getattr(t, "taup_pi2_TRUEP_E")
-        # pi3x = getattr(t, "taup_pi3_TRUEP_X")
-        # pi3y = getattr(t, "taup_pi3_TRUEP_Y")
-        # pi3z = getattr(t, "taup_pi3_TRUEP_Z")
-        # E3 = getattr(t, "taup_pi3_TRUEP_E")
-        # m[6] = pi1x + pi2x + pi3x
-        # m[7] = pi1y + pi2y + pi3y
-        # m[8] = pi1z + pi2z + pi3z
-        # m[9] = E1 + E2 + E3
-        # m[10] = getattr(t, "taum_TRUEENDVERTEX_X")
-        # m[11] = getattr(t, "taum_TRUEENDVERTEX_Y")
-        # m[12] = getattr(t, "taum_TRUEENDVERTEX_Z")
-        # pi4x = getattr(t, "taum_pi1_TRUEP_X")
-        # pi4y = getattr(t, "taum_pi1_TRUEP_Y")
-        # pi4z = getattr(t, "taum_pi1_TRUEP_Z")
-        # E4 = getattr(t, "taum_pi1_TRUEP_E")
-        # pi5x = getattr(t, "taum_pi2_TRUEP_X")
-        # pi5y = getattr(t, "taum_pi2_TRUEP_Y")
-        # pi5z = getattr(t, "taum_pi2_TRUEP_Z")
-        # E5 = getattr(t, "taum_pi2_TRUEP_E")
-        # pi6x = getattr(t, "taum_pi3_TRUEP_X")
-        # pi6y = getattr(t, "taum_pi3_TRUEP_Y")
-        # pi6z = getattr(t, "taum_pi3_TRUEP_Z")
-        # E6 = getattr(t, "taum_pi3_TRUEP_E")
-        # m[13] = pi4x + pi5x + pi6x
-        # m[14] = pi4y + pi5y + pi6y
-        # m[15] = pi4z + pi5z + pi6z
-        # m[16] = E4 + E5 + E6
-        # m[17] = getattr(t, "Bp_TRUEENDVERTEX_X")
-        # m[18] = getattr(t, "Bp_TRUEENDVERTEX_Y")
-        # m[19] = getattr(t, "Kp_TRUEP_X")
-        # m[20] = getattr(t, "Kp_TRUEP_Y")
-        # m[21] = getattr(t, "Kp_TRUEP_Z")
-        
-        if((species == 10) or (species == 11) or (species == 12) or (species == 1) or (species == 4) or (species == 9)):
-            global x_true
-            for i in range(len(x_true_names)):
-                x_true.append( getattr(t, x_true_names[i]) )
-        
-        RPz = getattr(t, "Kp_RP_Z")
-        # RPz = getattr(t, "Bp_TRUEENDVERTEX_Z")
-        eventNumber = getattr(t, "eventNumber")
+    #             entry = t.GetEntry(evt) 
 
-        # Invert matrix V
-        W = np.linalg.inv(V)
-        # print(np.dot(W,V))
-        # print(np.linalg.eig(V))
+    #             # Get vector m and covariance matrix V from TTree
+    #             for i in range(dimM):
 
-        BVx = getattr(t, "Bp_ENDVERTEX_X")
-        BVy = getattr(t, "Bp_ENDVERTEX_Y")
-        BVz = getattr(t, "Bp_ENDVERTEX_Z")
-        # global BV_offline 
-        BV_offline = ROOT.Math.XYZPoint(BVx, BVy, BVz)
+    #                 if isD0D0K:
+    #                     m[i] = getattr(t, "df_mprime_{0}".format(i+1))
+    #                 else:
+    #                     m[i] = getattr(t, "df_m_{0}".format(i+1)) 
 
-        params = [m, W, RPz, eventNumber]
+    #                 for j in range(dimM):
+    #                     if isD0D0K:
+    #                         if(j >= i):
+    #                             V[i][j] = getattr(t, "df_Vprime_{0}_{1}".format(i+1,j+1)) 
+    #                         else:
+    #                             V[i][j] = getattr(t, "df_Vprime_{0}_{1}".format(j+1,i+1)) 
+    #                     else:
+    #                         if(j >= i):
+    #                             V[i][j] = getattr(t, "df_V_{0}_{1}".format(i+1,j+1))
+    #                         else:
+    #                             V[i][j] = getattr(t, "df_V_{0}_{1}".format(j+1,i+1))
 
-        global change_L
-        change_L = 0
+    #             # True measured values
+    #             # m[0] = getattr(t, "Bp_TRUEORIGINVERTEX_X")
+    #             # m[1] = getattr(t, "Bp_TRUEORIGINVERTEX_Y")
+    #             # m[2] = getattr(t, "Bp_TRUEORIGINVERTEX_Z")
+    #             # m[3] = getattr(t, "taup_TRUEENDVERTEX_X")
+    #             # m[4] = getattr(t, "taup_TRUEENDVERTEX_Y")
+    #             # m[5] = getattr(t, "taup_TRUEENDVERTEX_Z")
+    #             # pi1x = getattr(t, "taup_pi1_TRUEP_X")
+    #             # pi1y = getattr(t, "taup_pi1_TRUEP_Y")
+    #             # pi1z = getattr(t, "taup_pi1_TRUEP_Z")
+    #             # E1 = getattr(t, "taup_pi1_TRUEP_E")
+    #             # pi2x = getattr(t, "taup_pi2_TRUEP_X")
+    #             # pi2y = getattr(t, "taup_pi2_TRUEP_Y")
+    #             # pi2z = getattr(t, "taup_pi2_TRUEP_Z")
+    #             # E2 = getattr(t, "taup_pi2_TRUEP_E")
+    #             # pi3x = getattr(t, "taup_pi3_TRUEP_X")
+    #             # pi3y = getattr(t, "taup_pi3_TRUEP_Y")
+    #             # pi3z = getattr(t, "taup_pi3_TRUEP_Z")
+    #             # E3 = getattr(t, "taup_pi3_TRUEP_E")
+    #             # m[6] = pi1x + pi2x + pi3x
+    #             # m[7] = pi1y + pi2y + pi3y
+    #             # m[8] = pi1z + pi2z + pi3z
+    #             # m[9] = E1 + E2 + E3
+    #             # m[10] = getattr(t, "taum_TRUEENDVERTEX_X")
+    #             # m[11] = getattr(t, "taum_TRUEENDVERTEX_Y")
+    #             # m[12] = getattr(t, "taum_TRUEENDVERTEX_Z")
+    #             # pi4x = getattr(t, "taum_pi1_TRUEP_X")
+    #             # pi4y = getattr(t, "taum_pi1_TRUEP_Y")
+    #             # pi4z = getattr(t, "taum_pi1_TRUEP_Z")
+    #             # E4 = getattr(t, "taum_pi1_TRUEP_E")
+    #             # pi5x = getattr(t, "taum_pi2_TRUEP_X")
+    #             # pi5y = getattr(t, "taum_pi2_TRUEP_Y")
+    #             # pi5z = getattr(t, "taum_pi2_TRUEP_Z")
+    #             # E5 = getattr(t, "taum_pi2_TRUEP_E")
+    #             # pi6x = getattr(t, "taum_pi3_TRUEP_X")
+    #             # pi6y = getattr(t, "taum_pi3_TRUEP_Y")
+    #             # pi6z = getattr(t, "taum_pi3_TRUEP_Z")
+    #             # E6 = getattr(t, "taum_pi3_TRUEP_E")
+    #             # m[13] = pi4x + pi5x + pi6x
+    #             # m[14] = pi4y + pi5y + pi6y
+    #             # m[15] = pi4z + pi5z + pi6z
+    #             # m[16] = E4 + E5 + E6
+    #             # m[17] = getattr(t, "Bp_TRUEENDVERTEX_X")
+    #             # m[18] = getattr(t, "Bp_TRUEENDVERTEX_Y")
+    #             # m[19] = getattr(t, "Kp_TRUEP_X")
+    #             # m[20] = getattr(t, "Kp_TRUEP_Y")
+    #             # m[21] = getattr(t, "Kp_TRUEP_Z")
+                
+    #             if((species == 10) or (species == 11) or (species == 12) or (species == 1) or (species == 4) or (species == 9)):
+    #                 for i in range(len(x_true_names)):
+    #                     x_true.append( getattr(t, x_true_names[i]) )
+                
+    #             RPz = getattr(t, "Kp_RP_Z")
+    #             # RPz = getattr(t, "Bp_TRUEENDVERTEX_Z")
+    #             eventNumber = getattr(t, "eventNumber")
 
-        # Single initialisation
-        # init[0] = 14
-        # run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-        # if(status != 0):
-        #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
-        # if(status != 0):
-        #     change_L = 1
-        #     run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-        # if(status != 0):
-        #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
-        # if(status != 0):
-        #     change_L = 2
-        #     run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-        # if(status != 0):
-        #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
+    #             # Invert matrix V
+    #             W = np.linalg.inv(V)
+    #             # print(np.dot(W,V))
+    #             # print(np.linalg.eig(V))
 
-        # Lowest chi2 (DEFAULT)
-        lowest_chi2(year, species, line, BV_offline, params, [0,1,2,3,4], max_iter=10000, eps=0.000001) 
+    #             BVx = getattr(t, "Bp_ENDVERTEX_X")
+    #             BVy = getattr(t, "Bp_ENDVERTEX_Y")
+    #             BVz = getattr(t, "Bp_ENDVERTEX_Z")
+    #             # global BV_offline 
+    #             BV_offline = ROOT.Math.XYZPoint(BVx, BVy, BVz)
 
-        for i in range(N_local_minima[0]):
-            M_local[i] =  M_local_minima[i]
-            Chi2_local[i] = Chi2_local_minima[i]
+    #             params = [m, W, RPz, eventNumber]
 
-        U = U_cov(x,params,V)
+    #             change_L = 0
 
-        for i in range(dimM+dimX):
-            X[i][0] = x[i]
-            X_ERR[i][0] = np.sqrt(U[i][i])
-        for i in range(dimM+dimX+dimC):
-            F[i][0] = f[i]
+    #             # Single initialisation
+    #             # init[0] = 14
+    #             # run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+    #             # if(status != 0):
+    #             #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
+    #             # if(status != 0):
+    #             #     change_L = 1
+    #             #     run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+    #             # if(status != 0):
+    #             #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
+    #             # if(status != 0):
+    #             #     change_L = 2
+    #             #     run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+    #             # if(status != 0):
+    #             #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
 
-        chi2[0] =  chi2_value
-        tolerance[0] = tol_value
-        STATUS[0] = status
-        NITER[0] = nIter
+    #             # Lowest chi2 (DEFAULT)
+    #             lowest_chi2(year, species, line, BV_offline, params, [0,1,2,3,4], max_iter=10000, eps=0.000001) 
 
-        mass_squared = x[dimM+6]
-        if(mass_squared > 0):
-            MB[0] = np.sqrt( mass_squared )
-        else:
-            MB[0] = - np.sqrt( -mass_squared )
+    #             for i in range(N_local_minima[0]):
+    #                 M_local[i] =  M_local_minima[i]
+    #                 Chi2_local[i] = Chi2_local_minima[i]
 
-        dMB_squared = np.sqrt(U[dimM+6][dimM+6])
-        dMB[0] =  dMB_squared/(2*np.abs(MB[0]))
+    #             U = U_cov(x,params,V)
 
-        print("init = ", init[0], "status = ", STATUS[0], "MB = ", MB[0], "dMB = ", dMB[0], "chi2 = ", chi2[0], "sum = ", tolerance[0], "N_local = ", N_local_minima[0])
+    #             for i in range(dimM+dimX):
+    #                 X[i][0] = x[i]
+    #                 X_ERR[i][0] = np.sqrt(U[i][i])
+    #             for i in range(dimM+dimX+dimC):
+    #                 F[i][0] = f[i]
 
-        ######################################################################
-        # MB0[0] = run_solver(0, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-        # MB1[0] = run_solver(1, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-        # MB2[0] = run_solver(2, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-        # MB3[0] = run_solver(3, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-        # MB4[0] = run_solver(4, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+    #             chi2[0] =  chi2_value
+    #             tolerance[0] = tol_value
+    #             STATUS[0] = status
+    #             NITER[0] = nIter
 
-        end = time.time()
-        theTime[0] = end-start
-        print("time = ", theTime[0], " s")
+    #             mass_squared = x[dimM+6]
+    #             if(mass_squared > 0):
+    #                 MB[0] = np.sqrt( mass_squared )
+    #             else:
+    #                 MB[0] = - np.sqrt( -mass_squared )
 
-        tree.Fill()
-        x_true.clear()
-        M_local_minima.clear()
-        Chi2_local_minima.clear()
-        nIter = 0
+    #             dMB_squared = np.sqrt(U[dimM+6][dimM+6])
+    #             dMB[0] =  dMB_squared/(2*np.abs(MB[0]))
 
-    Big_end = time.time()
-    print("Run in {0} s".format(Big_end-Big_start))
+    #             print("init = ", init[0], "status = ", STATUS[0], "MB = ", MB[0], "dMB = ", dMB[0], "chi2 = ", chi2[0], "sum = ", tolerance[0], "N_local = ", N_local_minima[0])
+
+    #             ######################################################################
+    #             # MB0[0] = run_solver(0, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+    #             # MB1[0] = run_solver(1, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+    #             # MB2[0] = run_solver(2, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+    #             # MB3[0] = run_solver(3, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+    #             # MB4[0] = run_solver(4, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+
+    #             end = time.time()
+    #             theTime[0] = end-start
+    #             print("time = ", theTime[0], " s")
+
+    #             outTrees[k].Fill()
+    #             x_true.clear()
+    #             M_local_minima.clear()
+    #             Chi2_local_minima.clear()
+    #             nIter = 0
+
+    #         Big_end = time.time()
+    #         print("Run in {0} s".format(Big_end-Big_start))
+
+    # else:
+
+    #     Big_start = time.time()
+    #     num_entries = t.GetEntries()
+
+    #     for evt in range(num_entries):
+
+    #         start = time.time()
+    #         print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", " evt = ", evt, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+
+    #         entry = t.GetEntry(evt) 
+
+    #         # Get vector m and covariance matrix V from TTree
+    #         for i in range(dimM):
+
+    #             if isD0D0K:
+    #                 m[i] = getattr(t, "df_mprime_{0}".format(i+1))
+    #             else:
+    #                 m[i] = getattr(t, "df_m_{0}".format(i+1)) 
+
+    #             for j in range(dimM):
+    #                 if isD0D0K:
+    #                     if(j >= i):
+    #                         V[i][j] = getattr(t, "df_Vprime_{0}_{1}".format(i+1,j+1)) 
+    #                     else:
+    #                         V[i][j] = getattr(t, "df_Vprime_{0}_{1}".format(j+1,i+1)) 
+    #                 else:
+    #                     if(j >= i):
+    #                         V[i][j] = getattr(t, "df_V_{0}_{1}".format(i+1,j+1))
+    #                     else:
+    #                         V[i][j] = getattr(t, "df_V_{0}_{1}".format(j+1,i+1))
+
+    #         # True measured values
+    #         # m[0] = getattr(t, "Bp_TRUEORIGINVERTEX_X")
+    #         # m[1] = getattr(t, "Bp_TRUEORIGINVERTEX_Y")
+    #         # m[2] = getattr(t, "Bp_TRUEORIGINVERTEX_Z")
+    #         # m[3] = getattr(t, "taup_TRUEENDVERTEX_X")
+    #         # m[4] = getattr(t, "taup_TRUEENDVERTEX_Y")
+    #         # m[5] = getattr(t, "taup_TRUEENDVERTEX_Z")
+    #         # pi1x = getattr(t, "taup_pi1_TRUEP_X")
+    #         # pi1y = getattr(t, "taup_pi1_TRUEP_Y")
+    #         # pi1z = getattr(t, "taup_pi1_TRUEP_Z")
+    #         # E1 = getattr(t, "taup_pi1_TRUEP_E")
+    #         # pi2x = getattr(t, "taup_pi2_TRUEP_X")
+    #         # pi2y = getattr(t, "taup_pi2_TRUEP_Y")
+    #         # pi2z = getattr(t, "taup_pi2_TRUEP_Z")
+    #         # E2 = getattr(t, "taup_pi2_TRUEP_E")
+    #         # pi3x = getattr(t, "taup_pi3_TRUEP_X")
+    #         # pi3y = getattr(t, "taup_pi3_TRUEP_Y")
+    #         # pi3z = getattr(t, "taup_pi3_TRUEP_Z")
+    #         # E3 = getattr(t, "taup_pi3_TRUEP_E")
+    #         # m[6] = pi1x + pi2x + pi3x
+    #         # m[7] = pi1y + pi2y + pi3y
+    #         # m[8] = pi1z + pi2z + pi3z
+    #         # m[9] = E1 + E2 + E3
+    #         # m[10] = getattr(t, "taum_TRUEENDVERTEX_X")
+    #         # m[11] = getattr(t, "taum_TRUEENDVERTEX_Y")
+    #         # m[12] = getattr(t, "taum_TRUEENDVERTEX_Z")
+    #         # pi4x = getattr(t, "taum_pi1_TRUEP_X")
+    #         # pi4y = getattr(t, "taum_pi1_TRUEP_Y")
+    #         # pi4z = getattr(t, "taum_pi1_TRUEP_Z")
+    #         # E4 = getattr(t, "taum_pi1_TRUEP_E")
+    #         # pi5x = getattr(t, "taum_pi2_TRUEP_X")
+    #         # pi5y = getattr(t, "taum_pi2_TRUEP_Y")
+    #         # pi5z = getattr(t, "taum_pi2_TRUEP_Z")
+    #         # E5 = getattr(t, "taum_pi2_TRUEP_E")
+    #         # pi6x = getattr(t, "taum_pi3_TRUEP_X")
+    #         # pi6y = getattr(t, "taum_pi3_TRUEP_Y")
+    #         # pi6z = getattr(t, "taum_pi3_TRUEP_Z")
+    #         # E6 = getattr(t, "taum_pi3_TRUEP_E")
+    #         # m[13] = pi4x + pi5x + pi6x
+    #         # m[14] = pi4y + pi5y + pi6y
+    #         # m[15] = pi4z + pi5z + pi6z
+    #         # m[16] = E4 + E5 + E6
+    #         # m[17] = getattr(t, "Bp_TRUEENDVERTEX_X")
+    #         # m[18] = getattr(t, "Bp_TRUEENDVERTEX_Y")
+    #         # m[19] = getattr(t, "Kp_TRUEP_X")
+    #         # m[20] = getattr(t, "Kp_TRUEP_Y")
+    #         # m[21] = getattr(t, "Kp_TRUEP_Z")
+            
+    #         if((species == 10) or (species == 11) or (species == 12) or (species == 1) or (species == 4) or (species == 9)):
+    #             for i in range(len(x_true_names)):
+    #                 x_true.append( getattr(t, x_true_names[i]) )
+            
+    #         RPz = getattr(t, "Kp_RP_Z")
+    #         # RPz = getattr(t, "Bp_TRUEENDVERTEX_Z")
+    #         eventNumber = getattr(t, "eventNumber")
+
+    #         # Invert matrix V
+    #         W = np.linalg.inv(V)
+    #         # print(np.dot(W,V))
+    #         # print(np.linalg.eig(V))
+
+    #         BVx = getattr(t, "Bp_ENDVERTEX_X")
+    #         BVy = getattr(t, "Bp_ENDVERTEX_Y")
+    #         BVz = getattr(t, "Bp_ENDVERTEX_Z")
+    #         # global BV_offline 
+    #         BV_offline = ROOT.Math.XYZPoint(BVx, BVy, BVz)
+
+    #         params = [m, W, RPz, eventNumber]
+
+    #         change_L = 0
+
+    #         # Single initialisation
+    #         # init[0] = 14
+    #         # run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+    #         # if(status != 0):
+    #         #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
+    #         # if(status != 0):
+    #         #     change_L = 1
+    #         #     run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+    #         # if(status != 0):
+    #         #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
+    #         # if(status != 0):
+    #         #     change_L = 2
+    #         #     run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+    #         # if(status != 0):
+    #         #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
+
+    #         # Lowest chi2 (DEFAULT)
+    #         lowest_chi2(year, species, line, BV_offline, params, [0,1,2,3,4], max_iter=10000, eps=0.000001) 
+
+    #         for i in range(N_local_minima[0]):
+    #             M_local[i] =  M_local_minima[i]
+    #             Chi2_local[i] = Chi2_local_minima[i]
+
+    #         U = U_cov(x,params,V)
+
+    #         for i in range(dimM+dimX):
+    #             X[i][0] = x[i]
+    #             X_ERR[i][0] = np.sqrt(U[i][i])
+    #         for i in range(dimM+dimX+dimC):
+    #             F[i][0] = f[i]
+
+    #         chi2[0] =  chi2_value
+    #         tolerance[0] = tol_value
+    #         STATUS[0] = status
+    #         NITER[0] = nIter
+
+    #         mass_squared = x[dimM+6]
+    #         if(mass_squared > 0):
+    #             MB[0] = np.sqrt( mass_squared )
+    #         else:
+    #             MB[0] = - np.sqrt( -mass_squared )
+
+    #         dMB_squared = np.sqrt(U[dimM+6][dimM+6])
+    #         dMB[0] =  dMB_squared/(2*np.abs(MB[0]))
+
+    #         print("init = ", init[0], "status = ", STATUS[0], "MB = ", MB[0], "dMB = ", dMB[0], "chi2 = ", chi2[0], "sum = ", tolerance[0], "N_local = ", N_local_minima[0])
+
+    #         ######################################################################
+    #         # MB0[0] = run_solver(0, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+    #         # MB1[0] = run_solver(1, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+    #         # MB2[0] = run_solver(2, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+    #         # MB3[0] = run_solver(3, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+    #         # MB4[0] = run_solver(4, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
+
+    #         end = time.time()
+    #         theTime[0] = end-start
+    #         print("time = ", theTime[0], " s")
+
+    #         tree.Fill()
+    #         x_true.clear()
+    #         M_local_minima.clear()
+    #         Chi2_local_minima.clear()
+    #         nIter = 0
+
+    #     Big_end = time.time()
+    #     print("Run in {0} s".format(Big_end-Big_start))
 
     file.cd()
-    tree.Write()
+    if(is_cocktailMC):
+        for i in range(4):
+            file.mkdir(names[i])
+            file.cd(names[i])
+            outTrees[i].Write()
+    else:
+        tree.Write()
     file.Close()
 
 if __name__ == "__main__":

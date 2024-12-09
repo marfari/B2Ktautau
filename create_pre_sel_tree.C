@@ -1,6 +1,7 @@
 
 Double_t eps_error(Double_t Num, Double_t Den);
 TCut DD_cut(TString name, Int_t mother_ID);
+TCut truthMatch_cocktailMC(TString name);
 
 void create_pre_sel_tree(int year, int species, int line, bool createTable)
 {   
@@ -310,65 +311,53 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     fout->cd();
     if(is_cocktailMC)
     {
-        fout->mkdir("BuD0D0Kp");
-        fout->mkdir("BuD0starD0Kp");
-        fout->mkdir("BuD0D0starKp");
-        fout->mkdir("BuD0starD0starKp");
+        TString names1[] = {"BuD0D0Kp", "BuD0starD0Kp", "BuD0D0starKp", "BuD0starD0starKp"}; // B+ -> D0 D0 K+
+        TString names2[] = {"BuDpDmKp", "BuDpstarDmKp", "BuDpDmstarKp", "BuDpstarDmstarKp"}; // B+ -> D+ D- K+
+        TString names3[] = {"BuDsDsKp", "BuDsstarDsKp", "BuDsDsstarKp", "BuDsstarDsstarKp"}; // B+ -> Ds+ Ds- K+
+        TString names4[] = {"BdDmD0Kp", "BdDmstarD0Kp", "BdDmD0starKp", "BdDmstarD0starKp"}; // B0 -> D- D0 K+
+        TString names5[] = {"BsDsD0Kp", "BsDsstarD0Kp", "BsDsD0starKp", "BsDsstarD0starKp"}; // Bs -> Ds- D0 K+
+        TString names6[] = {"BuD0DpK0", "BuD0starDpK0", "BuD0DpstarK0", "BuD0starDpstarK0"}; // B+ -> D0 D+ K0
+        TString names7[] = {"BdDpDmK0", "BdDpstarDmK0", "BdDpDmstarK0", "BdDpstarDmstarK0"}; // B0 -> D+ D- K0
+        TString names8[] = {"BdD0D0K0", "BdD0starD0K0", "BdD0D0starK0", "BdD0starD0starK0"}; // B0 -> D0 D0 K0
+        TString names9[] = {"BuD0Ds", "BuD0starDs", "BuD0Dsstar", "BuD0starDsstar"}; // B+ -> D0 Ds+
+        TString names10[] = {"BuD0Dp", "BuD0starDp", "BuD0Dpstar", "BuD0starDpstar"}; // B+ -> D0 D+
+        TString names11[] = {"BdD0D0", "BdD0starD0", "BdD0D0star", "BdD0starD0star"}; // B0 -> D0 D0
+        TString names12[] = {"BdDpDm", "BdDpstarDm", "BdDpDmstar", "BdDpstarDmstar"}; // B0 -> D+ D-
+        TString names13[] = {"BdDpDs", "BdDpstarDs", "BdDpDsstar", "BdDpstarDsstar"}; // B0 -> D- Ds+
+        TString names14[] = {"BdDsDs", "BdDsstarDs", "BdDsDsstar", "BdDsstarDsstar"}; // B0 -> Ds+ Ds-
+        TString names15[] = {"BsDsDs", "BsDsstarDs", "BsDsDsstar", "BsDsstarDsstar"}; // Bs -> Ds+ Ds-
+        TString names16[] = {"BsDpDs", "BsDpstarDs", "BsDpDsstar", "BsDpstarDsstar"}; // Bs -> D- Ds+
+        TString names17[] = {"BsDpDm", "BsDpstarDm", "BsDpDmstar", "BsDpstarDmstar"}; // Bs -> D+ D-
+        TString names18[] = {"BsD0D0", "BsD0starD0", "BsD0D0star", "BsD0starD0star"}; // Bs -> D0 D0
 
-        TTree* t_pre_sel_1 = (TTree*)t->CopyTree(pre_selections+BuD0D0Kp);
-        TTree* t_pre_sel_2 = (TTree*)t->CopyTree(pre_selections+BuD0starD0Kp);
-        TTree* t_pre_sel_3 = (TTree*)t->CopyTree(pre_selections+BuD0D0starKp);
-        TTree* t_pre_sel_4 = (TTree*)t->CopyTree(pre_selections+BuD0starD0starKp);
+        for(int i = 0; i < 4; i++)
+        {
+            TString name;
+            if(species == 100){name = names1[i];} // B+ -> D0 D0 K+
+            else if(species == 101){name = names2[i];} // B+ -> D+ D- K+
+            else if(species == 102){name = names3[i];} // B+ -> Ds+ Ds- K+
+            else if(species == 110){name = names4[i];} // B0 -> D- D0 K+
+            else if(species == 120){name = names5[i];} // Bs -> Ds- D0 K+
+            else if(species == 130){name = names6[i];} // B+ -> D0 D+ K0
+            else if(species == 140){name = names7[i];} // B0 -> D+ D- K0
+            else if(species == 141){name = names8[i];} // B0 -> D0 D0 K0
+            else if(species == 150){name = names9[i];} // B+ -> D0 Ds+
+            else if(species == 151){name = names10[i];} // B+ -> D0 D+
+            else if(species == 160){name = names11[i];} // B0 -> D0 D0
+            else if(species == 161){name = names12[i];} // B0 -> D+ D-
+            else if(species == 162){name = names13[i];} // B0 -> D- Ds+
+            else if(species == 163){name = names14[i];} // B0 -> Ds+ Ds-
+            else if(species == 170){name = names15[i];} // Bs -> Ds+ Ds-
+            else if(species == 171){name = names16[i];} // Bs -> D- Ds+
+            else if(species == 172){name = names17[i];} // Bs -> D+ D-
+            else if(species == 173){name = names18[i];} // Bs -> D0 D0
 
-        fout->cd("BuD0D0Kp");
-        t_pre_sel_1->Write();
-
-        fout->cd("BuD0starD0Kp");
-        t_pre_sel_2->Write();
-
-        fout->cd("BuD0D0starKp");
-        t_pre_sel_3->Write();
-
-        fout->cd("BuD0starD0starKp");
-        t_pre_sel_4->Write();
+            fout->mkdir(name);
+            TTree* t_pre_sel = (TTree*)t->CopyTree(pre_selections+truthMatch_cocktailMC(name));
+            fout->cd(name);
+            t_pre_sel->Write();
+        }
     }
-    else if(species == 101)
-    {
-        fout->mkdir("BuDpDmKp");
-        fout->mkdir("BuD0starD0Kp");
-        fout->mkdir("BuD0D0starKp");
-        fout->mkdir("BuD0starD0starKp");
-
-        TTree* t_pre_sel_1 = (TTree*)t->CopyTree(pre_selections+BuDpDmKp);
-        TTree* t_pre_sel_2 = (TTree*)t->CopyTree(pre_selections+BuD0starD0Kp);
-        TTree* t_pre_sel_3 = (TTree*)t->CopyTree(pre_selections+BuD0D0starKp);
-        TTree* t_pre_sel_4 = (TTree*)t->CopyTree(pre_selections+BuD0starD0starKp);
-
-        fout->cd("BuDpDmKp");
-        t_pre_sel_1->Write();
-
-        fout->cd("BuD0starD0Kp");
-        t_pre_sel_2->Write();
-
-        fout->cd("BuD0D0starKp");
-        t_pre_sel_3->Write();
-
-        fout->cd("BuD0starD0starKp");
-        t_pre_sel_4->Write();
-    }
-
-    // B+ -> D+D-K+
-    TCut BuDpstarDmKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dpstar_Dm",521);
-    TCut BuDpDmstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dp_Dmstar",521);
-    TCut BuDpstarDmstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dpstar_Dmstar",521);
-
-    // B+ -> Ds+Ds-K+
-    TCut BuDsDsKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Ds_Ds",521);
-    TCut BuDsstarDsKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dsstar_Ds",521);
-    TCut BuDsDsstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Ds_Dsstar",521);
-    TCut BuDsstarDsstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dsstar_Dsstar",521);
-
-
     else
     {
         TTree* t_pre_sel = (TTree*)t->CopyTree(pre_selections);
@@ -591,9 +580,10 @@ Double_t eps_error(Double_t Num, Double_t Den)
     return (Num/Den)*sqrt( 1./Num + 1./Den )*100;
 }
 
-
 TCut truthMatch_cocktailMC(TString name)
 {
+    map<TString, TCut> theMap;
+
     TCut final_state = "(abs(taup_pi1_TRUEID) == 211) && (abs(taup_pi2_TRUEID) == 211) && (abs(taup_pi3_TRUEID) == 211) && (abs(taum_pi1_TRUEID) == 211) && (abs(taum_pi2_TRUEID) == 211) && (abs(taum_pi3_TRUEID) == 211) && (abs(Kp_TRUEID ) == 321)";
 
     // BuDDKp
@@ -602,18 +592,30 @@ TCut truthMatch_cocktailMC(TString name)
     TCut BuD0starD0Kp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("D0star_D0",521);
     TCut BuD0D0starKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("D0_D0star",521);
     TCut BuD0starD0starKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("D0star_D0star",521);
+    theMap["BuD0D0Kp"] = BuD0D0Kp;
+    theMap["BuD0starD0Kp"] = BuD0starD0Kp;
+    theMap["BuD0D0starKp"] = BuD0D0starKp;
+    theMap["BuD0starD0starKp"] = BuD0starD0starKp;
 
     // B+ -> D+D-K+
     TCut BuDpDmKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dp_Dm",521);
     TCut BuDpstarDmKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dpstar_Dm",521);
     TCut BuDpDmstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dp_Dmstar",521);
     TCut BuDpstarDmstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dpstar_Dmstar",521);
+    theMap["BuDpDmKp"] = BuDpDmKp;
+    theMap["BuDpstarDmKp"] = BuDpstarDmKp;
+    theMap["BuDpDmstarKp"] = BuDpDmstarKp;
+    theMap["BuDpstarDmstarKp"] = BuDpstarDmstarKp;
 
     // B+ -> Ds+Ds-K+
     TCut BuDsDsKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Ds_Ds",521);
     TCut BuDsstarDsKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dsstar_Ds",521);
     TCut BuDsDsstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Ds_Dsstar",521);
     TCut BuDsstarDsstarKp = "(abs(Bp_TRUEID) == 521)"+final_state+DD_cut("Dsstar_Dsstar",521);
+    theMap["BuDsDsKp"] = BuDsDsKp;
+    theMap["BuDsstarDsKp"] = BuDsstarDsKp;
+    theMap["BuDsDsstarKp"] = BuDsDsstarKp;
+    theMap["BuDsstarDsstarKp"] = BuDsstarDsstarKp;
 
     // BdDDKp
     // B0 -> D-D0K+
@@ -621,6 +623,10 @@ TCut truthMatch_cocktailMC(TString name)
     TCut BdDmstarD0Kp = "(abs(Bp_TRUEID) == 511)"+final_state+DD_cut("Dpstar_D0",511);
     TCut BdDmD0starKp = "(abs(Bp_TRUEID) == 511)"+final_state+DD_cut("Dp_D0star",511);
     TCut BdDmstarD0starKp = "(abs(Bp_TRUEID) == 511)"+final_state+DD_cut("Dpstar_D0star",511);
+    theMap["BdDmD0Kp"] = BdDmD0Kp;
+    theMap["BdDmstarD0Kp"] = BdDmstarD0Kp;
+    theMap["BdDmD0starKp"] = BdDmD0starKp;
+    theMap["BdDmstarD0starKp"] = BdDmstarD0starKp;
 
     // BsDDKp
     // Bs -> Ds-D0K+
@@ -628,6 +634,10 @@ TCut truthMatch_cocktailMC(TString name)
     TCut BsDsstarD0Kp = "(abs(Bp_TRUEID) == 531)"+final_state+DD_cut("D0_Dsstar",531);
     TCut BsDsD0starKp = "(abs(Bp_TRUEID) == 531)"+final_state+DD_cut("D0star_Ds",531);
     TCut BsDsstarD0starKp = "(abs(Bp_TRUEID) == 531)"+final_state+DD_cut("D0star_Dsstar",531);
+    theMap["BsDsD0Kp"] = BsDsD0Kp;
+    theMap["BsDsstarD0Kp"] = BsDsstarD0Kp;
+    theMap["BsDsD0starKp"] = BsDsD0starKp;
+    theMap["BsDsstarD0starKp"] = BsDsstarD0starKp;
 
     // BuDDK0
     // B+ -> D0D+K0
@@ -635,6 +645,10 @@ TCut truthMatch_cocktailMC(TString name)
     TCut BuD0starDpK0 = final_state+DD_cut("Dp_D0star",521);
     TCut BuD0DpstarK0 = final_state+DD_cut("Dpstar_D0",521);
     TCut BuD0starDpstarK0 = final_state+DD_cut("Dpstar_D0star",521);
+    theMap["BuD0DpK0"] = BuD0DpK0;
+    theMap["BuD0starDpK0"] = BuD0starDpK0;
+    theMap["BuD0DpstarK0"] = BuD0DpstarK0;
+    theMap["BuD0starDpstarK0"] = BuD0starDpstarK0;
 
     // BdDDK0
     // B0 -> D+D-K0
@@ -642,12 +656,20 @@ TCut truthMatch_cocktailMC(TString name)
     TCut BdDpstarDmK0 = final_state+DD_cut("Dpstar_Dm",511);
     TCut BdDpDmstarK0 = final_state+DD_cut("Dp_Dmstar",511);
     TCut BdDpstarDmstarK0 = final_state+DD_cut("Dpstar_Dmstar",511);
+    theMap["BdDpDmK0"] = BdDpDmK0;
+    theMap["BdDpstarDmK0"] = BdDpstarDmK0;
+    theMap["BdDpDmstarK0"] = BdDpDmstarK0;
+    theMap["BdDpstarDmstarK0"] = BdDpstarDmstarK0;
 
     // B0 -> D0D0K0
     TCut BdD0D0K0 = final_state+DD_cut("D0_D0",511);
     TCut BdD0starD0K0 = final_state+DD_cut("D0star_D0",511);
     TCut BdD0D0starK0 = final_state+DD_cut("D0_D0star",511);
     TCut BdD0starD0starK0 = final_state+DD_cut("D0star_D0star",511);
+    theMap["BdD0D0K0"] = BdD0D0K0;
+    theMap["BdD0starD0K0"] = BdD0starD0K0;
+    theMap["BdD0D0starK0"] = BdD0D0starK0;
+    theMap["BdD0starD0starK0"] = BdD0starD0starK0;
 
     // BuDD
     // B+ -> D0Ds+
@@ -655,12 +677,20 @@ TCut truthMatch_cocktailMC(TString name)
     TCut BuD0starDs = final_state+DD_cut("D0star_Ds",521);
     TCut BuD0Dsstar = final_state+DD_cut("D0_Dsstar",521);
     TCut BuD0starDsstar = final_state+DD_cut("D0star_Dsstar",521);
+    theMap["BuD0Ds"] = BuD0Ds;
+    theMap["BuD0starDs"] = BuD0starDs;
+    theMap["BuD0Dsstar"] = BuD0Dsstar;
+    theMap["BuD0starDsstar"] = BuD0starDsstar;
 
     // B+ -> D0D+
     TCut BuD0Dp = final_state+DD_cut("Dp_D0",521);
     TCut BuD0starDp = final_state+DD_cut("Dp_D0star",521);
     TCut BuD0Dpstar = final_state+DD_cut("Dpstar_D0",521);
     TCut BuD0starDpstar = final_state+DD_cut("Dpstar_D0star",521);
+    theMap["BuD0Dp"] = BuD0Dp;
+    theMap["BuD0starDp"] = BuD0starDp;
+    theMap["BuD0Dpstar"] = BuD0Dpstar;
+    theMap["BuD0starDpstar"] = BuD0starDpstar;
 
     // BdDD
     // B0 -> D0D0
@@ -668,24 +698,40 @@ TCut truthMatch_cocktailMC(TString name)
     TCut BdD0starD0 = final_state+DD_cut("D0star_D0",511);
     TCut BdD0D0star = final_state+DD_cut("D0_D0star",511);
     TCut BdD0starD0star = final_state+DD_cut("D0star_D0star",511);
+    theMap["BdD0D0"] = BdD0D0;
+    theMap["BdD0starD0"] = BdD0starD0;
+    theMap["BdD0D0star"] = BdD0D0star;
+    theMap["BdD0starD0star"] = BdD0starD0star;
 
     // B0 -> D+D-
     TCut BdDpDm = final_state+DD_cut("Dp_Dm",511);
     TCut BdDpstarDm = final_state+DD_cut("Dpstar_Dm",511);
     TCut BdDpDmstar = final_state+DD_cut("Dp_Dmstar",511);
     TCut BdDpstarDmstar = final_state+DD_cut("Dpstar_Dmstar",511);
+    theMap["BdDpDm"] = BdDpDm;
+    theMap["BdDpstarDm"] = BdDpstarDm;
+    theMap["BdDpDmstar"] = BdDpDmstar;
+    theMap["BdDpstarDmstar"] = BdDpstarDmstar;
 
     // B0 -> D-Ds+
     TCut BdDpDs = final_state+DD_cut("Dp_Ds",511);
     TCut BdDpstarDs = final_state+DD_cut("Dpstar_Ds",511);
     TCut BdDpDsstar = final_state+DD_cut("Dp_Dsstar",511);
     TCut BdDpstarDsstar = final_state+DD_cut("Dpstar_Dsstar",511);
+    theMap["BdDpDs"] = BdDpDs;
+    theMap["BdDpstarDs"] = BdDpstarDs;
+    theMap["BdDpDsstar"] = BdDpDsstar;
+    theMap["BdDpstarDsstar"] = BdDpstarDsstar;
 
     // B0 -> Ds+Ds-
     TCut BdDsDs = final_state+DD_cut("Ds_Ds",511);
     TCut BdDsstarDs = final_state+DD_cut("Dsstar_Ds",511);
     TCut BdDsDsstar = final_state+DD_cut("Ds_Dsstar",511);
     TCut BdDsstarDsstar = final_state+DD_cut("Dsstar_Dsstar",511);
+    theMap["BdDsDs"] = BdDsDs;
+    theMap["BdDsstarDs"] = BdDsstarDs;
+    theMap["BdDsDsstar"] = BdDsDsstar;
+    theMap["BdDsstarDsstar"] = BdDsstarDsstar;
 
     // Bs -> DD
     // Bs -> Ds+Ds-
@@ -693,24 +739,42 @@ TCut truthMatch_cocktailMC(TString name)
     TCut BsDsstarDs = final_state+DD_cut("Dsstar_Ds",531);
     TCut BsDsDsstar = final_state+DD_cut("Ds_Dsstar",531);
     TCut BsDsstarDsstar = final_state+DD_cut("Dsstar_Dsstar",531);
+    theMap["BsDsDs"] = BsDsDs;
+    theMap["BsDsstarDs"] = BsDsstarDs;
+    theMap["BsDsDsstar"] = BsDsDsstar;
+    theMap["BsDsstarDsstar"] = BsDsstarDsstar;
 
     // Bs -> D-Ds+
     TCut BsDpDs = final_state+DD_cut("Dp_Ds",531);
     TCut BsDpstarDs = final_state+DD_cut("Dpstar_Ds",531);
     TCut BsDpDsstar = final_state+DD_cut("Dp_Dsstar",531);
     TCut BsDpstarDsstar = final_state+DD_cut("Dsstar_Dsstar",531);
+    theMap["BsDpDs"] = BsDpDs;
+    theMap["BsDpstarDs"] = BsDpstarDs;
+    theMap["BsDpDsstar"] = BsDpDsstar;
+    theMap["BsDpstarDsstar"] = BsDpstarDsstar;
 
     // Bs -> D+D-
     TCut BsDpDm = final_state+DD_cut("Dp_Dm",531);
     TCut BsDpstarDm = final_state+DD_cut("Dpstar_Dm",531);
     TCut BsDpDmstar = final_state+DD_cut("Dp_Dmstar",531);
     TCut BsDpstarDmstar = final_state+DD_cut("Dpstar_Dmstar",531);
+    theMap["BsDpDm"] = BsDpDm;
+    theMap["BsDpstarDm"] = BsDpstarDm;
+    theMap["BsDpDmstar"] = BsDpDmstar;
+    theMap["BsDpstarDmstar"] = BsDpstarDmstar;
 
     // Bs -> D0D0
     TCut BsD0D0 = final_state+DD_cut("D0_D0",531);
     TCut BsD0starD0 = final_state+DD_cut("D0star_D0",531);
     TCut BsD0D0star = final_state+DD_cut("D0_D0star",531);
     TCut BsD0starD0star = final_state+DD_cut("D0star_D0star",531);
+    theMap["BsD0D0"] = BsD0D0;
+    theMap["BsD0starD0"] = BsD0starD0;
+    theMap["BsD0D0star"] = BsD0D0star;
+    theMap["BsD0starD0star"] = BsD0starD0star;
+
+    return theMap[name];
 }
 
 TCut DD_cut(TString name, Int_t mother_ID)
@@ -729,8 +793,8 @@ TCut DD_cut(TString name, Int_t mother_ID)
 
     // D+ D-
     TCut Dp_Dm = Form("(abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i)",mother_ID,mother_ID);
-    TCut Dpstar_Dm = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) "+pionsPlus_motherDstarPlus+")",mother_ID,mother_ID,mother_ID,mother_ID);
-    TCut Dp_Dmstar = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) "+pionsMinus_motherDstarPlus+")",mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut Dpstar_Dm = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
+    TCut Dp_Dmstar = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID);
     TCut Dpstar_Dmstar = Form("( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 411) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==413) && (abs(taup_MC_GD_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 411) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==413) && (abs(taum_MC_GD_MOTHER_ID)==%i) ) || ( (abs(taup_TRUEID) == 413) && (abs(taum_TRUEID) == 413) && (abs(taup_MC_MOTHER_ID)==%i) && (abs(taum_MC_MOTHER_ID)==%i) )",mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID,mother_ID);
 
     // D0 Ds
