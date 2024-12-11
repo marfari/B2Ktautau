@@ -73,15 +73,15 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     {
         FILES = Form("Files_on_grid/data_201%i.txt",year);
     }
-    else if((species == 5) || (species == 6)) // DDK data
+    else if((species == 5) || (species == 6)) // D+D-K data
     {
         FILES = Form("Files_on_grid/data_DDK_201%i.txt",year);
     }
-    else if( (species == 7) || (species == 71) || (species == 73) || (species == 74) )
+    else if( (species == 7) || (species == 71) || (species == 74) )
     {
         FILES = Form("/panfs/felician/B2Ktautau/workflow/PIDCalib/201%i/Species_7/pid_corr.txt",year);
     }
-    else if((species == 8) || (species == 81) || (species == 82) || (species == 83) || (species == 84) )
+    else if((species == 8) || (species == 81) || (species == 82) || (species == 83) || (species == 84) || (species == 85))
     {
         FILES = Form("Files_on_grid/data_D0Dps_201%i.txt",year);
     }
@@ -95,19 +95,19 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     }
     else if(isBuDDKp_cocktail)
     {
-        FILES = Form("/panfs/felician/BuDDKp_cocktail/root_files_201%i.txt",year);
+        FILES = Form("Files_on_grid/MC_201%i_BuDDKp_cocktail.txt",year);
     }
     else if(isBdDDKp_cocktail)
     {
-        FILES = Form("/panfs/felician/BdDDKp_cocktail/root_files_201%i.txt",year);   
+        FILES = Form("Files_on_grid/MC_201%i_BdDDKp_cocktail.txt",year);   
     }
     else if(isBsDDKp_cocktail)
     {
-        FILES = Form("/panfs/felician/BsDDKp_cocktail/root_files_201%i.txt",year);  
+        FILES = Form("Files_on_grid/MC_201%i_BsDDKp_cocktail.txt",year);  
     }
     else if(isBuDDK0_cocktail)
     {
-        FILES = Form("/panfs/felician/BuDDK0_cocktail/root_files_201%i.txt",year);  
+        FILES = Form("Files_on_grid/MC_201%i_BuDDK0_cocktail.txt",year);  
     }
     else if(isBdDDK0_cocktail)
     {
@@ -115,7 +115,7 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     }
     else if(isBuDD_cocktail)
     {
-        FILES = Form("/panfs/felician/BuDD_cocktail/root_files_201%i.txt",year);
+        FILES = Form("Files_on_grid/MC_201%i_BuDD_cocktail.txt",year);
     }
     else if(isBdDD_cocktail)
     {
@@ -142,7 +142,7 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     {
         truthMatch = "(abs(Kp_TRUEID) == 321) && (abs(Dp_K_TRUEID) == 321) && (abs(Dp_pi1_TRUEID) == 211) && (abs(Dp_pi2_TRUEID) == 211) && (abs(Dm_K_TRUEID) == 321) && (abs(Dm_pi1_TRUEID) == 211) && (abs(Dm_pi2_TRUEID) == 211) && (abs(Dp_TRUEID) == 411) && (abs(Dm_TRUEID) == 411) && (abs(Bp_TRUEID) == 521)";
     }
-    else if((species == 7) || (species == 73) || (species == 74) ) // D0D+s MC
+    else if((species == 7) || (species == 74) ) // D0D+s MC
     {
         truthMatch = "(abs(D0bar_K_TRUEID) == 321) && (abs(Dsp_K1_TRUEID) == 321) && (abs(Dsp_K2_TRUEID) == 321) && (abs(D0bar_pi_TRUEID) == 211) && (abs(Dsp_pi_TRUEID) == 211) && (abs(D0bar_TRUEID) == 421) && (abs(Dsp_TRUEID) == 431) && (abs(Bp_TRUEID) == 521)";
     }
@@ -178,12 +178,12 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
         other_cuts.push_back("(abs(Dp_M-1869.66) < 50) && (abs(Dm_M < 1869.66) < 50)");
         other_cuts.push_back("(Bp_FD_OWNPV > 2)");
     }
-    if((species == 7) || (species == 8) || (species == 73)) // D0barD+s
+    if((species == 7) || (species == 8) ) // D0barD+s
     { 
         other_cuts.push_back("Bp_FD_OWNPV < 80");
         other_cuts.push_back("(D0bar_M > 1820) && (D0bar_M < 1910)");
         other_cuts.push_back("(Dsp_M > 1930) && (Dsp_M < 2000)");
-        if((species == 7) || (species == 73))
+        if(species == 7)
         {
             other_cuts.push_back("D0bar_K_ProbNNk_pidgen_default > 0.55");
             other_cuts.push_back("Dsp_K1_ProbNNk_pidgen_default > 0.55");
@@ -194,11 +194,6 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
             other_cuts.push_back("D0bar_K_ProbNNk > 0.55");
             other_cuts.push_back("Dsp_K1_ProbNNk > 0.55");
             other_cuts.push_back("Dsp_K2_ProbNNk > 0.55");
-        }
-
-        if(species == 73)
-        {
-            other_cuts.push_back("(Bp_dtf_M[0] > 5235) && (Bp_dtf_M[0] < 5355)");
         }
 
     }
@@ -247,7 +242,7 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     TFileCollection* fc = new TFileCollection("fc", "fc", FILES, 1, line);
     TChain* t;
-    if(isKtautauMC || (species == 7) || (species == 73) || (species == 74) ) // Ktautau MC + normalisation channel (PID corrected)
+    if(isKtautauMC || (species == 7) || (species == 74) ) // Ktautau MC + normalisation channel (PID corrected)
     {
         t = new TChain("DecayTree");
     }
@@ -285,7 +280,7 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     {
         pre_selections = truthMatch+trigger+others;
     }
-    else if((species == 4) || (species == 7) || (species == 9) || (species == 73)) // D+D-K+, D0barD+s, D0D0K MC
+    else if((species == 4) || (species == 7) || (species == 9) ) // D+D-K+, D0barD+s, D0D0K MC
     {
         pre_selections = truthMatch+trigger+others+"(Bp_dtf_status[0]==0)";
     }
@@ -300,6 +295,10 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     else if(species == 84)
     {
         pre_selections = trigger+"(Bp_dtf_status[0]==0)";
+    }
+    else if(species == 85)
+    {
+        pre_selections = "";
     }
     else if(is_cocktailMC)
     {
