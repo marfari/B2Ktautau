@@ -406,31 +406,44 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
     signal = pd.DataFrame()
     background = pd.DataFrame()
 
+    # Variables needed to build the input features for the 1st and 2nd steps
+    if(isKtautau == "True"):
+        branch_names_1 = ['Bp_VTXISONUMVTX_B', 'Bp_VTXISODCHI2ONETRACK_B', 'Bp_VTXISODCHI2MASSONETRACK_B', 'Bp_VTXISODCHI2TWOTRACK_B', 'Bp_VTXISODCHI2MASSTWOTRACK_B', 
+                        'Bp_VTXISONUMVTX_taup', 'Bp_VTXISONUMVTX_taum', 'Bp_VTXISODCHI2ONETRACK_taup', 'Bp_VTXISODCHI2ONETRACK_taum', 
+                        'Bp_VTXISODCHI2MASSONETRACK_taup', 'Bp_VTXISODCHI2MASSONETRACK_taum', 'Bp_VTXISODCHI2TWOTRACK_taup', 'Bp_VTXISODCHI2TWOTRACK_taum',
+                        'Bp_VTXISODCHI2MASSTWOTRACK_taup', 'Bp_VTXISODCHI2MASSTWOTRACK_taum', 'Bp_CC_05_DELTAPHI_B', 'Bp_NC_05_IT_B', 'Bp_CC_05_PTASYM_B', 'Bp_CC_05_PX_B',
+                        'Bp_CC_05_PZASYM_B', 'Bp_CC_05_DELTAETA_B', 'Bp_NC_05_MULT_B', 'Bp_NC_05_VPT_B', 'Bp_NC_05_PTASYM_B', 'Bp_CCNC_05_IT_B', 'Bp_CC_05_MULT_B',
+                        'Bp_CC_05_PASYM_taup', 'Bp_CC_05_DELTAETA_taup', 'Bp_NC_05_MULT_taup', 'Bp_NC_05_SPT_taup', 'Bp_CCNC_05_IT_taup', 'Bp_NC_05_PTASYM_taup', 'Bp_CC_05_PTASYM_taup',
+                        'Bp_CC_05_PASYM_taum', 'Bp_CC_05_DELTAETA_taum', 'Bp_NC_05_MULT_taum', 'Bp_NC_05_SPT_taum', 'Bp_CCNC_05_IT_taum', 'Bp_NC_05_PTASYM_taum', 'Bp_CC_05_PTASYM_taum',
+                        'Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taup', 'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taum', 'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum', 'df_Bp_M'] 
+
+        branch_names_2 = ['taup_M12', 'taum_M12', 'taup_M23', 'taum_M23', 'taup_M13', 'taum_M13', 'taup_DIRA_ORIVX', 'taum_DIRA_ORIVX', 'Bp_DIRA_OWNPV',
+                        'df_BVx', 'df_BVy', 'df_BVz', 'df_DV1x', 'df_DV1y', 'df_DV1z', 'df_DV2x', 'df_DV2y', 'df_DV2z', 'df_PVx', 'df_PVy', 'df_PVz',
+                        'df_BVx_err', 'df_BVy_err', 'df_BVz_err', 'df_DV1x_err', 'df_DV1y_err', 'df_DV1z_err', 'df_DV2x_err', 'df_DV2y_err', 'df_DV2z_err', 'df_PVx_err', 'df_PVy_err', 'df_PVz_err',
+                        'df_Kp_PX', 'df_Kp_PY', 'df_Kp_PZ', 'taup_M', 'taum_M', 'df_chi2', 'Kp_IPCHI2_OWNPV', 'taum_pi2_IPCHI2_OWNPV', 
+                        'taup_AMAXDOCA', 'taup_AMINDOCA', 'taup_DOCACHI2MAX', 'taum_AMAXDOCA', 'taum_AMINDOCA', 'taum_DOCACHI2MAX', 'df_Bp_M']
+    else:
+        branch_names_1 = ['Bp_VTXISONUMVTX_B', 'Bp_VTXISODCHI2ONETRACK_B', 'Bp_VTXISODCHI2MASSONETRACK_B', 'Bp_VTXISODCHI2TWOTRACK_B', 'Bp_VTXISODCHI2MASSTWOTRACK_B', 
+                        'Bp_VTXISONUMVTX_D0bar', 'Bp_VTXISONUMVTX_Dsp', 'Bp_VTXISODCHI2ONETRACK_D0bar', 'Bp_VTXISODCHI2ONETRACK_Dsp', 
+                        'Bp_VTXISODCHI2MASSONETRACK_D0bar', 'Bp_VTXISODCHI2MASSONETRACK_Dsp', 'Bp_VTXISODCHI2TWOTRACK_D0bar', 'Bp_VTXISODCHI2TWOTRACK_Dsp',
+                        'Bp_VTXISODCHI2MASSTWOTRACK_D0bar', 'Bp_VTXISODCHI2MASSTWOTRACK_Dsp', 'Bp_CC_05_DELTAPHI_B', 'Bp_NC_05_IT_B', 'Bp_CC_05_PTASYM_B', 'Bp_CC_05_PX_B',
+                        'Bp_CC_05_PZASYM_B', 'Bp_CC_05_DELTAETA_B', 'Bp_NC_05_MULT_B', 'Bp_NC_05_VPT_B', 'Bp_NC_05_PTASYM_B', 'Bp_CCNC_05_IT_B', 'Bp_CC_05_MULT_B',
+                        'Bp_CC_05_PASYM_D0bar', 'Bp_CC_05_DELTAETA_D0bar', 'Bp_NC_05_MULT_D0bar', 'Bp_NC_05_SPT_D0bar', 'Bp_CCNC_05_IT_D0bar', 'Bp_NC_05_PTASYM_D0bar', 'Bp_CC_05_PTASYM_D0bar',
+                        'Bp_CC_05_PASYM_Dsp', 'Bp_CC_05_DELTAETA_Dsp', 'Bp_NC_05_MULT_Dsp', 'Bp_NC_05_SPT_Dsp', 'Bp_CCNC_05_IT_Dsp', 'Bp_NC_05_PTASYM_Dsp', 'Bp_CC_05_PTASYM_Dsp',
+                        'Bp_Bstautau_ISOBDTFIRSTVALUE_taup', 'Bp_Bstautau_ISOBDTSECONDVALUE_taup', 'Bp_Bstautau_ISOBDTTHIRDVALUE_taup', 'Bp_Bstautau_ISOBDTFIRSTVALUE_taum', 'Bp_Bstautau_ISOBDTSECONDVALUE_taum', 'Bp_Bstautau_ISOBDTTHIRDVALUE_taum', 'Bp_dtf_M'] 
+
+        branch_names_2 = ['Dsp_M12', 'Dsp_M23', 'Dsp_M13', 'D0bar_DIRA_ORIVX', 'Dsp_DIRA_ORIVX', 'Bp_DIRA_OWNPV',
+                'Bp_ENDVERTEX_X', 'Bp_ENDVERTEX_Y', 'Bp_ENDVERTEX_Z', 'D0bar_ENDVERTEX_X', 'D0bar_ENDVERTEX_Y', 'D0bar_ENDVERTEX_Z', 'Dsp_ENDVERTEX_X', 'Dsp_ENDVERTEX_Y', 'Dsp_ENDVERTEX_Z', 'Bp_OWNPV_X', 'Bp_OWNPV_Y', 'Bp_OWNPV_Z',
+                'Bp_ENDVERTEX_XERR', 'Bp_ENDVERTEX_YERR', 'Bp_ENDVERTEX_ZERR', 'D0bar_ENDVERTEX_XERR', 'D0bar_ENDVERTEX_YERR', 'D0bar_ENDVERTEX_ZERR', 'Dsp_ENDVERTEX_XERR', 'Dsp_ENDVERTEX_YERR', 'Dsp_ENDVERTEX_ZERR', 'Bp_OWNPV_XERR', 'Bp_OWNPV_YERR', 'Bp_OWNPV_ZERR',
+                'D0bar_M', 'Dsp_M', 'Bp_dtf_chi2', 'D0bar_AMAXDOCA', 'D0bar_AMINDOCA', 'D0bar_DOCACHI2MAX', 'Dsp_AMAXDOCA', 'Dsp_AMINDOCA', 'Dsp_DOCACHI2MAX',
+                'Bp_FDCHI2_OWNPV', 'D0bar_FDCHI2_ORIVX', 'Dsp_FDCHI2_ORIVX', 'Bp_dtf_M']
+    branch_names = branch_names_1 + branch_names_2
+
+    sig = sig_df.AsNumpy(branch_names)
+    bkg = bkg_df.AsNumpy(branch_names) 
+
     # Define the input features
     if(first_step):
-        if(isKtautau == "True"):
-            branch_names = ['Bp_VTXISONUMVTX_B', 'Bp_VTXISODCHI2ONETRACK_B', 'Bp_VTXISODCHI2MASSONETRACK_B', 'Bp_VTXISODCHI2TWOTRACK_B', 'Bp_VTXISODCHI2MASSTWOTRACK_B', 
-                            'Bp_VTXISONUMVTX_taup', 'Bp_VTXISONUMVTX_taum', 'Bp_VTXISODCHI2ONETRACK_taup', 'Bp_VTXISODCHI2ONETRACK_taum', 
-                            'Bp_VTXISODCHI2MASSONETRACK_taup', 'Bp_VTXISODCHI2MASSONETRACK_taum', 'Bp_VTXISODCHI2TWOTRACK_taup', 'Bp_VTXISODCHI2TWOTRACK_taum',
-                            'Bp_VTXISODCHI2MASSTWOTRACK_taup', 'Bp_VTXISODCHI2MASSTWOTRACK_taum', 'Bp_CC_05_DELTAPHI_B', 'Bp_NC_05_IT_B', 'Bp_CC_05_PTASYM_B', 'Bp_CC_05_PX_B',
-                            'Bp_CC_05_PZASYM_B', 'Bp_CC_05_DELTAETA_B', 'Bp_NC_05_MULT_B', 'Bp_NC_05_VPT_B', 'Bp_NC_05_PTASYM_B', 'Bp_CCNC_05_IT_B', 'Bp_CC_05_MULT_B',
-                            'Bp_CC_05_PASYM_taup', 'Bp_CC_05_DELTAETA_taup', 'Bp_NC_05_MULT_taup', 'Bp_NC_05_SPT_taup', 'Bp_CCNC_05_IT_taup', 'Bp_NC_05_PTASYM_taup', 'Bp_CC_05_PTASYM_taup',
-                            'Bp_CC_05_PASYM_taum', 'Bp_CC_05_DELTAETA_taum', 'Bp_NC_05_MULT_taum', 'Bp_NC_05_SPT_taum', 'Bp_CCNC_05_IT_taum', 'Bp_NC_05_PTASYM_taum', 'Bp_CC_05_PTASYM_taum',
-                            'Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taup', 'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taum', 'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum', 'df_Bp_M'] 
-        else:
-            branch_names = ['Bp_VTXISONUMVTX_B', 'Bp_VTXISODCHI2ONETRACK_B', 'Bp_VTXISODCHI2MASSONETRACK_B', 'Bp_VTXISODCHI2TWOTRACK_B', 'Bp_VTXISODCHI2MASSTWOTRACK_B', 
-                            'Bp_VTXISONUMVTX_D0bar', 'Bp_VTXISONUMVTX_Dsp', 'Bp_VTXISODCHI2ONETRACK_D0bar', 'Bp_VTXISODCHI2ONETRACK_Dsp', 
-                            'Bp_VTXISODCHI2MASSONETRACK_D0bar', 'Bp_VTXISODCHI2MASSONETRACK_Dsp', 'Bp_VTXISODCHI2TWOTRACK_D0bar', 'Bp_VTXISODCHI2TWOTRACK_Dsp',
-                            'Bp_VTXISODCHI2MASSTWOTRACK_D0bar', 'Bp_VTXISODCHI2MASSTWOTRACK_Dsp', 'Bp_CC_05_DELTAPHI_B', 'Bp_NC_05_IT_B', 'Bp_CC_05_PTASYM_B', 'Bp_CC_05_PX_B',
-                            'Bp_CC_05_PZASYM_B', 'Bp_CC_05_DELTAETA_B', 'Bp_NC_05_MULT_B', 'Bp_NC_05_VPT_B', 'Bp_NC_05_PTASYM_B', 'Bp_CCNC_05_IT_B', 'Bp_CC_05_MULT_B',
-                            'Bp_CC_05_PASYM_D0bar', 'Bp_CC_05_DELTAETA_D0bar', 'Bp_NC_05_MULT_D0bar', 'Bp_NC_05_SPT_D0bar', 'Bp_CCNC_05_IT_D0bar', 'Bp_NC_05_PTASYM_D0bar', 'Bp_CC_05_PTASYM_D0bar',
-                            'Bp_CC_05_PASYM_Dsp', 'Bp_CC_05_DELTAETA_Dsp', 'Bp_NC_05_MULT_Dsp', 'Bp_NC_05_SPT_Dsp', 'Bp_CCNC_05_IT_Dsp', 'Bp_NC_05_PTASYM_Dsp', 'Bp_CC_05_PTASYM_Dsp',
-                            'Bp_Bstautau_ISOBDTFIRSTVALUE_taup', 'Bp_Bstautau_ISOBDTSECONDVALUE_taup', 'Bp_Bstautau_ISOBDTTHIRDVALUE_taup', 'Bp_Bstautau_ISOBDTFIRSTVALUE_taum', 'Bp_Bstautau_ISOBDTSECONDVALUE_taum', 'Bp_Bstautau_ISOBDTTHIRDVALUE_taum', 'Bp_dtf_M'] 
-
-
-        sig = sig_df.AsNumpy(branch_names)
-        bkg = bkg_df.AsNumpy(branch_names)  
-
         if(isKtautau == "True"):
             # SIGNAL
             signal['VTXISODCHI2ONETRACK_B'] = sig['Bp_VTXISODCHI2ONETRACK_B']
@@ -495,22 +508,6 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
         input_features = signal.columns.tolist()
 
     else:
-        if(isKtautau == "True"):
-            branch_names = ['taup_M12', 'taum_M12', 'taup_M23', 'taum_M23', 'taup_M13', 'taum_M13', 'taup_DIRA_ORIVX', 'taum_DIRA_ORIVX', 'Bp_DIRA_OWNPV',
-                            'df_BVx', 'df_BVy', 'df_BVz', 'df_DV1x', 'df_DV1y', 'df_DV1z', 'df_DV2x', 'df_DV2y', 'df_DV2z', 'df_PVx', 'df_PVy', 'df_PVz',
-                            'df_BVx_err', 'df_BVy_err', 'df_BVz_err', 'df_DV1x_err', 'df_DV1y_err', 'df_DV1z_err', 'df_DV2x_err', 'df_DV2y_err', 'df_DV2z_err', 'df_PVx_err', 'df_PVy_err', 'df_PVz_err',
-                            'df_Kp_PX', 'df_Kp_PY', 'df_Kp_PZ', 'taup_M', 'taum_M', 'df_chi2', 'Kp_IPCHI2_OWNPV', 'taum_pi2_IPCHI2_OWNPV', 
-                            'taup_AMAXDOCA', 'taup_AMINDOCA', 'taup_DOCACHI2MAX', 'taum_AMAXDOCA', 'taum_AMINDOCA', 'taum_DOCACHI2MAX', 'df_Bp_M']
-        else:
-            branch_names = ['Dsp_M12', 'Dsp_M23', 'Dsp_M13', 'D0bar_DIRA_ORIVX', 'Dsp_DIRA_ORIVX', 'Bp_DIRA_OWNPV',
-                            'Bp_ENDVERTEX_X', 'Bp_ENDVERTEX_Y', 'Bp_ENDVERTEX_Z', 'D0bar_ENDVERTEX_X', 'D0bar_ENDVERTEX_Y', 'D0bar_ENDVERTEX_Z', 'Dsp_ENDVERTEX_X', 'Dsp_ENDVERTEX_Y', 'Dsp_ENDVERTEX_Z', 'Bp_OWNPV_X', 'Bp_OWNPV_Y', 'Bp_OWNPV_Z',
-                            'Bp_ENDVERTEX_XERR', 'Bp_ENDVERTEX_YERR', 'Bp_ENDVERTEX_ZERR', 'D0bar_ENDVERTEX_XERR', 'D0bar_ENDVERTEX_YERR', 'D0bar_ENDVERTEX_ZERR', 'Dsp_ENDVERTEX_XERR', 'Dsp_ENDVERTEX_YERR', 'Dsp_ENDVERTEX_ZERR', 'Bp_OWNPV_XERR', 'Bp_OWNPV_YERR', 'Bp_OWNPV_ZERR',
-                            'D0bar_M', 'Dsp_M', 'Bp_dtf_chi2', 'D0bar_AMAXDOCA', 'D0bar_AMINDOCA', 'D0bar_DOCACHI2MAX', 'Dsp_AMAXDOCA', 'Dsp_AMINDOCA', 'Dsp_DOCACHI2MAX',
-                            'Bp_FDCHI2_OWNPV', 'D0bar_FDCHI2_ORIVX', 'Dsp_FDCHI2_ORIVX', 'Bp_dtf_M']
-
-        sig = sig_df.AsNumpy(branch_names)
-        bkg = bkg_df.AsNumpy(branch_names)  
-
         if(isKtautau == "True"):
             # SIGNAL:
             signal['tau_M_max'] = np.maximum( sig['taup_M'], sig['taum_M'] )
@@ -870,14 +867,12 @@ def main(argv):
         t_sig_2016.GetEntries()
         t_sig_2017.GetEntries()
         t_sig_2018.GetEntries()
-
         t_sig_2016.Add(t_sig_2017)
         t_sig_2016.Add(t_sig_2018)
 
         t_sig1_2016.GetEntries()
         t_sig1_2017.GetEntries()
         t_sig1_2018.GetEntries()
-
         t_sig1_2016.Add(t_sig1_2017)
         t_sig1_2016.Add(t_sig1_2018)
 
@@ -886,21 +881,48 @@ def main(argv):
         # t_sig.AddFriend(t_sig_2016)
         # t_sig.AddFriend(t_sig1_2016)
 
-        # Background proxy: WS data (signal region) for both steps (only 2016 for now)
-        fc_bkg = ROOT.TFileCollection("fc_bkg", "fc_bkg", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_3/pre_sel_tree.txt", 100) 
-        fc_bkg1 = ROOT.TFileCollection("fc_bkg1", "fc_bkg1", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_3/fit_results.txt", 100) 
+        # Background proxy: WS data (signal region) 
+        fc_bkg_2016 = ROOT.TFileCollection("fc_bkg_2016", "fc_bkg_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_3/pre_sel_tree.txt", 100) 
+        fc_bkg_2017 = ROOT.TFileCollection("fc_bkg_2017", "fc_bkg_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_3/pre_sel_tree.txt", 100) 
+        fc_bkg_2018 = ROOT.TFileCollection("fc_bkg_2018", "fc_bkg_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_3/pre_sel_tree.txt", 100) 
+        
+        fc_bkg1_2016 = ROOT.TFileCollection("fc_bkg1_2016", "fc_bkg1_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_3/fit_results.txt", 100) 
+        fc_bkg1_2017 = ROOT.TFileCollection("fc_bkg1_2017", "fc_bkg1_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_3/fit_results.txt", 100) 
+        fc_bkg1_2018 = ROOT.TFileCollection("fc_bkg1_2018", "fc_bkg1_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_3/fit_results.txt", 100) 
 
-        t_bkg = ROOT.TChain("DecayTree")
-        t_bkg1 = ROOT.TChain("DecayTree")
+        t_bkg_2016 = ROOT.TChain("DecayTree")
+        t_bkg_2017 = ROOT.TChain("DecayTree")
+        t_bkg_2018 = ROOT.TChain("DecayTree")
 
-        t_bkg.AddFileInfoList(fc_bkg.GetList())
-        t_bkg1.AddFileInfoList(fc_bkg1.GetList())
+        t_bkg1_2016 = ROOT.TChain("DecayTree")
+        t_bkg1_2017 = ROOT.TChain("DecayTree")
+        t_bkg1_2018 = ROOT.TChain("DecayTree")
 
-        t_bkg.AddFriend(t_bkg1)
+        t_bkg_2016.AddFileInfoList(fc_bkg_2016.GetList())
+        t_bkg_2017.AddFileInfoList(fc_bkg_2017.GetList())
+        t_bkg_2018.AddFileInfoList(fc_bkg_2018.GetList())
+
+        t_bkg1_2016.AddFileInfoList(fc_bkg1_2016.GetList())
+        t_bkg1_2017.AddFileInfoList(fc_bkg1_2017.GetList())
+        t_bkg1_2018.AddFileInfoList(fc_bkg1_2018.GetList())
+
+        t_bkg_2016.GetEntries()
+        t_bkg_2017.GetEntries()
+        t_bkg_2018.GetEntries()
+        t_bkg_2016.Add(t_bkg_2017)
+        t_bkg_2016.Add(t_bkg_2018)
+
+        t_bkg1_2016.GetEntries()
+        t_bkg1_2017.GetEntries()
+        t_bkg1_2018.GetEntries()
+        t_bkg1_2016.Add(t_bkg1_2017)
+        t_bkg1_2016.Add(t_bkg1_2018)
+
+        t_bkg_2016.AddFriend(t_bkg1_2016)
 
         # Convert TChain in RDataframe
         sig_df = ROOT.RDataFrame(t_sig_2016)
-        bkg_df = ROOT.RDataFrame(t_bkg)
+        bkg_df = ROOT.RDataFrame(t_bkg_2016)
 
         # Apply cuts to signal and background
         # pass fitter
