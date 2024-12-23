@@ -23,6 +23,7 @@ from sklearn.model_selection import cross_validate
 from sklearn.utils import compute_class_weight
 
 import pickle
+import xgboost as xgb
 
 # Functions
 def draw_variables(sig_data, bkg_data, mc_weights, columns, first_step, isKtautau):
@@ -56,6 +57,10 @@ def draw_variables(sig_data, bkg_data, mc_weights, columns, first_step, isKtauta
             xlim = [0,6000]
         elif(column == "DV1_DV2_distance_chi2"):
             xlim = [0,5]
+        elif(column == "B_FD_PV_chi2"):
+            xlim = [0,40000]
+        elif(column == "D_FD_BV_min"):
+            xlim = [0,150]
         else:
             xlim = np.percentile(np.hstack([sig_data[column]]), [0.01, 99.99])
     
@@ -67,7 +72,7 @@ def draw_variables(sig_data, bkg_data, mc_weights, columns, first_step, isKtauta
         plt.xlabel(column, fontsize=15)
         plt.ylabel("Normalised entries / ({0})".format(nbins), fontsize=15)
 
-        if(isKtautau == True):
+        if(isKtautau == "True"):
             if(first_step):
                 plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/Input_features_plots_first_step/'+column+'.pdf')
             else:
@@ -123,7 +128,7 @@ def correlation_matrix(data, name, first_step, isKtautau, **kwds):
         ax.set_yticklabels(labels, minor=False)
         
     plt.tight_layout()
-    if(isKtautau == True):
+    if(isKtautau == "True"):
         if(first_step):
             fig1.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/Input_features_plots_first_step/correlation_matrix_'+name+'.pdf') 
         else:
@@ -135,34 +140,43 @@ def correlation_matrix(data, name, first_step, isKtautau, **kwds):
             fig1.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/DDs/Input_features_plots_second_step/correlation_matrix_'+name+'.pdf') 
     fig1.clf()
 
-def do_cross_validation(name, clf, X_dev, y_dev, X_val, y_val, X_dev_weights):
+def do_cross_validation(name, clf, X_train, y_train, X_test, y_test):
     # Optimise hyper-parameters
     if(name == "AdaBDT"):
-        param_grid = {'learning_rate': [0.1, 0.5, 1.0], 'n_estimators': [100,500,800]}
+        param_grid = {'learning_rate': [0.05, 0.1, 0.5, 1.0], 'n_estimators': [50, 100, 500, 800]}
     elif(name == "GradBDT"):
         param_grid = {'learning_rate': [0.1, 0.5, 1.0], 'n_estimators': [100,500,800], 'max_depth': [1,3,6]}
     elif(name == "RForest"):
-        param_grid = {'n_estimators': [100, 500, 800], 'max_depth': [1,3,6,9]}
+        param_grid = {'n_estimators': [50, 100, 500, 800], 'max_depth': [1,3,6,9]}
+    elif(name == "XGBoost"):
+        param_grid = {'learning_rate': [0.1, 0.5, 1.0], 'n_estimators': [100,500,800], 'max_depth': [1,3,6]}
 
     print("Performing grid search for hyper-paramter optimisation of "+name)
     # RandomizedSearchCV samples from distributions of the hyper-parameters and evaluates random points. It can be quicker than GridSearchCV
     grid_result = GridSearchCV(clf, param_grid, cv=3, scoring='roc_auc', n_jobs=6)
         
-    if( (name=="AdaBDT") or (name=="GradBDT") ):
-        class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(y_dev), y=y_dev)
-        class_weight = np.zeros(len(X_dev_weights))
+    if( (name=="AdaBDT") or (name=="GradBDT") or (name == "XGBoost") ):
+        class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(y_train), y=y_train)
+        class_weight = np.zeros(len(X_train))
 
         # signal: y > 0.5 (class 1)
         # bakcground: y < 0.5 (class 0)
-        for i in range(len(y_dev)):
-            if y_dev[i] > 0.5:
+        for i in range(len(y_train)):
+            if y_train[i] > 0.5:
                 class_weight[i] = class_weights[1]
             else:
                 class_weight[i] = class_weights[0]
 
-        grid_result.fit(X_dev, y_dev, sample_weight=X_dev_weights*class_weight)
+        print(class_weight)
+
+        # grid_result.fit(X_train, y_train, sample_weight=X_dev_weights*class_weight)
+        if(name == "XGBoost"):
+            grid_result.fit(X_train, y_train, sample_weight=class_weight, eval_set=[(X_test, y_test)], verbose=False)
+        else:
+            grid_result.fit(X_train, y_train, sample_weight=class_weight)
     else:
-        grid_result.fit(X_dev, y_dev, sample_weight=X_dev_weights)
+        # grid_result.fit(X_train, y_train, sample_weight=X_dev_weights)
+        grid_result.fit(X_train, y_train)
 
     print("Best parameter set found on development set:")
     print(grid_result.best_estimator_)
@@ -176,10 +190,10 @@ def do_cross_validation(name, clf, X_dev, y_dev, X_val, y_val, X_dev_weights):
     for i in range(len(mean_score)):
         print( "{0} +/- {1} for {2}".format(round(mean_score[i],4), round(std_score[i],4), params[i]) )
 
-    if((name == "RForest")):
-        y_true, y_pred = y_val, grid_result.predict_proba(X_val)[:, 1]
+    if((name == "RForest") or (name == "XGBoost")):
+        y_true, y_pred = y_test, grid_result.predict_proba(X_test)[:, 1]
     else:
-        y_true, y_pred = y_val, grid_result.decision_function(X_val)
+        y_true, y_pred = y_test, grid_result.decision_function(X_test)
     print( "It scores {0} on the evaluation set".format(  round( roc_auc_score(y_true, y_pred), 4 ) ) )
 
     return grid_result.best_estimator_
@@ -190,7 +204,7 @@ def roc_curve_plot(names, classifiers, X_test, y_test, first_step, isKtautau):
     clf_thresholds = []
 
     for i in range(len(names)):
-        if((names[i] == "DTree") or (names[i] == "RForest")):
+        if((names[i] == "RForest") or (names[i] == "XGBoost")):
             decisions = classifiers[i].predict_proba(X_test)[:, 1]
         else:
             decisions = classifiers[i].decision_function(X_test)
@@ -213,7 +227,7 @@ def roc_curve_plot(names, classifiers, X_test, y_test, first_step, isKtautau):
     plt.title('ROC curve')
     plt.legend(loc="lower right")
     plt.grid()
-    if(isKtautau == True):
+    if(isKtautau == "True"):
         if(first_step):
             plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/Output_performance_first_step/roc_curve.pdf')
         else:
@@ -274,7 +288,7 @@ def draw_signal_significance_vs_bdt_cut(name, fpr, tpr, thresholds, N_bkg, first
     plt.xlabel('BDT cut value')
     plt.grid()
     plt.legend()
-    if(isKtautau == True):
+    if(isKtautau == "True"):
         if(first_step):
             plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/Output_performance_first_step/significance_vs_bdt_cut_'+name+'.pdf')
         else:
@@ -299,7 +313,7 @@ def compare_train_test(name, clf, X_train, y_train, X_test, y_test, first_step, 
     decisions = []
     for X,y in ((X_train, y_train), (X_test, y_test)):
 
-        if((name == "DTree") or (name == "RForest")):
+        if((name == "RForest") or (name == "XGBoost")):
             d1 = clf.predict_proba(X[y>0.5])[:,1].ravel()
             d2 = clf.predict_proba(X[y<0.5])[:,1].ravel()
         else:
@@ -346,7 +360,7 @@ def compare_train_test(name, clf, X_train, y_train, X_test, y_test, first_step, 
     plt.xlabel("Classifier output")
     plt.ylabel("Arbitrary units")
     plt.legend(loc='best')
-    if(isKtautau == True):
+    if(isKtautau == "True"):
         if(first_step):
             plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/Output_performance_first_step/classifier_output_'+name+'.pdf')
         else:
@@ -366,7 +380,7 @@ def confusion_matrix(name, clf, X_test, y_test, first_step):
         plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/Output_performance_second_step/confusion_matrix_'+name+'.pdf')
     plt.clf()
 
-def draw_feature_importance(name, clf, first_step, input_features):
+def draw_feature_importance(name, clf, first_step, input_features, isKtautau):
     importances = clf.feature_importances_
     feature_importances = pd.Series(importances, index=input_features)
 
@@ -376,10 +390,16 @@ def draw_feature_importance(name, clf, first_step, input_features):
     ax.set_title("Feature importances using MDI")
     ax.set_ylabel("Mean decrease in impurity")
     fig.tight_layout()
-    if(first_step):
-        fig.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/Output_performance_first_step/feature_importance_'+name+'.pdf')
+    if(isKtautau == "True"):
+        if(first_step):
+            fig.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/Output_performance_first_step/feature_importance_'+name+'.pdf')
+        else:
+            fig.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/Output_performance_second_step/feature_importance_'+name+'.pdf')
     else:
-        fig.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/Output_performance_second_step/feature_importance_'+name+'.pdf')
+        if(first_step):
+            fig.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/DDs/Output_performance_first_step/feature_importance_'+name+'.pdf')
+        else:
+            fig.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/DDs/Output_performance_second_step/feature_importance_'+name+'.pdf')
     fig.clf()
 
 def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw_input_features, cross_validation):
@@ -388,7 +408,7 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
 
     # Define the input features
     if(first_step):
-        if(isKtautau == True):
+        if(isKtautau == "True"):
             branch_names = ['Bp_VTXISONUMVTX_B', 'Bp_VTXISODCHI2ONETRACK_B', 'Bp_VTXISODCHI2MASSONETRACK_B', 'Bp_VTXISODCHI2TWOTRACK_B', 'Bp_VTXISODCHI2MASSTWOTRACK_B', 
                             'Bp_VTXISONUMVTX_taup', 'Bp_VTXISONUMVTX_taum', 'Bp_VTXISODCHI2ONETRACK_taup', 'Bp_VTXISODCHI2ONETRACK_taum', 
                             'Bp_VTXISODCHI2MASSONETRACK_taup', 'Bp_VTXISODCHI2MASSONETRACK_taum', 'Bp_VTXISODCHI2TWOTRACK_taup', 'Bp_VTXISODCHI2TWOTRACK_taum',
@@ -396,7 +416,7 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
                             'Bp_CC_05_PZASYM_B', 'Bp_CC_05_DELTAETA_B', 'Bp_NC_05_MULT_B', 'Bp_NC_05_VPT_B', 'Bp_NC_05_PTASYM_B', 'Bp_CCNC_05_IT_B', 'Bp_CC_05_MULT_B',
                             'Bp_CC_05_PASYM_taup', 'Bp_CC_05_DELTAETA_taup', 'Bp_NC_05_MULT_taup', 'Bp_NC_05_SPT_taup', 'Bp_CCNC_05_IT_taup', 'Bp_NC_05_PTASYM_taup', 'Bp_CC_05_PTASYM_taup',
                             'Bp_CC_05_PASYM_taum', 'Bp_CC_05_DELTAETA_taum', 'Bp_NC_05_MULT_taum', 'Bp_NC_05_SPT_taum', 'Bp_CCNC_05_IT_taum', 'Bp_NC_05_PTASYM_taum', 'Bp_CC_05_PTASYM_taum',
-                            'Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taup', 'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taum', 'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] 
+                            'Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taup', 'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taum', 'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum', 'df_Bp_M'] 
         else:
             branch_names = ['Bp_VTXISONUMVTX_B', 'Bp_VTXISODCHI2ONETRACK_B', 'Bp_VTXISODCHI2MASSONETRACK_B', 'Bp_VTXISODCHI2TWOTRACK_B', 'Bp_VTXISODCHI2MASSTWOTRACK_B', 
                             'Bp_VTXISONUMVTX_D0bar', 'Bp_VTXISONUMVTX_Dsp', 'Bp_VTXISODCHI2ONETRACK_D0bar', 'Bp_VTXISODCHI2ONETRACK_Dsp', 
@@ -405,13 +425,13 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
                             'Bp_CC_05_PZASYM_B', 'Bp_CC_05_DELTAETA_B', 'Bp_NC_05_MULT_B', 'Bp_NC_05_VPT_B', 'Bp_NC_05_PTASYM_B', 'Bp_CCNC_05_IT_B', 'Bp_CC_05_MULT_B',
                             'Bp_CC_05_PASYM_D0bar', 'Bp_CC_05_DELTAETA_D0bar', 'Bp_NC_05_MULT_D0bar', 'Bp_NC_05_SPT_D0bar', 'Bp_CCNC_05_IT_D0bar', 'Bp_NC_05_PTASYM_D0bar', 'Bp_CC_05_PTASYM_D0bar',
                             'Bp_CC_05_PASYM_Dsp', 'Bp_CC_05_DELTAETA_Dsp', 'Bp_NC_05_MULT_Dsp', 'Bp_NC_05_SPT_Dsp', 'Bp_CCNC_05_IT_Dsp', 'Bp_NC_05_PTASYM_Dsp', 'Bp_CC_05_PTASYM_Dsp',
-                            'Bp_Bstautau_ISOBDTFIRSTVALUE_taup', 'Bp_Bstautau_ISOBDTSECONDVALUE_taup', 'Bp_Bstautau_ISOBDTTHIRDVALUE_taup', 'Bp_Bstautau_ISOBDTFIRSTVALUE_taum', 'Bp_Bstautau_ISOBDTSECONDVALUE_taum', 'Bp_Bstautau_ISOBDTTHIRDVALUE_taum'] 
+                            'Bp_Bstautau_ISOBDTFIRSTVALUE_taup', 'Bp_Bstautau_ISOBDTSECONDVALUE_taup', 'Bp_Bstautau_ISOBDTTHIRDVALUE_taup', 'Bp_Bstautau_ISOBDTFIRSTVALUE_taum', 'Bp_Bstautau_ISOBDTSECONDVALUE_taum', 'Bp_Bstautau_ISOBDTTHIRDVALUE_taum', 'Bp_dtf_M'] 
 
 
         sig = sig_df.AsNumpy(branch_names)
         bkg = bkg_df.AsNumpy(branch_names)  
 
-        if(isKtautau == True):
+        if(isKtautau == "True"):
             # SIGNAL
             signal['VTXISODCHI2ONETRACK_B'] = sig['Bp_VTXISODCHI2ONETRACK_B']
             signal['VTXISODCHI2MASSONETRACK_B'] = sig['Bp_VTXISODCHI2MASSONETRACK_B']
@@ -475,23 +495,23 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
         input_features = signal.columns.tolist()
 
     else:
-        if(isKtautau == True):
+        if(isKtautau == "True"):
             branch_names = ['taup_M12', 'taum_M12', 'taup_M23', 'taum_M23', 'taup_M13', 'taum_M13', 'taup_DIRA_ORIVX', 'taum_DIRA_ORIVX', 'Bp_DIRA_OWNPV',
                             'df_BVx', 'df_BVy', 'df_BVz', 'df_DV1x', 'df_DV1y', 'df_DV1z', 'df_DV2x', 'df_DV2y', 'df_DV2z', 'df_PVx', 'df_PVy', 'df_PVz',
                             'df_BVx_err', 'df_BVy_err', 'df_BVz_err', 'df_DV1x_err', 'df_DV1y_err', 'df_DV1z_err', 'df_DV2x_err', 'df_DV2y_err', 'df_DV2z_err', 'df_PVx_err', 'df_PVy_err', 'df_PVz_err',
                             'df_Kp_PX', 'df_Kp_PY', 'df_Kp_PZ', 'taup_M', 'taum_M', 'df_chi2', 'Kp_IPCHI2_OWNPV', 'taum_pi2_IPCHI2_OWNPV', 
-                            'taup_AMAXDOCA', 'taup_AMINDOCA', 'taup_DOCACHI2MAX', 'taum_AMAXDOCA', 'taum_AMINDOCA', 'taum_DOCACHI2MAX']
+                            'taup_AMAXDOCA', 'taup_AMINDOCA', 'taup_DOCACHI2MAX', 'taum_AMAXDOCA', 'taum_AMINDOCA', 'taum_DOCACHI2MAX', 'df_Bp_M']
         else:
             branch_names = ['Dsp_M12', 'Dsp_M23', 'Dsp_M13', 'D0bar_DIRA_ORIVX', 'Dsp_DIRA_ORIVX', 'Bp_DIRA_OWNPV',
                             'Bp_ENDVERTEX_X', 'Bp_ENDVERTEX_Y', 'Bp_ENDVERTEX_Z', 'D0bar_ENDVERTEX_X', 'D0bar_ENDVERTEX_Y', 'D0bar_ENDVERTEX_Z', 'Dsp_ENDVERTEX_X', 'Dsp_ENDVERTEX_Y', 'Dsp_ENDVERTEX_Z', 'Bp_OWNPV_X', 'Bp_OWNPV_Y', 'Bp_OWNPV_Z',
                             'Bp_ENDVERTEX_XERR', 'Bp_ENDVERTEX_YERR', 'Bp_ENDVERTEX_ZERR', 'D0bar_ENDVERTEX_XERR', 'D0bar_ENDVERTEX_YERR', 'D0bar_ENDVERTEX_ZERR', 'Dsp_ENDVERTEX_XERR', 'Dsp_ENDVERTEX_YERR', 'Dsp_ENDVERTEX_ZERR', 'Bp_OWNPV_XERR', 'Bp_OWNPV_YERR', 'Bp_OWNPV_ZERR',
                             'D0bar_M', 'Dsp_M', 'Bp_dtf_chi2', 'D0bar_AMAXDOCA', 'D0bar_AMINDOCA', 'D0bar_DOCACHI2MAX', 'Dsp_AMAXDOCA', 'Dsp_AMINDOCA', 'Dsp_DOCACHI2MAX',
-                            'Bp_FDCHI2_OWNPV', 'D0bar_FDCHI2_ORIVX', 'Dsp_FDCHI2_ORIVX']
+                            'Bp_FDCHI2_OWNPV', 'D0bar_FDCHI2_ORIVX', 'Dsp_FDCHI2_ORIVX', 'Bp_dtf_M']
 
         sig = sig_df.AsNumpy(branch_names)
         bkg = bkg_df.AsNumpy(branch_names)  
 
-        if(isKtautau == True):
+        if(isKtautau == "True"):
             # SIGNAL:
             signal['tau_M_max'] = np.maximum( sig['taup_M'], sig['taum_M'] )
             signal['tau_M_min'] = np.minimum( sig['taup_M'], sig['taum_M'] )
@@ -512,7 +532,7 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
             # signal['tau_FD_BV_chi2_min'] = np.minimum( np.sqrt( (sig['df_DV1x'] - sig['df_BVx'])**2 + (sig['df_DV1y'] - sig['df_BVy'])**2 + (sig['df_DV1z'] - sig['df_BVz'])**2 )/(  np.abs( sig['df_DV1x'] - sig['df_BVx'] )*np.sqrt( sig['df_DV1x_err']**2 + sig['df_BVx_err']**2  ) + np.abs( sig['df_DV1y'] - sig['df_BVy'] )*np.sqrt( sig['df_DV1y_err']**2 + sig['df_BVy_err']**2 ) + np.abs( sig['df_DV1z'] - sig['df_BVz'] )*np.sqrt( sig['df_DV1z_err']**2 + sig['df_BVz_err']**2 ) ) , np.sqrt( (sig['df_DV2x'] - sig['df_BVx'])**2 + (sig['df_DV2y'] - sig['df_BVy'])**2 + (sig['df_DV2z'] - sig['df_BVz'])**2 )/( np.abs( sig['df_DV2x'] - sig['df_BVx'] )*np.sqrt( sig['df_DV2x_err']**2 + sig['df_BVx_err']**2 ) + np.abs( sig['df_DV2y'] - sig['df_BVy'] )*np.sqrt( sig['df_DV2y_err']**2 + sig['df_BVy_err']**2 ) + np.abs( sig['df_DV2z'] - sig['df_BVz'] )*np.abs( sig['df_DV2z_err']**2 + sig['df_BVz_err']**2 ) ) )
             signal['DV1_DV2_distance'] = np.sqrt( (sig['df_DV1x'] - sig['df_DV2x'])**2 + (sig['df_DV1y'] - sig['df_DV2y'])**2 + (sig['df_DV1z'] - sig['df_DV2z'])**2 )
             # signal['DV1_DV2_distance_chi2'] = np.sqrt( (sig['df_DV1x'] - sig['df_DV2x'])**2 + (sig['df_DV1y'] - sig['df_DV2y'])**2 + (sig['df_DV1z'] - sig['df_DV2z'])**2 ) / (   np.abs( sig['df_DV1x'] - sig['df_DV2x'] )*np.sqrt( sig['df_DV1x_err']**2 + sig['df_DV2x_err']**2 ) + np.abs( sig['df_DV1y'] - sig['df_DV2y'] )*np.sqrt( sig['df_DV1y_err']**2 + sig['df_DV2y_err']**2 ) + np.abs( sig['df_DV1z'] - sig['df_DV2z'] )*np.sqrt( sig['df_DV1z_err']**2 + sig['df_DV2z_err']**2  ) )
-            signal['df_chi2'] = sig['df_chi2']
+            signal['log10_1_plus_df_chi2'] = np.log10( 1 + sig['df_chi2'] )
             # signal['Kp_IPCHI2_OWNPV'] = sig['Kp_IPCHI2_OWNPV']
             # signal['taum_pi2_IPCHI2_OWNPV'] = sig['taum_pi2_IPCHI2_OWNPV']
             signal['tau_AMAXDOCA_min'] = np.minimum( sig['taup_AMAXDOCA'], sig['taum_AMAXDOCA'] )
@@ -558,7 +578,7 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
             # background['tau_FD_BV_chi2_min'] = np.minimum( np.sqrt( (bkg['df_DV1x'] - bkg['df_BVx'])**2 + (bkg['df_DV1y'] - bkg['df_BVy'])**2 + (bkg['df_DV1z'] - bkg['df_BVz'])**2 )/(  np.abs( bkg['df_DV1x'] - bkg['df_BVx'] )*np.sqrt( bkg['df_DV1x_err']**2 + bkg['df_BVx_err']**2  ) + np.abs( bkg['df_DV1y'] - bkg['df_BVy'] )*np.sqrt( bkg['df_DV1y_err']**2 + bkg['df_BVy_err']**2 ) + np.abs( bkg['df_DV1z'] - bkg['df_BVz'] )*np.sqrt( bkg['df_DV1z_err']**2 + bkg['df_BVz_err']**2 ) ) , np.sqrt( (bkg['df_DV2x'] - bkg['df_BVx'])**2 + (bkg['df_DV2y'] - bkg['df_BVy'])**2 + (bkg['df_DV2z'] - bkg['df_BVz'])**2 )/( np.abs( bkg['df_DV2x'] - bkg['df_BVx'] )*np.sqrt( bkg['df_DV2x_err']**2 + bkg['df_BVx_err']**2 ) + np.abs( bkg['df_DV2y'] - bkg['df_BVy'] )*np.sqrt( bkg['df_DV2y_err']**2 + bkg['df_BVy_err']**2 ) + np.abs( bkg['df_DV2z'] - bkg['df_BVz'] )*np.abs( bkg['df_DV2z_err']**2 + bkg['df_BVz_err']**2 ) ) )
             background['DV1_DV2_distance'] = np.sqrt( (bkg['df_DV1x'] - bkg['df_DV2x'])**2 + (bkg['df_DV1y'] - bkg['df_DV2y'])**2 + (bkg['df_DV1z'] - bkg['df_DV2z'])**2 )
             # background['DV1_DV2_distance_chi2'] = np.sqrt( (bkg['df_DV1x'] - bkg['df_DV2x'])**2 + (bkg['df_DV1y'] - bkg['df_DV2y'])**2 + (bkg['df_DV1z'] - bkg['df_DV2z'])**2 ) / (   np.abs( bkg['df_DV1x'] - bkg['df_DV2x'] )*np.sqrt( bkg['df_DV1x_err']**2 + bkg['df_DV2x_err']**2 ) + np.abs( bkg['df_DV1y'] - bkg['df_DV2y'] )*np.sqrt( bkg['df_DV1y_err']**2 + bkg['df_DV2y_err']**2 ) + np.abs( bkg['df_DV1z'] - bkg['df_DV2z'] )*np.sqrt( bkg['df_DV1z_err']**2 + bkg['df_DV2z_err']**2  ) )
-            background['df_chi2'] = bkg['df_chi2']
+            background['log10_1_plus_df_chi2'] = np.log10( 1 + bkg['df_chi2'] )
             # background['Kp_IPCHI2_OWNPV'] = bkg['Kp_IPCHI2_OWNPV']
             # background['taum_pi2_IPCHI2_OWNPV'] = bkg['taum_pi2_IPCHI2_OWNPV']
             background['tau_AMAXDOCA_min'] = np.minimum( bkg['taup_AMAXDOCA'], bkg['taum_AMAXDOCA'] )
@@ -585,10 +605,10 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
             # background['DV1_DV2_PV_area'] = np.sqrt( s_bkg + (s_bkg-a_bkg)*(s_bkg-b_bkg)*(s_bkg-c_bkg) )
         else:
             # SIGNAL:
-            signal['D_M_max'] = np.maximum( sig['D0bar_M'], sig['Dsp_M'] )
-            signal['D_M_min'] = np.minimum( sig['D0bar_M'], sig['Dsp_M'] )
-            signal['Dsp_M12'] = sig['Dsp_M12']
-            signal['Dsp_M23'] = sig['Dsp_M23']
+            # signal['D_M_max'] = np.maximum( sig['D0bar_M'], sig['Dsp_M'] )
+            # signal['D_M_min'] = np.minimum( sig['D0bar_M'], sig['Dsp_M'] )
+            # signal['Dsp_M12'] = sig['Dsp_M12']
+            # signal['Dsp_M23'] = sig['Dsp_M23']
             signal['log_1_minus_D_DIRA_BV_min'] = np.minimum( np.log(1 - np.abs(sig['D0bar_DIRA_ORIVX'] ))*np.sign( sig['D0bar_DIRA_ORIVX']),  np.log(1 - np.abs(sig['Dsp_DIRA_ORIVX'] ))*np.sign( sig['Dsp_DIRA_ORIVX'] ) )
             signal['log_1_minus_B_DIRA_PV'] = np.log(1 - np.abs(sig['Bp_DIRA_OWNPV']) )
             signal['B_FD_PV_chi2'] = sig['Bp_FDCHI2_OWNPV']
@@ -597,16 +617,16 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
             
             dtf_chi2_sig = sig['Bp_dtf_chi2']
             for i in range(len(dtf_chi2_sig)):
-                dtf_chi2_sig[i] = dtf_chi2_sig[i][0]
+                dtf_chi2_sig[i] = np.log10( 1 +  dtf_chi2_sig[i][0] )
             
-            signal['DTF_chi2'] = dtf_chi2_sig
+            signal['log10_1_plus_DTF_chi2'] = dtf_chi2_sig
             signal['D_AMAXDOCA_min'] = np.minimum( sig['D0bar_AMAXDOCA'], sig['Dsp_AMAXDOCA'] )
 
             # BACKGROUND
-            background['D_M_max'] = np.maximum( bkg['D0bar_M'], bkg['Dsp_M'] )
-            background['D_M_min'] = np.minimum( bkg['D0bar_M'], bkg['Dsp_M'] )
-            background['Dsp_M12'] = bkg['Dsp_M12']
-            background['Dsp_M23'] = bkg['Dsp_M23']
+            # background['D_M_max'] = np.maximum( bkg['D0bar_M'], bkg['Dsp_M'] )
+            # background['D_M_min'] = np.minimum( bkg['D0bar_M'], bkg['Dsp_M'] )
+            # background['Dsp_M12'] = bkg['Dsp_M12']
+            # background['Dsp_M23'] = bkg['Dsp_M23']
             background['log_1_minus_D_DIRA_BV_min'] = np.minimum( np.log(1 - np.abs(bkg['D0bar_DIRA_ORIVX'] ))*np.sign( bkg['D0bar_DIRA_ORIVX']),  np.log(1 - np.abs(bkg['Dsp_DIRA_ORIVX'] ))*np.sign( bkg['Dsp_DIRA_ORIVX'] ) )
             background['log_1_minus_B_DIRA_PV'] = np.log(1 - np.abs(bkg['Bp_DIRA_OWNPV']) )
             background['B_FD_PV_chi2'] = bkg['Bp_FDCHI2_OWNPV']
@@ -615,9 +635,9 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
 
             dtf_chi2_bkg = bkg['Bp_dtf_chi2']
             for i in range(len(dtf_chi2_bkg)):
-                dtf_chi2_bkg[i] = dtf_chi2_bkg[i][0]
+                dtf_chi2_bkg[i] = np.log10( 1 + dtf_chi2_bkg[i][0] )
             
-            background['DTF_chi2'] = dtf_chi2_bkg
+            background['log10_1_plus_DTF_chi2'] = dtf_chi2_bkg
             background['D_AMAXDOCA_min'] = np.minimum( bkg['D0bar_AMAXDOCA'], bkg['Dsp_AMAXDOCA'] )        
 
         input_features = signal.columns.tolist()
@@ -654,32 +674,40 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
         # bkg_corr = background.drop('weight', axis=1)
         # correlation_matrix(sig_corr, "sig", first_step)
         # correlation_matrix(bkg_corr, "bkg", first_step)
+
+        sig_corr = signal
+        bkg_corr = background
+        if(isKtautau == "True"):
+            sig_corr['Bp_M'] = sig['df_Bp_M']
+            bkg_corr['Bp_M'] = bkg['df_Bp_M']
+        else:
+            dtf_M_sig = sig['Bp_dtf_M']
+            for i in range(len(dtf_M_sig)):
+                dtf_M_sig[i] = dtf_M_sig[i][0]
+
+            dtf_M_bkg = bkg['Bp_dtf_M']
+            for i in range(len(dtf_M_bkg)):
+                dtf_M_bkg[i] = dtf_M_bkg[i][0]
+
+            sig_corr['Bp_M'] = dtf_M_sig
+            bkg_corr['Bp_M'] = dtf_M_bkg
+
         correlation_matrix(signal, "sig", first_step, isKtautau)
         correlation_matrix(background, "bkg", first_step, isKtautau)
         quit()
 
     # Train and test split
-    X_dev,X_eval, y_dev,y_eval = train_test_split(X, y, test_size=0.1, random_state=42)
-    X_train,X_test, y_train,y_test = train_test_split(X_dev, y_dev, test_size=0.33, random_state=42)
+    # X_dev,X_eval, y_dev,y_eval = train_test_split(X, y, test_size=0.1, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
 
-    # X_dev_weights = X_dev[:,-1]
-    # X_eval_weights = X_eval[:, -1]
     # X_train_weights = X_train[:, -1]
     # X_test_weights = X_test[:, -1]
-
-    # X_dev = np.delete(X_dev, -1, 1)
-    # X_eval = np.delete(X_eval, -1, 1)
     # X_train = np.delete(X_train, -1, 1)
     # X_test = np.delete(X_test, -1, 1)
     # X = np.delete(X, -1, 1)
 
-    print("Signal dev size = ", X_dev[y_dev>0.5].shape[0] )
-    print("Signal eval size = ", X_eval[y_eval>0.5].shape[0] )
     print("Signal train size = ", X_train[y_train>0.5].shape[0] )
     print("Signal test size = ", X_test[y_test>0.5].shape[0] )
-
-    print("Background dev size = ", X_dev[y_dev<0.5].shape[0] )
-    print("Background eval size = ", X_eval[y_eval<0.5].shape[0] )
     print("Background train size = ", X_train[y_train<0.5].shape[0] )
     print("Background test size = ", X_test[y_test<0.5].shape[0])
 
@@ -688,15 +716,17 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
     ###################################################### Train a classifier ####################################################################
     # I am using the optimised hyper-parameters here:
     # classifiers = best_classifiers
-    names = ["AdaBDT", "GradBDT", "RForest"]
+    names = ["AdaBDT", "GradBDT", "RForest", "XGBoost"]
     if(first_step):
-        classifiers = [ AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.1, n_estimators=400, algorithm='SAMME', random_state=42),
-                        GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=400, random_state=42), 
-                        RandomForestClassifier(class_weight='balanced', max_depth=6, n_estimators=800, random_state=42) ]
+        classifiers = [ AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.05, n_estimators=800, algorithm='SAMME', random_state=42),
+                        GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=800, random_state=42), 
+                        RandomForestClassifier(class_weight='balanced', max_depth=9, n_estimators=800, random_state=42),
+                        xgb.XGBClassifier(tree_method="hist", early_stopping_rounds=2, n_estimators=100, max_depth=6, learning_rate=0.1, random_state=42) ] # hist is the fastest tree method
     else:
-        classifiers = [ AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.1, n_estimators=400, algorithm='SAMME', random_state=42),
-                        GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=400, random_state=42),
-                        RandomForestClassifier(class_weight='balanced', max_depth=6, n_estimators=800, random_state=42)] 
+        classifiers = [ AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.1, n_estimators=800, algorithm='SAMME', random_state=42),
+                        GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=500, random_state=42),
+                        RandomForestClassifier(class_weight='balanced', max_depth=9, n_estimators=800, random_state=42),
+                        xgb.XGBClassifier(tree_method="hist", early_stopping_rounds=2, n_estimators=500, max_depth=6, learning_rate=0.1, random_state=42) ] # hist is the fastest tree method
 
     clf_fpr = []
     clf_tpr = []
@@ -708,9 +738,9 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
         name = names[i]
         clf = classifiers[i]
 
-        print("Fitting "+names[i])
+        print("Fitting "+name)
 
-        if( (names[i]=="AdaBDT") or (names[i]=="GradBDT") ):
+        if( (name =="AdaBDT") or (name =="GradBDT") or(name == "XGBoost") ):
             class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(y_train), y=y_train)
             class_weight = np.zeros(len(X_train[:, -1]))
 
@@ -723,13 +753,18 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
                     class_weight[i] = class_weights[0]
 
             # clf.fit(X_train, y_train, X_train_weights*class_weight)
-            clf.fit(X_train, y_train, class_weight)
+
+            if(name == "XGBoost"):
+                clf.fit(X_train, y_train, class_weight, eval_set=[(X_test, y_test)], verbose=False)
+            else:
+                clf.fit(X_train, y_train, class_weight)
         else:
             # clf.fit(X_train, y_train, X_train_weights)
             clf.fit(X_train, y_train)
 
         if(cross_validation):
-            do_cross_validation(name, clf, X_dev, y_dev, X_eval, y_eval, X_dev_weights) 
+            # do_cross_validation(name, clf, X_train, y_train, X_test, y_test, X_train_weights) 
+            do_cross_validation(name, clf, X_train, y_train, X_test, y_test) 
         else:
             y_predicted = clf.predict(X_test)
             print(classification_report(y_test, y_predicted, target_names=["background", "signal"]))
@@ -759,8 +794,10 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
         cuts.append(bdt_cut)
         metrics.append(significance)
 
-    # print("Drawing feature importances for AdaBDT")
-    # draw_feature_importance("AdaBDT", classifiers[0], first_step, input_features)
+    # for i in range(len(names)):
+    #     name = names[i]
+    #     print("Drawing feature importances for "+ name)
+    draw_feature_importance(names[0], classifiers[0], first_step, input_features, isKtautau)
 
     # find which classifier gives the maximum value for the metric
     # idx = np.argmax( metrics )
@@ -770,7 +807,7 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
     #     decisions = classifiers[idx].decision_function(X)
 
     # Write trained classifiers to a file
-    if(isKtautau == True):
+    if(isKtautau == "True"):
         if(first_step):
             with open('/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/clf_first_step.pkl', 'wb') as f:
                 for i in range(len(classifiers)):
@@ -798,7 +835,7 @@ def main(argv):
     isKtautau = argv[1]
     print(isKtautau)
 
-    if(isKtautau == True):
+    if(isKtautau == "True"):
         # Prepare datasets
         # Signal proxy: 3pi3pi MC (signal region) (2016+2017+2018)
         fc_sig_2016 = ROOT.TFileCollection("fc_sig_2016", "fc_sig_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_10/pre_sel_tree.txt")
@@ -850,8 +887,8 @@ def main(argv):
         # t_sig.AddFriend(t_sig1_2016)
 
         # Background proxy: WS data (signal region) for both steps (only 2016 for now)
-        fc_bkg = ROOT.TFileCollection("fc_bkg", "fc_bkg", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_3/pre_sel_tree.txt", 5) 
-        fc_bkg1 = ROOT.TFileCollection("fc_bkg1", "fc_bkg1", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_3/fit_results.txt", 5) 
+        fc_bkg = ROOT.TFileCollection("fc_bkg", "fc_bkg", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_3/pre_sel_tree.txt", 100) 
+        fc_bkg1 = ROOT.TFileCollection("fc_bkg1", "fc_bkg1", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_3/fit_results.txt", 100) 
 
         t_bkg = ROOT.TChain("DecayTree")
         t_bkg1 = ROOT.TChain("DecayTree")
@@ -895,9 +932,9 @@ def main(argv):
         t_sig_2016.Add(t_sig_2018)
 
         # Background proxy: WS data (signal region) for both steps (only 2016 for now)
-        fc_bkg_2016 = ROOT.TFileCollection("fc_bkg", "fc_bkg", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_84/pre_sel_tree.txt", 600) 
-        fc_bkg_2017 = ROOT.TFileCollection("fc_bkg", "fc_bkg", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_84/pre_sel_tree.txt", 600) 
-        fc_bkg_2018 = ROOT.TFileCollection("fc_bkg", "fc_bkg", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_84/pre_sel_tree.txt", 600) 
+        fc_bkg_2016 = ROOT.TFileCollection("fc_bkg_2016", "fc_bkg_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_84/pre_sel_tree.txt", 1000) 
+        fc_bkg_2017 = ROOT.TFileCollection("fc_bkg_2017", "fc_bkg_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_84/pre_sel_tree.txt", 1000) 
+        fc_bkg_2018 = ROOT.TFileCollection("fc_bkg_2018", "fc_bkg_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_84/pre_sel_tree.txt", 1000) 
 
         t_bkg_2016 = ROOT.TChain("DecayTree")
         t_bkg_2017 = ROOT.TChain("DecayTree")
@@ -930,7 +967,7 @@ def main(argv):
     # decisions_first_step, thresholds_1st_step, X_test_1st_step, y_test_1st_step = make_classification(sig_df, bkg_df, isKtautau, output=None, cut=None, first_step=True, draw_input_features=False, cross_validation=False)
 
     print("2nd step")
-    decisions_second_step, thresholds_2nd_step, X_test_2nd_step, y_test_2nd_step = make_classification(sig_df, bkg_df, isKtautau, output=None, cut=None, first_step=False, draw_input_features=False, cross_validation=False)
+    decisions_second_step, thresholds_2nd_step, X_test_2nd_step, y_test_2nd_step = make_classification(sig_df, bkg_df, isKtautau, output=None, cut=None, first_step=False, draw_input_features=True, cross_validation=False)
 
     # bdt_2d_cut(X_test_1st_step, y_test_1st_step, thresholds_1st_step, thresholds_2nd_step, decisions_first_step, decisions_second_step)
 
