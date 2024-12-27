@@ -7,12 +7,14 @@ from Configurables import DaVinci
 from PhysConf.Selections import FilterSelection
 from PhysSelPython.Wrappers import AutomaticData
 
-isMC = False 
-year = '2018'
-pol = 'MagDown'
+isMC = True 
+year = '2016'
+pol = 'MagUp'
 applySel = False
+removeStripCuts = True
 if(not isMC):
 	applySel = True
+	removeStripCuts = False
 
 # redefine addBranches and setDescriptorTemplate because of weird bug in DV
 def addBranches(self, branches):
