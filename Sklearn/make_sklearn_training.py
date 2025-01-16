@@ -429,6 +429,10 @@ def draw_feature_importance(name, clf, columns, first_step, input_features, isKt
     if(name == 'XGBoost'): 
         plt.figure(figsize=(20,10))
         plt.barh(columns, clf.feature_importances_)
+        plt.yticks(fontsize=20)
+        plt.xticks(fontsize=20)
+        plt.title("Feature importance for {0}".format(name), fontsize=20)
+        plt.tight_layout()
 
         # feature_important = clf.get_booster().get_score(importance_type='weight')
         # keys = list(feature_important.keys())
@@ -607,7 +611,7 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
             C_taum_sig = np.sqrt( Cx_taum_sig**2 + Cy_taum_sig**2 + Cz_taum_sig**2  )
             IP_taum_Kp_sig = (2*C_taum_sig)/( np.sqrt( sig['df_Kp_PX']**2 + sig['df_Kp_PY']**2 + sig['df_Kp_PZ']**2 ) )
 
-            # signal['IP_tau_Kp_max'] = np.maximum( IP_taup_Kp_sig, IP_taum_Kp_sig ) 
+            signal['IP_tau_Kp_max'] = np.maximum( IP_taup_Kp_sig, IP_taum_Kp_sig ) 
             signal['IP_tau_Kp_min'] = np.minimum( IP_taup_Kp_sig, IP_taum_Kp_sig ) 
 
             # a_sig = np.sqrt( ( sig['df_PVx'] - sig['df_DV1x'] )**2 + ( sig['df_PVy'] - sig['df_DV1y'] )**2 + ( sig['df_PVz'] - sig['df_DV1z'] )**2 )
@@ -653,7 +657,7 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
             C_taum_bkg = np.sqrt( Cx_taum_bkg**2 + Cy_taum_bkg**2 + Cz_taum_bkg**2  )
             IP_taum_Kp_bkg = (2*C_taum_bkg)/( np.sqrt( bkg['df_Kp_PX']**2 + bkg['df_Kp_PY']**2 + bkg['df_Kp_PZ']**2 ) )
 
-            # background['IP_tau_Kp_max'] = np.maximum( IP_taup_Kp_bkg, IP_taum_Kp_bkg ) 
+            background['IP_tau_Kp_max'] = np.maximum( IP_taup_Kp_bkg, IP_taum_Kp_bkg ) 
             background['IP_tau_Kp_min'] = np.minimum( IP_taup_Kp_bkg, IP_taum_Kp_bkg ) 
 
             # a_bkg = np.sqrt( ( bkg['df_PVx'] - bkg['df_DV1x'] )**2 + ( bkg['df_PVy'] - bkg['df_DV1y'] )**2 + ( bkg['df_PVz'] - bkg['df_DV1z'] )**2 )
@@ -784,12 +788,12 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
         classifiers = [ # AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.05, n_estimators=800, random_state=42),
                         # GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=800, random_state=42), 
                         # RandomForestClassifier(class_weight='balanced', max_depth=9, n_estimators=800, random_state=42),
-                        xgb.XGBClassifier(tree_method="hist", early_stopping_rounds=2, n_estimators=100, max_depth=6, learning_rate=0.1, random_state=42) ] # hist is the fastest tree method
+                        xgb.XGBClassifier(tree_method="hist", early_stopping_rounds=2, n_estimators=100, max_depth=6, learning_rate=0.1, random_state=42, importance_type='weight') ] # hist is the fastest tree method
     else:
         classifiers = [ # AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.1, n_estimators=800, random_state=42),
                         # GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=500, random_state=42),
                         # RandomForestClassifier(class_weight='balanced', max_depth=9, n_estimators=800, random_state=42),
-                        xgb.XGBClassifier(tree_method="hist", early_stopping_rounds=2, n_estimators=500, max_depth=6, learning_rate=0.1, random_state=42) ] # hist is the fastest tree method
+                        xgb.XGBClassifier(tree_method="hist", early_stopping_rounds=2, n_estimators=500, max_depth=6, learning_rate=0.1, random_state=42, importance_type='weight') ] # hist is the fastest tree method
 
     clf_fpr = []
     clf_tpr = []
@@ -889,9 +893,26 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
                 for i in range(len(classifiers)):
                     pickle.dump(classifiers[i], f)
 
-    decisions = []
+    # Correlation coefficient between BDT response on signal and background (all dataset) vs B+ mass
+    decisions_sig = []
+    decisions_bkg = []
+    for i in range(len(names)):
+        if( (names[i]=="RForest") or (names[i] == "XGBoost") ):
+            decisions_sig.append( classifiers[i].predict_proba(np.array(signal))[:, 1] )
+            decisions_bkg.append( classifiers[i].predict_proba(np.array(background))[:, 1] )
+        else:
+            decisions_sig.append( classifiers[i].decision_function(np.array(signal)) )
+            decisions_bkg.append( classifiers[i].decision_function(np.array(background)) )
 
-    return decisions, thresholds[0], X_test, y_test
+    mass_values_sig = np.array(sig['df_Bp_M'])
+    mass_values_bkg = np.array(bkg['df_Bp_M'])
+
+    bdt_values_sig = decisions_sig[0]
+    bdt_values_bkg = decisions_bkg[0]
+
+    print("Correlation of BDT w/ B+ mass (signal) = {0}".format(round(np.corrcoef(bdt_values_sig, mass_values_sig)[0,1],4)))
+    print("Correlation of BDT w/ B+ mass (background) = {0}".format(round(np.corrcoef(bdt_values_bkg, mass_values_bkg)[0,1],4)))
+
 
 def main(argv):
 
@@ -1052,10 +1073,10 @@ def main(argv):
     # print((bkg_df.Count()).GetValue())
 
     # print("1st step")
-    # decisions_first_step, thresholds_1st_step, X_test_1st_step, y_test_1st_step = make_classification(sig_df, bkg_df, isKtautau, output=None, cut=None, first_step=True, draw_input_features=False, cross_validation=False)
+    # make_classification(sig_df, bkg_df, isKtautau, output=None, cut=None, first_step=True, draw_input_features=False, cross_validation=False)
 
     print("2nd step")
-    decisions_second_step, thresholds_2nd_step, X_test_2nd_step, y_test_2nd_step = make_classification(sig_df, bkg_df, isKtautau, output=None, cut=None, first_step=False, draw_input_features=False, cross_validation=False)
+    make_classification(sig_df, bkg_df, isKtautau, output=None, cut=None, first_step=False, draw_input_features=True, cross_validation=False)
 
     # bdt_2d_cut(X_test_1st_step, y_test_1st_step, thresholds_1st_step, thresholds_2nd_step, decisions_first_step, decisions_second_step)
 
