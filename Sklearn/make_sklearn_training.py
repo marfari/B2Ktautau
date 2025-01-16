@@ -83,7 +83,52 @@ def draw_variables(sig_data, bkg_data, mc_weights, columns, first_step, isKtauta
             else:
                 plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/DDs/Input_features_plots_second_step/'+column+'.pdf') 
         plt.clf()
+
+def draw_profile_plots(data, columns, label, first_step, isKtautau):
+    nbins = 30
+
+    for id, column in enumerate(columns, 1):
+        if column == 'Bp_M':
+            continue
+
+        x_values = np.array(data['Bp_M']) # B+ mass
+        y_values = np.array(data[column]) # variable
+
+        h, xe, ye, im = plt.hist2d(x_values, y_values, nbins, range=[[4000,8000],[np.min(data[column]),np.max(data[column])]])
+
+        y_mean = np.zeros(nbins)
+        y_error = np.zeros(nbins)
+        x = np.zeros(nbins)
+
+        xbinw = xe[1]-xe[0]
+
+        for i in range(len(xe)-1):
+            y_mean[i] = y_values[ (x_values > xe[i]) & (x_values <= xe[i+1]) ].mean()
+            y_error[i] = y_values[ (x_values > xe[i]) & (x_values <= xe[i+1]) ].std()
+            x[i] = xe[i]+xbinw/2
     
+        plt.clf()
+        if(label == 'sig'):
+            plt.errorbar(x, y_mean, y_error, fmt='_', ecolor='b', color='b')
+        else:
+            plt.errorbar(x, y_mean, y_error, fmt='_', ecolor='r', color='r')
+
+        plt.title(column+'   (c = {0})'.format( round(np.corrcoef(x_values, y_values)[0,1],4) ), fontsize=15)
+        plt.xlabel("m_B (MeV)", fontsize=15)
+        plt.ylabel("Average {0} per m_B bin".format(column), fontsize=15)
+
+        if(isKtautau == "True"):
+            if(first_step):
+                plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/Input_features_plots_first_step/Profile_plots/'+column+'_'+label+'.pdf')
+            else:
+                plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/Input_features_plots_second_step/Profile_plots/'+column+'_'+label+'.pdf')
+        else:
+            if(first_step):
+                plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/DDs/Input_features_plots_first_step/Profile_plots/'+column+'_'+label+'.pdf')
+            else:
+                plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/DDs/Input_features_plots_second_step/Profile_plots/'+column+'_'+label+'.pdf') 
+        plt.clf()
+
 def draw_scatter_plots(data, columns, first_step):
     fig = sb.pairplot(data, hue="y", corner=True)
     fig._legend.set_title("")
@@ -95,7 +140,7 @@ def draw_scatter_plots(data, columns, first_step):
         fig.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/Input_features_plots_first_step/scatter_plot.pdf') 
     else:
         fig.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/Input_features_plots_second_step/scatter_plot.pdf') 
-    plt.clf()
+    plt.clf()    
 
 def correlation_matrix(data, name, first_step, isKtautau, **kwds):
     """Calculate pairwise correlation between features.
@@ -380,27 +425,39 @@ def confusion_matrix(name, clf, X_test, y_test, first_step):
         plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/Output_performance_second_step/confusion_matrix_'+name+'.pdf')
     plt.clf()
 
-def draw_feature_importance(name, clf, first_step, input_features, isKtautau):
-    importances = clf.feature_importances_
-    feature_importances = pd.Series(importances, index=input_features)
+def draw_feature_importance(name, clf, columns, first_step, input_features, isKtautau):
+    if(name == 'XGBoost'): 
+        plt.figure(figsize=(20,10))
+        plt.barh(columns, clf.feature_importances_)
 
-    fig, ax = plt.subplots()
-    std = np.std([tree.feature_importances_ for tree in clf.estimators_], axis=0)
-    feature_importances.plot.bar(yerr=std, ax=ax)
-    ax.set_title("Feature importances using MDI")
-    ax.set_ylabel("Mean decrease in impurity")
-    fig.tight_layout()
+        # feature_important = clf.get_booster().get_score(importance_type='weight')
+        # keys = list(feature_important.keys())
+        # values = list(feature_important.values())
+        # data = pd.DataFrame(data=values, index=keys, columns=["score"]).sort_values(by = "score", ascending=False)
+        # fig = data.nlargest(40, columns="score").plot(kind='barh', figsize = (12,10)).figure ## plot top 40 features
+
+    else:
+        importances = clf.feature_importances_
+        feature_importances = pd.Series(importances, index=input_features)
+
+        fig, ax = plt.subplots()
+        std = np.std([tree.feature_importances_ for tree in clf.estimators_], axis=0)
+        feature_importances.plot.bar(yerr=std, ax=ax)
+        ax.set_title("Feature importances using MDI")
+        ax.set_ylabel("Mean decrease in impurity")
+        fig.tight_layout()
+
     if(isKtautau == "True"):
         if(first_step):
-            fig.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/Output_performance_first_step/feature_importance_'+name+'.pdf')
+            plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/Output_performance_first_step/feature_importance_'+name+'.pdf')
         else:
-            fig.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/Output_performance_second_step/feature_importance_'+name+'.pdf')
+            plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/Output_performance_second_step/feature_importance_'+name+'.pdf')
     else:
         if(first_step):
-            fig.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/DDs/Output_performance_first_step/feature_importance_'+name+'.pdf')
+            plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/DDs/Output_performance_first_step/feature_importance_'+name+'.pdf')
         else:
-            fig.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/DDs/Output_performance_second_step/feature_importance_'+name+'.pdf')
-    fig.clf()
+            plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/DDs/Output_performance_second_step/feature_importance_'+name+'.pdf')
+    plt.clf()
 
 def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw_input_features, cross_validation):
     signal = pd.DataFrame()
@@ -447,41 +504,45 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
         if(isKtautau == "True"):
             # SIGNAL
             signal['VTXISODCHI2ONETRACK_B'] = sig['Bp_VTXISODCHI2ONETRACK_B']
-            signal['VTXISODCHI2MASSONETRACK_B'] = sig['Bp_VTXISODCHI2MASSONETRACK_B']
-            signal['VTXISODCHI2TWOTRACK_B'] = sig['Bp_VTXISODCHI2TWOTRACK_B']
+            # signal['VTXISODCHI2MASSONETRACK_tau_min'] = np.minimum( sig['Bp_VTXISODCHI2MASSONETRACK_taup'], sig['Bp_VTXISODCHI2MASSONETRACK_taum'] ) 
+            # signal['VTXISODCHI2MASSONETRACK_B'] = sig['Bp_VTXISODCHI2MASSONETRACK_B']
+            # signal['VTXISODCHI2TWOTRACK_B'] = sig['Bp_VTXISODCHI2TWOTRACK_B']
             # signal['VTXISODCHI2MASSTWOTRACK_B'] = sig['Bp_VTXISODCHI2MASSTWOTRACK_B']
-            # signal['VTXISONUMVTX_tau_max'] = np.maximum( sig['Bp_VTXISONUMVTX_taup'], sig['Bp_VTXISONUMVTX_taum'] )
+            signal['VTXISONUMVTX_tau_max'] = np.maximum( sig['Bp_VTXISONUMVTX_taup'], sig['Bp_VTXISONUMVTX_taum'] )
             # signal['VTXISODCHI2MASSONETRACK_tau_min'] = np.minimum( sig['Bp_VTXISODCHI2MASSONETRACK_taup'], sig['Bp_VTXISODCHI2MASSONETRACK_taum'] ) 
             signal['VTXISODCHI2TWOTRACK_tau_max'] = np.maximum( sig['Bp_VTXISODCHI2TWOTRACK_taup'], sig['Bp_VTXISODCHI2TWOTRACK_taum'] ) 
             # signal['VTXISODCHI2MASSTWOTRACK_tau_min'] = np.minimum( sig['Bp_VTXISODCHI2MASSTWOTRACK_taup'], sig['Bp_VTXISODCHI2MASSTWOTRACK_taum'] )
             # signal['CC_05_MULT_B'] = sig['Bp_CC_05_MULT_B']
-            # signal['CC_05_DELTAETA_B'] = sig['Bp_CC_05_DELTAETA_B']
+            signal['CC_05_DELTAETA_tau_min'] = np.minimum( sig['Bp_CC_05_DELTAETA_taup'] , sig['Bp_CC_05_DELTAETA_taum' ])
             signal['NC_05_PTASYM_B'] = sig['Bp_NC_05_PTASYM_B']
-            signal['CCNC_05_IT_B'] = sig['Bp_CCNC_05_IT_B']
-            signal['CC_05_PTASYM_tau_max'] = np.maximum( sig['Bp_CC_05_PTASYM_taup'], sig['Bp_CC_05_PTASYM_taum'] )
-            # signal['CCNC_05_IT_tau_min'] = np.minimum( sig['Bp_CCNC_05_IT_taup'], sig['Bp_CCNC_05_IT_taum'] )
+            # signal['CCNC_05_IT_B'] = sig['Bp_CCNC_05_IT_B']
+            # signal['CC_05_PTASYM_tau_max'] = np.maximum( sig['Bp_CC_05_PTASYM_taup'], sig['Bp_CC_05_PTASYM_taum'] )
+            signal['CCNC_05_IT_tau_min'] = np.minimum( sig['Bp_CCNC_05_IT_taup'], sig['Bp_CCNC_05_IT_taum'] )
             # signal['tau_iso_first_value_max'] = np.maximum( sig['Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taum'] )
             signal['tau_iso_second_value_max'] = np.maximum( sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] ) 
             signal['tau_iso_third_value_max'] = np.maximum( sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] )
 
             # BACKGROUND
             background['VTXISODCHI2ONETRACK_B'] = bkg['Bp_VTXISODCHI2ONETRACK_B']
-            background['VTXISODCHI2MASSONETRACK_B'] = bkg['Bp_VTXISODCHI2MASSONETRACK_B']
-            background['VTXISODCHI2TWOTRACK_B'] = bkg['Bp_VTXISODCHI2TWOTRACK_B']
+            # background['VTXISODCHI2MASSONETRACK_tau_min'] = np.minimum( bkg['Bp_VTXISODCHI2MASSONETRACK_taup'], bkg['Bp_VTXISODCHI2MASSONETRACK_taum'] ) 
+            # background['VTXISODCHI2MASSONETRACK_B'] = bkg['Bp_VTXISODCHI2MASSONETRACK_B']
+            # background['VTXISODCHI2TWOTRACK_B'] = bkg['Bp_VTXISODCHI2TWOTRACK_B']
             # background['VTXISODCHI2MASSTWOTRACK_B'] = bkg['Bp_VTXISODCHI2MASSTWOTRACK_B']
-            # background['VTXISONUMVTX_tau_max'] = np.maximum( bkg['Bp_VTXISONUMVTX_taup'], bkg['Bp_VTXISONUMVTX_taum'] )
+            background['VTXISONUMVTX_tau_max'] = np.maximum( bkg['Bp_VTXISONUMVTX_taup'], bkg['Bp_VTXISONUMVTX_taum'] )
             # background['VTXISODCHI2MASSONETRACK_tau_min'] = np.minimum( bkg['Bp_VTXISODCHI2MASSONETRACK_taup'], bkg['Bp_VTXISODCHI2MASSONETRACK_taum'] ) 
             background['VTXISODCHI2TWOTRACK_tau_max'] = np.maximum( bkg['Bp_VTXISODCHI2TWOTRACK_taup'], bkg['Bp_VTXISODCHI2TWOTRACK_taum'] ) 
             # background['VTXISODCHI2MASSTWOTRACK_tau_min'] = np.minimum( bkg['Bp_VTXISODCHI2MASSTWOTRACK_taup'], bkg['Bp_VTXISODCHI2MASSTWOTRACK_taum'] )
             # background['CC_05_MULT_B'] = bkg['Bp_CC_05_MULT_B']
             # background['CC_05_DELTAETA_B'] = bkg['Bp_CC_05_DELTAETA_B']
+            background['CC_05_DELTAETA_tau_min'] = np.minimum( bkg['Bp_CC_05_DELTAETA_taup'] , bkg['Bp_CC_05_DELTAETA_taum' ])
             background['NC_05_PTASYM_B'] = bkg['Bp_NC_05_PTASYM_B']
-            background['CCNC_05_IT_B'] = bkg['Bp_CCNC_05_IT_B']
-            background['CC_05_PTASYM_tau_max'] = np.maximum( bkg['Bp_CC_05_PTASYM_taup'], bkg['Bp_CC_05_PTASYM_taum'] )
-            # background['CCNC_05_IT_tau_min'] = np.minimum( bkg['Bp_CCNC_05_IT_taup'], bkg['Bp_CCNC_05_IT_taum'] )
+            # background['CCNC_05_IT_B'] = bkg['Bp_CCNC_05_IT_B']
+            # background['CC_05_PTASYM_tau_max'] = np.maximum( bkg['Bp_CC_05_PTASYM_taup'], bkg['Bp_CC_05_PTASYM_taum'] )
+            background['CCNC_05_IT_tau_min'] = np.minimum( bkg['Bp_CCNC_05_IT_taup'], bkg['Bp_CCNC_05_IT_taum'] )
             # background['tau_iso_first_value_max'] = np.maximum( bkg['Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taum'] )
             background['tau_iso_second_value_max'] = np.maximum( bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] ) 
             background['tau_iso_third_value_max'] = np.maximum( bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] )
+
         else:
             # SIGNAL
             signal['VTXISODCHI2ONETRACK_B'] = sig['Bp_VTXISODCHI2ONETRACK_B']
@@ -511,18 +572,18 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
         if(isKtautau == "True"):
             # SIGNAL:
             signal['tau_M_max'] = np.maximum( sig['taup_M'], sig['taum_M'] )
-            signal['tau_M_min'] = np.minimum( sig['taup_M'], sig['taum_M'] )
+            # signal['tau_M_min'] = np.minimum( sig['taup_M'], sig['taum_M'] )
             signal['tau_M12_M23_max_max'] = np.maximum( np.maximum( sig['taup_M12'], sig['taup_M23'] ), np.maximum( sig['taum_M12'], sig['taum_M23'] ) )
-            signal['tau_M12_M23_max_min'] = np.maximum( np.minimum( sig['taup_M12'], sig['taup_M23'] ), np.minimum( sig['taum_M12'], sig['taum_M23'] ) )
+            # signal['tau_M12_M23_max_min'] = np.maximum( np.minimum( sig['taup_M12'], sig['taup_M23'] ), np.minimum( sig['taum_M12'], sig['taum_M23'] ) )
             signal['tau_M12_M23_min_max'] = np.minimum( np.maximum( sig['taup_M12'], sig['taup_M23'] ), np.maximum( sig['taum_M12'], sig['taum_M23'] ) )
-            signal['tau_M12_M23_min_min'] = np.minimum( np.minimum( sig['taup_M12'], sig['taup_M23'] ), np.minimum( sig['taum_M12'], sig['taum_M23'] ) )
+            # signal['tau_M12_M23_min_min'] = np.minimum( np.minimum( sig['taup_M12'], sig['taup_M23'] ), np.minimum( sig['taum_M12'], sig['taum_M23'] ) )
             # signal['tau_M13_max'] = np.maximum( sig['taup_M13'], sig['taum_M13'] )
             # signal['tau_M13_min'] = np.minimum( sig['taup_M13'], sig['taum_M13'] )
             # signal['log_1_minus_tau_DIRA_BV_max'] = np.maximum( np.log(1 - np.abs(sig['taup_DIRA_ORIVX'] ))*np.sign( sig['taup_DIRA_ORIVX']),  np.log(1 - np.abs(sig['taum_DIRA_ORIVX'] ))*np.sign( sig['taup_DIRA_ORIVX'] ) )
             signal['log_1_minus_tau_DIRA_BV_min'] = np.minimum( np.log(1 - np.abs(sig['taup_DIRA_ORIVX'] ))*np.sign( sig['taup_DIRA_ORIVX']),  np.log(1 - np.abs(sig['taum_DIRA_ORIVX'] ))*np.sign( sig['taup_DIRA_ORIVX'] ) )
-            signal['log_1_minus_B_DIRA_PV'] = np.log(1 - np.abs(sig['Bp_DIRA_OWNPV']) )
+            # signal['log_1_minus_B_DIRA_PV'] = np.log(1 - np.abs(sig['Bp_DIRA_OWNPV']) )
             # signal['B_FD_PV'] = np.sqrt( (sig['df_BVx'] - sig['df_PVx'])**2 + (sig['df_BVy'] - sig['df_PVy'])**2 + (sig['df_BVz'] - sig['df_PVz'])**2 )
-            signal['B_FD_PV_chi2'] = np.sqrt( (sig['df_BVx'] - sig['df_PVx'])**2 + (sig['df_BVy'] - sig['df_PVy'])**2 + (sig['df_BVz'] - sig['df_PVz'])**2 )/( np.abs( sig['df_BVx'] - sig['df_PVx'] )*np.sqrt( sig['df_BVx_err']**2 + sig['df_PVx_err']**2  ) + np.abs( sig['df_BVy'] - sig['df_PVy'] )*np.sqrt( sig['df_BVy_err']**2 + sig['df_PVy_err']**2 ) + np.abs( sig['df_BVz'] - sig['df_PVz'] )*np.sqrt( sig['df_BVz_err']**2 + sig['df_PVz_err']**2 ) )
+            # signal['B_FD_PV_chi2'] = np.sqrt( (sig['df_BVx'] - sig['df_PVx'])**2 + (sig['df_BVy'] - sig['df_PVy'])**2 + (sig['df_BVz'] - sig['df_PVz'])**2 )/( np.abs( sig['df_BVx'] - sig['df_PVx'] )*np.sqrt( sig['df_BVx_err']**2 + sig['df_PVx_err']**2  ) + np.abs( sig['df_BVy'] - sig['df_PVy'] )*np.sqrt( sig['df_BVy_err']**2 + sig['df_PVy_err']**2 ) + np.abs( sig['df_BVz'] - sig['df_PVz'] )*np.sqrt( sig['df_BVz_err']**2 + sig['df_PVz_err']**2 ) )
             # signal['tau_FD_BV_max'] = np.maximum( np.sqrt( (sig['df_DV1x'] - sig['df_BVx'])**2 + (sig['df_DV1y'] - sig['df_BVy'])**2 + (sig['df_DV1z'] - sig['df_BVz'])**2 ), np.sqrt( (sig['df_DV2x'] - sig['df_BVx'])**2 + (sig['df_DV2y'] - sig['df_BVy'])**2 + (sig['df_DV2z'] - sig['df_BVz'])**2 ) )
             signal['tau_FD_BV_min'] = np.minimum( np.sqrt( (sig['df_DV1x'] - sig['df_BVx'])**2 + (sig['df_DV1y'] - sig['df_BVy'])**2 + (sig['df_DV1z'] - sig['df_BVz'])**2 ), np.sqrt( (sig['df_DV2x'] - sig['df_BVx'])**2 + (sig['df_DV2y'] - sig['df_BVy'])**2 + (sig['df_DV2z'] - sig['df_BVz'])**2 ) )
             # signal['tau_FD_BV_chi2_max'] = np.maximum( np.sqrt( (sig['df_DV1x'] - sig['df_BVx'])**2 + (sig['df_DV1y'] - sig['df_BVy'])**2 + (sig['df_DV1z'] - sig['df_BVz'])**2 )/(  np.abs( sig['df_DV1x'] - sig['df_BVx'] )*np.sqrt( sig['df_DV1x_err']**2 + sig['df_BVx_err']**2  ) + np.abs( sig['df_DV1y'] - sig['df_BVy'] )*np.sqrt( sig['df_DV1y_err']**2 + sig['df_BVy_err']**2 ) + np.abs( sig['df_DV1z'] - sig['df_BVz'] )*np.sqrt( sig['df_DV1z_err']**2 + sig['df_BVz_err']**2 ) ) , np.sqrt( (sig['df_DV2x'] - sig['df_BVx'])**2 + (sig['df_DV2y'] - sig['df_BVy'])**2 + (sig['df_DV2z'] - sig['df_BVz'])**2 )/( np.abs( sig['df_DV2x'] - sig['df_BVx'] )*np.sqrt( sig['df_DV2x_err']**2 + sig['df_BVx_err']**2 ) + np.abs( sig['df_DV2y'] - sig['df_BVy'] )*np.sqrt( sig['df_DV2y_err']**2 + sig['df_BVy_err']**2 ) + np.abs( sig['df_DV2z'] - sig['df_BVz'] )*np.abs( sig['df_DV2z_err']**2 + sig['df_BVz_err']**2 ) ) )        
@@ -532,7 +593,7 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
             signal['log10_1_plus_df_chi2'] = np.log10( 1 + sig['df_chi2'] )
             # signal['Kp_IPCHI2_OWNPV'] = sig['Kp_IPCHI2_OWNPV']
             # signal['taum_pi2_IPCHI2_OWNPV'] = sig['taum_pi2_IPCHI2_OWNPV']
-            signal['tau_AMAXDOCA_min'] = np.minimum( sig['taup_AMAXDOCA'], sig['taum_AMAXDOCA'] )
+            signal['tau_AMAXDOCA_max'] = np.maximum( sig['taup_AMAXDOCA'], sig['taum_AMAXDOCA'] )
 
             Cx_taup_sig =  (sig['df_DV1y'] - sig['df_BVy'])*sig['df_Kp_PZ']  - ( sig['df_DV1z'] - sig['df_BVz'])*sig['df_Kp_PY']
             Cy_taup_sig =  (sig['df_DV1z'] - sig['df_BVz'])*sig['df_Kp_PX']  - ( sig['df_DV1x'] - sig['df_BVx'])*sig['df_Kp_PZ']
@@ -546,7 +607,7 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
             C_taum_sig = np.sqrt( Cx_taum_sig**2 + Cy_taum_sig**2 + Cz_taum_sig**2  )
             IP_taum_Kp_sig = (2*C_taum_sig)/( np.sqrt( sig['df_Kp_PX']**2 + sig['df_Kp_PY']**2 + sig['df_Kp_PZ']**2 ) )
 
-            signal['IP_tau_Kp_max'] = np.maximum( IP_taup_Kp_sig, IP_taum_Kp_sig ) 
+            # signal['IP_tau_Kp_max'] = np.maximum( IP_taup_Kp_sig, IP_taum_Kp_sig ) 
             signal['IP_tau_Kp_min'] = np.minimum( IP_taup_Kp_sig, IP_taum_Kp_sig ) 
 
             # a_sig = np.sqrt( ( sig['df_PVx'] - sig['df_DV1x'] )**2 + ( sig['df_PVy'] - sig['df_DV1y'] )**2 + ( sig['df_PVz'] - sig['df_DV1z'] )**2 )
@@ -557,18 +618,18 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
 
             # BACKGROUND
             background['tau_M_max'] = np.maximum( bkg['taup_M'], bkg['taum_M'] )
-            background['tau_M_min'] = np.minimum( bkg['taup_M'], bkg['taum_M'] )
+            # background['tau_M_min'] = np.minimum( bkg['taup_M'], bkg['taum_M'] )
             background['tau_M12_M23_max_max'] = np.maximum( np.maximum( bkg['taup_M12'], bkg['taup_M23'] ), np.maximum( bkg['taum_M12'], bkg['taum_M23'] ) )
-            background['tau_M12_M23_max_min'] = np.maximum( np.minimum( bkg['taup_M12'], bkg['taup_M23'] ), np.minimum( bkg['taum_M12'], bkg['taum_M23'] ) )
+            # background['tau_M12_M23_max_min'] = np.maximum( np.minimum( bkg['taup_M12'], bkg['taup_M23'] ), np.minimum( bkg['taum_M12'], bkg['taum_M23'] ) )
             background['tau_M12_M23_min_max'] = np.minimum( np.maximum( bkg['taup_M12'], bkg['taup_M23'] ), np.maximum( bkg['taum_M12'], bkg['taum_M23'] ) )
-            background['tau_M12_M23_min_min'] = np.minimum( np.minimum( bkg['taup_M12'], bkg['taup_M23'] ), np.minimum( bkg['taum_M12'], bkg['taum_M23'] ) )
+            # background['tau_M12_M23_min_min'] = np.minimum( np.minimum( bkg['taup_M12'], bkg['taup_M23'] ), np.minimum( bkg['taum_M12'], bkg['taum_M23'] ) )
             # background['tau_M13_max'] = np.maximum( bkg['taup_M13'], bkg['taum_M13'] )
             # background['tau_M13_min'] = np.minimum( bkg['taup_M13'], bkg['taum_M13'] )
             # background['log_1_minus_tau_DIRA_BV_max'] = np.maximum( np.log(1 - np.abs(bkg['taup_DIRA_ORIVX'] ))*np.sign( bkg['taup_DIRA_ORIVX']),  np.log(1 - np.abs(bkg['taum_DIRA_ORIVX'] ))*np.sign( bkg['taup_DIRA_ORIVX'] ) )
             background['log_1_minus_tau_DIRA_BV_min'] = np.minimum( np.log(1 - np.abs(bkg['taup_DIRA_ORIVX'] ))*np.sign( bkg['taup_DIRA_ORIVX']),  np.log(1 - np.abs(bkg['taum_DIRA_ORIVX'] ))*np.sign( bkg['taup_DIRA_ORIVX'] ) )
-            background['log_1_minus_B_DIRA_PV'] = np.log(1 - np.abs(bkg['Bp_DIRA_OWNPV']) )
+            # background['log_1_minus_B_DIRA_PV'] = np.log(1 - np.abs(bkg['Bp_DIRA_OWNPV']) )
             # background['B_FD_PV'] = np.sqrt( (bkg['df_BVx'] - bkg['df_PVx'])**2 + (bkg['df_BVy'] - bkg['df_PVy'])**2 + (bkg['df_BVz'] - bkg['df_PVz'])**2 )
-            background['B_FD_PV_chi2'] = np.sqrt( (bkg['df_BVx'] - bkg['df_PVx'])**2 + (bkg['df_BVy'] - bkg['df_PVy'])**2 + (bkg['df_BVz'] - bkg['df_PVz'])**2 )/( np.abs( bkg['df_BVx'] - bkg['df_PVx'] )*np.sqrt( bkg['df_BVx_err']**2 + bkg['df_PVx_err']**2  ) + np.abs( bkg['df_BVy'] - bkg['df_PVy'] )*np.sqrt( bkg['df_BVy_err']**2 + bkg['df_PVy_err']**2 ) + np.abs( bkg['df_BVz'] - bkg['df_PVz'] )*np.sqrt( bkg['df_BVz_err']**2 + bkg['df_PVz_err']**2 ) )
+            # background['B_FD_PV_chi2'] = np.sqrt( (bkg['df_BVx'] - bkg['df_PVx'])**2 + (bkg['df_BVy'] - bkg['df_PVy'])**2 + (bkg['df_BVz'] - bkg['df_PVz'])**2 )/( np.abs( bkg['df_BVx'] - bkg['df_PVx'] )*np.sqrt( bkg['df_BVx_err']**2 + bkg['df_PVx_err']**2  ) + np.abs( bkg['df_BVy'] - bkg['df_PVy'] )*np.sqrt( bkg['df_BVy_err']**2 + bkg['df_PVy_err']**2 ) + np.abs( bkg['df_BVz'] - bkg['df_PVz'] )*np.sqrt( bkg['df_BVz_err']**2 + bkg['df_PVz_err']**2 ) )
             # background['tau_FD_BV_max'] = np.maximum( np.sqrt( (bkg['df_DV1x'] - bkg['df_BVx'])**2 + (bkg['df_DV1y'] - bkg['df_BVy'])**2 + (bkg['df_DV1z'] - bkg['df_BVz'])**2 ), np.sqrt( (bkg['df_DV2x'] - bkg['df_BVx'])**2 + (bkg['df_DV2y'] - bkg['df_BVy'])**2 + (bkg['df_DV2z'] - bkg['df_BVz'])**2 ) )
             background['tau_FD_BV_min'] = np.minimum( np.sqrt( (bkg['df_DV1x'] - bkg['df_BVx'])**2 + (bkg['df_DV1y'] - bkg['df_BVy'])**2 + (bkg['df_DV1z'] - bkg['df_BVz'])**2 ), np.sqrt( (bkg['df_DV2x'] - bkg['df_BVx'])**2 + (bkg['df_DV2y'] - bkg['df_BVy'])**2 + (bkg['df_DV2z'] - bkg['df_BVz'])**2 ) )
             # background['tau_FD_BV_chi2_max'] = np.maximum( np.sqrt( (bkg['df_DV1x'] - bkg['df_BVx'])**2 + (bkg['df_DV1y'] - bkg['df_BVy'])**2 + (bkg['df_DV1z'] - bkg['df_BVz'])**2 )/(  np.abs( bkg['df_DV1x'] - bkg['df_BVx'] )*np.sqrt( bkg['df_DV1x_err']**2 + bkg['df_BVx_err']**2  ) + np.abs( bkg['df_DV1y'] - bkg['df_BVy'] )*np.sqrt( bkg['df_DV1y_err']**2 + bkg['df_BVy_err']**2 ) + np.abs( bkg['df_DV1z'] - bkg['df_BVz'] )*np.sqrt( bkg['df_DV1z_err']**2 + bkg['df_BVz_err']**2 ) ) , np.sqrt( (bkg['df_DV2x'] - bkg['df_BVx'])**2 + (bkg['df_DV2y'] - bkg['df_BVy'])**2 + (bkg['df_DV2z'] - bkg['df_BVz'])**2 )/( np.abs( bkg['df_DV2x'] - bkg['df_BVx'] )*np.sqrt( bkg['df_DV2x_err']**2 + bkg['df_BVx_err']**2 ) + np.abs( bkg['df_DV2y'] - bkg['df_BVy'] )*np.sqrt( bkg['df_DV2y_err']**2 + bkg['df_BVy_err']**2 ) + np.abs( bkg['df_DV2z'] - bkg['df_BVz'] )*np.abs( bkg['df_DV2z_err']**2 + bkg['df_BVz_err']**2 ) ) )        
@@ -578,7 +639,7 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
             background['log10_1_plus_df_chi2'] = np.log10( 1 + bkg['df_chi2'] )
             # background['Kp_IPCHI2_OWNPV'] = bkg['Kp_IPCHI2_OWNPV']
             # background['taum_pi2_IPCHI2_OWNPV'] = bkg['taum_pi2_IPCHI2_OWNPV']
-            background['tau_AMAXDOCA_min'] = np.minimum( bkg['taup_AMAXDOCA'], bkg['taum_AMAXDOCA'] )
+            background['tau_AMAXDOCA_max'] = np.maximum( bkg['taup_AMAXDOCA'], bkg['taum_AMAXDOCA'] )
 
             Cx_taup_bkg =  (bkg['df_DV1y'] - bkg['df_BVy'])*bkg['df_Kp_PZ']  - ( bkg['df_DV1z'] - bkg['df_BVz'])*bkg['df_Kp_PY']
             Cy_taup_bkg =  (bkg['df_DV1z'] - bkg['df_BVz'])*bkg['df_Kp_PX']  - ( bkg['df_DV1x'] - bkg['df_BVx'])*bkg['df_Kp_PZ']
@@ -592,7 +653,7 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
             C_taum_bkg = np.sqrt( Cx_taum_bkg**2 + Cy_taum_bkg**2 + Cz_taum_bkg**2  )
             IP_taum_Kp_bkg = (2*C_taum_bkg)/( np.sqrt( bkg['df_Kp_PX']**2 + bkg['df_Kp_PY']**2 + bkg['df_Kp_PZ']**2 ) )
 
-            background['IP_tau_Kp_max'] = np.maximum( IP_taup_Kp_bkg, IP_taum_Kp_bkg ) 
+            # background['IP_tau_Kp_max'] = np.maximum( IP_taup_Kp_bkg, IP_taum_Kp_bkg ) 
             background['IP_tau_Kp_min'] = np.minimum( IP_taup_Kp_bkg, IP_taum_Kp_bkg ) 
 
             # a_bkg = np.sqrt( ( bkg['df_PVx'] - bkg['df_DV1x'] )**2 + ( bkg['df_PVy'] - bkg['df_DV1y'] )**2 + ( bkg['df_PVz'] - bkg['df_DV1z'] )**2 )
@@ -689,8 +750,12 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
             sig_corr['Bp_M'] = dtf_M_sig
             bkg_corr['Bp_M'] = dtf_M_bkg
 
+        draw_profile_plots(signal, input_features, "sig", first_step, isKtautau)
+        draw_profile_plots(background, input_features, "bkg", first_step, isKtautau)
+
         correlation_matrix(signal, "sig", first_step, isKtautau)
         correlation_matrix(background, "bkg", first_step, isKtautau)
+
         quit()
 
     # Train and test split
@@ -713,16 +778,17 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
     ###################################################### Train a classifier ####################################################################
     # I am using the optimised hyper-parameters here:
     # classifiers = best_classifiers
-    names = ["AdaBDT", "GradBDT", "RForest", "XGBoost"]
+    # names = ["AdaBDT", "GradBDT", "RForest", "XGBoost"]
+    names = ["XGBoost"]
     if(first_step):
-        classifiers = [ AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.05, n_estimators=800, algorithm='SAMME', random_state=42),
-                        GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=800, random_state=42), 
-                        RandomForestClassifier(class_weight='balanced', max_depth=9, n_estimators=800, random_state=42),
+        classifiers = [ # AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.05, n_estimators=800, random_state=42),
+                        # GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=800, random_state=42), 
+                        # RandomForestClassifier(class_weight='balanced', max_depth=9, n_estimators=800, random_state=42),
                         xgb.XGBClassifier(tree_method="hist", early_stopping_rounds=2, n_estimators=100, max_depth=6, learning_rate=0.1, random_state=42) ] # hist is the fastest tree method
     else:
-        classifiers = [ AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.1, n_estimators=800, algorithm='SAMME', random_state=42),
-                        GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=500, random_state=42),
-                        RandomForestClassifier(class_weight='balanced', max_depth=9, n_estimators=800, random_state=42),
+        classifiers = [ # AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.1, n_estimators=800, random_state=42),
+                        # GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=500, random_state=42),
+                        # RandomForestClassifier(class_weight='balanced', max_depth=9, n_estimators=800, random_state=42),
                         xgb.XGBClassifier(tree_method="hist", early_stopping_rounds=2, n_estimators=500, max_depth=6, learning_rate=0.1, random_state=42) ] # hist is the fastest tree method
 
     clf_fpr = []
@@ -791,10 +857,10 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
         cuts.append(bdt_cut)
         metrics.append(significance)
 
-    # for i in range(len(names)):
-    #     name = names[i]
-    #     print("Drawing feature importances for "+ name)
-    draw_feature_importance(names[0], classifiers[0], first_step, input_features, isKtautau)
+    for i in range(len(names)):
+        name = names[i]
+        print("Drawing feature importances for "+ name)
+        draw_feature_importance(names[i], classifiers[i], input_features, first_step, input_features, isKtautau)
 
     # find which classifier gives the maximum value for the metric
     # idx = np.argmax( metrics )
@@ -823,7 +889,7 @@ def make_classification(sig_df, bkg_df, isKtautau, output, cut, first_step, draw
                 for i in range(len(classifiers)):
                     pickle.dump(classifiers[i], f)
 
-    decisions =  classifiers[0].decision_function(X_test)
+    decisions = []
 
     return decisions, thresholds[0], X_test, y_test
 
@@ -934,9 +1000,9 @@ def main(argv):
     else:
         # Prepare datasets
         # Signal proxy: 3pi3pi MC (signal region) (2016+2017+2018)
-        fc_sig_2016 = ROOT.TFileCollection("fc_sig_2016", "fc_sig_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_74/pre_sel_tree.txt")
-        fc_sig_2017 = ROOT.TFileCollection("fc_sig_2017", "fc_sig_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_74/pre_sel_tree.txt")
-        fc_sig_2018 = ROOT.TFileCollection("fc_sig_2018", "fc_sig_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_74/pre_sel_tree.txt")
+        fc_sig_2016 = ROOT.TFileCollection("fc_sig_2016", "fc_sig_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_71/pre_sel_tree.txt")
+        fc_sig_2017 = ROOT.TFileCollection("fc_sig_2017", "fc_sig_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_71/pre_sel_tree.txt")
+        fc_sig_2018 = ROOT.TFileCollection("fc_sig_2018", "fc_sig_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_71/pre_sel_tree.txt")
 
         t_sig_2016 = ROOT.TChain("DecayTree")
         t_sig_2017 = ROOT.TChain("DecayTree")
@@ -954,9 +1020,9 @@ def main(argv):
         t_sig_2016.Add(t_sig_2018)
 
         # Background proxy: WS data (signal region) for both steps (only 2016 for now)
-        fc_bkg_2016 = ROOT.TFileCollection("fc_bkg_2016", "fc_bkg_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_84/pre_sel_tree.txt", 1000) 
-        fc_bkg_2017 = ROOT.TFileCollection("fc_bkg_2017", "fc_bkg_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_84/pre_sel_tree.txt", 1000) 
-        fc_bkg_2018 = ROOT.TFileCollection("fc_bkg_2018", "fc_bkg_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_84/pre_sel_tree.txt", 1000) 
+        fc_bkg_2016 = ROOT.TFileCollection("fc_bkg_2016", "fc_bkg_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_81/pre_sel_tree.txt", 1000) 
+        fc_bkg_2017 = ROOT.TFileCollection("fc_bkg_2017", "fc_bkg_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_81/pre_sel_tree.txt", 1000) 
+        fc_bkg_2018 = ROOT.TFileCollection("fc_bkg_2018", "fc_bkg_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_81/pre_sel_tree.txt", 1000) 
 
         t_bkg_2016 = ROOT.TChain("DecayTree")
         t_bkg_2017 = ROOT.TChain("DecayTree")
@@ -989,7 +1055,7 @@ def main(argv):
     # decisions_first_step, thresholds_1st_step, X_test_1st_step, y_test_1st_step = make_classification(sig_df, bkg_df, isKtautau, output=None, cut=None, first_step=True, draw_input_features=False, cross_validation=False)
 
     print("2nd step")
-    decisions_second_step, thresholds_2nd_step, X_test_2nd_step, y_test_2nd_step = make_classification(sig_df, bkg_df, isKtautau, output=None, cut=None, first_step=False, draw_input_features=True, cross_validation=False)
+    decisions_second_step, thresholds_2nd_step, X_test_2nd_step, y_test_2nd_step = make_classification(sig_df, bkg_df, isKtautau, output=None, cut=None, first_step=False, draw_input_features=False, cross_validation=False)
 
     # bdt_2d_cut(X_test_1st_step, y_test_1st_step, thresholds_1st_step, thresholds_2nd_step, decisions_first_step, decisions_second_step)
 
