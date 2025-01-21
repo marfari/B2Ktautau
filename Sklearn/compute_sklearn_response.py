@@ -15,10 +15,10 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
                         'Bp_VTXISONUMVTX_taup', 'Bp_VTXISONUMVTX_taum', 'Bp_VTXISODCHI2ONETRACK_taup', 'Bp_VTXISODCHI2ONETRACK_taum', 
                         'Bp_VTXISODCHI2MASSONETRACK_taup', 'Bp_VTXISODCHI2MASSONETRACK_taum', 'Bp_VTXISODCHI2TWOTRACK_taup', 'Bp_VTXISODCHI2TWOTRACK_taum',
                         'Bp_VTXISODCHI2MASSTWOTRACK_taup', 'Bp_VTXISODCHI2MASSTWOTRACK_taum', 'Bp_CC_05_DELTAPHI_B', 'Bp_NC_05_IT_B', 'Bp_CC_05_PTASYM_B', 'Bp_CC_05_PX_B',
-                        'Bp_CC_05_PZASYM_B', 'Bp_CC_05_DELTAETA_B', 'Bp_NC_05_MULT_B', 'Bp_NC_05_VPT_B', 'Bp_NC_05_PTASYM_B', 'Bp_CCNC_05_IT_B', 'Bp_CC_05_MULT_B',
-                        'Bp_CC_05_PASYM_taup', 'Bp_CC_05_DELTAETA_taup', 'Bp_NC_05_MULT_taup', 'Bp_NC_05_SPT_taup', 'Bp_CCNC_05_IT_taup', 'Bp_NC_05_PTASYM_taup', 'Bp_CC_05_PTASYM_taup',
-                        'Bp_CC_05_PASYM_taum', 'Bp_CC_05_DELTAETA_taum', 'Bp_NC_05_MULT_taum', 'Bp_NC_05_SPT_taum', 'Bp_CCNC_05_IT_taum', 'Bp_NC_05_PTASYM_taum', 'Bp_CC_05_PTASYM_taum',
-                        'Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taup', 'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taum', 'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] 
+                        'Bp_CC_05_PZASYM_B', 'Bp_CC_05_DELTAETA_B', 'Bp_NC_05_MULT_B', 'Bp_NC_05_VPT_B', 'Bp_NC_05_PTASYM_B', 'Bp_CCNC_05_IT_B', 'Bp_CC_05_MULT_B', 'Bp_CC_05_IT_B',
+                        'Bp_CC_05_PASYM_taup', 'Bp_CC_05_DELTAETA_taup', 'Bp_NC_05_MULT_taup', 'Bp_NC_05_SPT_taup', 'Bp_CCNC_05_IT_taup', 'Bp_NC_05_PTASYM_taup', 'Bp_CC_05_PTASYM_taup', 'Bp_CC_05_IT_taup',
+                        'Bp_CC_05_PASYM_taum', 'Bp_CC_05_DELTAETA_taum', 'Bp_NC_05_MULT_taum', 'Bp_NC_05_SPT_taum', 'Bp_CCNC_05_IT_taum', 'Bp_NC_05_PTASYM_taum', 'Bp_CC_05_PTASYM_taum', 'Bp_CC_05_IT_taum',
+                        'Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taup', 'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taum', 'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum', 'df_Bp_M'] 
 
         branch_names_second_step = ['taup_M12', 'taum_M12', 'taup_M23', 'taum_M23', 'taup_M13', 'taum_M13', 'taup_DIRA_ORIVX', 'taum_DIRA_ORIVX', 'Bp_DIRA_OWNPV',
                         'df_BVx', 'df_BVy', 'df_BVz', 'df_DV1x', 'df_DV1y', 'df_DV1z', 'df_DV2x', 'df_DV2y', 'df_DV2z', 'df_PVx', 'df_PVy', 'df_PVz',
@@ -49,12 +49,10 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
    
     if((isKtautau == True) or (is_cocktailMC == True)):
         X1['VTXISODCHI2ONETRACK_B'] = x['Bp_VTXISODCHI2ONETRACK_B']
-        X1['VTXISODCHI2MASSONETRACK_B'] = x['Bp_VTXISODCHI2MASSONETRACK_B']
-        X1['VTXISODCHI2TWOTRACK_B'] = x['Bp_VTXISODCHI2TWOTRACK_B']
+        X1['VTXISONUMVTX_tau_max'] = np.maximum( x['Bp_VTXISONUMVTX_taup'], x['Bp_VTXISONUMVTX_taum'] )
         X1['VTXISODCHI2TWOTRACK_tau_max'] = np.maximum( x['Bp_VTXISODCHI2TWOTRACK_taup'], x['Bp_VTXISODCHI2TWOTRACK_taum'] ) 
-        X1['NC_05_PTASYM_B'] = x['Bp_NC_05_PTASYM_B']
-        X1['CCNC_05_IT_B'] = x['Bp_CCNC_05_IT_B']
-        X1['CC_05_PTASYM_tau_max'] = np.maximum( x['Bp_CC_05_PTASYM_taup'], x['Bp_CC_05_PTASYM_taum'] )
+        # X1['CC_05_DELTAETA_tau_min'] = np.minimum( x['Bp_CC_05_DELTAETA_taup'] , x['Bp_CC_05_DELTAETA_taum' ])
+        X1['CCNC_05_IT_tau_min'] = np.minimum( x['Bp_CCNC_05_IT_taup'], x['Bp_CCNC_05_IT_taum'] )
         X1['tau_iso_second_value_max'] = np.maximum( x['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], x['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] ) 
         X1['tau_iso_third_value_max'] = np.maximum( x['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup'], x['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] )
     else:
@@ -71,18 +69,14 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
     ############################################################################ 2nd step #####################################################################
     if((isKtautau == True) or (is_cocktailMC == True)):
         X2['tau_M_max'] = np.maximum( x['taup_M'], x['taum_M'] )
-        X2['tau_M_min'] = np.minimum( x['taup_M'], x['taum_M'] )
         X2['tau_M12_M23_max_max'] = np.maximum( np.maximum( x['taup_M12'], x['taup_M23'] ), np.maximum( x['taum_M12'], x['taum_M23'] ) )
-        X2['tau_M12_M23_max_min'] = np.maximum( np.minimum( x['taup_M12'], x['taup_M23'] ), np.minimum( x['taum_M12'], x['taum_M23'] ) )
         X2['tau_M12_M23_min_max'] = np.minimum( np.maximum( x['taup_M12'], x['taup_M23'] ), np.maximum( x['taum_M12'], x['taum_M23'] ) )
-        X2['tau_M12_M23_min_min'] = np.minimum( np.minimum( x['taup_M12'], x['taup_M23'] ), np.minimum( x['taum_M12'], x['taum_M23'] ) )
+        X2['tau_M13_max'] = np.maximum( x['taup_M13'], x['taum_M13'] )
         X2['log_1_minus_tau_DIRA_BV_min'] = np.minimum( np.log(1 - np.abs(x['taup_DIRA_ORIVX'] ))*np.sign( x['taup_DIRA_ORIVX']),  np.log(1 - np.abs(x['taum_DIRA_ORIVX'] ))*np.sign( x['taup_DIRA_ORIVX'] ) )
-        X2['log_1_minus_B_DIRA_PV'] = np.log(1 - np.abs(x['Bp_DIRA_OWNPV']) )
-        X2['B_FD_PV_chi2'] = np.sqrt( (x['df_BVx'] - x['df_PVx'])**2 + (x['df_BVy'] - x['df_PVy'])**2 + (x['df_BVz'] - x['df_PVz'])**2 )/( np.abs( x['df_BVx'] - x['df_PVx'] )*np.sqrt( x['df_BVx_err']**2 + x['df_PVx_err']**2  ) + np.abs( x['df_BVy'] - x['df_PVy'] )*np.sqrt( x['df_BVy_err']**2 + x['df_PVy_err']**2 ) + np.abs( x['df_BVz'] - x['df_PVz'] )*np.sqrt( x['df_BVz_err']**2 + x['df_PVz_err']**2 ) )
         X2['tau_FD_BV_min'] = np.minimum( np.sqrt( (x['df_DV1x'] - x['df_BVx'])**2 + (x['df_DV1y'] - x['df_BVy'])**2 + (x['df_DV1z'] - x['df_BVz'])**2 ), np.sqrt( (x['df_DV2x'] - x['df_BVx'])**2 + (x['df_DV2y'] - x['df_BVy'])**2 + (x['df_DV2z'] - x['df_BVz'])**2 ) )
         X2['DV1_DV2_distance'] = np.sqrt( (x['df_DV1x'] - x['df_DV2x'])**2 + (x['df_DV1y'] - x['df_DV2y'])**2 + (x['df_DV1z'] - x['df_DV2z'])**2 )
         X2['log10_1_plus_df_chi2'] = np.log10( 1 + x['df_chi2'] )
-        X2['tau_AMAXDOCA_min'] = np.minimum( x['taup_AMAXDOCA'], x['taum_AMAXDOCA'] )
+        X2['tau_AMAXDOCA_max'] = np.maximum( x['taup_AMAXDOCA'], x['taum_AMAXDOCA'] )
 
         Cx_taup_x =  (x['df_DV1y'] - x['df_BVy'])*x['df_Kp_PZ']  - ( x['df_DV1z'] - x['df_BVz'])*x['df_Kp_PY']
         Cy_taup_x =  (x['df_DV1z'] - x['df_BVz'])*x['df_Kp_PX']  - ( x['df_DV1x'] - x['df_BVx'])*x['df_Kp_PZ']
@@ -99,9 +93,9 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
         X2['IP_tau_Kp_max'] = np.maximum( IP_taup_Kp_x, IP_taum_Kp_x ) 
         X2['IP_tau_Kp_min'] = np.minimum( IP_taup_Kp_x, IP_taum_Kp_x ) 
 
-        for i in range(len(X2['B_FD_PV_chi2'])):
-            if np.isnan(X2['B_FD_PV_chi2'][i]):
-                X2['B_FD_PV_chi2'][i] = 0
+        # for i in range(len(X2['B_FD_PV_chi2'])):
+        #     if np.isnan(X2['B_FD_PV_chi2'][i]):
+        #         X2['B_FD_PV_chi2'][i] = 0
     
         for i in range(len(X2['log10_1_plus_df_chi2'])):
             if np.isnan(X2['log10_1_plus_df_chi2'][i]):
@@ -137,7 +131,8 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
                 X2['log_1_minus_D_DIRA_BV_min'][i] = 0
 
     ##################################################################################################################################################################
-    names = ["AdaBDT", "GradBDT", "RForest", "XGBoost"]
+    # names = ["AdaBDT", "GradBDT", "RForest", "XGBoost"]
+    names = ["XGBoost"]
 
     classifiers_first_step = []
     classifiers_second_step = []
