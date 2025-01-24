@@ -4,7 +4,7 @@ using namespace RooStats;
 void store_vars_in_workspace(RooWorkspace* w, TTree* t, Int_t n_vars, TString variables[n_vars], Int_t species, Bool_t isKtautauMC);
 
 // D+D-K+ variables
-TString variables_DDK[] = {"mass",
+TString variables_DDK[] = {"mass", 
                     "Bp_FD_OWNPV", "Dp_FD_ORIVX", "Dm_FD_ORIVX", 
                     "Bp_PT", "Bp_ETA", "Dp_PT", "Dm_PT", "Kp_PT", "Kp_ETA",
                     "Dp_PX", "Dp_PY", "Dp_PZ", "Dm_PX", "Dm_PY", "Dm_PZ", "Kp_PX", "Kp_PY", "Kp_PZ", "Bp_PX", "Bp_PY", "Bp_PZ",
@@ -64,8 +64,6 @@ TString variables_DDs[] = {"mass", "BDT1", "BDT2",
                     "nPVs", "nTracks", "nLongTracks", "nDownstreamTracks", "nUpstreamTracks", "nVeloTracks", "nTTracks", "nVeloClusters", "nITClusters", "nSPDHits",
                     };
 
-TString variables_DDs_trigger[] = {"mass", "Bp_L0HadronDecision_TOS", "Bp_L0HadronDecision_TIS", "Bp_L0MuonDecision_TIS", "Bp_L0ElectronDecision_TIS", "Bp_L0PhotonDecision_TIS", "Bp_Hlt1TrackMVADecision_TOS", "Bp_Hlt1TwoTrackMVADecision_TOS", "Bp_Hlt2Topo2BodyDecision_TOS", "Bp_Hlt2Topo3BodyDecision_TOS", "Bp_Hlt2Topo4BodyDecision_TOS"};
-
 // D0D0K
 TString variables_D0D0K[] = {"mass",
                     "Bp_FD_OWNPV", "D0bar_FD_ORIVX", "D0_FD_ORIVX", 
@@ -86,9 +84,9 @@ TString variables_D0D0K[] = {"mass",
                     };
     
 // Ktautau variables
-TString variables_Ktautau[] = {"mass"};
+TString variables_Ktautau[] = {"df_Bp_M", "df_status"};
 
-void createDataset(int year, int species, TString FILES)
+void createDataset(int year, int species)
 {
     Bool_t isKtautauMC = false;
     if((species == 1) || (species == 10) || (species == 11) || (species == 12))
@@ -97,15 +95,17 @@ void createDataset(int year, int species, TString FILES)
     }
 
     cout << "Opening .root files" << endl;
-    TFileCollection *fc;
-    if(isKtautauMC)
+    TString FILES;
+    if(isKtautauMC || (species == 2) || (species ==3))
     {
-        fc = new TFileCollection("fc", "fc", Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/fit_results.txt",year,species));
+        FILES = Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201%i/Species_%i/fit_results.txt",year,species);
     }
     else
     {
-        fc = new TFileCollection("fc", "fc", FILES);
+        FILES = Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/Species_%i/pre_sel_tree.txt",year,species);
     }
+
+    TFileCollection *fc = new TFileCollection("fc", "fc", FILES);
     TChain* t = new TChain("DecayTree");
     t->AddFileInfoList((TCollection*)fc->GetList());
 
@@ -116,71 +116,51 @@ void createDataset(int year, int species, TString FILES)
         t1 = new TChain("XGBoost/DecayTree");
         t1->AddFileInfoList((TCollection*)fc1->GetList());
     }
-
+    
     cout << "Creating TTree" << endl;
     TTree* t_cut;
-    if(species == 85)
-    {
-        t_cut = (TTree*)t->CopyTree("(Bp_dtf_M[0] > 5235) && (Bp_dtf_M[0] < 5355)");
-    }
-    else
+    if((species == 7) || (species == 8))
     {
         t_cut = (TTree*)t->CopyTree("");
     }
     
-    // Flatten the DTF B+ mass (vector branch)
-    Double_t theMass, theBDT1, theBDT2;
-    TBranch* bmass = t_cut->Branch("mass", &theMass);
-    TBranch* bdt1; 
-    TBranch* bdt2; 
     if((species == 7) || (species == 8))
     {
+        // Flatten the DTF B+ mass (vector branch)
+        Double_t theMass, theBDT1, theBDT2;
+        TBranch* bmass = t_cut->Branch("mass", &theMass);
+        TBranch* bdt1; 
+        TBranch* bdt2; 
+
         bdt1 = t_cut->Branch("BDT1", &theBDT1);
         bdt2 = t_cut->Branch("BDT2", &theBDT2);
-    }
-
-    Float_t DTF_mass[100];
-    Double_t fit_mass;
-    if(isKtautauMC)
-    {
-        t_cut->SetBranchAddress("df_Bp_M", &fit_mass);
-    }
-    else
-    {
-        t_cut->SetBranchAddress("Bp_dtf_M", DTF_mass);
-    }
     
-    Double_t BDT1, BDT2;
-    if((species == 7) || (species == 8))
-    {
+        Float_t DTF_mass[100];
+        t_cut->SetBranchAddress("Bp_dtf_M", DTF_mass);
+        
+        Double_t BDT1, BDT2;
         t1->SetBranchAddress("BDT1", &BDT1);
         t1->SetBranchAddress("BDT2", &BDT2);
-    }
+    
 
-    cout << "Filling mass branch" << endl;
-    for(int i = 0; i < t_cut->GetEntries(); i++)
-    {
-        t_cut->GetEntry(i);
-        if(isKtautauMC)
+        cout << "Filling mass branch" << endl;
+        for(int i = 0; i < t_cut->GetEntries(); i++)
         {
-            theMass = fit_mass;
-        }
-        else
-        {
+            t_cut->GetEntry(i);
             theMass = DTF_mass[0];
+            bmass->Fill();
         }
-        bmass->Fill();
-    }
 
-    if((species == 7) || (species == 8))
-    {
-        for(int i = 0; i < t1->GetEntries(); i++)
+        if((species == 7) || (species == 8))
         {
-            t1->GetEntry(i);
-            theBDT1 = BDT1;
-            theBDT2 = BDT2;
-            bdt1->Fill();
-            bdt2->Fill();
+            for(int i = 0; i < t1->GetEntries(); i++)
+            {
+                t1->GetEntry(i);
+                theBDT1 = BDT1;
+                theBDT2 = BDT2;
+                bdt1->Fill();
+                bdt2->Fill();
+            }
         }
     }
 
@@ -194,7 +174,7 @@ void createDataset(int year, int species, TString FILES)
     if(isKtautauMC || (species == 2) || (species == 3))
     {
         n_vars = sizeof(variables_Ktautau)/sizeof(variables_Ktautau[0]);
-        store_vars_in_workspace(w, t_cut, n_vars, variables_Ktautau, species, isKtautauMC);
+        store_vars_in_workspace(w, t, n_vars, variables_Ktautau, species, isKtautauMC);
         for(int i = 0; i < n_vars; i++)
         {
             arg_list.add(*w->var(variables_Ktautau[i]));
@@ -239,15 +219,6 @@ void createDataset(int year, int species, TString FILES)
             arg_list.add(*w->var(variables_DDs[i]));
         }
     }
-    else if(species == 85)
-    {
-        Int_t n_vars_1 = sizeof(variables_DDs_trigger)/sizeof(variables_DDs_trigger[0]);
-        store_vars_in_workspace(w, t_cut, n_vars_1, variables_DDs_trigger, species, isKtautauMC);
-        for(int i = 0; i < n_vars_1; i++)
-        {
-            arg_list.add(*w->var(variables_DDs_trigger[i]));
-        }
-    }
     else if((species == 9) || (species == 0) || (species == -1))
     {
         n_vars = sizeof(variables_D0D0K)/sizeof(variables_D0D0K[0]);
@@ -260,7 +231,22 @@ void createDataset(int year, int species, TString FILES)
 
     // Add variables to a RooDataSet
     cout << "Creating RooDataSet from TTree" << endl;
-    RooDataSet* data = new RooDataSet("data","data",t_cut,arg_list);
+    RooDataSet* data;
+    if(isKtautauMC || (species == 2) || (species == 3))
+    {
+        if(species == 2)
+        {
+            data = new RooDataSet("data","data",t,arg_list, "(df_status==0) && ((df_Bp_M < 4700) || (df_Bp_M > 5800))");
+        }
+        else
+        {
+            data = new RooDataSet("data","data",t,arg_list, "(df_status==0)");
+        }
+    } 
+    else
+    {
+        data = new RooDataSet("data","data",t_cut,arg_list);
+    }
 
     w->import(*data);
     w->Print();
@@ -282,7 +268,7 @@ void store_vars_in_workspace(RooWorkspace* w, TTree* t, Int_t n_vars, TString va
             {
                 vars.push_back( new RooRealVar(variables[i], variables[i], 5180, 5600 ) ); 
             }
-            else if((species == 7) || (species == 71) || (species == 8) || (species == 81) || (species == 85)) // D0bar D+s
+            else if((species == 7) || (species == 71) || (species == 8) || (species == 81)) // D0bar D+s
             {
                 vars.push_back( new RooRealVar(variables[i], variables[i], 5235, 5355 ) ); 
             }
@@ -290,10 +276,10 @@ void store_vars_in_workspace(RooWorkspace* w, TTree* t, Int_t n_vars, TString va
             {
                 vars.push_back( new RooRealVar(variables[i], variables[i], 5200, 5600 ) );
             }
-            else if(isKtautauMC)
-            {
-                vars.push_back( new RooRealVar(variables[i], variables[i], 4000, 8000 ) );
-            }
+        }
+        else if(variables[i] == "df_Bp_M")
+        {
+            vars.push_back( new RooRealVar(variables[i], variables[i], 4000, 8000 ) );
         }
         else
         {
