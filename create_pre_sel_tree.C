@@ -2,6 +2,7 @@
 Double_t eps_error(Double_t Num, Double_t Den);
 TCut DD_cut(TString name, Int_t mother_ID);
 TCut truthMatch_cocktailMC(TString name);
+void create_table(Int_t year, Int_t species, TString FILES, Bool_t isKtautauMC, Bool_t is_cocktailMC, TCut truthMatch, TCut MC_component, TCut trigger, TCut others);
 
 void create_pre_sel_tree(int year, int species, int line, bool createTable)
 {   
@@ -77,11 +78,11 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     {
         FILES = Form("Files_on_grid/data_DDK_201%i.txt",year);
     }
-    else if( (species == 7) || (species == 71) || (species == 74) )
+    else if( (species == 7) || (species == 71) )
     {
         FILES = Form("/panfs/felician/B2Ktautau/workflow/PIDCalib/201%i/Species_7/pid_corr.txt",year);
     }
-    else if((species == 8) || (species == 81) || (species == 82) || (species == 83) || (species == 84) || (species == 85))
+    else if((species == 8) || (species == 81))
     {
         FILES = Form("Files_on_grid/data_D0Dps_201%i.txt",year);
     }
@@ -127,9 +128,14 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     }
 
     TString MC_component_file;
+    TCut MC_component = "";
     if(isKtautauMC)
     {
         MC_component_file = Form("/panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201%i/%i.root",year,line);
+
+        if(species == 10){MC_component = "component == 0";} // 3pi 3pi
+        else if(species == 11){MC_component = "component == 1";} // 3pi 3pi pi0
+        else if(species == 12){MC_component = "component == 2";} // 3pi 3pi 2pi0
     }
 
     /////////////////////////////////////////////////// TRUTH MATCH CUTS ///////////////////////////////////////////////////////////////////////
@@ -142,7 +148,7 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     {
         truthMatch = "(abs(Kp_TRUEID) == 321) && (abs(Dp_K_TRUEID) == 321) && (abs(Dp_pi1_TRUEID) == 211) && (abs(Dp_pi2_TRUEID) == 211) && (abs(Dm_K_TRUEID) == 321) && (abs(Dm_pi1_TRUEID) == 211) && (abs(Dm_pi2_TRUEID) == 211) && (abs(Dp_TRUEID) == 411) && (abs(Dm_TRUEID) == 411) && (abs(Bp_TRUEID) == 521)";
     }
-    else if((species == 7) || (species == 74) ) // D0D+s MC
+    else if((species == 7) || (species == 71) ) // D0D+s MC
     {
         truthMatch = "(abs(D0bar_K_TRUEID) == 321) && (abs(Dsp_K1_TRUEID) == 321) && (abs(Dsp_K2_TRUEID) == 321) && (abs(D0bar_pi_TRUEID) == 211) && (abs(Dsp_pi_TRUEID) == 211) && (abs(D0bar_TRUEID) == 421) && (abs(Dsp_TRUEID) == 431) && (abs(Bp_TRUEID) == 521)";
     }
@@ -180,7 +186,7 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     }
     if((species == 7) || (species == 8) ) // D0barD+s
     { 
-        other_cuts.push_back("Bp_FD_OWNPV < 80");
+        other_cuts.push_back("(Bp_BPVVD > 4) && (Bp_BPVVD < 80)");
         other_cuts.push_back("(D0bar_M > 1820) && (D0bar_M < 1910)");
         other_cuts.push_back("(Dsp_M > 1930) && (Dsp_M < 2000)");
         if(species == 7)
@@ -196,33 +202,6 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
             other_cuts.push_back("Dsp_K2_ProbNNk > 0.55");
         }
 
-    }
-    if(species == 81) // D0bar (K+K-pi+)
-    {
-        other_cuts.push_back("Bp_FD_OWNPV < 80");
-        other_cuts.push_back("D0bar_K_ProbNNk > 0.55");
-        other_cuts.push_back("Dsp_K1_ProbNNk > 0.55");
-        other_cuts.push_back("Dsp_K2_ProbNNk > 0.55");
-        other_cuts.push_back("(D0bar_M > 1820) && (D0bar_M < 1910)");
-        other_cuts.push_back("(Dsp_M < 1930) || (Dsp_M > 2000)"); // D+s sidebands
-    }
-    if(species == 82) // (K+pi-) D+s
-    {
-        other_cuts.push_back("Bp_FD_OWNPV < 80");
-        other_cuts.push_back("D0bar_K_ProbNNk > 0.55");
-        other_cuts.push_back("Dsp_K1_ProbNNk > 0.55");
-        other_cuts.push_back("Dsp_K2_ProbNNk > 0.55");
-        other_cuts.push_back("(D0bar_M < 1820) || (D0bar_M > 1910)");
-        other_cuts.push_back("(Dsp_M > 1930) && (Dsp_M < 2000)");
-    }
-    if(species == 83)
-    {
-        other_cuts.push_back("Bp_FD_OWNPV < 80");
-        other_cuts.push_back("D0bar_K_ProbNNk > 0.55");
-        other_cuts.push_back("Dsp_K1_ProbNNk > 0.55");
-        other_cuts.push_back("Dsp_K2_ProbNNk > 0.55");
-        other_cuts.push_back("(D0bar_M < 1820) || (D0bar_M > 1910)");
-        other_cuts.push_back("(Dsp_M < 1930) || (Dsp_M > 2000)");
     }
     if((species == 9) || (species == 0) || (species == -1)) // D0D0K MC, RS data, WS data
     {
@@ -240,33 +219,6 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
         others += other_cuts[i];
     }
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    TFileCollection* fc = new TFileCollection("fc", "fc", FILES, 1, line);
-    TChain* t;
-    if(isKtautauMC || (species == 7) || (species == 74) ) // Ktautau MC + normalisation channel (PID corrected)
-    {
-        t = new TChain("DecayTree");
-    }
-    else if((species == 3) || (species == 6) || (species == -1)) // WS data (Ktautau,D+D-K+,D0D0K)
-    {
-        t = new TChain("ntuple_SS/DecayTree");
-    }
-    else // MC and RS data
-    {
-        t = new TChain("ntuple/DecayTree");
-    }
-    t->AddFileInfoList((TCollection*)fc->GetList());
-
-    TCut MC_component = "";
-    if(isKtautauMC)
-    {
-        t->AddFriend("DecayTree", MC_component_file);
-    
-        if(species == 10){MC_component = "component == 0";} // 3pi 3pi
-        else if(species == 11){MC_component = "component == 1";} // 3pi 3pi pi0
-        else if(species == 12){MC_component = "component == 2";} // 3pi 3pi 2pi0
-        else if(species == 1){MC_component = "";} // all 3 components
-    }
-
     TCut pre_selections;
     if(isKtautauMC) // Ktautau MC
     {
@@ -284,15 +236,15 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     {
         pre_selections = truthMatch+trigger+others+"(Bp_dtf_status[0]==0)";
     }
-    else if(species == 74)
+    else if(species == 71) // D0bar Ds+ MC without rectangular cuts for the MVA validation
     {
         pre_selections = truthMatch+trigger+"(Bp_dtf_status[0]==0)";
     }
-    else if((species == 5) || (species == 6) || (species == 8) || (species == 81) || (species == 82) || (species == 83) || (species == 0) || (species == -1)) // D+D-K+ and D0barD+s data
+    else if((species == 5) || (species == 6) || (species == 8) || (species == 0) || (species == -1)) // D+D-K+ and D0barD+s data
     {
         pre_selections = trigger+others+"(Bp_dtf_status[0]==0)";
     }
-    else if(species == 84)
+    else if(species == 81) // D0bar Ds+ data without the rectangular cuts for MVA validation
     {
         pre_selections = trigger+"(Bp_dtf_status[0]==0)";
     }
@@ -303,6 +255,33 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     else if(is_cocktailMC)
     {
         pre_selections = trigger+others;
+    }
+
+    if(createTable)
+    {
+        create_table(year, species, FILES, isKtautauMC, is_cocktailMC, truthMatch, MC_component, trigger, others);
+        return;
+    }
+
+    TFileCollection* fc = new TFileCollection("fc", "fc", FILES, 1, line);
+    TChain* t;
+    if(isKtautauMC || (species == 7) || (species == 71) ) // Ktautau MC + normalisation channel (PID corrected)
+    {
+        t = new TChain("DecayTree");
+    }
+    else if((species == 3) || (species == 6) || (species == -1)) // WS data (Ktautau,D+D-K+,D0D0K)
+    {
+        t = new TChain("ntuple_SS/DecayTree");
+    }
+    else // MC and RS data
+    {
+        t = new TChain("ntuple/DecayTree");
+    }
+    t->AddFileInfoList((TCollection*)fc->GetList());
+
+    if(isKtautauMC)
+    {
+        t->AddFriend("DecayTree", MC_component_file);
     }
 
     TString fout_name = Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/Species_%i/%i.root",year,species,line);
@@ -365,213 +344,406 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     fout->Close();
 
     cout << "Finished successfully" << endl;
+}
 
-    // if(createTable) // creates the pre-selection efficiency tables
-    // {
-    //     cout << "Creating pre-selection efficiency tables" << endl;
-    //     Bool_t isMC = false;
-    //     if((species == 1) || (species == 10) || (species == 11) || (species == 12) || (species == 4) || (species == 7) || (species == 9))
-    //     {
-    //         isMC = true;
-    //     }
 
-    //     TCut mass = ""; // background definition
-    //     // if(species == 8) 
-    //     // {
-    //     //     mass = "Bp_dtf_M[0] > 5350";
+void create_table(Int_t year, Int_t species, TString FILES, Bool_t isKtautauMC, Bool_t is_cocktailMC, TCut truthMatch, TCut MC_component, TCut trigger, TCut others)
+{
+    cout << "Creating pre-selection efficiency tables" << endl;
+    std::ofstream file(Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/Species_%i/pre_sel_table.tex",year,species));
 
-    //     // }
+    TFileCollection* fc_reco = new TFileCollection("fc_reco", "fc_reco", FILES);
+    TChain* t_reco;
+    if(isKtautauMC || (species == 7) || (species == 71) ) // Ktautau MC + normalisation channel (PID corrected)
+    {
+        t_reco = new TChain("DecayTree");
+    }
+    else if((species == 3) || (species == 6) || (species == -1)) // WS data (Ktautau,D+D-K+,D0D0K)
+    {
+        t_reco = new TChain("ntuple_SS/DecayTree");
+    }
+    else // MC and RS data
+    {
+        t_reco = new TChain("ntuple/DecayTree");
+    }
+    t_reco->AddFileInfoList((TCollection*)fc_reco->GetList());
 
-    //     TFileCollection* fc_all;
-    //     if(isMC)
-    //     {
-    //         fc_all = new TFileCollection("fc_all", "fc_all", FILES);
-    //     }
-    //     else
-    //     {
-    //         fc_all = new TFileCollection("fc_all", "fc_all", FILES);
-    //     }
-         
-    //     TChain* t_reco;
-    //     if((species == 3) || (species == 6) || (species == -1)) // WS data (Ktautau,D+D-K+,D0D0K)
-    //     {
-    //         t_reco = new TChain("ntuple_SS/DecayTree");
-    //     }
-    //     else // MC and RS data
-    //     {
-    //         t_reco = new TChain("ntuple/DecayTree");
-    //     }
-    //     t_reco->AddFileInfoList((TCollection*)fc_all->GetList());
 
-    //     // Reconstruction efficiency
-    //     cout << "Reconstruction efficiency" << endl;
-    //     TChain* t_gen;
-    //     TChain* t_gen1;
-    //     TChain* t_gen2;
-    //     TChain* t_gen3;
-    //     Double_t eps_reco = 1.;
-    //     Double_t N_reco = t_reco->GetEntries(mass);
-    //     Double_t N_gen;
-    //     if(isMC)
-    //     {
-    //         if(species == 10)
-    //         {
-    //             t_gen = new TChain("mc_ntuple_3pi_3pi/MCDecayTree");
-    //         }
-    //         else if(species == 11)
-    //         {
-    //             t_gen = new TChain("mc_ntuple_3pipi0_3pi/MCDecayTree");
-    //             t_gen1 = new TChain("mc_ntuple_3pi_3pipi0/MCDecayTree");
-    //         }
-    //         else if(species == 12)
-    //         {
-    //             t_gen = new TChain("mc_ntuple_3pipi0_3pipi0/MCDecayTree");
-    //         }
-    //         else if(species == 1)
-    //         {
-    //             t_gen1 = new TChain("mc_ntuple_3pi_3pi/MCDecayTree");
-    //             t_gen2 = new TChain("mc_ntuple_3pipi0_3pi/MCDecayTree");
-    //             t_gen3 = new TChain("mc_ntuple_3pi_3pipi0/MCDecayTree");
-    //             t_gen = new TChain("mc_ntuple_3pipi0_3pipi0/MCDecayTree");
-    //         }
-    //         else
-    //         {
-    //             t_gen = new TChain("mc_ntuple/MCDecayTree");
-    //         }
-    //         t_gen->AddFileInfoList((TCollection*)fc_all->GetList());
-
-    //         if(species == 11)
-    //         {
-    //             t_gen1->AddFileInfoList((TCollection*)fc_all->GetList());
-    //         }
-    //         if(species == 1)
-    //         {
-    //             t_gen1->AddFileInfoList((TCollection*)fc_all->GetList());
-    //             t_gen2->AddFileInfoList((TCollection*)fc_all->GetList());
-    //             t_gen3->AddFileInfoList((TCollection*)fc_all->GetList());
-    //         }
-
-    //         if(isKtautauMC)
-    //         {
-    //             TFileCollection* fc_comp = new TFileCollection("fc_comp", "fc_comp", Form("/panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201%i/mc_components.txt",year));
-    //             TChain* t_comp = new TChain("DecayTree");
-    //             t_comp->AddFileInfoList((TCollection*)fc_comp->GetList());
-
-    //             t_reco->AddFriend(t_comp);
-    //             N_reco = t_reco->GetEntries(MC_component+truthMatch);
-    //         }
-    //         else
-    //         {
-    //             N_reco = t_reco->GetEntries(truthMatch);
-    //         }
-
-    //         if(species == 11)
-    //         {
-    //             N_gen = t_gen->GetEntries();
-    //             N_gen += t_gen1->GetEntries();
-    //         }
-    //         else if(species == 1)
-    //         {
-    //             N_gen = t_gen->GetEntries();
-    //             N_gen += t_gen1->GetEntries();
-    //             N_gen += t_gen2->GetEntries();
-    //             N_gen += t_gen3->GetEntries();
-    //         }
-    //         else
-    //         {
-    //             N_gen = t_gen->GetEntries();
-    //         }
-
-    //         eps_reco = N_reco / N_gen;
-    //     }
-
-    //     // Trigger
-    //     cout << "Trigger efficiency" << endl;
-    //     Double_t N_L0 = t_reco->GetEntries(MC_component+mass+truthMatch+L0_trigger);
-    //     Double_t N_L0_HLT1 = t_reco->GetEntries(MC_component+mass+truthMatch+L0_trigger+HLT1_trigger);
-    //     Double_t N_trigger = t_reco->GetEntries(MC_component+mass+truthMatch+trigger);
-    //     Double_t eps_L0 = N_L0 / N_reco;
-    //     Double_t eps_L0_HLT1 = N_L0_HLT1 / N_reco; 
-    //     Double_t eps_trigger = N_trigger / N_reco;
-
-    //     TTree* t_intermediate;
-    //     TChain* t_fit;
-    //     if(addFit)
-    //     {
-    //         t_intermediate = (TTree*)t_reco->CopyTree(MC_component+truthMatch+trigger);
-
-    //         TFileCollection* fc_fit = new TFileCollection("fc_fit", "fc_fit", FILES_fit);
-    //         t_fit = new TChain("DecayTree");
-    //         t_fit->AddFileInfoList((TCollection*)fc_fit->GetList());
-
-    //         t_intermediate->AddFriend(t_fit);
-    //     }
+    TFileCollection* fc_comp;
+    if(isKtautauMC)
+    {
+        fc_comp = new TFileCollection("fc_comp", "fc_comp", Form("/panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201%i/mc_components.txt",year));
+        TChain* t_comp = new TChain("DecayTree");
+        t_comp->AddFileInfoList((TCollection*)fc_comp->GetList());
+        t_reco->AddFriend(t_comp);
     
-    //     // DTF
-    //     cout << "DTF efficiency" << endl;
-    //     Double_t N_pass;
-    //     if(addFit)
-    //     {
-    //         N_pass = t_intermediate->GetEntries(passDTF);
-    //     }
-    //     else
-    //     {
-    //         N_pass = t_reco->GetEntries(mass+truthMatch+trigger+passDTF);
-    //     }
-    //     Double_t eps_dtf = N_pass / N_trigger;
+    }
 
-    //     // Pre-selections
-    //     cout << "Rectangular cuts efficiency" << endl;
-    //     std::vector<Double_t> eps_others;
-    //     std::vector<Double_t> N_others;
-    //     for(int i = 0; i < N; i++)
-    //     {
-    //         if(addFit)
-    //         {
-    //             N_others.push_back( t_intermediate->GetEntries(passDTF+other_cuts[i]) );
-    //         }
-    //         else
-    //         {
-    //             N_others.push_back( t_reco->GetEntries(mass+truthMatch+trigger+passDTF+other_cuts[i]) );
-    //         }
-    //         eps_others.push_back( N_others[i] / N_pass );
-    //     }
+    TString FILES1;
+    if(isKtautauMC)
+    {
+        FILES1 = Form("Files_on_grid/MC_201%i.txt",year);
+    }
+    else if((species == 7) || (species == 71))
+    {
+        FILES1 = Form("Files_on_grid/MC_D0Dps_201%i.txt",year);
+    }
+    else
+    {
+        FILES1 = FILES;
+    }
 
-    //     Double_t N_others_all;
-    //     if(addFit)
-    //     {
-    //         N_others_all = t_intermediate->GetEntries(passDTF+others);
-    //     }
-    //     else
-    //     {
-    //         N_others_all = t_reco->GetEntries(mass+truthMatch+trigger+passDTF+others);
-    //     }
-    //     Double_t eps_others_all = N_others_all / N_pass;
+    TFileCollection* fc1;
+    TChain* t_gen;
+    TChain* t_gen_DD, *t_gen_DstarD, *t_gen_DDstar, *t_gen_DstarDstar;
+    if(isKtautauMC || (species == 4) || (species == 7) || (species == 71) || (species == 9) || is_cocktailMC)
+    {
+        fc1 = new TFileCollection("fc", "fc", FILES1);
 
-    //     file << " \\begin{table}[!htbp]" << std::endl;
-    //     file << " \\centering " << std::endl;
-    //     file << " \\begin{tabular}{|c|c|}" << std::endl;
-    //     file << " \\hline" << std::endl;
-    //     file << " & " << "Efficiency & " << " \\\\ " << std::endl;
-    //     file << "\\hline" << std::endl;
-    //     if(isMC)
-    //     {
-    //         file << "Reconstruction & " << Form("%.4lf $\\pm$ %.4lf \\% & ", eps_reco*100,  eps_error(N_reco,N_gen) ) << "\\% \\\\" << std::endl;
-    //     }
-    //     file << "L0 & " << Form("%.4lf $\\pm$ %.4lf \\% & ", eps_L0*100, eps_error(N_L0, N_reco) ) << "\\% \\\\" << std::endl;
-    //     file << "L0 + HLT1 & " << Form("%.4lf $\\pm$ %.4lf \\% & ", eps_L0_HLT1*100, eps_error(N_L0_HLT1, N_reco) ) << "\\% \\\\" << std::endl;
-    //     file << "Trigger & " << Form("%.4lf $\\pm$ %.4lf \\% & ", eps_trigger*100, eps_error(N_trigger, N_reco) ) << "\\% \\\\" << std::endl;
-    //     file << "Pass DTF & " << Form("%.4lf $\\pm$ %.4lf \\% & ", eps_dtf*100, eps_error(N_pass, N_trigger) ) << "\\% \\\\" << std::endl;
-    //     for(int i = 0; i < N; i++)
-    //     {
-    //         file << other_cuts[i]+" & " << Form("%.4lf $\\pm$ %.4lf \\% & ", eps_others[i]*100, eps_error(N_others[i], N_pass) ) << "\\% \\\\" << std::endl;
-    //     }
-    //     file << "All & " << Form("%.4lf $\\pm$ %.4lf \\% & ", eps_others_all*100, eps_error(N_others_all, N_pass) ) << "\\% \\\\" << std::endl;
-    //     file << "\\hline" << std::endl;
-    //     file << "\\end{tabular}" << std::endl;
-    //     file << "\\end{table}" << std::endl;
-    //     file.close();
-    // }
+        if(species == 10)
+        {
+            t_gen = new TChain("mc_ntuple_3pi_3pi/MCDecayTree");
+            t_gen->AddFileInfoList((TCollection*)fc1->GetList());
+        }
+        else if(species == 11)
+        {
+            t_gen = new TChain("mc_ntuple_3pi_3pipi0/MCDecayTree");
+            TChain* t1_gen = new TChain("mc_ntuple_3pipi0_3pi/MCDecayTree");
+            t_gen->AddFileInfoList((TCollection*)fc1->GetList());
+            t1_gen->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen->Add(t1_gen);
+
+        }
+        else if(species == 12)
+        {
+            t_gen = new TChain("mc_ntuple_3pipi0_3pipi0/MCDecayTree");
+            t_gen->AddFileInfoList((TCollection*)fc1->GetList());
+        }
+        else if(species == 1)
+        {
+            t_gen = new TChain("mc_ntuple_3pi_3pi/MCDecayTree");
+            TChain* t1_gen = new TChain("mc_ntuple_3pi_3pipi0/MCDecayTree");
+            TChain* t2_gen = new TChain("mc_ntuple_3pipi0_3pi/MCDecayTree");
+            TChain* t3_gen = new TChain("mc_ntuple_3pipi0_3pipi0/MCDecayTree");
+            t_gen->AddFileInfoList((TCollection*)fc1->GetList());
+            t1_gen->AddFileInfoList((TCollection*)fc1->GetList());
+            t2_gen->AddFileInfoList((TCollection*)fc1->GetList());
+            t3_gen->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen->Add(t1_gen);
+            t_gen->Add(t2_gen);
+            t_gen->Add(t3_gen);
+        }
+        else if((species == 4) || (species == 7) || (species == 71) || (species == 9))
+        {
+            t_gen = new TChain("mc_ntuple/MCDecayTree");
+            t_gen->AddFileInfoList((TCollection*)fc1->GetList());
+        }
+        else if(species == 100)
+        {
+            t_gen_DD = new TChain("mc_ntuple_BuD0D0Kp/MCDecayTree");
+            t_gen_DstarD = new TChain("mc_ntuple_BuD0starD0Kp/MCDecayTree");
+            t_gen_DDstar = new TChain("mc_ntuple_BuD0D0starKp/MCDecayTree");
+            t_gen_DstarDstar = new TChain("mc_ntuple_BuD0starD0starKp/MCDecayTree");
+            t_gen_DD->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DstarD->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DDstar->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DstarDstar->AddFileInfoList((TCollection*)fc1->GetList());
+        }
+        else if(species == 101)
+        {
+            t_gen_DD = new TChain("mc_ntuple_BuDpDmKp/MCDecayTree");
+            t_gen_DstarD = new TChain("mc_ntuple_BuDpstarDmKp/MCDecayTree");
+            t_gen_DDstar = new TChain("mc_ntuple_BuDpDmstarKp/MCDecayTree");
+            t_gen_DstarDstar = new TChain("mc_ntuple_BuDpstarDmstarKp/MCDecayTree");   
+            t_gen_DD->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DstarD->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DDstar->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DstarDstar->AddFileInfoList((TCollection*)fc1->GetList());
+        }
+        else if(species == 102)
+        {
+            t_gen_DD = new TChain("mc_ntuple_BuDsDsKp/MCDecayTree");
+            t_gen_DstarD = new TChain("mc_ntuple_BuDsstarDsKp/MCDecayTree");
+            t_gen_DDstar = new TChain("mc_ntuple_BuDsDsstarKp/MCDecayTree");
+            t_gen_DstarDstar = new TChain("mc_ntuple_BuDsstarDsstarKp/MCDecayTree");  
+            t_gen_DD->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DstarD->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DDstar->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DstarDstar->AddFileInfoList((TCollection*)fc1->GetList());
+        }
+        else if(species == 110)
+        {
+            t_gen_DD = new TChain("mc_ntuple_BdDmD0Kp/MCDecayTree");
+            t_gen_DstarD = new TChain("mc_ntuple_BdDmstarD0Kp/MCDecayTree");
+            t_gen_DDstar = new TChain("mc_ntuple_BdDmD0starKp/MCDecayTree");
+            t_gen_DstarDstar = new TChain("mc_ntuple_BdDmstarD0starKp/MCDecayTree"); 
+            t_gen_DD->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DstarD->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DDstar->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DstarDstar->AddFileInfoList((TCollection*)fc1->GetList()); 
+        }
+        else if(species == 120)
+        {
+            t_gen_DD = new TChain("mc_ntuple_BsDsD0Kp/MCDecayTree");
+            t_gen_DstarD = new TChain("mc_ntuple_BsDsstarD0Kp/MCDecayTree");
+            t_gen_DDstar = new TChain("mc_ntuple_BsDsD0starKp/MCDecayTree");
+            t_gen_DstarDstar = new TChain("mc_ntuple_BsDsstarD0starKp/MCDecayTree"); 
+            t_gen_DD->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DstarD->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DDstar->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DstarDstar->AddFileInfoList((TCollection*)fc1->GetList());
+        }
+        else if(species == 130)
+        {
+            t_gen_DD = new TChain("mc_ntuple_BuD0DpK0/MCDecayTree");
+            t_gen_DstarD = new TChain("mc_ntuple_BuD0starDpK0/MCDecayTree");
+            t_gen_DDstar = new TChain("mc_ntuple_BuD0DpstarK0/MCDecayTree");
+            t_gen_DstarDstar = new TChain("mc_ntuple_BuD0starDpstarK0/MCDecayTree"); 
+            t_gen_DD->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DstarD->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DDstar->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DstarDstar->AddFileInfoList((TCollection*)fc1->GetList());
+        }
+        else if(species == 150)
+        {
+            t_gen_DD = new TChain("mc_ntuple_BuD0Ds/MCDecayTree");
+            t_gen_DstarD = new TChain("mc_ntuple_BuD0starDs/MCDecayTree");
+            t_gen_DDstar = new TChain("mc_ntuple_BuD0Dsstar/MCDecayTree");
+            t_gen_DstarDstar = new TChain("mc_ntuple_BuD0starDsstar/MCDecayTree"); 
+            t_gen_DD->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DstarD->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DDstar->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DstarDstar->AddFileInfoList((TCollection*)fc1->GetList());
+        }
+        else if(species == 151)
+        {
+            t_gen_DD = new TChain("mc_ntuple_BuD0Dp/MCDecayTree");
+            t_gen_DstarD = new TChain("mc_ntuple_BuD0starDp/MCDecayTree");
+            t_gen_DDstar = new TChain("mc_ntuple_BuD0Dpstar/MCDecayTree");
+            t_gen_DstarDstar = new TChain("mc_ntuple_BuD0starDpstar/MCDecayTree");
+            t_gen_DD->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DstarD->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DDstar->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_DstarDstar->AddFileInfoList((TCollection*)fc1->GetList());
+        }
+    }
+    
+    // Truth-match efficiency
+    Double_t N_gen;
+    Double_t N_gen_DD, N_gen_DstarD, N_gen_DDstar, N_gen_DstarDstar;
+    if(isKtautauMC || (species == 4) || (species == 7) || (species == 71) || (species == 9) || is_cocktailMC)
+    {
+        cout << "Truth-match efficiency" << endl;
+
+        if(is_cocktailMC)
+        {
+            N_gen_DD = t_gen_DD->GetEntries();
+            N_gen_DstarD = t_gen_DstarD->GetEntries();
+            N_gen_DDstar = t_gen_DDstar->GetEntries();
+            N_gen_DstarDstar = t_gen_DstarDstar->GetEntries();
+        }
+        else
+        {
+            N_gen = t_gen->GetEntries();
+        }
+
+    }
+
+    Double_t N_TM;
+    Double_t N_TM_DD, N_TM_DstarD, N_TM_DDstar, N_TM_DstarDstar;
+    TCut truthMatch_DD, truthMatch_DstarD, truthMatch_DDstar, truthMatch_DstarDstar;
+    Double_t eps_tm;
+    Double_t eps_tm_DD, eps_tm_DstarD, eps_tm_DDstar, eps_tm_DstarDstar;
+    if(isKtautauMC || (species == 4) || (species == 7) || (species == 71) || (species == 9) || is_cocktailMC)
+    {
+        if(is_cocktailMC)
+        {
+            if(species == 100)
+            {
+                truthMatch_DD = truthMatch_cocktailMC("BuD0D0Kp");
+                truthMatch_DstarD = truthMatch_cocktailMC("BuD0starD0Kp");
+                truthMatch_DDstar = truthMatch_cocktailMC("BuD0D0starKp");
+                truthMatch_DstarDstar = truthMatch_cocktailMC("BuD0starD0starKp");
+            }
+            else if(species == 101)
+            {
+                truthMatch_DD = truthMatch_cocktailMC("BuDpDmKp");
+                truthMatch_DstarD = truthMatch_cocktailMC("BuDpstarDmKp");
+                truthMatch_DDstar = truthMatch_cocktailMC("BuDpDmstarKp");
+                truthMatch_DstarDstar = truthMatch_cocktailMC("BuDpstarDmstarKp");
+            }
+            else if(species == 102)
+            {
+                truthMatch_DD = truthMatch_cocktailMC("BuDsDsKp");
+                truthMatch_DstarD = truthMatch_cocktailMC("BuDsstarDsKp");
+                truthMatch_DDstar = truthMatch_cocktailMC("BuDsDsstarKp");
+                truthMatch_DstarDstar = truthMatch_cocktailMC("BuDsstarDsstarKp");
+            }
+            else if(species == 110)
+            {
+                truthMatch_DD = truthMatch_cocktailMC("BdDmD0Kp");
+                truthMatch_DstarD = truthMatch_cocktailMC("BdDmstarD0Kp");
+                truthMatch_DDstar = truthMatch_cocktailMC("BdDmD0starKp");
+                truthMatch_DstarDstar = truthMatch_cocktailMC("BdDmstarD0starKp");
+            }
+            else if(species == 120)
+            {
+                truthMatch_DD = truthMatch_cocktailMC("BsDsD0Kp");
+                truthMatch_DstarD = truthMatch_cocktailMC("BsDsstarD0Kp");
+                truthMatch_DDstar = truthMatch_cocktailMC("BsDsD0starKp");
+                truthMatch_DstarDstar = truthMatch_cocktailMC("BsDsstarD0starKp");
+            }
+            else if(species == 130)
+            {
+                truthMatch_DD = truthMatch_cocktailMC("BuD0DpK0");
+                truthMatch_DstarD = truthMatch_cocktailMC("BuD0starDpK0");
+                truthMatch_DDstar = truthMatch_cocktailMC("BuD0DpstarK0");
+                truthMatch_DstarDstar = truthMatch_cocktailMC("BuD0starDpstarK0");
+            }
+            else if(species == 150)
+            {
+                truthMatch_DD = truthMatch_cocktailMC("BuD0Ds");
+                truthMatch_DstarD = truthMatch_cocktailMC("BuD0starDs");
+                truthMatch_DDstar = truthMatch_cocktailMC("BuD0Dsstar");
+                truthMatch_DstarDstar = truthMatch_cocktailMC("BuD0starDsstar");
+            }
+            else if(species == 151)
+            {
+                truthMatch_DD = truthMatch_cocktailMC("BuD0Dp");
+                truthMatch_DstarD = truthMatch_cocktailMC("BuD0starDp");
+                truthMatch_DDstar = truthMatch_cocktailMC("BuD0Dpstar");
+                truthMatch_DstarDstar = truthMatch_cocktailMC("BuD0starDpstar");
+            }
+
+            N_TM_DD = t_reco->GetEntries(truthMatch_DD);
+            N_TM_DstarD = t_reco->GetEntries(truthMatch_DstarD);
+            N_TM_DDstar = t_reco->GetEntries(truthMatch_DDstar);
+            N_TM_DstarDstar = t_reco->GetEntries(truthMatch_DstarDstar);
+                
+            eps_tm_DD = N_TM_DD/N_gen_DD;
+            eps_tm_DstarD = N_TM_DstarD/N_gen_DstarD;
+            eps_tm_DDstar = N_TM_DDstar/N_gen_DDstar;
+            eps_tm_DstarDstar = N_TM_DstarDstar/N_gen_DstarDstar;
+        }
+        else
+        {
+            N_TM = t_reco->GetEntries(truthMatch+MC_component);
+            eps_tm = N_TM/N_gen;
+        }
+    }
+    else
+    {
+        N_TM = t_reco->GetEntries();
+        eps_tm = 1;
+    }
+
+    // Trigger
+    cout << "Trigger efficiency" << endl;
+
+    Double_t N_trigger;
+    Double_t N_trigger_DD, N_trigger_DstarD, N_trigger_DDstar, N_trigger_DstarDstar;
+    Double_t eps_trigger;
+    Double_t eps_trigger_DD, eps_trigger_DstarD, eps_trigger_DDstar, eps_trigger_DstarDstar;
+    if(isKtautauMC || (species == 4) || (species == 7) || (species == 71) || (species == 9))
+    {
+        N_trigger = t_reco->GetEntries(truthMatch+MC_component+trigger);
+        eps_trigger = N_trigger/N_TM;
+    }
+    else if(is_cocktailMC)
+    {
+        N_trigger_DD = t_reco->GetEntries(truthMatch_DD+trigger);
+        N_trigger_DstarD = t_reco->GetEntries(truthMatch_DstarD+trigger);
+        N_trigger_DDstar = t_reco->GetEntries(truthMatch_DDstar+trigger);
+        N_trigger_DstarDstar = t_reco->GetEntries(truthMatch_DstarDstar+trigger);
+
+        eps_trigger_DD = N_trigger_DD/N_TM_DD;
+        eps_trigger_DstarD = N_trigger_DstarD/N_TM_DstarD;
+        eps_trigger_DDstar = N_trigger_DDstar/N_TM_DDstar;
+        eps_trigger_DstarDstar = N_trigger_DstarDstar/N_TM_DstarDstar;
+    }
+    else
+    {
+        N_trigger = t_reco->GetEntries(trigger);
+        eps_trigger = N_trigger/N_TM;
+    }
+
+    // Rectangular cuts
+    cout << "Rectangular cut efficiency" << endl;
+
+    Double_t N_others;
+    Double_t N_others_DD, N_others_DstarD, N_others_DDstar, N_others_DstarDstar;
+    Double_t eps_others;
+    Double_t eps_others_DD, eps_others_DstarD, eps_others_DDstar, eps_others_DstarDstar;
+    if(isKtautauMC || (species == 4) || (species == 7) || (species == 71) || (species == 9))
+    {
+        N_others = t_reco->GetEntries(truthMatch+MC_component+trigger+others);
+        eps_others = N_others/N_trigger;
+    }
+    else if(is_cocktailMC)
+    {
+        N_others_DD = t_reco->GetEntries(truthMatch_DD+trigger+others);
+        N_others_DstarD = t_reco->GetEntries(truthMatch_DstarD+trigger+others);
+        N_others_DDstar = t_reco->GetEntries(truthMatch_DDstar+trigger+others);
+        N_others_DstarDstar = t_reco->GetEntries(truthMatch_DstarDstar+trigger+others);
+
+        eps_others_DD = N_others_DD/N_trigger_DD;
+        eps_others_DstarD = N_others_DstarD/N_trigger_DstarD;
+        eps_others_DDstar = N_others_DDstar/N_trigger_DDstar;
+        eps_others_DstarDstar = N_others_DstarDstar/N_trigger_DstarDstar;
+    }
+    else
+    {
+        N_others = t_reco->GetEntries(trigger+others);
+        eps_others = N_others/N_trigger;
+    }
+
+    file << " \\begin{table}[!htbp]" << std::endl;
+    file << " \\centering " << std::endl;
+    file << " \\begin{tabular}{|c|c|}" << std::endl;
+    file << " \\hline" << std::endl;
+    file << " Cut & " << "Efficiency " << " \\\\ " << std::endl;
+    file << "\\hline" << std::endl;
+    if(isKtautauMC || (species == 4) || (species == 7) || (species == 71) || (species == 9) || is_cocktailMC)
+    {
+        if(is_cocktailMC)
+        {
+            file << "Truth-match (DD) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm_DD*100,  eps_error(N_TM_DD,N_gen_DD) ) << " \\\\ " << std::endl;
+            file << "Truth-match (DstarD) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm_DstarD*100,  eps_error(N_TM_DstarD,N_gen_DstarD) ) << " \\\\ " << std::endl;
+            file << "Truth-match (DDstar) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm_DDstar*100,  eps_error(N_TM_DDstar,N_gen_DDstar) ) << " \\\\ " << std::endl;
+            file << "Truth-match (DstarDstar) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm_DstarDstar*100,  eps_error(N_TM_DstarDstar,N_gen_DstarDstar) ) << " \\\\ \\hline " << std::endl;
+
+            file << "Trigger (DD) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger_DD*100, eps_error(N_trigger_DD, N_TM_DD) ) << " \\\\" << std::endl;
+            file << "Trigger (DstarD) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger_DstarD*100, eps_error(N_trigger_DstarD, N_TM_DstarD) ) << " \\\\ " << std::endl;
+            file << "Trigger (DDstar) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger_DDstar*100, eps_error(N_trigger_DDstar, N_TM_DDstar) ) << " \\\\ " << std::endl;
+            file << "Trigger (DstarDstar) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger_DstarDstar*100, eps_error(N_trigger_DstarDstar, N_TM_DstarDstar) ) << " \\\\ \\hline " << std::endl;
+
+            file << "Rectangular cuts (DD) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others_DD*100, eps_error(N_others_DD, N_trigger_DD) ) << " \\\\" << std::endl;
+            file << "Rectangular cuts (DstarD) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others_DstarD*100, eps_error(N_others_DstarD, N_trigger_DstarD) ) << " \\\\ " << std::endl;
+            file << "Rectangular cuts (DDstar) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others_DDstar*100, eps_error(N_others_DDstar, N_trigger_DDstar) ) << " \\\\ " << std::endl;
+            file << "Rectangular cuts (DstarDstar) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others_DstarDstar*100, eps_error(N_others_DstarDstar, N_trigger_DstarDstar) ) << " \\\\ " << std::endl;
+        }
+        else
+        {
+            file << "Truth-match & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm*100,  eps_error(N_TM,N_gen) ) << " \\\\ \\hline " << std::endl;
+            
+            file << "Trigger & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ \\hline " << std::endl;
+            
+            file << "Rectangular cuts & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\ \\hline " << std::endl;
+        }
+    }
+    else
+    {
+        file << "Trigger & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ \\hline " << std::endl;
+            
+        file << "Rectangular cuts & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\ " << std::endl;
+    }
+ 
+
+    file << "\\hline" << std::endl;
+    file << "\\end{tabular}" << std::endl;
+    file << "\\end{table}" << std::endl;
+    file.close();
+    
 }
 
 Double_t eps_error(Double_t Num, Double_t Den)
