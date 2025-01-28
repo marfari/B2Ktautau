@@ -736,17 +736,51 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
             pickle.dump(classifiers[i], f)
 
     # Save signal and background training samples in a root file
-    # 1) Save BDT response in the test dataset
-    # if(names[i] == "XGBoost"):
-    #     X_test_to_save = X_test
-    #     decisions = classifiers[i].predict_proba(np.array(X_test))[:, 1] 
-    #     X_test_to_save['BDT'] = decisions
+    for i in range(len(names)):
+        if(names[i] == "XGBoost"):
+            # Signal test sample
+            out_file_sig = ROOT.TFile.Open("/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/{1}_test_dataset_sig.root".format(species_name,step_name), "RECREATE")
+            out_file_sig.mkdir(names[i])
+            out_tree_sig = ROOT.TTree("DecayTree", "DecayTree")
+            bdt_var_sig = array('d', [0])
+            
+            if(step_name == "isolation"):
+                out_tree_sig.Branch('BDT1', bdt_var_sig, "BDT1/D")
+            else:
+                out_tree_sig.Branch('BDT2', bdt_var_sig, "BDT2/D")
 
+            X_test_sig = X_test[y_test>0.5]
+            decisions_sig = classifiers[i].predict_proba(np.array(X_test_sig))[:, 1] 
 
-    # X_train_sig = X_train[y_train>0.5]
-    # X_train_bkg = X_train[y_train<0.5]
-    # X_test_sig = X_test[y_test>0.5]
-    # X_test_bkg = X_test[y_test<0.5]
+            for j in range(len(decisions_sig)):
+                bdt_var_sig[0] = decisions_sig[j]
+                out_tree_sig.Fill()
+
+            out_file_sig.cd(names[i])    
+            out_tree_sig.Write()
+            out_file_sig.Close()
+
+            # Background test sample
+            out_file_bkg = ROOT.TFile.Open("/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/{1}_test_dataset_bkg.root".format(species_name,step_name), "RECREATE")
+            out_file_bkg.mkdir(names[i])
+            out_tree_bkg = ROOT.TTree("DecayTree", "DecayTree")
+            bdt_var_bkg = array('d', [0])
+
+            if(step_name == "isolation"):
+                out_tree_bkg.Branch('BDT1', bdt_var_bkg, "BDT1/D")
+            else:
+                out_tree_bkg.Branch('BDT2', bdt_var_bkg, "BDT2/D")
+
+            X_test_bkg = X_test[y_test<0.5]
+            decisions_bkg = classifiers[i].predict_proba(np.array(X_test_bkg))[:, 1] 
+
+            for k in range(len(decisions_bkg)):
+                bdt_var_bkg[0] = decisions_bkg[k]
+                out_tree_bkg.Fill()
+
+            out_file_bkg.cd(names[i])    
+            out_tree_bkg.Write()
+            out_file_bkg.Close()
 
 def main(argv):
 
