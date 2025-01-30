@@ -356,14 +356,14 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
 
     # Variables needed to build the input features for the 1st and 2nd steps
     if(species_name == "Ktautau"):
-        branch_names_isolation = ['Bp_VTXISONUMVTX_B', 'Bp_VTXISODCHI2ONETRACK_B', 'Bp_VTXISODCHI2MASSONETRACK_B', 'Bp_VTXISODCHI2TWOTRACK_B', 'Bp_VTXISODCHI2MASSTWOTRACK_B', 
+        branch_names_isolation = ['Bp_VTXISONUMVTX_B', 'Bp_VTXISODCHI2ONETRACK_B', 'Bp_VTXISODCHI2MASSONETRACK_B', 'Bp_VTXISODCHI2TWOTRACK_B', 'Bp_VTXISODCHI2MASSTWOTRACK_B', 'Bp_CC_05_IT_B',
                         'Bp_VTXISONUMVTX_taup', 'Bp_VTXISODCHI2ONETRACK_taup', 'Bp_VTXISODCHI2MASSONETRACK_taup', 'Bp_VTXISODCHI2TWOTRACK_taup', 'Bp_VTXISODCHI2MASSTWOTRACK_taup',
                         'Bp_VTXISONUMVTX_taum', 'Bp_VTXISODCHI2ONETRACK_taum', 'Bp_VTXISODCHI2MASSONETRACK_taum', 'Bp_VTXISODCHI2TWOTRACK_taum', 'Bp_VTXISODCHI2MASSTWOTRACK_taum',
                         'Bp_CC_05_DELTAPHI_B', 'Bp_NC_05_IT_B', 'Bp_CC_05_PTASYM_B', 'Bp_CC_05_PX_B', 'Bp_CC_05_IT_B', 'Bp_CC_05_PZASYM_B', 'Bp_CC_05_DELTAETA_B', 'Bp_NC_05_MULT_B', 'Bp_NC_05_VPT_B', 'Bp_NC_05_PTASYM_B', 'Bp_CCNC_05_IT_B', 'Bp_CC_05_MULT_B',
                         'Bp_CC_05_PASYM_taup', 'Bp_CC_05_DELTAETA_taup', 'Bp_NC_05_MULT_taup', 'Bp_NC_05_SPT_taup', 'Bp_CCNC_05_IT_taup', 'Bp_NC_05_PTASYM_taup', 'Bp_CC_05_PTASYM_taup', 'Bp_CC_05_IT_taup', 'Bp_TRKISOBDTFIRSTVALUE_taup_pi1', 'Bp_TRKISOBDTFIRSTVALUE_taup_pi2', 'Bp_TRKISOBDTFIRSTVALUE_taup_pi3', 'Bp_TRKISOBDTSECONDVALUE_taup_pi1', 'Bp_TRKISOBDTSECONDVALUE_taup_pi2', 'Bp_TRKISOBDTSECONDVALUE_taup_pi3', 'Bp_TRKISOBDTTHIRDVALUE_taup_pi1', 'Bp_TRKISOBDTTHIRDVALUE_taup_pi2', 'Bp_TRKISOBDTTHIRDVALUE_taup_pi3',
                         'Bp_CC_05_PASYM_taum', 'Bp_CC_05_DELTAETA_taum', 'Bp_NC_05_MULT_taum', 'Bp_NC_05_SPT_taum', 'Bp_CCNC_05_IT_taum', 'Bp_NC_05_PTASYM_taum', 'Bp_CC_05_PTASYM_taum', 'Bp_CC_05_IT_taum', 'Bp_TRKISOBDTFIRSTVALUE_taum_pi1', 'Bp_TRKISOBDTFIRSTVALUE_taum_pi2', 'Bp_TRKISOBDTFIRSTVALUE_taum_pi3', 'Bp_TRKISOBDTSECONDVALUE_taum_pi1', 'Bp_TRKISOBDTSECONDVALUE_taum_pi2', 'Bp_TRKISOBDTSECONDVALUE_taum_pi3', 'Bp_TRKISOBDTTHIRDVALUE_taum_pi1', 'Bp_TRKISOBDTTHIRDVALUE_taum_pi2', 'Bp_TRKISOBDTTHIRDVALUE_taum_pi3',
-                        'Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taup', 'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup', 
-                        'Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taum', 'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] 
+                        'Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taup', 'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup', 'Bp_VTXISOBDTHARDFIRSTVALUE_taup',
+                        'Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taum', 'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum', 'Bp_VTXISOBDTHARDFIRSTVALUE_taum'] 
 
         branch_names_topology = ['taup_M', 'taup_M12', 'taup_M23', 'taup_M13', 'taup_DIRA_ORIVX', 'taum_M', 'taum_M12', 'taum_M23', 'taum_M13', 'taum_DIRA_ORIVX', 'Bp_DIRA_OWNPV',
                         'df_BVx', 'df_BVy', 'df_BVz', 'df_DV1x', 'df_DV1y', 'df_DV1z', 'df_DV2x', 'df_DV2y', 'df_DV2z', 'df_PVx', 'df_PVy', 'df_PVz',
@@ -372,12 +372,12 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
                         'Kp_IPCHI2_OWNPV', 'taup_pi1_IPCHI2_OWNPV', 'taup_pi2_IPCHI2_OWNPV', 'taup_pi3_IPCHI2_OWNPV', 'taum_pi1_IPCHI2_OWNPV', 'taum_pi2_IPCHI2_OWNPV', 'taum_pi3_IPCHI2_OWNPV',
                         'taup_AMAXDOCA', 'taup_AMINDOCA', 'taup_DOCACHI2MAX', 'taum_AMAXDOCA', 'taum_AMINDOCA', 'taum_DOCACHI2MAX']
     else:
-        branch_names_isolation = ['Bp_VTXISONUMVTX_B', 'Bp_VTXISODCHI2ONETRACK_B', 'Bp_VTXISODCHI2MASSONETRACK_B', 'Bp_VTXISODCHI2TWOTRACK_B', 'Bp_VTXISODCHI2MASSTWOTRACK_B', 
+        branch_names_isolation = ['Bp_CC_05_IT_B',  'Bp_VTXISONUMVTX_B', 'Bp_VTXISODCHI2ONETRACK_B', 'Bp_VTXISODCHI2MASSONETRACK_B', 'Bp_VTXISODCHI2TWOTRACK_B', 'Bp_VTXISODCHI2MASSTWOTRACK_B', 
                         'Bp_VTXISONUMVTX_D0bar', 'Bp_VTXISODCHI2ONETRACK_D0bar', 'Bp_VTXISODCHI2MASSONETRACK_D0bar', 'Bp_VTXISODCHI2TWOTRACK_D0bar', 'Bp_VTXISODCHI2MASSTWOTRACK_D0bar', 
                         'Bp_VTXISONUMVTX_Dsp', 'Bp_VTXISODCHI2ONETRACK_Dsp', 'Bp_VTXISODCHI2MASSONETRACK_Dsp', 'Bp_VTXISODCHI2TWOTRACK_Dsp', 'Bp_VTXISODCHI2MASSTWOTRACK_Dsp',
                         'Bp_CC_05_DELTAPHI_B', 'Bp_NC_05_IT_B', 'Bp_CC_05_PTASYM_B', 'Bp_CC_05_PX_B', 'Bp_CC_05_PZASYM_B', 'Bp_CC_05_DELTAETA_B', 'Bp_NC_05_MULT_B', 'Bp_NC_05_VPT_B', 'Bp_NC_05_PTASYM_B', 'Bp_CCNC_05_IT_B', 'Bp_CC_05_MULT_B',
-                        'Bp_CC_05_PASYM_D0bar', 'Bp_CC_05_DELTAETA_D0bar', 'Bp_NC_05_MULT_D0bar', 'Bp_NC_05_SPT_D0bar', 'Bp_CCNC_05_IT_D0bar', 'Bp_NC_05_PTASYM_D0bar', 'Bp_CC_05_PTASYM_D0bar', 'Bp_CC_05_IT_D0bar', 'Bp_TRKISOBDTSECONDVALUE_D0bar_K', 'Bp_TRKISOBDTSECONDVALUE_D0bar_pi',
-                        'Bp_CC_05_PASYM_Dsp', 'Bp_CC_05_DELTAETA_Dsp', 'Bp_NC_05_MULT_Dsp', 'Bp_NC_05_SPT_Dsp', 'Bp_CCNC_05_IT_Dsp', 'Bp_NC_05_PTASYM_Dsp', 'Bp_CC_05_PTASYM_Dsp', 'Bp_CC_05_IT_Dsp', 'Bp_TRKISOBDTSECONDVALUE_Dsp_K1', 'Bp_TRKISOBDTSECONDVALUE_Dsp_K2', 'Bp_TRKISOBDTSECONDVALUE_Dsp_pi',
+                        'Bp_CC_05_PASYM_D0bar', 'Bp_CC_05_DELTAETA_D0bar', 'Bp_NC_05_MULT_D0bar', 'Bp_NC_05_SPT_D0bar', 'Bp_CCNC_05_IT_D0bar', 'Bp_NC_05_PTASYM_D0bar', 'Bp_CC_05_PTASYM_D0bar', 'Bp_CC_05_IT_D0bar', 'Bp_TRKISOBDTSECONDVALUE_D0bar_K', 'Bp_TRKISOBDTSECONDVALUE_D0bar_pi', 'Bp_TRKISOBDTFIRSTVALUE_D0bar_K', 'Bp_TRKISOBDTFIRSTVALUE_D0bar_pi', 'Bp_TRKISOBDTTHIRDVALUE_D0bar_K', 'Bp_TRKISOBDTTHIRDVALUE_D0bar_pi',
+                        'Bp_CC_05_PASYM_Dsp', 'Bp_CC_05_DELTAETA_Dsp', 'Bp_NC_05_MULT_Dsp', 'Bp_NC_05_SPT_Dsp', 'Bp_CCNC_05_IT_Dsp', 'Bp_NC_05_PTASYM_Dsp', 'Bp_CC_05_PTASYM_Dsp', 'Bp_CC_05_IT_Dsp', 'Bp_TRKISOBDTSECONDVALUE_Dsp_K1', 'Bp_TRKISOBDTSECONDVALUE_Dsp_K2', 'Bp_TRKISOBDTSECONDVALUE_Dsp_pi', 'Bp_TRKISOBDTFIRSTVALUE_Dsp_K1', 'Bp_TRKISOBDTFIRSTVALUE_Dsp_K2', 'Bp_TRKISOBDTFIRSTVALUE_Dsp_pi', 'Bp_TRKISOBDTTHIRDVALUE_Dsp_K1', 'Bp_TRKISOBDTTHIRDVALUE_Dsp_K2', 'Bp_TRKISOBDTTHIRDVALUE_Dsp_pi',
                         'Bp_Bstautau_ISOBDTFIRSTVALUE_taup', 'Bp_Bstautau_ISOBDTSECONDVALUE_taup', 'Bp_Bstautau_ISOBDTTHIRDVALUE_taup', 'Bp_Bstautau_ISOBDTFIRSTVALUE_taum', 
                         'Bp_Bstautau_ISOBDTSECONDVALUE_taum', 'Bp_Bstautau_ISOBDTTHIRDVALUE_taum'] 
 
@@ -400,68 +400,85 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
         if(species_name == "Ktautau"):
             # SIGNAL
             signal['VTXISODCHI2ONETRACK_tau_min'] = np.minimum( sig['Bp_VTXISODCHI2ONETRACK_taup'], sig['Bp_VTXISODCHI2ONETRACK_taum'] )
-            signal['TRKISOBDTSECONDVALUE_tau_pi_min_min'] = np.minimum( np.minimum( sig['Bp_TRKISOBDTSECONDVALUE_taup_pi1'], sig['Bp_TRKISOBDTSECONDVALUE_taup_pi2'], sig['Bp_TRKISOBDTSECONDVALUE_taup_pi3'] ), np.minimum( sig['Bp_TRKISOBDTSECONDVALUE_taum_pi1'], sig['Bp_TRKISOBDTSECONDVALUE_taum_pi2'], sig['Bp_TRKISOBDTSECONDVALUE_taum_pi3'] ) )
             signal['VTXISODCHI2TWOTRACK_tau_max'] = np.maximum( sig['Bp_VTXISODCHI2TWOTRACK_taup'], sig['Bp_VTXISODCHI2TWOTRACK_taum'] ) 
-            signal['tau_iso_first_value_max'] = np.maximum( sig['Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taum'] ) 
-            signal['tau_iso_second_value_max'] = np.maximum( sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] ) 
-            signal['tau_iso_third_value_max'] = np.maximum( sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] )
+            signal['VTXISODCHI2ONETRACK_B'] = sig['Bp_VTXISODCHI2ONETRACK_B']
+            signal['CC_05_IT_B'] = sig['Bp_CC_05_IT_B'] 
+            signal['TRKISOBDTFIRSTVALUE_tau_pi_min_min'] = np.minimum( np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] ), np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi1'], sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi2'], sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi3'] ) )
+            signal['TRKISOBDTTHIRDVALUE_tau_pi_min_min'] = np.minimum( np.minimum( sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi1'], sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi2'], sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi3'] ), np.minimum( sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi1'], sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi2'], sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi3'] ) )
+            signal['TRKISOBDTFIRSTVALUE_tau_pi_max_min'] = np.maximum( np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] ), np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi1'], sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi2'], sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi3'] ) )
+            signal['TRKISOBDTSECONDVALUE_tau_pi_max_min'] = np.maximum( np.minimum( sig['Bp_TRKISOBDTSECONDVALUE_taup_pi1'], sig['Bp_TRKISOBDTSECONDVALUE_taup_pi2'], sig['Bp_TRKISOBDTSECONDVALUE_taup_pi3'] ), np.minimum( sig['Bp_TRKISOBDTSECONDVALUE_taum_pi1'], sig['Bp_TRKISOBDTSECONDVALUE_taum_pi2'], sig['Bp_TRKISOBDTSECONDVALUE_taum_pi3'] ) )
 
-            # signal['VTXISODCHI2ONETRACK_B'] = sig['Bp_VTXISODCHI2ONETRACK_B']
+            # signal['tau_iso_first_value_max'] = np.maximum( sig['Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taum'] ) 
+            # signal['tau_iso_second_value_max'] = np.maximum( sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] ) 
+            # signal['tau_iso_third_value_max'] = np.maximum( sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] )
+
             # signal['TRKISOBDTFIRSTVALUE_tau_pi_max_max'] = np.maximum( np.maximum( sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] ), np.maximum( sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi1'], sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi2'], sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi3'] ) )
-            # signal['TRKISOBDTFIRSTVALUE_tau_pi_max_min'] = np.maximum( np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] ), np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi1'], sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi2'], sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi3'] ) )
             # signal['TRKISOBDTFIRSTVALUE_tau_pi_min_max'] = np.minimum( np.maximum( sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] ), np.maximum( sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi1'], sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi2'], sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi3'] ) )
             # signal['TRKISOBDTFIRSTVALUE_tau_pi_min_min'] = np.minimum( np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] ), np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi1'], sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi2'], sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi3'] ) )
             # signal['TRKISOBDTSECONDVALUE_tau_pi_max_max'] = np.maximum( np.maximum( sig['Bp_TRKISOBDTSECONDVALUE_taup_pi1'], sig['Bp_TRKISOBDTSECONDVALUE_taup_pi2'], sig['Bp_TRKISOBDTSECONDVALUE_taup_pi3'] ), np.maximum( sig['Bp_TRKISOBDTSECONDVALUE_taum_pi1'], sig['Bp_TRKISOBDTSECONDVALUE_taum_pi2'], sig['Bp_TRKISOBDTSECONDVALUE_taum_pi3'] ) )
-            # signal['TRKISOBDTSECONDVALUE_tau_pi_max_min'] = np.maximum( np.minimum( sig['Bp_TRKISOBDTSECONDVALUE_taup_pi1'], sig['Bp_TRKISOBDTSECONDVALUE_taup_pi2'], sig['Bp_TRKISOBDTSECONDVALUE_taup_pi3'] ), np.minimum( sig['Bp_TRKISOBDTSECONDVALUE_taum_pi1'], sig['Bp_TRKISOBDTSECONDVALUE_taum_pi2'], sig['Bp_TRKISOBDTSECONDVALUE_taum_pi3'] ) )
             # signal['TRKISOBDTSECONDVALUE_tau_pi_min_max'] = np.minimum( np.maximum( sig['Bp_TRKISOBDTSECONDVALUE_taup_pi1'], sig['Bp_TRKISOBDTSECONDVALUE_taup_pi2'], sig['Bp_TRKISOBDTSECONDVALUE_taup_pi3'] ), np.maximum( sig['Bp_TRKISOBDTSECONDVALUE_taum_pi1'], sig['Bp_TRKISOBDTSECONDVALUE_taum_pi2'], sig['Bp_TRKISOBDTSECONDVALUE_taum_pi3'] ) )
             # signal['TRKISOBDTTHIRDVALUE_tau_pi_max_max'] = np.maximum( np.maximum( sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi1'], sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi2'], sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi3'] ), np.maximum( sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi1'], sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi2'], sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi3'] ) )
             # signal['TRKISOBDTTHIRDVALUE_tau_pi_max_min'] = np.maximum( np.minimum( sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi1'], sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi2'], sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi3'] ), np.minimum( sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi1'], sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi2'], sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi3'] ) )
             # signal['TRKISOBDTTHIRDVALUE_tau_pi_min_max'] = np.minimum( np.maximum( sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi1'], sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi2'], sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi3'] ), np.maximum( sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi1'], sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi2'], sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi3'] ) )
             # signal['TRKISOBDTTHIRDVALUE_tau_pi_min_min'] = np.minimum( np.minimum( sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi1'], sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi2'], sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi3'] ), np.minimum( sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi1'], sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi2'], sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi3'] ) )
             # signal['VTXISONUMVTX_tau_max'] = np.maximum( sig['Bp_VTXISONUMVTX_taup'], sig['Bp_VTXISONUMVTX_taum'] )
-            # signal['CC_05_DELTAETA_tau_min'] = np.minimum( sig['Bp_CC_05_DELTAETA_taup'], sig['Bp_CC_05_DELTAETA_taum'] )
+            # signal['TRKISOBDTSECONDVALUE_tau_pi_min_min'] = np.minimum( np.minimum( sig['Bp_TRKISOBDTSECONDVALUE_taup_pi1'], sig['Bp_TRKISOBDTSECONDVALUE_taup_pi2'], sig['Bp_TRKISOBDTSECONDVALUE_taup_pi3'] ), np.minimum( sig['Bp_TRKISOBDTSECONDVALUE_taum_pi1'], sig['Bp_TRKISOBDTSECONDVALUE_taum_pi2'], sig['Bp_TRKISOBDTSECONDVALUE_taum_pi3'] ) )
             # signal['CC_05_IT_tau_min'] = np.minimum( sig['Bp_CC_05_IT_taup'], sig['Bp_CC_05_IT_taum'] )
 
             # BACKGROUND
             background['VTXISODCHI2ONETRACK_tau_min'] = np.minimum( bkg['Bp_VTXISODCHI2ONETRACK_taup'], bkg['Bp_VTXISODCHI2ONETRACK_taum'] )
-            background['TRKISOBDTSECONDVALUE_tau_pi_min_min'] = np.minimum( np.minimum( bkg['Bp_TRKISOBDTSECONDVALUE_taup_pi1'], bkg['Bp_TRKISOBDTSECONDVALUE_taup_pi2'], bkg['Bp_TRKISOBDTSECONDVALUE_taup_pi3'] ), np.minimum( bkg['Bp_TRKISOBDTSECONDVALUE_taum_pi1'], bkg['Bp_TRKISOBDTSECONDVALUE_taum_pi2'], bkg['Bp_TRKISOBDTSECONDVALUE_taum_pi3'] ) )
             background['VTXISODCHI2TWOTRACK_tau_max'] = np.maximum( bkg['Bp_VTXISODCHI2TWOTRACK_taup'], bkg['Bp_VTXISODCHI2TWOTRACK_taum'] ) 
-            background['tau_iso_first_value_max'] = np.maximum( bkg['Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taum'] ) 
-            background['tau_iso_second_value_max'] = np.maximum( bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] ) 
-            background['tau_iso_third_value_max'] = np.maximum( bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] )
+            background['VTXISODCHI2ONETRACK_B'] = bkg['Bp_VTXISODCHI2ONETRACK_B']
+            background['CC_05_IT_B'] = bkg['Bp_CC_05_IT_B'] 
+            background['TRKISOBDTFIRSTVALUE_tau_pi_min_min'] = np.minimum( np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] ), np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi1'], bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi2'], bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi3'] ) )
+            background['TRKISOBDTTHIRDVALUE_tau_pi_min_min'] = np.minimum( np.minimum( bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi1'], bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi2'], bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi3'] ), np.minimum( bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi1'], bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi2'], bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi3'] ) )
+            background['TRKISOBDTFIRSTVALUE_tau_pi_max_min'] = np.maximum( np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] ), np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi1'], bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi2'], bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi3'] ) )
+            background['TRKISOBDTSECONDVALUE_tau_pi_max_min'] = np.maximum( np.minimum( bkg['Bp_TRKISOBDTSECONDVALUE_taup_pi1'], bkg['Bp_TRKISOBDTSECONDVALUE_taup_pi2'], bkg['Bp_TRKISOBDTSECONDVALUE_taup_pi3'] ), np.minimum( bkg['Bp_TRKISOBDTSECONDVALUE_taum_pi1'], bkg['Bp_TRKISOBDTSECONDVALUE_taum_pi2'], bkg['Bp_TRKISOBDTSECONDVALUE_taum_pi3'] ) )
+
+            # background['tau_iso_first_value_max'] = np.maximum( bkg['Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taum'] ) 
+            # background['tau_iso_second_value_max'] = np.maximum( bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] ) 
+            # background['tau_iso_third_value_max'] = np.maximum( bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] )
 
             # background['TRKISOBDTFIRSTVALUE_tau_pi_max_max'] = np.maximum( np.maximum( bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] ), np.maximum( bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi1'], bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi2'], bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi3'] ) )
-            # background['TRKISOBDTFIRSTVALUE_tau_pi_max_min'] = np.maximum( np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] ), np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi1'], bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi2'], bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi3'] ) )
             # background['TRKISOBDTFIRSTVALUE_tau_pi_min_max'] = np.minimum( np.maximum( bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] ), np.maximum( bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi1'], bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi2'], bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi3'] ) )
             # background['TRKISOBDTFIRSTVALUE_tau_pi_min_min'] = np.minimum( np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] ), np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi1'], bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi2'], bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi3'] ) )
             # background['TRKISOBDTSECONDVALUE_tau_pi_max_max'] = np.maximum( np.maximum( bkg['Bp_TRKISOBDTSECONDVALUE_taup_pi1'], bkg['Bp_TRKISOBDTSECONDVALUE_taup_pi2'], bkg['Bp_TRKISOBDTSECONDVALUE_taup_pi3'] ), np.maximum( bkg['Bp_TRKISOBDTSECONDVALUE_taum_pi1'], bkg['Bp_TRKISOBDTSECONDVALUE_taum_pi2'], bkg['Bp_TRKISOBDTSECONDVALUE_taum_pi3'] ) )
-            # background['TRKISOBDTSECONDVALUE_tau_pi_max_min'] = np.maximum( np.minimum( bkg['Bp_TRKISOBDTSECONDVALUE_taup_pi1'], bkg['Bp_TRKISOBDTSECONDVALUE_taup_pi2'], bkg['Bp_TRKISOBDTSECONDVALUE_taup_pi3'] ), np.minimum( bkg['Bp_TRKISOBDTSECONDVALUE_taum_pi1'], bkg['Bp_TRKISOBDTSECONDVALUE_taum_pi2'], bkg['Bp_TRKISOBDTSECONDVALUE_taum_pi3'] ) )
             # background['TRKISOBDTSECONDVALUE_tau_pi_min_max'] = np.minimum( np.maximum( bkg['Bp_TRKISOBDTSECONDVALUE_taup_pi1'], bkg['Bp_TRKISOBDTSECONDVALUE_taup_pi2'], bkg['Bp_TRKISOBDTSECONDVALUE_taup_pi3'] ), np.maximum( bkg['Bp_TRKISOBDTSECONDVALUE_taum_pi1'], bkg['Bp_TRKISOBDTSECONDVALUE_taum_pi2'], bkg['Bp_TRKISOBDTSECONDVALUE_taum_pi3'] ) )
-            # background['VTXISODCHI2ONETRACK_B'] = bkg['Bp_VTXISODCHI2ONETRACK_B']
             # background['TRKISOBDTTHIRDVALUE_tau_pi_max_max'] = np.maximum( np.maximum( bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi1'], bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi2'], bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi3'] ), np.maximum( bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi1'], bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi2'], bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi3'] ) )
             # background['TRKISOBDTTHIRDVALUE_tau_pi_max_min'] = np.maximum( np.minimum( bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi1'], bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi2'], bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi3'] ), np.minimum( bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi1'], bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi2'], bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi3'] ) )
             # background['TRKISOBDTTHIRDVALUE_tau_pi_min_max'] = np.minimum( np.maximum( bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi1'], bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi2'], bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi3'] ), np.maximum( bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi1'], bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi2'], bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi3'] ) )
             # background['TRKISOBDTTHIRDVALUE_tau_pi_min_min'] = np.minimum( np.minimum( bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi1'], bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi2'], bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi3'] ), np.minimum( bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi1'], bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi2'], bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi3'] ) )
-            # background['VTXISONUMVTX_tau_max'] = np.maximum( bkg['Bp_VTXISONUMVTX_taup'], bkg['Bp_VTXISONUMVTX_taum'] )
-            # background['CC_05_DELTAETA_tau_min'] = np.minimum( bkg['Bp_CC_05_DELTAETA_taup'], bkg['Bp_CC_05_DELTAETA_taum'] )
+            # background['TRKISOBDTSECONDVALUE_tau_pi_min_min'] = np.minimum( np.minimum( bkg['Bp_TRKISOBDTSECONDVALUE_taup_pi1'], bkg['Bp_TRKISOBDTSECONDVALUE_taup_pi2'], bkg['Bp_TRKISOBDTSECONDVALUE_taup_pi3'] ), np.minimum( bkg['Bp_TRKISOBDTSECONDVALUE_taum_pi1'], bkg['Bp_TRKISOBDTSECONDVALUE_taum_pi2'], bkg['Bp_TRKISOBDTSECONDVALUE_taum_pi3'] ) )
             # background['CC_05_IT_tau_min'] = np.minimum( bkg['Bp_CC_05_IT_taup'], bkg['Bp_CC_05_IT_taum'] )
 
         else:
             # SIGNAL
             signal['VTXISODCHI2ONETRACK_D_min'] = np.minimum( sig['Bp_VTXISODCHI2ONETRACK_D0bar'], sig['Bp_VTXISODCHI2ONETRACK_Dsp'] )
-            signal['TRKISOBDTSECONDVALUE_D_pi_min_min'] = np.minimum( np.minimum( sig['Bp_TRKISOBDTSECONDVALUE_D0bar_K'], sig['Bp_TRKISOBDTSECONDVALUE_D0bar_pi'] ), np.minimum( sig['Bp_TRKISOBDTSECONDVALUE_Dsp_K1'], sig['Bp_TRKISOBDTSECONDVALUE_Dsp_K2'], sig['Bp_TRKISOBDTSECONDVALUE_Dsp_pi'] ) )
             signal['VTXISODCHI2TWOTRACK_D_max'] = np.maximum( sig['Bp_VTXISODCHI2TWOTRACK_D0bar'], sig['Bp_VTXISODCHI2TWOTRACK_Dsp'] ) 
-            signal['D_iso_first_value_max'] = np.maximum( sig['Bp_Bstautau_ISOBDTFIRSTVALUE_taup'], sig['Bp_Bstautau_ISOBDTFIRSTVALUE_taum'] ) 
-            signal['D_iso_second_value_max'] = np.maximum( sig['Bp_Bstautau_ISOBDTSECONDVALUE_taup'], sig['Bp_Bstautau_ISOBDTSECONDVALUE_taum'] ) 
-            signal['D_iso_third_value_max'] = np.maximum( sig['Bp_Bstautau_ISOBDTTHIRDVALUE_taup'], sig['Bp_Bstautau_ISOBDTTHIRDVALUE_taum'] )
+            signal['VTXISODCHI2ONETRACK_B'] = sig['Bp_VTXISODCHI2ONETRACK_B']
+            signal['CC_05_IT_B'] = sig['Bp_CC_05_IT_B'] 
+            signal['TRKISOBDTFIRSTVALUE_D_pi_min_min'] = np.minimum( np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_D0bar_K'], sig['Bp_TRKISOBDTFIRSTVALUE_D0bar_pi'] ), np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_Dsp_K1'], sig['Bp_TRKISOBDTFIRSTVALUE_Dsp_K2'], sig['Bp_TRKISOBDTFIRSTVALUE_Dsp_pi'] ) )
+            signal['TRKISOBDTTHIRDVALUE_D_pi_min_min'] = np.minimum( np.minimum( sig['Bp_TRKISOBDTTHIRDVALUE_D0bar_K'], sig['Bp_TRKISOBDTTHIRDVALUE_D0bar_pi'] ), np.minimum( sig['Bp_TRKISOBDTTHIRDVALUE_Dsp_K1'], sig['Bp_TRKISOBDTTHIRDVALUE_Dsp_K2'], sig['Bp_TRKISOBDTTHIRDVALUE_Dsp_pi'] ) )
+            signal['TRKISOBDTFIRSTVALUE_D_pi_max_min'] = np.maximum( np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_D0bar_K'], sig['Bp_TRKISOBDTFIRSTVALUE_D0bar_pi'] ), np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_Dsp_K1'], sig['Bp_TRKISOBDTFIRSTVALUE_Dsp_K2'], sig['Bp_TRKISOBDTFIRSTVALUE_Dsp_pi'] ) )
+            signal['TRKISOBDTSECONDVALUE_D_pi_max_min'] = np.maximum( np.minimum( sig['Bp_TRKISOBDTSECONDVALUE_D0bar_K'], sig['Bp_TRKISOBDTSECONDVALUE_D0bar_pi'] ), np.minimum( sig['Bp_TRKISOBDTSECONDVALUE_Dsp_K1'], sig['Bp_TRKISOBDTSECONDVALUE_Dsp_K2'], sig['Bp_TRKISOBDTSECONDVALUE_Dsp_pi'] ) )
+
+            # signal['D_iso_first_value_max'] = np.maximum( sig['Bp_Bstautau_ISOBDTFIRSTVALUE_taup'], sig['Bp_Bstautau_ISOBDTFIRSTVALUE_taum'] ) 
+            # signal['D_iso_second_value_max'] = np.maximum( sig['Bp_Bstautau_ISOBDTSECONDVALUE_taup'], sig['Bp_Bstautau_ISOBDTSECONDVALUE_taum'] ) 
+            # signal['D_iso_third_value_max'] = np.maximum( sig['Bp_Bstautau_ISOBDTTHIRDVALUE_taup'], sig['Bp_Bstautau_ISOBDTTHIRDVALUE_taum'] )
 
             # BACKGROUND
             background['VTXISODCHI2ONETRACK_D_min'] = np.minimum( bkg['Bp_VTXISODCHI2ONETRACK_D0bar'], bkg['Bp_VTXISODCHI2ONETRACK_Dsp'] )
-            background['TRKISOBDTSECONDVALUE_D_pi_min_min'] = np.minimum( np.minimum( bkg['Bp_TRKISOBDTSECONDVALUE_D0bar_K'], bkg['Bp_TRKISOBDTSECONDVALUE_D0bar_pi'] ), np.minimum( bkg['Bp_TRKISOBDTSECONDVALUE_Dsp_K1'], bkg['Bp_TRKISOBDTSECONDVALUE_Dsp_K2'], bkg['Bp_TRKISOBDTSECONDVALUE_Dsp_pi'] ) )
             background['VTXISODCHI2TWOTRACK_D_max'] = np.maximum( bkg['Bp_VTXISODCHI2TWOTRACK_D0bar'], bkg['Bp_VTXISODCHI2TWOTRACK_Dsp'] ) 
-            background['D_iso_first_value_max'] = np.maximum( bkg['Bp_Bstautau_ISOBDTFIRSTVALUE_taup'], bkg['Bp_Bstautau_ISOBDTFIRSTVALUE_taum'] ) 
-            background['D_iso_second_value_max'] = np.maximum( bkg['Bp_Bstautau_ISOBDTSECONDVALUE_taup'], bkg['Bp_Bstautau_ISOBDTSECONDVALUE_taum'] ) 
-            background['D_iso_third_value_max'] = np.maximum( bkg['Bp_Bstautau_ISOBDTTHIRDVALUE_taup'], bkg['Bp_Bstautau_ISOBDTTHIRDVALUE_taum'] )
+            background['VTXISODCHI2ONETRACK_B'] = bkg['Bp_VTXISODCHI2ONETRACK_B']
+            background['CC_05_IT_B'] = bkg['Bp_CC_05_IT_B'] 
+            background['TRKISOBDTFIRSTVALUE_D_pi_min_min'] = np.minimum( np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_D0bar_K'], bkg['Bp_TRKISOBDTFIRSTVALUE_D0bar_pi'] ), np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_Dsp_K1'], bkg['Bp_TRKISOBDTFIRSTVALUE_Dsp_K2'], bkg['Bp_TRKISOBDTFIRSTVALUE_Dsp_pi'] ) )
+            background['TRKISOBDTTHIRDVALUE_D_pi_min_min'] = np.minimum( np.minimum( bkg['Bp_TRKISOBDTTHIRDVALUE_D0bar_K'], bkg['Bp_TRKISOBDTTHIRDVALUE_D0bar_pi'] ), np.minimum( bkg['Bp_TRKISOBDTTHIRDVALUE_Dsp_K1'], bkg['Bp_TRKISOBDTTHIRDVALUE_Dsp_K2'], bkg['Bp_TRKISOBDTTHIRDVALUE_Dsp_pi'] ) )
+            background['TRKISOBDTFIRSTVALUE_D_pi_max_min'] = np.maximum( np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_D0bar_K'], bkg['Bp_TRKISOBDTFIRSTVALUE_D0bar_pi'] ), np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_Dsp_K1'], bkg['Bp_TRKISOBDTFIRSTVALUE_Dsp_K2'], bkg['Bp_TRKISOBDTFIRSTVALUE_Dsp_pi'] ) )
+            background['TRKISOBDTSECONDVALUE_D_pi_max_min'] = np.maximum( np.minimum( bkg['Bp_TRKISOBDTSECONDVALUE_D0bar_K'], bkg['Bp_TRKISOBDTSECONDVALUE_D0bar_pi'] ), np.minimum( bkg['Bp_TRKISOBDTSECONDVALUE_Dsp_K1'], bkg['Bp_TRKISOBDTSECONDVALUE_Dsp_K2'], bkg['Bp_TRKISOBDTSECONDVALUE_Dsp_pi'] ) )
+            
+            # background['D_iso_first_value_max'] = np.maximum( bkg['Bp_Bstautau_ISOBDTFIRSTVALUE_taup'], bkg['Bp_Bstautau_ISOBDTFIRSTVALUE_taum'] ) 
+            # background['D_iso_second_value_max'] = np.maximum( bkg['Bp_Bstautau_ISOBDTSECONDVALUE_taup'], bkg['Bp_Bstautau_ISOBDTSECONDVALUE_taum'] ) 
+            # background['D_iso_third_value_max'] = np.maximum( bkg['Bp_Bstautau_ISOBDTTHIRDVALUE_taup'], bkg['Bp_Bstautau_ISOBDTTHIRDVALUE_taum'] )
 
         input_features = signal.columns.tolist()
 
@@ -656,15 +673,12 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
         classifiers = [ # AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.05, n_estimators=800, random_state=42),
                         # GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=800, random_state=42), 
                         # RandomForestClassifier(class_weight='balanced', max_depth=9, n_estimators=800, random_state=42),
-                        xgb.XGBClassifier(tree_method="hist", early_stopping_rounds=2, n_estimators=100, max_depth=6, learning_rate=0.1, random_state=42, importance_type='weight') ] # hist is the fastest tree method
+                        xgb.XGBClassifier(tree_method="hist", early_stopping_rounds=2, n_estimators=80, max_depth=4, learning_rate=0.1, random_state=42, importance_type='weight') ] # hist is the fastest tree method
     elif(step_name == "topology"):
         classifiers = [ # AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.1, n_estimators=800, random_state=42),
                         # GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=500, random_state=42),
                         # RandomForestClassifier(class_weight='balanced', max_depth=9, n_estimators=800, random_state=42),
                         xgb.XGBClassifier(tree_method="hist", early_stopping_rounds=2, n_estimators=100, max_depth=6, learning_rate=0.1, random_state=42, importance_type='weight') ] # hist is the fastest tree method
-    else:
-        print("Wrong step name. Try isolation or topology")
-        quit()
 
     for i in range(len(names)):
         name = names[i]
@@ -731,6 +745,10 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
     # else:
     #     decisions = classifiers[idx].decision_function(X)
 
+    # if(names[i] == "XGBoost"):
+    #     classifiers[i].save_model('/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/clf_{1}.json'.format(species_name,step_name))
+    # else:
+
     with open('/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/clf_{1}.pkl'.format(species_name,step_name), 'wb') as f:
         for i in range(len(classifiers)):
             pickle.dump(classifiers[i], f)
@@ -750,7 +768,7 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
                 out_tree_sig.Branch('BDT2', bdt_var_sig, "BDT2/D")
 
             X_test_sig = X_test[y_test>0.5]
-            decisions_sig = classifiers[i].predict_proba(np.array(X_test_sig))[:, 1] 
+            decisions_sig = classifiers[i].predict_proba(X_test_sig)[:, 1] 
 
             for j in range(len(decisions_sig)):
                 bdt_var_sig[0] = decisions_sig[j]
@@ -772,7 +790,7 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
                 out_tree_bkg.Branch('BDT2', bdt_var_bkg, "BDT2/D")
 
             X_test_bkg = X_test[y_test<0.5]
-            decisions_bkg = classifiers[i].predict_proba(np.array(X_test_bkg))[:, 1] 
+            decisions_bkg = classifiers[i].predict_proba(X_test_bkg)[:, 1] 
 
             for k in range(len(decisions_bkg)):
                 bdt_var_bkg[0] = decisions_bkg[k]
@@ -781,6 +799,19 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
             out_file_bkg.cd(names[i])    
             out_tree_bkg.Write()
             out_file_bkg.Close()
+
+    # with open('/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/clf_isolation.pkl', 'rb') as f:
+    #     while True:
+    #         try:
+    #             clf_saved = pickle.load(f)
+    #         except EOFError:
+    #             break
+
+    # decisions_sig_saved = clf_saved.predict_proba(np.array(X_test_sig))[:, 1] 
+
+    # print(decisions_sig)
+    # print(decisions_sig_saved)
+
 
 def main(argv):
 
@@ -835,6 +866,7 @@ def main(argv):
 
         t_sig_2016.AddFriend(t_sig1_2016)
 
+        # if(step_name == "topology"):
         # Background proxy: WS data (fit region) (100 files of 2016, 2017 and 2018
         fc_bkg_2016 = ROOT.TFileCollection("fc_bkg_2016", "fc_bkg_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_3/pre_sel_tree.txt", 100) 
         fc_bkg_2017 = ROOT.TFileCollection("fc_bkg_2017", "fc_bkg_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_3/pre_sel_tree.txt", 100) 
@@ -874,6 +906,49 @@ def main(argv):
 
         t_bkg_2016.AddFriend(t_bkg1_2016)
 
+        # elif(step_name == "isolation"):
+        #     # Isolation MVA: background proxy: RS data (left sideband) (250 files of 2016, 2017 and 2018
+        #     fc_bkg_2016 = ROOT.TFileCollection("fc_bkg_2016", "fc_bkg_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_2/pre_sel_tree.txt", 250) 
+        #     fc_bkg_2017 = ROOT.TFileCollection("fc_bkg_2017", "fc_bkg_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_2/pre_sel_tree.txt", 250) 
+        #     fc_bkg_2018 = ROOT.TFileCollection("fc_bkg_2018", "fc_bkg_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_2/pre_sel_tree.txt", 250) 
+            
+        #     fc_bkg1_2016 = ROOT.TFileCollection("fc_bkg1_2016", "fc_bkg1_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_2/fit_results.txt", 250) 
+        #     fc_bkg1_2017 = ROOT.TFileCollection("fc_bkg1_2017", "fc_bkg1_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_2/fit_results.txt", 250) 
+        #     fc_bkg1_2018 = ROOT.TFileCollection("fc_bkg1_2018", "fc_bkg1_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_2/fit_results.txt", 250) 
+
+        #     t_bkg_2016 = ROOT.TChain("DecayTree")
+        #     t_bkg_2017 = ROOT.TChain("DecayTree")
+        #     t_bkg_2018 = ROOT.TChain("DecayTree")
+
+        #     t_bkg1_2016 = ROOT.TChain("DecayTree")
+        #     t_bkg1_2017 = ROOT.TChain("DecayTree")
+        #     t_bkg1_2018 = ROOT.TChain("DecayTree")
+
+        #     t_bkg_2016.AddFileInfoList(fc_bkg_2016.GetList())
+        #     t_bkg_2017.AddFileInfoList(fc_bkg_2017.GetList())
+        #     t_bkg_2018.AddFileInfoList(fc_bkg_2018.GetList())
+
+        #     t_bkg1_2016.AddFileInfoList(fc_bkg1_2016.GetList())
+        #     t_bkg1_2017.AddFileInfoList(fc_bkg1_2017.GetList())
+        #     t_bkg1_2018.AddFileInfoList(fc_bkg1_2018.GetList())
+
+        #     t_bkg_2016.GetEntries()
+        #     t_bkg_2017.GetEntries()
+        #     t_bkg_2018.GetEntries()
+        #     t_bkg_2016.Add(t_bkg_2017)
+        #     t_bkg_2016.Add(t_bkg_2018)
+
+        #     t_bkg1_2016.GetEntries()
+        #     t_bkg1_2017.GetEntries()
+        #     t_bkg1_2018.GetEntries()
+        #     t_bkg1_2016.Add(t_bkg1_2017)
+        #     t_bkg1_2016.Add(t_bkg1_2018)
+
+        #     t_bkg_2016.AddFriend(t_bkg1_2016)
+        # else:   
+        #     print("Wrong step name. Try isolation or topology.")
+        #     quit()
+
         # Convert TChain in RDataframe
         sig_df = ROOT.RDataFrame(t_sig_2016)
         bkg_df = ROOT.RDataFrame(t_bkg_2016)
@@ -886,6 +961,12 @@ def main(argv):
         # mass in the fit region (4-8 GeV)
         sig_df = sig_df.Filter('(df_Bp_M > 4000) && (df_Bp_M < 8000)')
         bkg_df = bkg_df.Filter('(df_Bp_M > 4000) && (df_Bp_M < 8000)')
+
+        # if(step_name == "topology"):
+        #     bkg_df = bkg_df.Filter('(df_Bp_M > 4000) && (df_Bp_M < 8000)')
+        # elif(step_name == "isolation"):
+        #     bkg_df = bkg_df.Filter('(df_Bp_M > 5800) && (df_Bp_M < 8000)')
+
     elif(species_name == "DDs"):
         # Prepare datasets
         # Signal proxy: MC without rectangular cuts (fit region) (2016+2017+2018)
