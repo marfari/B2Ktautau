@@ -1,131 +1,106 @@
-std::vector<Double_t> B_Bp_Ktautau(Double_t BDT1, Double_t BDT2, TString the_case, TTree* t_3pi3pi_2016, TTree* t_all_mc_2016, TTree* t_ws_data_2016);
+std::vector<Double_t> B_Bp_Ktautau(Double_t BDT1, Double_t BDT2, TString the_case, TTree* t_3pi3pipi0_2016, TTree* t_3pi3pi2pi0_2016, TTree* t_sig_iso, TTree* t_sig_kin, TTree* t_bkg_iso, TTree* t_bkg_kin);
+
 vector<double> range(double min, double max, size_t N);
 
 void rough_sensitivity_estimate_2D(TString the_case)
 {
     ///////////////////////////////////////////////////////////////// Input files /////////////////////////////////////////////////////////////////////////////////////////////////////
     // 3pi3pi MC
-    TFileCollection *fc_3pi3pi_2016 = new TFileCollection("fc_3pi3pi_2016", "fc_3pi3pi_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_10/fit_results.txt");
-    TFileCollection *fc_3pi3pi_2017 = new TFileCollection("fc_3pi3pi_2017", "fc_3pi3pi_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_10/fit_results.txt");
-    TFileCollection *fc_3pi3pi_2018 = new TFileCollection("fc_3pi3pi_2018", "fc_3pi3pi_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_10/fit_results.txt");
+    TFile* f_sig_iso = new TFile("/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/isolation_test_dataset_sig.root");
+    TFile* f_sig_kin = new TFile("/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/topology_test_dataset_sig.root");
 
-    TChain *t_3pi3pi_2016 = new TChain("DecayTree");
-    TChain *t_3pi3pi_2017 = new TChain("DecayTree");
-    TChain *t_3pi3pi_2018 = new TChain("DecayTree");
+    TTree* t_sig_iso = (TTree*)f_sig_iso->Get("XGBoost/DecayTree");
+    TTree* t_sig_kin = (TTree*)f_sig_kin->Get("XGBoost/DecayTree");
 
-    t_3pi3pi_2016->AddFileInfoList((TCollection*)fc_3pi3pi_2016->GetList());
-    t_3pi3pi_2017->AddFileInfoList((TCollection*)fc_3pi3pi_2017->GetList());
-    t_3pi3pi_2018->AddFileInfoList((TCollection*)fc_3pi3pi_2018->GetList());
+    // 3pi3pi pi0 MC
+    TFileCollection *fc_3pi3pipi0_2016 = new TFileCollection("fc_3pi3pipi0_2016", "fc_3pi3pipi0_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_11/fit_results.txt");
+    TFileCollection *fc_3pi3pipi0_2017 = new TFileCollection("fc_3pi3pipi0_2017", "fc_3pi3pipi0_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_11/fit_results.txt");
+    TFileCollection *fc_3pi3pipi0_2018 = new TFileCollection("fc_3pi3pipi0_2018", "fc_3pi3pipi0_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_11/fit_results.txt");
 
-    t_3pi3pi_2016->GetEntries();
-    t_3pi3pi_2017->GetEntries();
-    t_3pi3pi_2018->GetEntries();
+    TChain *t_3pi3pipi0_2016 = new TChain("DecayTree");
+    TChain *t_3pi3pipi0_2017 = new TChain("DecayTree");
+    TChain *t_3pi3pipi0_2018 = new TChain("DecayTree");
 
-    t_3pi3pi_2016->Add(t_3pi3pi_2017);
-    t_3pi3pi_2016->Add(t_3pi3pi_2018);
+    t_3pi3pipi0_2016->AddFileInfoList((TCollection*)fc_3pi3pipi0_2016->GetList());
+    t_3pi3pipi0_2017->AddFileInfoList((TCollection*)fc_3pi3pipi0_2017->GetList());
+    t_3pi3pipi0_2018->AddFileInfoList((TCollection*)fc_3pi3pipi0_2018->GetList());
 
-    TFileCollection *fc1_3pi3pi_2016 = new TFileCollection("fc1_3pi3pi_2016", "fc1_3pi3pi_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_10/bdt_output.txt");
-    TFileCollection *fc1_3pi3pi_2017 = new TFileCollection("fc1_3pi3pi_2017", "fc1_3pi3pi_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_10/bdt_output.txt");
-    TFileCollection *fc1_3pi3pi_2018 = new TFileCollection("fc1_3pi3pi_2018", "fc1_3pi3pi_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_10/bdt_output.txt");
+    t_3pi3pipi0_2016->GetEntries();
+    t_3pi3pipi0_2017->GetEntries();
+    t_3pi3pipi0_2018->GetEntries();
 
-    TChain *t1_3pi3pi_2016 = new TChain("XGBoost/DecayTree");
-    TChain *t1_3pi3pi_2017 = new TChain("XGBoost/DecayTree");
-    TChain *t1_3pi3pi_2018 = new TChain("XGBoost/DecayTree");
+    t_3pi3pipi0_2016->Add(t_3pi3pipi0_2017);
+    t_3pi3pipi0_2016->Add(t_3pi3pipi0_2018);
 
-    t1_3pi3pi_2016->AddFileInfoList((TCollection*)fc1_3pi3pi_2016->GetList());
-    t1_3pi3pi_2017->AddFileInfoList((TCollection*)fc1_3pi3pi_2017->GetList());
-    t1_3pi3pi_2018->AddFileInfoList((TCollection*)fc1_3pi3pi_2018->GetList());
+    TFileCollection *fc1_3pi3pipi0_2016 = new TFileCollection("fc1_3pi3pipi0_2016", "fc1_3pi3pipi0_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_11/bdt_output.txt");
+    TFileCollection *fc1_3pi3pipi0_2017 = new TFileCollection("fc1_3pi3pipi0_2017", "fc1_3pi3pipi0_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_11/bdt_output.txt");
+    TFileCollection *fc1_3pi3pipi0_2018 = new TFileCollection("fc1_3pi3pipi0_2018", "fc1_3pi3pipi0_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_11/bdt_output.txt");
 
-    t1_3pi3pi_2016->GetEntries();
-    t1_3pi3pi_2017->GetEntries();
-    t1_3pi3pi_2018->GetEntries();
+    TChain *t1_3pi3pipi0_2016 = new TChain("XGBoost/DecayTree");
+    TChain *t1_3pi3pipi0_2017 = new TChain("XGBoost/DecayTree");
+    TChain *t1_3pi3pipi0_2018 = new TChain("XGBoost/DecayTree");
 
-    t1_3pi3pi_2016->Add(t1_3pi3pi_2017);
-    t1_3pi3pi_2016->Add(t1_3pi3pi_2018);
+    t1_3pi3pipi0_2016->AddFileInfoList((TCollection*)fc1_3pi3pipi0_2016->GetList());
+    t1_3pi3pipi0_2017->AddFileInfoList((TCollection*)fc1_3pi3pipi0_2017->GetList());
+    t1_3pi3pipi0_2018->AddFileInfoList((TCollection*)fc1_3pi3pipi0_2018->GetList());
 
-    t_3pi3pi_2016->AddFriend(t1_3pi3pi_2016);
+    t1_3pi3pipi0_2016->GetEntries();
+    t1_3pi3pipi0_2017->GetEntries();
+    t1_3pi3pipi0_2018->GetEntries();
 
-    // All MC
-    TFileCollection *fc_all_mc_2016 = new TFileCollection("fc_all_mc_2016", "fc_all_mc_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_1/fit_results.txt");
-    TFileCollection *fc_all_mc_2017 = new TFileCollection("fc_all_mc_2017", "fc_all_mc_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_1/fit_results.txt");
-    TFileCollection *fc_all_mc_2018 = new TFileCollection("fc_all_mc_2018", "fc_all_mc_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_1/fit_results.txt");
+    t1_3pi3pipi0_2016->Add(t1_3pi3pipi0_2017);
+    t1_3pi3pipi0_2016->Add(t1_3pi3pipi0_2018);
 
-    TChain *t_all_mc_2016 = new TChain("DecayTree");
-    TChain *t_all_mc_2017 = new TChain("DecayTree");
-    TChain *t_all_mc_2018 = new TChain("DecayTree");
+    t_3pi3pipi0_2016->AddFriend(t1_3pi3pipi0_2016);
 
-    t_all_mc_2016->AddFileInfoList((TCollection*)fc_all_mc_2016->GetList());
-    t_all_mc_2017->AddFileInfoList((TCollection*)fc_all_mc_2017->GetList());
-    t_all_mc_2018->AddFileInfoList((TCollection*)fc_all_mc_2018->GetList());
+    // 3pi3pi 2pi0 MC
+    TFileCollection *fc_3pi3pi2pi0_2016 = new TFileCollection("fc_3pi3pi2pi0_2016", "fc_3pi3pi2pi0_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_12/fit_results.txt");
+    TFileCollection *fc_3pi3pi2pi0_2017 = new TFileCollection("fc_3pi3pi2pi0_2017", "fc_3pi3pi2pi0_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_12/fit_results.txt");
+    TFileCollection *fc_3pi3pi2pi0_2018 = new TFileCollection("fc_3pi3pi2pi0_2018", "fc_3pi3pi2pi0_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_12/fit_results.txt");
 
-    t_all_mc_2016->GetEntries();
-    t_all_mc_2017->GetEntries();
-    t_all_mc_2018->GetEntries();
+    TChain *t_3pi3pi2pi0_2016 = new TChain("DecayTree");
+    TChain *t_3pi3pi2pi0_2017 = new TChain("DecayTree");
+    TChain *t_3pi3pi2pi0_2018 = new TChain("DecayTree");
 
-    t_all_mc_2016->Add(t_all_mc_2017);
-    t_all_mc_2016->Add(t_all_mc_2018);
+    t_3pi3pi2pi0_2016->AddFileInfoList((TCollection*)fc_3pi3pi2pi0_2016->GetList());
+    t_3pi3pi2pi0_2017->AddFileInfoList((TCollection*)fc_3pi3pi2pi0_2017->GetList());
+    t_3pi3pi2pi0_2018->AddFileInfoList((TCollection*)fc_3pi3pi2pi0_2018->GetList());
 
-    TFileCollection *fc1_all_mc_2016 = new TFileCollection("fc1_all_mc_2016", "fc1_all_mc_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_1/bdt_output.txt");
-    TFileCollection *fc1_all_mc_2017 = new TFileCollection("fc1_all_mc_2017", "fc1_all_mc_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_1/bdt_output.txt");
-    TFileCollection *fc1_all_mc_2018 = new TFileCollection("fc1_all_mc_2018", "fc1_all_mc_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_1/bdt_output.txt");
+    t_3pi3pi2pi0_2016->GetEntries();
+    t_3pi3pi2pi0_2017->GetEntries();
+    t_3pi3pi2pi0_2018->GetEntries();
 
-    TChain *t1_all_mc_2016 = new TChain("XGBoost/DecayTree");
-    TChain *t1_all_mc_2017 = new TChain("XGBoost/DecayTree");
-    TChain *t1_all_mc_2018 = new TChain("XGBoost/DecayTree");
+    t_3pi3pi2pi0_2016->Add(t_3pi3pi2pi0_2017);
+    t_3pi3pi2pi0_2016->Add(t_3pi3pi2pi0_2018);
 
-    t1_all_mc_2016->AddFileInfoList((TCollection*)fc1_all_mc_2016->GetList());
-    t1_all_mc_2017->AddFileInfoList((TCollection*)fc1_all_mc_2017->GetList());
-    t1_all_mc_2018->AddFileInfoList((TCollection*)fc1_all_mc_2018->GetList());
+    TFileCollection *fc1_3pi3pi2pi0_2016 = new TFileCollection("fc1_3pi3pi2pi0_2016", "fc1_3pi3pi2pi0_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_12/bdt_output.txt");
+    TFileCollection *fc1_3pi3pi2pi0_2017 = new TFileCollection("fc1_3pi3pi2pi0_2017", "fc1_3pi3pi2pi0_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_12/bdt_output.txt");
+    TFileCollection *fc1_3pi3pi2pi0_2018 = new TFileCollection("fc1_3pi3pi2pi0_2018", "fc1_3pi3pi2pi0_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_12/bdt_output.txt");
 
-    t1_all_mc_2016->GetEntries();
-    t1_all_mc_2017->GetEntries();
-    t1_all_mc_2018->GetEntries();
+    TChain *t1_3pi3pi2pi0_2016 = new TChain("XGBoost/DecayTree");
+    TChain *t1_3pi3pi2pi0_2017 = new TChain("XGBoost/DecayTree");
+    TChain *t1_3pi3pi2pi0_2018 = new TChain("XGBoost/DecayTree");
 
-    t1_all_mc_2016->Add(t1_all_mc_2017);
-    t1_all_mc_2016->Add(t1_all_mc_2018);
+    t1_3pi3pi2pi0_2016->AddFileInfoList((TCollection*)fc1_3pi3pi2pi0_2016->GetList());
+    t1_3pi3pi2pi0_2017->AddFileInfoList((TCollection*)fc1_3pi3pi2pi0_2017->GetList());
+    t1_3pi3pi2pi0_2018->AddFileInfoList((TCollection*)fc1_3pi3pi2pi0_2018->GetList());
 
-    t_all_mc_2016->AddFriend(t1_all_mc_2016);
+    t1_3pi3pi2pi0_2016->GetEntries();
+    t1_3pi3pi2pi0_2017->GetEntries();
+    t1_3pi3pi2pi0_2018->GetEntries();
 
-    // WS data
-    TFileCollection *fc_ws_data_2016 = new TFileCollection("fc_ws_data_2016", "fc_ws_data_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_3/fit_results.txt", 50);
-    TFileCollection *fc_ws_data_2017 = new TFileCollection("fc_ws_data_2017", "fc_ws_data_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_3/fit_results.txt", 50);
-    TFileCollection *fc_ws_data_2018 = new TFileCollection("fc_ws_data_2018", "fc_ws_data_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_3/fit_results.txt", 50);
+    t1_3pi3pi2pi0_2016->Add(t1_3pi3pi2pi0_2017);
+    t1_3pi3pi2pi0_2016->Add(t1_3pi3pi2pi0_2018);
 
-    TChain *t_ws_data_2016 = new TChain("DecayTree");
-    TChain *t_ws_data_2017 = new TChain("DecayTree");
-    TChain *t_ws_data_2018 = new TChain("DecayTree");
+    t_3pi3pi2pi0_2016->AddFriend(t1_3pi3pi2pi0_2016);
 
-    t_ws_data_2016->AddFileInfoList((TCollection*)fc_ws_data_2016->GetList());
-    t_ws_data_2017->AddFileInfoList((TCollection*)fc_ws_data_2017->GetList());
-    t_ws_data_2018->AddFileInfoList((TCollection*)fc_ws_data_2018->GetList());
+    // Background test sample
+    TFile* f_bkg_iso = new TFile("/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/isolation_test_dataset_bkg.root");
+    TFile* f_bkg_kin = new TFile("/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/topology_test_dataset_bkg.root");
 
-    t_ws_data_2016->GetEntries();
-    t_ws_data_2017->GetEntries();
-    t_ws_data_2018->GetEntries();
+    TTree* t_bkg_iso = (TTree*)f_bkg_iso->Get("XGBoost/DecayTree");
+    TTree* t_bkg_kin = (TTree*)f_bkg_kin->Get("XGBoost/DecayTree");
 
-    t_ws_data_2016->Add(t_ws_data_2017);
-    t_ws_data_2016->Add(t_ws_data_2018);
-
-    TFileCollection *fc1_ws_data_2016 = new TFileCollection("fc1_ws_data_2016", "fc1_ws_data_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_3/bdt_output.txt", 50);
-    TFileCollection *fc1_ws_data_2017 = new TFileCollection("fc1_ws_data_2017", "fc1_ws_data_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_3/bdt_output.txt", 50);
-    TFileCollection *fc1_ws_data_2018 = new TFileCollection("fc1_ws_data_2018", "fc1_ws_data_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_3/bdt_output.txt", 50);
-
-    TChain *t1_ws_data_2016 = new TChain("XGBoost/DecayTree");
-    TChain *t1_ws_data_2017 = new TChain("XGBoost/DecayTree");
-    TChain *t1_ws_data_2018 = new TChain("XGBoost/DecayTree");
-
-    t1_ws_data_2016->AddFileInfoList((TCollection*)fc1_ws_data_2016->GetList());
-    t1_ws_data_2017->AddFileInfoList((TCollection*)fc1_ws_data_2017->GetList());
-    t1_ws_data_2018->AddFileInfoList((TCollection*)fc1_ws_data_2018->GetList());
-
-    t1_ws_data_2016->GetEntries();
-    t1_ws_data_2017->GetEntries();
-    t1_ws_data_2018->GetEntries();
-
-    t1_ws_data_2016->Add(t1_ws_data_2017);
-    t1_ws_data_2016->Add(t1_ws_data_2018);
-
-    t_ws_data_2016->AddFriend(t1_ws_data_2016);
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     Int_t N = 30;
@@ -147,7 +122,7 @@ void rough_sensitivity_estimate_2D(TString the_case)
             BDT1_values[i][j] = BDT1;
             BDT2_values[i][j] = BDT2;
 
-            std::vector<Double_t> results = B_Bp_Ktautau(BDT1, BDT2, the_case, t_3pi3pi_2016, t_all_mc_2016, t_ws_data_2016);
+            std::vector<Double_t> results = B_Bp_Ktautau(BDT1, BDT2, the_case, t_3pi3pipi0_2016, t_3pi3pi2pi0_2016, t_sig_iso, t_sig_kin, t_bkg_iso, t_bkg_kin);
             N_sig_values[i][j]= results[0];
             N_bkg_values[i][j] = results[1];
             eps_sig_values[i][j] = results[2];
@@ -223,7 +198,7 @@ void rough_sensitivity_estimate_2D(TString the_case)
 }
 
 
-std::vector<Double_t> B_Bp_Ktautau(Double_t BDT1, Double_t BDT2, TString the_case, TTree* t_3pi3pi_2016, TTree* t_all_mc_2016, TTree* t_ws_data_2016)
+std::vector<Double_t> B_Bp_Ktautau(Double_t BDT1, Double_t BDT2, TString the_case, TTree* t_3pi3pipi0_2016, TTree* t_3pi3pi2pi0_2016, TTree* t_sig_iso, TTree* t_sig_kin, TTree* t_bkg_iso, TTree* t_bkg_kin)
 {
     // External inputs:
     // 1. Branching fractions (from PDG)
@@ -244,13 +219,13 @@ std::vector<Double_t> B_Bp_Ktautau(Double_t BDT1, Double_t BDT2, TString the_cas
     Double_t eps_sig_norm = (1.6/5.4)*eps_sig_norm_2016 + (1.7/5.4)*eps_sig_norm_2017 + (2.1/5.4)*eps_sig_norm_2018;
     // cout << "Norm pre-BDT sig eff = " << eps_sig_norm*100 << endl;
     // 4. Ktautau signal pre-selection efficiency
-    Double_t eps_sig_ktautau_3pi3pi_2016 = (5.318/100)*(0.645/100)*(37.5/100)*(93.0/100)*(96.3/100)*(79.0/100);
-    Double_t eps_sig_ktautau_3pi3pi_2017 = (5.321/100)*(0.654/100)*(40.9/100)*(90.0/100)*(96.3/100)*(79.0/100);
-    Double_t eps_sig_ktautau_3pi3pi_2018 = (5.330/100)*(0.651/100)*(34.8/100)*(90.2/100)*(96.5/100)*(79.1/100);
+    Double_t eps_sig_ktautau_3pi3pi_2016 = (5.318/100)*(0.645/100)*(37.5/100)*(93.0/100)*(96.3/100)*(100./100);
+    Double_t eps_sig_ktautau_3pi3pi_2017 = (5.321/100)*(0.654/100)*(40.9/100)*(90.0/100)*(96.3/100)*(100./100);
+    Double_t eps_sig_ktautau_3pi3pi_2018 = (5.330/100)*(0.651/100)*(34.8/100)*(90.2/100)*(96.5/100)*(100./100);
 
-    Double_t eps_sig_ktautau_all_mc_2016 = (5.318/100)*(0.628/100)*(36.8/100)*(85.1/100)*(96.6/100)*(75.8/100);
-    Double_t eps_sig_ktautau_all_mc_2017 = (5.321/100)*(0.649/100)*(40.6/100)*(85.2/100)*(96.5/100)*(75.4/100);
-    Double_t eps_sig_ktautau_all_mc_2018 = (5.330/100)*(0.648/100)*(34.4/100)*(84.8/100)*(96.8/100)*(75.4/100);
+    Double_t eps_sig_ktautau_all_mc_2016 = (5.318/100)*(0.628/100)*(36.8/100)*(85.1/100)*(96.6/100)*(100./100);
+    Double_t eps_sig_ktautau_all_mc_2017 = (5.321/100)*(0.649/100)*(40.6/100)*(85.2/100)*(96.5/100)*(99.5/100);
+    Double_t eps_sig_ktautau_all_mc_2018 = (5.330/100)*(0.648/100)*(34.4/100)*(84.8/100)*(96.8/100)*(99.5/100);
 
     Double_t eps_sig_ktautau_3pi3pi = (1.6/5.4)*eps_sig_ktautau_3pi3pi_2016 + (1.7/5.4)*eps_sig_ktautau_3pi3pi_2017 + (2.1/5.4)*eps_sig_ktautau_3pi3pi_2018;
     Double_t eps_sig_ktautau_all_mc = (1.6/5.4)*eps_sig_ktautau_all_mc_2016 + (1.7/5.4)*eps_sig_ktautau_all_mc_2017 + (2.1/5.4)*eps_sig_ktautau_all_mc_2018;
@@ -265,7 +240,7 @@ std::vector<Double_t> B_Bp_Ktautau(Double_t BDT1, Double_t BDT2, TString the_cas
 
     // cout << "Ktautau pre-BDT sig eff (3pi3pi MC) = " << eps_sig_ktautau_3pi3pi*100 << endl;
     // cout << "Ktautau pre-BDT sig eff (all MC) = " << eps_sig_ktautau_all_mc*100 << endl;
-
+    
     // 5. Estimate for the number of Ktautau signal events in the signal region (pre-BDT)
     Double_t N_sig_Ktautau = 0.;
     Double_t eps_sig_ktautau = 0.; 
@@ -309,40 +284,46 @@ std::vector<Double_t> B_Bp_Ktautau(Double_t BDT1, Double_t BDT2, TString the_cas
     }
     else if(combBkg)
     {
-        Double_t N_bkg_ktautau_2016 = 16997278.;
-        Double_t N_bkg_ktautau_2017 = 18005462.;
-        Double_t N_bkg_ktautau_2018 = 15679602.;
+        Double_t N_bkg_ktautau_2016 = 25939425.;
+        Double_t N_bkg_ktautau_2017 = 27336738.;
+        Double_t N_bkg_ktautau_2018 = 30862612.;
         N_bkg_Ktautau = N_bkg_ktautau_2016+N_bkg_ktautau_2017+N_bkg_ktautau_2018;
     }
 
-    Double_t bdt_sig_eff_den, bdt1_sig_eff_num, bdt2_sig_eff_num;
+    Double_t bdt1_sig_eff_den, bdt2_sig_eff_den, bdt1_sig_eff_num, bdt2_sig_eff_num;
 
     if(use3pi3piMC)
     {
-        bdt_sig_eff_den = t_3pi3pi_2016->GetEntries("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800)");
-        bdt1_sig_eff_num = t_3pi3pi_2016->GetEntries(Form("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800) && (BDT1 > %f)",BDT1));
-        bdt2_sig_eff_num = t_3pi3pi_2016->GetEntries(Form("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800) && (BDT2 > %f)",BDT2));
+        bdt1_sig_eff_den = t_sig_iso->GetEntries();
+        bdt2_sig_eff_den = t_sig_kin->GetEntries();
+
+        bdt1_sig_eff_num = t_sig_iso->GetEntries(Form("(BDT1 > %f)",BDT1));
+        bdt2_sig_eff_num = t_sig_kin->GetEntries(Form("(BDT2 > %f)",BDT2));
     } 
     else
     {
-        bdt_sig_eff_den = t_all_mc_2016->GetEntries("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800)");
-        bdt1_sig_eff_num = t_all_mc_2016->GetEntries(Form("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800) && (BDT1 > %f)",BDT1));
-        bdt2_sig_eff_num = t_all_mc_2016->GetEntries(Form("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800) && (BDT2 > %f)",BDT2));
+        bdt1_sig_eff_den = (t_3pi3pipi0_2016->GetEntries("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800)")) + (t_3pi3pi2pi0_2016->GetEntries("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800)")) + (t_sig_iso->GetEntries());
+        bdt2_sig_eff_den = (t_3pi3pipi0_2016->GetEntries("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800)")) + (t_3pi3pi2pi0_2016->GetEntries("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800)")) + (t_sig_kin->GetEntries());
+
+        bdt1_sig_eff_num = (t_3pi3pipi0_2016->GetEntries(Form("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800) && (BDT1 > %f)",BDT1))) + (t_3pi3pi2pi0_2016->GetEntries(Form("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800) && (BDT1 > %f)",BDT1))) + (t_sig_iso->GetEntries(Form("(BDT1 > %f)",BDT1)));
+        bdt2_sig_eff_num = (t_3pi3pipi0_2016->GetEntries(Form("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800) && (BDT2 > %f)",BDT2))) + (t_3pi3pi2pi0_2016->GetEntries(Form("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800) && (BDT2 > %f)",BDT2))) + (t_sig_kin->GetEntries(Form("(BDT2 > %f)",BDT2)));
     }
 
-    Double_t eps_sig_ktautau_bdt1 = bdt1_sig_eff_num/bdt_sig_eff_den;
-    Double_t eps_sig_ktautau_bdt2 = bdt2_sig_eff_num/bdt_sig_eff_den;
+    Double_t eps_sig_ktautau_bdt1 = bdt1_sig_eff_num/bdt1_sig_eff_den;
+    Double_t eps_sig_ktautau_bdt2 = bdt2_sig_eff_num/bdt2_sig_eff_den;
 
     eps_sig_ktautau *= eps_sig_ktautau_bdt1*eps_sig_ktautau_bdt2;
 
     if(combBkg)
     {
-        Double_t bdt_bkg_eff_den = t_ws_data_2016->GetEntries("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800)");
-        Double_t bdt1_bkg_eff_num = t_ws_data_2016->GetEntries(Form("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800) && (BDT1 > %f)",BDT1));
-        Double_t bdt2_bkg_eff_num = t_ws_data_2016->GetEntries(Form("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800) && (BDT2 > %f)",BDT2));
+        Double_t bdt1_bkg_eff_den = t_bkg_iso->GetEntries();
+        Double_t bdt2_bkg_eff_den = t_bkg_kin->GetEntries();
 
-        Double_t eps_bkg_ktautau_bdt1 = bdt1_bkg_eff_num/bdt_bkg_eff_den;
-        Double_t eps_bkg_ktautau_bdt2 = bdt2_bkg_eff_num/bdt_bkg_eff_den;
+        Double_t bdt1_bkg_eff_num = t_bkg_iso->GetEntries(Form("(BDT1 > %f)",BDT1));
+        Double_t bdt2_bkg_eff_num = t_bkg_kin->GetEntries(Form("(BDT2 > %f)",BDT2));
+
+        Double_t eps_bkg_ktautau_bdt1 = bdt1_bkg_eff_num/bdt1_bkg_eff_den;
+        Double_t eps_bkg_ktautau_bdt2 = bdt2_bkg_eff_num/bdt2_bkg_eff_den;
 
         N_bkg_Ktautau *= eps_bkg_ktautau_bdt1*eps_bkg_ktautau_bdt2;
 
@@ -358,6 +339,7 @@ std::vector<Double_t> B_Bp_Ktautau(Double_t BDT1, Double_t BDT2, TString the_cas
     {
         B_Bp_Ktautau = (N_sig_Ktautau/eps_sig_ktautau)*(eps_sig_norm/N_sig_norm)*((B_Bp_D0bar_Dsp*B_D0bar_Kp_pi*B_Dsp_Kp_Km_pi)/pow(B_tau_3pi_nu+B_tau_3pi_pi0_nu,2));
     }
+    
 
     std::vector<Double_t> results;
     results.push_back(N_sig_Ktautau);
