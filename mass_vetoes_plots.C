@@ -27,9 +27,9 @@ void mass_vetoes_plots()
 
     // RS data
     cout << "RS data" << endl;
-    TFileCollection* fc2_2016 = new TFileCollection("fc2_2016", "fc2_2016", "/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/2016/Species_2/post_sel_tree.txt", 10);
-    TFileCollection* fc2_2017 = new TFileCollection("fc2_2017", "fc2_2017", "/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/2017/Species_2/post_sel_tree.txt", 10);
-    TFileCollection* fc2_2018 = new TFileCollection("fc2_2018", "fc2_2018", "/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/2018/Species_2/post_sel_tree.txt", 10);
+    TFileCollection* fc2_2016 = new TFileCollection("fc2_2016", "fc2_2016", "/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/2016/Species_2/post_sel_tree.txt");
+    TFileCollection* fc2_2017 = new TFileCollection("fc2_2017", "fc2_2017", "/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/2017/Species_2/post_sel_tree.txt");
+    TFileCollection* fc2_2018 = new TFileCollection("fc2_2018", "fc2_2018", "/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/2018/Species_2/post_sel_tree.txt");
 
     TChain* t2_2016 = new TChain("DecayTree");
     TChain* t2_2017 = new TChain("DecayTree");
@@ -48,9 +48,9 @@ void mass_vetoes_plots()
 
     // WS data
     cout << "WS data" << endl;
-    TFileCollection* fc3_2016 = new TFileCollection("fc3_2016", "fc3_2016", "/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/2016/Species_3/post_sel_tree.txt", 10);
-    TFileCollection* fc3_2017 = new TFileCollection("fc3_2017", "fc3_2017", "/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/2017/Species_3/post_sel_tree.txt", 10);
-    TFileCollection* fc3_2018 = new TFileCollection("fc3_2018", "fc3_2018", "/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/2018/Species_3/post_sel_tree.txt", 10);
+    TFileCollection* fc3_2016 = new TFileCollection("fc3_2016", "fc3_2016", "/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/2016/Species_3/post_sel_tree.txt");
+    TFileCollection* fc3_2017 = new TFileCollection("fc3_2017", "fc3_2017", "/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/2017/Species_3/post_sel_tree.txt");
+    TFileCollection* fc3_2018 = new TFileCollection("fc3_2018", "fc3_2018", "/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/2018/Species_3/post_sel_tree.txt");
 
     TChain* t3_2016 = new TChain("DecayTree");
     TChain* t3_2017 = new TChain("DecayTree");
@@ -84,6 +84,10 @@ void mass_vetoes_plots()
     Int_t a4 = 0;
     Int_t a5 = 0;
     Int_t a6 = 0;
+
+    Double_t M2_MC[N2], M3_MC[N3], M4_MC[N4], M5_MC[N5], M6_MC[N6];
+    Double_t M2_RS[N2], M3_RS[N3], M4_RS[N4], M5_RS[N5], M6_RS[N6];
+    Double_t M2_WS[N2], M3_WS[N3], M4_WS[N4], M5_WS[N5], M6_MC[N6];
 
     TCut mass_vetoe_cuts = "";
 
@@ -176,9 +180,32 @@ void draw_mass_plot(Int_t entry, TChain* t1_2016, TChain* t2_2016, TChain* t3_20
     h_mc->GetYaxis()->SetTitle(Form( "Normalized entries / (%.2f MeV)", (x_max - x_min)/100.  ));
     h_mc->SetTitle("");
 
+    h_rs_data->GetXaxis()->SetTitle(name+" (MeV)");
+    h_rs_data->GetYaxis()->SetTitle(Form( "Normalized entries / (%.2f MeV)", (x_max - x_min)/100.  ));
+    h_rs_data->SetTitle("");
+
+    h_ws_data->GetXaxis()->SetTitle(name+" (MeV)");
+    h_ws_data->GetYaxis()->SetTitle(Form( "Normalized entries / (%.2f MeV)", (x_max - x_min)/100.  ));
+    h_ws_data->SetTitle("");
+
+     if( (h_rs_data->GetMaximum() > h_mc->GetMaximum()) && (h_rs_data->GetMaximum() > h_ws_data->GetMaximum()) )
+    {
+        h_mc->GetYaxis()->SetRangeUser(0, 1.1*(h_rs_data->GetMaximum()));
+    }
+    else if( (h_ws_data->GetMaximum() > h_mc->GetMaximum()) && (h_ws_data->GetMaximum() > h_rs_data->GetMaximum()) )
+    {
+        h_mc->GetYaxis()->SetRangeUser(0, 1.1*(h_ws_data->GetMaximum()));
+    }
+
     h_mc->DrawNormalized();
     h_rs_data->DrawNormalized("same");
     h_ws_data->DrawNormalized("same");
+
+    TLegend* leg = new TLegend(0.7, 0.7, 0.9, 0.9);
+    leg->AddEntry(h_mc, "MC", "lp");
+    leg->AddEntry(h_rs_data, "RS data", "lp");
+    leg->AddEntry(h_ws_data, "WS data", "lp");
+    leg->Draw("same");
 
     c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/mass_vetoes_plots/%i_particles/",Npar)+name+".pdf");
 }
