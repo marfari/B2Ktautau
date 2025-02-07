@@ -259,7 +259,14 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
 
     if(createTable)
     {
-        create_table(year, species, FILES, isKtautauMC, is_cocktailMC, truthMatch, MC_component, trigger, others);
+        if((species == 2) || (species == 3))
+        {
+            create_table(year, species, Form("Files_on_grid/data_201%i_noSel_DTF.txt",year), isKtautauMC, is_cocktailMC, truthMatch, MC_component, trigger, others);
+        }
+        else
+        {
+            create_table(year, species, FILES, isKtautauMC, is_cocktailMC, truthMatch, MC_component, trigger, others);
+        }
         return;
     }
 
@@ -353,6 +360,7 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t isKtautauMC, 
     std::ofstream file(Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/Species_%i/pre_sel_table.tex",year,species));
 
     TFileCollection* fc_reco = new TFileCollection("fc_reco", "fc_reco", FILES);
+     
     TChain* t_reco;
     if(isKtautauMC || (species == 7) || (species == 71) ) // Ktautau MC + normalisation channel (PID corrected)
     {
@@ -388,10 +396,6 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t isKtautauMC, 
     {
         FILES1 = Form("Files_on_grid/MC_D0Dps_201%i.txt",year);
     }
-    else
-    {
-        FILES1 = FILES;
-    }
 
     TFileCollection* fc1;
     TChain* t_gen;
@@ -411,6 +415,8 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t isKtautauMC, 
             TChain* t1_gen = new TChain("mc_ntuple_3pipi0_3pi/MCDecayTree");
             t_gen->AddFileInfoList((TCollection*)fc1->GetList());
             t1_gen->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen->GetEntries();
+            t1_gen->GetEntries();
             t_gen->Add(t1_gen);
 
         }
@@ -429,6 +435,10 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t isKtautauMC, 
             t1_gen->AddFileInfoList((TCollection*)fc1->GetList());
             t2_gen->AddFileInfoList((TCollection*)fc1->GetList());
             t3_gen->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen->GetEntries();
+            t1_gen->GetEntries();
+            t2_gen->GetEntries();
+            t3_gen->GetEntries();
             t_gen->Add(t1_gen);
             t_gen->Add(t2_gen);
             t_gen->Add(t3_gen);
@@ -541,6 +551,12 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t isKtautauMC, 
             N_gen_DstarD = t_gen_DstarD->GetEntries();
             N_gen_DDstar = t_gen_DDstar->GetEntries();
             N_gen_DstarDstar = t_gen_DstarDstar->GetEntries();
+
+            cout << "Number of gen events (DD) = " << N_gen_DD << endl;
+            cout << "Number of gen events (DstarD) = " << N_gen_DstarD << endl;
+            cout << "Number of gen events (DDstar) = " << N_gen_DDstar << endl;
+            cout << "Number of gen events (DstarDstar) = " << N_gen_DstarDstar << endl;
+
         }
         else
         {
@@ -624,6 +640,12 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t isKtautauMC, 
             eps_tm_DstarD = N_TM_DstarD/N_gen_DstarD;
             eps_tm_DDstar = N_TM_DDstar/N_gen_DDstar;
             eps_tm_DstarDstar = N_TM_DstarDstar/N_gen_DstarDstar;
+
+            cout << "Number of TM reco events (DD) = " << N_TM_DD << endl;
+            cout << "Number of TM reco events (DstarD) = " << N_TM_DstarD << endl;
+            cout << "Number of TM reco events (DDstar) = " << N_TM_DDstar << endl;
+            cout << "Number of TM reco events (DstarDstar) = " << N_TM_DstarDstar << endl;
+
         }
         else
         {
@@ -728,7 +750,7 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t isKtautauMC, 
             
             file << "Trigger & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ \\hline " << std::endl;
             
-            file << "Rectangular cuts & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\ \\hline " << std::endl;
+            file << "Rectangular cuts & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\ " << std::endl;
         }
     }
     else
