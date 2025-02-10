@@ -1,4 +1,4 @@
-std::vector<Double_t> B_Bp_Ktautau(Double_t BDT1, Double_t BDT2, TString the_case, TTree* t_3pi3pipi0_2016, TTree* t_3pi3pi2pi0_2016, TTree* t_sig_iso, TTree* t_sig_kin, TTree* t_bkg_iso, TTree* t_bkg_kin);
+std::vector<Double_t> B_Bp_Ktautau(Double_t BDT1, Double_t BDT2, TString the_case, TTree* t_3pi3pipi0_2016, TTree* t_3pi3pi2pi0_2016, TTree* t_sig, TTree* t_bkg);
 
 vector<double> range(double min, double max, size_t N);
 
@@ -9,8 +9,9 @@ void rough_sensitivity_estimate_2D(TString the_case)
     TFile* f_sig_iso = new TFile("/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/isolation_test_dataset_sig.root");
     TFile* f_sig_kin = new TFile("/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/topology_test_dataset_sig.root");
 
-    TTree* t_sig_iso = (TTree*)f_sig_iso->Get("XGBoost/DecayTree");
-    TTree* t_sig_kin = (TTree*)f_sig_kin->Get("XGBoost/DecayTree");
+    TTree* t_sig = (TTree*)f_sig_iso->Get("XGBoost/DecayTree");
+    TTree* t_sig1 = (TTree*)f_sig_kin->Get("XGBoost/DecayTree");
+    t_sig->AddFriend(t_sig1);
 
     // 3pi3pi pi0 MC
     TFileCollection *fc_3pi3pipi0_2016 = new TFileCollection("fc_3pi3pipi0_2016", "fc_3pi3pipi0_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_11/fit_results.txt");
@@ -98,8 +99,9 @@ void rough_sensitivity_estimate_2D(TString the_case)
     TFile* f_bkg_iso = new TFile("/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/isolation_test_dataset_bkg.root");
     TFile* f_bkg_kin = new TFile("/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/topology_test_dataset_bkg.root");
 
-    TTree* t_bkg_iso = (TTree*)f_bkg_iso->Get("XGBoost/DecayTree");
-    TTree* t_bkg_kin = (TTree*)f_bkg_kin->Get("XGBoost/DecayTree");
+    TTree* t_bkg = (TTree*)f_bkg_iso->Get("XGBoost/DecayTree");
+    TTree* t_bkg1 = (TTree*)f_bkg_kin->Get("XGBoost/DecayTree");
+    t_bkg->AddFriend(t_bkg1);
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -122,7 +124,7 @@ void rough_sensitivity_estimate_2D(TString the_case)
             BDT1_values[i][j] = BDT1;
             BDT2_values[i][j] = BDT2;
 
-            std::vector<Double_t> results = B_Bp_Ktautau(BDT1, BDT2, the_case, t_3pi3pipi0_2016, t_3pi3pi2pi0_2016, t_sig_iso, t_sig_kin, t_bkg_iso, t_bkg_kin);
+            std::vector<Double_t> results = B_Bp_Ktautau(BDT1, BDT2, the_case, t_3pi3pipi0_2016, t_3pi3pi2pi0_2016, t_sig, t_bkg);
             N_sig_values[i][j]= results[0];
             N_bkg_values[i][j] = results[1];
             eps_sig_values[i][j] = results[2];
@@ -198,7 +200,7 @@ void rough_sensitivity_estimate_2D(TString the_case)
 }
 
 
-std::vector<Double_t> B_Bp_Ktautau(Double_t BDT1, Double_t BDT2, TString the_case, TTree* t_3pi3pipi0_2016, TTree* t_3pi3pi2pi0_2016, TTree* t_sig_iso, TTree* t_sig_kin, TTree* t_bkg_iso, TTree* t_bkg_kin)
+std::vector<Double_t> B_Bp_Ktautau(Double_t BDT1, Double_t BDT2, TString the_case, TTree* t_3pi3pipi0_2016, TTree* t_3pi3pi2pi0_2016, TTree* t_sig, TTree* t_bkg)
 {
     // External inputs:
     // 1. Branching fractions (from PDG)
@@ -213,22 +215,33 @@ std::vector<Double_t> B_Bp_Ktautau(Double_t BDT1, Double_t BDT2, TString the_cas
     Double_t N_sig_norm_2018 = 12273.;
     Double_t N_sig_norm = N_sig_norm_2016+N_sig_norm_2017+N_sig_norm_2018;
     // 3. Efficiency of normalisation channel
-    Double_t eps_sig_norm_2016 = (14.50/100)*(2.256/100)*(55.8/100)*(99.97/100)*(11.39/100);
-    Double_t eps_sig_norm_2017 = (14.48/100)*(2.278/100)*(58.5/100)*(99.98/100)*(11.91/100);
-    Double_t eps_sig_norm_2018 = (14.58/100)*(2.286/100)*(50.8/100)*(99.97/100)*(10.97/100);
-    Double_t eps_sig_norm = (1.6/5.4)*eps_sig_norm_2016 + (1.7/5.4)*eps_sig_norm_2017 + (2.1/5.4)*eps_sig_norm_2018;
+    Double_t eps_sig_norm_2016 = (14.50/100)*(2.256/100)*(55.81/100)*(64.11/100)*(99.94/100)*(99.6/100);
+    Double_t eps_sig_norm_2017 = (14.48/100)*(2.278/100)*(58.54/100)*(62.15/100)*(99.97/100)*(99.6/100);
+    Double_t eps_sig_norm_2018 = (14.58/100)*(2.286/100)*(50.76/100)*(61.94/100)*(99.97/100)*(99.6/100);
+    Double_t eps_sig_norm = (10.8/34.2)*eps_sig_norm_2016 + (12./34.2)*eps_sig_norm_2017 + (11.4/34.2)*eps_sig_norm_2018;
+    // cout << "2016 = " << eps_sig_norm_2016*100 << endl;
+    // cout << "2017 = " << eps_sig_norm_2017*100 << endl;
+    // cout << "2018 = " << eps_sig_norm_2018*100 << endl;
     // cout << "Norm pre-BDT sig eff = " << eps_sig_norm*100 << endl;
     // 4. Ktautau signal pre-selection efficiency
-    Double_t eps_sig_ktautau_3pi3pi_2016 = (5.318/100)*(0.645/100)*(37.5/100)*(93.0/100)*(96.3/100)*(100./100);
-    Double_t eps_sig_ktautau_3pi3pi_2017 = (5.321/100)*(0.654/100)*(40.9/100)*(90.0/100)*(96.3/100)*(100./100);
-    Double_t eps_sig_ktautau_3pi3pi_2018 = (5.330/100)*(0.651/100)*(34.8/100)*(90.2/100)*(96.5/100)*(100./100);
+    Double_t eps_acc_2016 = (5.318/100);
+    Double_t eps_acc_2017 = (5.321/100);
+    Double_t eps_acc_2018 = (5.330/100);
 
-    Double_t eps_sig_ktautau_all_mc_2016 = (5.318/100)*(0.628/100)*(36.8/100)*(85.1/100)*(96.6/100)*(100./100);
-    Double_t eps_sig_ktautau_all_mc_2017 = (5.321/100)*(0.649/100)*(40.6/100)*(85.2/100)*(96.5/100)*(99.5/100);
-    Double_t eps_sig_ktautau_all_mc_2018 = (5.330/100)*(0.648/100)*(34.4/100)*(84.8/100)*(96.8/100)*(99.5/100);
+    Double_t eps_strip_2016 = (1.028/100);
+    Double_t eps_strip_2017 = (1.056/100);
+    Double_t eps_strip_2018 = (1.050/100);
 
-    Double_t eps_sig_ktautau_3pi3pi = (1.6/5.4)*eps_sig_ktautau_3pi3pi_2016 + (1.7/5.4)*eps_sig_ktautau_3pi3pi_2017 + (2.1/5.4)*eps_sig_ktautau_3pi3pi_2018;
-    Double_t eps_sig_ktautau_all_mc = (1.6/5.4)*eps_sig_ktautau_all_mc_2016 + (1.7/5.4)*eps_sig_ktautau_all_mc_2017 + (2.1/5.4)*eps_sig_ktautau_all_mc_2018;
+    Double_t eps_sig_ktautau_3pi3pi_2016 = eps_acc_2016*eps_strip_2016*(62.67/100)*(37.47/100)*(92.60/100)*(96.29/100)*(100./100);
+    Double_t eps_sig_ktautau_3pi3pi_2017 = eps_acc_2017*eps_strip_2017*(61.63/100)*(41.17/100)*(89.63/100)*(96.60/100)*(100./100);
+    Double_t eps_sig_ktautau_3pi3pi_2018 = eps_acc_2018*eps_strip_2018*(62.00/100)*(34.79/100)*(90.19/100)*(96.57/100)*(100./100);
+
+    Double_t eps_sig_ktautau_all_mc_2016 = eps_acc_2016*eps_strip_2016*(61.12/100)*(36.75/100)*(85.12/100)*(96.57/100)*(100./100);
+    Double_t eps_sig_ktautau_all_mc_2017 = eps_acc_2017*eps_strip_2017*(61.49/100)*(40.61/100)*(85.16/100)*(96.78/100)*(99.5/100);
+    Double_t eps_sig_ktautau_all_mc_2018 = eps_acc_2018*eps_strip_2018*(61.66/100)*(34.44/100)*(84.76/100)*(96.79/100)*(99.5/100);
+
+    Double_t eps_sig_ktautau_3pi3pi = (28.5/165)*eps_sig_ktautau_3pi3pi_2016 + (60.0/165)*eps_sig_ktautau_3pi3pi_2017 + (76.5/165)*eps_sig_ktautau_3pi3pi_2018;
+    Double_t eps_sig_ktautau_all_mc = (28.5/165)*eps_sig_ktautau_all_mc_2016 + (60.0/165)*eps_sig_ktautau_all_mc_2017 + (76.5/165)*eps_sig_ktautau_all_mc_2018;
 
     // cout << "Ktautau pre-BDT sig eff (3pi3pi MC, 2016) = " << eps_sig_ktautau_3pi3pi_2016*100 << endl;
     // cout << "Ktautau pre-BDT sig eff (3pi3pi MC, 2017) = " << eps_sig_ktautau_3pi3pi_2017*100 << endl;
@@ -290,42 +303,31 @@ std::vector<Double_t> B_Bp_Ktautau(Double_t BDT1, Double_t BDT2, TString the_cas
         N_bkg_Ktautau = N_bkg_ktautau_2016+N_bkg_ktautau_2017+N_bkg_ktautau_2018;
     }
 
-    Double_t bdt1_sig_eff_den, bdt2_sig_eff_den, bdt1_sig_eff_num, bdt2_sig_eff_num;
-
+    Double_t bdt_sig_eff_den, bdt_sig_eff_num;
     if(use3pi3piMC)
     {
-        bdt1_sig_eff_den = t_sig_iso->GetEntries();
-        bdt2_sig_eff_den = t_sig_kin->GetEntries();
-
-        bdt1_sig_eff_num = t_sig_iso->GetEntries(Form("(BDT1 > %f)",BDT1));
-        bdt2_sig_eff_num = t_sig_kin->GetEntries(Form("(BDT2 > %f)",BDT2));
+        bdt_sig_eff_den = t_sig->GetEntries();
+        bdt_sig_eff_num = t_sig->GetEntries(Form("(BDT1 > %f) && (BDT2 > %f)",BDT1,BDT2));
     } 
     else
     {
-        bdt1_sig_eff_den = (t_3pi3pipi0_2016->GetEntries("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800)")) + (t_3pi3pi2pi0_2016->GetEntries("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800)")) + (t_sig_iso->GetEntries());
-        bdt2_sig_eff_den = (t_3pi3pipi0_2016->GetEntries("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800)")) + (t_3pi3pi2pi0_2016->GetEntries("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800)")) + (t_sig_kin->GetEntries());
-
-        bdt1_sig_eff_num = (t_3pi3pipi0_2016->GetEntries(Form("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800) && (BDT1 > %f)",BDT1))) + (t_3pi3pi2pi0_2016->GetEntries(Form("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800) && (BDT1 > %f)",BDT1))) + (t_sig_iso->GetEntries(Form("(BDT1 > %f)",BDT1)));
-        bdt2_sig_eff_num = (t_3pi3pipi0_2016->GetEntries(Form("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800) && (BDT2 > %f)",BDT2))) + (t_3pi3pi2pi0_2016->GetEntries(Form("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800) && (BDT2 > %f)",BDT2))) + (t_sig_kin->GetEntries(Form("(BDT2 > %f)",BDT2)));
+        bdt_sig_eff_den = (t_3pi3pipi0_2016->GetEntries("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800)")) + (t_3pi3pi2pi0_2016->GetEntries("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800)")) + (t_sig->GetEntries());
+        bdt_sig_eff_num = (t_3pi3pipi0_2016->GetEntries(Form("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800) && (BDT1 > %f) && (BDT2 > %f)",BDT1,BDT2))) + (t_3pi3pi2pi0_2016->GetEntries(Form("(df_status==0) && (df_Bp_M > 4700) && (df_Bp_M < 5800) && (BDT1 > %f) && (BDT2 > %f)",BDT1,BDT2))) + (t_sig->GetEntries(Form("(BDT1 > %f) && (BDT2 > %f)",BDT1,BDT2)));
     }
 
-    Double_t eps_sig_ktautau_bdt1 = bdt1_sig_eff_num/bdt1_sig_eff_den;
-    Double_t eps_sig_ktautau_bdt2 = bdt2_sig_eff_num/bdt2_sig_eff_den;
+    Double_t eps_sig_ktautau_bdt = bdt_sig_eff_num/bdt_sig_eff_den;
 
-    eps_sig_ktautau *= eps_sig_ktautau_bdt1*eps_sig_ktautau_bdt2;
+    eps_sig_ktautau *= eps_sig_ktautau_bdt;
 
+    Double_t eps_bkg_ktautau_bdt;
     if(combBkg)
     {
-        Double_t bdt1_bkg_eff_den = t_bkg_iso->GetEntries();
-        Double_t bdt2_bkg_eff_den = t_bkg_kin->GetEntries();
+        Double_t bdt_bkg_eff_den = t_bkg->GetEntries();
+        Double_t bdt_bkg_eff_num = t_bkg->GetEntries(Form("(BDT1 > %f) && (BDT2 > %f)",BDT1,BDT2));
 
-        Double_t bdt1_bkg_eff_num = t_bkg_iso->GetEntries(Form("(BDT1 > %f)",BDT1));
-        Double_t bdt2_bkg_eff_num = t_bkg_kin->GetEntries(Form("(BDT2 > %f)",BDT2));
+        eps_bkg_ktautau_bdt = bdt_bkg_eff_num/bdt_bkg_eff_den;
 
-        Double_t eps_bkg_ktautau_bdt1 = bdt1_bkg_eff_num/bdt1_bkg_eff_den;
-        Double_t eps_bkg_ktautau_bdt2 = bdt2_bkg_eff_num/bdt2_bkg_eff_den;
-
-        N_bkg_Ktautau *= eps_bkg_ktautau_bdt1*eps_bkg_ktautau_bdt2;
+        N_bkg_Ktautau *= eps_bkg_ktautau_bdt;
 
         N_sig_Ktautau = 0.5*( pow(1.64,2) + sqrt(pow(1.64,4) + 4*pow(1.64,2)*N_bkg_Ktautau) ); 
     }
@@ -340,7 +342,6 @@ std::vector<Double_t> B_Bp_Ktautau(Double_t BDT1, Double_t BDT2, TString the_cas
         B_Bp_Ktautau = (N_sig_Ktautau/eps_sig_ktautau)*(eps_sig_norm/N_sig_norm)*((B_Bp_D0bar_Dsp*B_D0bar_Kp_pi*B_Dsp_Kp_Km_pi)/pow(B_tau_3pi_nu+B_tau_3pi_pi0_nu,2));
     }
     
-
     std::vector<Double_t> results;
     results.push_back(N_sig_Ktautau);
     results.push_back(N_bkg_Ktautau);
