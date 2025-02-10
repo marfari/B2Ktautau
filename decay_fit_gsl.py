@@ -1934,6 +1934,9 @@ def run_fdfsolver(year, species, line, x0, params, use_generalised_region, max_i
     else:
         raise ValueError
 
+
+        
+
 def loop_over_tree(inTree, outTree, year, species, line, is_cocktailMC, isD0D0K, m, V, x_true_names):
     global nIter, status, x_true, change_L
 
@@ -2123,10 +2126,23 @@ def main(argv):
     # i_first = int(i_first)
     # i_last = int(i_last)
 
-    RECO_files = "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{0}/Species_{1}/pre_sel_tree.txt".format(year,species)
+    if(species == -100):
+        RECO_files = "Files_on_grid/MC_201{0}_BuDDKp_cocktail.txt".format(year)
+    elif(species == -110):
+        RECO_files = "Files_on_grid/MC_201{0}_BdDDKp_cocktail.txt".format(year)
+    elif(species == -120):
+        RECO_files = "Files_on_grid/MC_201{0}_BsDDKp_cocktail.txt".format(year)
+    elif(species == -130):
+        RECO_files = "Files_on_grid/MC_201{0}_BuDDK0_cocktail.txt".format(year)
+    elif(species == -150):
+        RECO_files = "Files_on_grid/MC_201{0}_BuDD_cocktail.txt".format(year)
+    elif(species == 13):
+        RECO_files = "/panfs/felician/B2Ktautau/workflow/PIDCalib/201{0}/Species_1/pid_corr.txt".format(year)
+    else:
+        RECO_files = "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{0}/Species_{1}/pre_sel_tree.txt".format(year,species)
 
     isKtautau = False
-    if((species == 10) or (species == 11) or (species == 12) or (species == 1) or (species == 2) or (species == 3)):
+    if((species == 10) or (species == 11) or (species == 12) or (species == 13) or (species == 1) or (species == 2) or (species == 3)):
         isKtautau = True
 
     isD0D0K = False
@@ -2146,26 +2162,43 @@ def main(argv):
     isBdDD_cocktail = False
     isBsDD_cocktail = False
 
-    if( (species == 100) or (species == 101) or (species == 102) ):
+    if( (species == 100) or (species == 101) or (species == 102) or (species == -100)):
         isBuDDKp_cocktail = True
-    if(species == 110):
+    else:
+        isBuDDKp_cocktail = False
+    if( (species == 110) or (species == -110) ):
         isBdDDKp_cocktail = True
-    if(species == 120):
+    else:
+        isBdDDKp_cocktail = False
+    if( (species == 120) or (species == -120) ):
         isBsDDKp_cocktail = True
-    if(species == 130):
+    else:
+        isBsDDKp_cocktail = False
+    if( (species == 130) or (species == -130) ):
         isBuDDK0_cocktail = True
-    if( (species == 140) or (species == 141) ):
+    else:
+        isBuDDK0_cocktail = False
+    if( (species == 140) or (species == 141) or (species == -140) ):
         isBdDDK0_cocktail = True
-    if( (species == 150) or (species == 151) ):
+    else:
+        isBdDDK0_cocktail = False
+    if( (species == 150) or (species == 151) or (species == -150) ):
         isBuDD_cocktail = True
-    if( (species == 160) or (species == 161) or (species == 162) or (species == 163) ):
+    else: 
+        isBuDD_cocktail = False
+    if( (species == 160) or (species == 161) or (species == 162) or (species == 163) or (species == -160) ):
         isBdDD_cocktail = True
-    if( (species == 170) or (species == 171) or (species == 172) or (species == 173) ):
+    else:
+        isBdDD_cocktail = False
+    if( (species == 170) or (species == 171) or (species == 172) or (species == 173) or (species == -170) ):
         isBsDD_cocktail = True
+    else: 
+        isBsDD_cocktail = False
 
-    is_cocktailMC = False
     if(isBuDDKp_cocktail or isBdDDKp_cocktail or isBsDDKp_cocktail or isBuDDK0_cocktail or isBdDDK0_cocktail or isBuDD_cocktail or isBdDD_cocktail or isBsDD_cocktail):
         is_cocktailMC = True
+    else:
+        is_cocktailMC = False
 
     global mtau, mnu
 
@@ -2333,18 +2366,20 @@ def main(argv):
         names = ["BsD0D0", "BsD0starD0", "BsD0D0star", "BsD0starD0star"] # Bs -> D0 D0
 
     fc = ROOT.TFileCollection("fc", "fc", RECO_files, 1, line)
-    if(is_cocktailMC):
+    if(is_cocktailMC and (species > 0)):
         inTrees = []
         for i in range(4):
             inTrees.append(ROOT.TChain(names[i]+"/DecayTree"))
             inTrees[i].AddFileInfoList(fc.GetList())
-
     else:
-        t = ROOT.TChain("DecayTree")
+        if(is_cocktailMC):
+            t = ROOT.TChain("ntuple/DecayTree")
+        else:
+            t = ROOT.TChain("DecayTree")
         t.AddFileInfoList(fc.GetList())
 
     file = ROOT.TFile.Open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201{0}/Species_{1}/{2}.root".format(year,species,line), "UPDATE")
-    if(is_cocktailMC):
+    if(is_cocktailMC and (species > 0)):
         outTrees = []
         for i in range(4):            
             outTrees.append( ROOT.TTree("DecayTree", "DecayTree") )
@@ -2359,7 +2394,7 @@ def main(argv):
     if isD0D0K:
         x_true_names = ["Bp_TRUEENDVERTEX_X", "Bp_TRUEENDVERTEX_Y", "Bp_TRUEENDVERTEX_Z", "Bp_TRUEP_X", "Bp_TRUEP_Y", "Bp_TRUEP_Z", "D0_TRUEP_X", "D0_TRUEP_Y", "D0_TRUEP_Z", "D0_TRUEP_E", "D0_pi1_TRUEP_X", "D0_pi1_TRUEP_Y", "D0_pi1_TRUEP_Z", "D0_pi1_TRUEP_E", "D0_pi2_TRUEP_X", "D0_pi2_TRUEP_Y", "D0_pi2_TRUEP_Z", "D0_pi2_TRUEP_E", "D0_pi3_TRUEP_X", "D0_pi3_TRUEP_Y", "D0_pi3_TRUEP_Z", "D0_pi3_TRUEP_E", "D0bar_TRUEP_X", "D0bar_TRUEP_Y", "D0bar_TRUEP_Z", "D0bar_TRUEP_E", "D0bar_pi1_TRUEP_X", "D0bar_pi1_TRUEP_Y", "D0bar_pi1_TRUEP_Z", "D0bar_pi1_TRUEP_E", "D0bar_pi2_TRUEP_X", "D0bar_pi2_TRUEP_Y", "D0bar_pi2_TRUEP_Z", "D0bar_pi2_TRUEP_E", "D0bar_pi3_TRUEP_X", "D0bar_pi3_TRUEP_Y", "D0bar_pi3_TRUEP_Z", "D0bar_pi3_TRUEP_E"]
 
-    if(is_cocktailMC):
+    if(is_cocktailMC and (species > 0)):
         for k in range(4):
             for i in range(dimM+dimX):
                 outTrees[k].Branch(x_names[i], X[i], x_names[i]+"/D")
@@ -2777,7 +2812,7 @@ def main(argv):
     m = np.zeros(dimM)
     V = np.zeros((dimM,dimM))
 
-    if(is_cocktailMC):
+    if(is_cocktailMC and (species > 0)):
         for k in range(4):
             inTree = inTrees[k]
             outTree = outTrees[k]
@@ -2786,351 +2821,8 @@ def main(argv):
     else:
         loop_over_tree(t, tree, year, species, line, is_cocktailMC, isD0D0K, m, V, x_true_names)
 
-    # if(is_cocktailMC):
-
-    #     for k in range(4):
-    #         t = inTrees[k]
-
-    #         Big_start = time.time()
-    #         num_entries = t.GetEntries()
-
-    #         for evt in range(num_entries):
-
-    #             start = time.time()
-    #             print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", " evt = ", evt, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-
-    #             entry = t.GetEntry(evt) 
-
-    #             # Get vector m and covariance matrix V from TTree
-    #             for i in range(dimM):
-
-    #                 if isD0D0K:
-    #                     m[i] = getattr(t, "df_mprime_{0}".format(i+1))
-    #                 else:
-    #                     m[i] = getattr(t, "df_m_{0}".format(i+1)) 
-
-    #                 for j in range(dimM):
-    #                     if isD0D0K:
-    #                         if(j >= i):
-    #                             V[i][j] = getattr(t, "df_Vprime_{0}_{1}".format(i+1,j+1)) 
-    #                         else:
-    #                             V[i][j] = getattr(t, "df_Vprime_{0}_{1}".format(j+1,i+1)) 
-    #                     else:
-    #                         if(j >= i):
-    #                             V[i][j] = getattr(t, "df_V_{0}_{1}".format(i+1,j+1))
-    #                         else:
-    #                             V[i][j] = getattr(t, "df_V_{0}_{1}".format(j+1,i+1))
-
-    #             # True measured values
-    #             # m[0] = getattr(t, "Bp_TRUEORIGINVERTEX_X")
-    #             # m[1] = getattr(t, "Bp_TRUEORIGINVERTEX_Y")
-    #             # m[2] = getattr(t, "Bp_TRUEORIGINVERTEX_Z")
-    #             # m[3] = getattr(t, "taup_TRUEENDVERTEX_X")
-    #             # m[4] = getattr(t, "taup_TRUEENDVERTEX_Y")
-    #             # m[5] = getattr(t, "taup_TRUEENDVERTEX_Z")
-    #             # pi1x = getattr(t, "taup_pi1_TRUEP_X")
-    #             # pi1y = getattr(t, "taup_pi1_TRUEP_Y")
-    #             # pi1z = getattr(t, "taup_pi1_TRUEP_Z")
-    #             # E1 = getattr(t, "taup_pi1_TRUEP_E")
-    #             # pi2x = getattr(t, "taup_pi2_TRUEP_X")
-    #             # pi2y = getattr(t, "taup_pi2_TRUEP_Y")
-    #             # pi2z = getattr(t, "taup_pi2_TRUEP_Z")
-    #             # E2 = getattr(t, "taup_pi2_TRUEP_E")
-    #             # pi3x = getattr(t, "taup_pi3_TRUEP_X")
-    #             # pi3y = getattr(t, "taup_pi3_TRUEP_Y")
-    #             # pi3z = getattr(t, "taup_pi3_TRUEP_Z")
-    #             # E3 = getattr(t, "taup_pi3_TRUEP_E")
-    #             # m[6] = pi1x + pi2x + pi3x
-    #             # m[7] = pi1y + pi2y + pi3y
-    #             # m[8] = pi1z + pi2z + pi3z
-    #             # m[9] = E1 + E2 + E3
-    #             # m[10] = getattr(t, "taum_TRUEENDVERTEX_X")
-    #             # m[11] = getattr(t, "taum_TRUEENDVERTEX_Y")
-    #             # m[12] = getattr(t, "taum_TRUEENDVERTEX_Z")
-    #             # pi4x = getattr(t, "taum_pi1_TRUEP_X")
-    #             # pi4y = getattr(t, "taum_pi1_TRUEP_Y")
-    #             # pi4z = getattr(t, "taum_pi1_TRUEP_Z")
-    #             # E4 = getattr(t, "taum_pi1_TRUEP_E")
-    #             # pi5x = getattr(t, "taum_pi2_TRUEP_X")
-    #             # pi5y = getattr(t, "taum_pi2_TRUEP_Y")
-    #             # pi5z = getattr(t, "taum_pi2_TRUEP_Z")
-    #             # E5 = getattr(t, "taum_pi2_TRUEP_E")
-    #             # pi6x = getattr(t, "taum_pi3_TRUEP_X")
-    #             # pi6y = getattr(t, "taum_pi3_TRUEP_Y")
-    #             # pi6z = getattr(t, "taum_pi3_TRUEP_Z")
-    #             # E6 = getattr(t, "taum_pi3_TRUEP_E")
-    #             # m[13] = pi4x + pi5x + pi6x
-    #             # m[14] = pi4y + pi5y + pi6y
-    #             # m[15] = pi4z + pi5z + pi6z
-    #             # m[16] = E4 + E5 + E6
-    #             # m[17] = getattr(t, "Bp_TRUEENDVERTEX_X")
-    #             # m[18] = getattr(t, "Bp_TRUEENDVERTEX_Y")
-    #             # m[19] = getattr(t, "Kp_TRUEP_X")
-    #             # m[20] = getattr(t, "Kp_TRUEP_Y")
-    #             # m[21] = getattr(t, "Kp_TRUEP_Z")
-                
-    #             if((species == 10) or (species == 11) or (species == 12) or (species == 1) or (species == 4) or (species == 9)):
-    #                 for i in range(len(x_true_names)):
-    #                     x_true.append( getattr(t, x_true_names[i]) )
-                
-    #             RPz = getattr(t, "Kp_RP_Z")
-    #             # RPz = getattr(t, "Bp_TRUEENDVERTEX_Z")
-    #             eventNumber = getattr(t, "eventNumber")
-
-    #             # Invert matrix V
-    #             W = np.linalg.inv(V)
-    #             # print(np.dot(W,V))
-    #             # print(np.linalg.eig(V))
-
-    #             BVx = getattr(t, "Bp_ENDVERTEX_X")
-    #             BVy = getattr(t, "Bp_ENDVERTEX_Y")
-    #             BVz = getattr(t, "Bp_ENDVERTEX_Z")
-    #             # global BV_offline 
-    #             BV_offline = ROOT.Math.XYZPoint(BVx, BVy, BVz)
-
-    #             params = [m, W, RPz, eventNumber]
-
-    #             change_L = 0
-
-    #             # Single initialisation
-    #             # init[0] = 14
-    #             # run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-    #             # if(status != 0):
-    #             #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
-    #             # if(status != 0):
-    #             #     change_L = 1
-    #             #     run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-    #             # if(status != 0):
-    #             #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
-    #             # if(status != 0):
-    #             #     change_L = 2
-    #             #     run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-    #             # if(status != 0):
-    #             #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
-
-    #             # Lowest chi2 (DEFAULT)
-    #             lowest_chi2(year, species, line, BV_offline, params, [0,1,2,3,4], max_iter=10000, eps=0.000001) 
-
-    #             for i in range(N_local_minima[0]):
-    #                 M_local[i] =  M_local_minima[i]
-    #                 Chi2_local[i] = Chi2_local_minima[i]
-
-    #             U = U_cov(x,params,V)
-
-    #             for i in range(dimM+dimX):
-    #                 X[i][0] = x[i]
-    #                 X_ERR[i][0] = np.sqrt(U[i][i])
-    #             for i in range(dimM+dimX+dimC):
-    #                 F[i][0] = f[i]
-
-    #             chi2[0] =  chi2_value
-    #             tolerance[0] = tol_value
-    #             STATUS[0] = status
-    #             NITER[0] = nIter
-
-    #             mass_squared = x[dimM+6]
-    #             if(mass_squared > 0):
-    #                 MB[0] = np.sqrt( mass_squared )
-    #             else:
-    #                 MB[0] = - np.sqrt( -mass_squared )
-
-    #             dMB_squared = np.sqrt(U[dimM+6][dimM+6])
-    #             dMB[0] =  dMB_squared/(2*np.abs(MB[0]))
-
-    #             print("init = ", init[0], "status = ", STATUS[0], "MB = ", MB[0], "dMB = ", dMB[0], "chi2 = ", chi2[0], "sum = ", tolerance[0], "N_local = ", N_local_minima[0])
-
-    #             ######################################################################
-    #             # MB0[0] = run_solver(0, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-    #             # MB1[0] = run_solver(1, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-    #             # MB2[0] = run_solver(2, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-    #             # MB3[0] = run_solver(3, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-    #             # MB4[0] = run_solver(4, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-
-    #             end = time.time()
-    #             theTime[0] = end-start
-    #             print("time = ", theTime[0], " s")
-
-    #             outTrees[k].Fill()
-    #             x_true.clear()
-    #             M_local_minima.clear()
-    #             Chi2_local_minima.clear()
-    #             nIter = 0
-
-    #         Big_end = time.time()
-    #         print("Run in {0} s".format(Big_end-Big_start))
-
-    # else:
-
-    #     Big_start = time.time()
-    #     num_entries = t.GetEntries()
-
-    #     for evt in range(num_entries):
-
-    #         start = time.time()
-    #         print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", " evt = ", evt, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-
-    #         entry = t.GetEntry(evt) 
-
-    #         # Get vector m and covariance matrix V from TTree
-    #         for i in range(dimM):
-
-    #             if isD0D0K:
-    #                 m[i] = getattr(t, "df_mprime_{0}".format(i+1))
-    #             else:
-    #                 m[i] = getattr(t, "df_m_{0}".format(i+1)) 
-
-    #             for j in range(dimM):
-    #                 if isD0D0K:
-    #                     if(j >= i):
-    #                         V[i][j] = getattr(t, "df_Vprime_{0}_{1}".format(i+1,j+1)) 
-    #                     else:
-    #                         V[i][j] = getattr(t, "df_Vprime_{0}_{1}".format(j+1,i+1)) 
-    #                 else:
-    #                     if(j >= i):
-    #                         V[i][j] = getattr(t, "df_V_{0}_{1}".format(i+1,j+1))
-    #                     else:
-    #                         V[i][j] = getattr(t, "df_V_{0}_{1}".format(j+1,i+1))
-
-    #         # True measured values
-    #         # m[0] = getattr(t, "Bp_TRUEORIGINVERTEX_X")
-    #         # m[1] = getattr(t, "Bp_TRUEORIGINVERTEX_Y")
-    #         # m[2] = getattr(t, "Bp_TRUEORIGINVERTEX_Z")
-    #         # m[3] = getattr(t, "taup_TRUEENDVERTEX_X")
-    #         # m[4] = getattr(t, "taup_TRUEENDVERTEX_Y")
-    #         # m[5] = getattr(t, "taup_TRUEENDVERTEX_Z")
-    #         # pi1x = getattr(t, "taup_pi1_TRUEP_X")
-    #         # pi1y = getattr(t, "taup_pi1_TRUEP_Y")
-    #         # pi1z = getattr(t, "taup_pi1_TRUEP_Z")
-    #         # E1 = getattr(t, "taup_pi1_TRUEP_E")
-    #         # pi2x = getattr(t, "taup_pi2_TRUEP_X")
-    #         # pi2y = getattr(t, "taup_pi2_TRUEP_Y")
-    #         # pi2z = getattr(t, "taup_pi2_TRUEP_Z")
-    #         # E2 = getattr(t, "taup_pi2_TRUEP_E")
-    #         # pi3x = getattr(t, "taup_pi3_TRUEP_X")
-    #         # pi3y = getattr(t, "taup_pi3_TRUEP_Y")
-    #         # pi3z = getattr(t, "taup_pi3_TRUEP_Z")
-    #         # E3 = getattr(t, "taup_pi3_TRUEP_E")
-    #         # m[6] = pi1x + pi2x + pi3x
-    #         # m[7] = pi1y + pi2y + pi3y
-    #         # m[8] = pi1z + pi2z + pi3z
-    #         # m[9] = E1 + E2 + E3
-    #         # m[10] = getattr(t, "taum_TRUEENDVERTEX_X")
-    #         # m[11] = getattr(t, "taum_TRUEENDVERTEX_Y")
-    #         # m[12] = getattr(t, "taum_TRUEENDVERTEX_Z")
-    #         # pi4x = getattr(t, "taum_pi1_TRUEP_X")
-    #         # pi4y = getattr(t, "taum_pi1_TRUEP_Y")
-    #         # pi4z = getattr(t, "taum_pi1_TRUEP_Z")
-    #         # E4 = getattr(t, "taum_pi1_TRUEP_E")
-    #         # pi5x = getattr(t, "taum_pi2_TRUEP_X")
-    #         # pi5y = getattr(t, "taum_pi2_TRUEP_Y")
-    #         # pi5z = getattr(t, "taum_pi2_TRUEP_Z")
-    #         # E5 = getattr(t, "taum_pi2_TRUEP_E")
-    #         # pi6x = getattr(t, "taum_pi3_TRUEP_X")
-    #         # pi6y = getattr(t, "taum_pi3_TRUEP_Y")
-    #         # pi6z = getattr(t, "taum_pi3_TRUEP_Z")
-    #         # E6 = getattr(t, "taum_pi3_TRUEP_E")
-    #         # m[13] = pi4x + pi5x + pi6x
-    #         # m[14] = pi4y + pi5y + pi6y
-    #         # m[15] = pi4z + pi5z + pi6z
-    #         # m[16] = E4 + E5 + E6
-    #         # m[17] = getattr(t, "Bp_TRUEENDVERTEX_X")
-    #         # m[18] = getattr(t, "Bp_TRUEENDVERTEX_Y")
-    #         # m[19] = getattr(t, "Kp_TRUEP_X")
-    #         # m[20] = getattr(t, "Kp_TRUEP_Y")
-    #         # m[21] = getattr(t, "Kp_TRUEP_Z")
-            
-    #         if((species == 10) or (species == 11) or (species == 12) or (species == 1) or (species == 4) or (species == 9)):
-    #             for i in range(len(x_true_names)):
-    #                 x_true.append( getattr(t, x_true_names[i]) )
-            
-    #         RPz = getattr(t, "Kp_RP_Z")
-    #         # RPz = getattr(t, "Bp_TRUEENDVERTEX_Z")
-    #         eventNumber = getattr(t, "eventNumber")
-
-    #         # Invert matrix V
-    #         W = np.linalg.inv(V)
-    #         # print(np.dot(W,V))
-    #         # print(np.linalg.eig(V))
-
-    #         BVx = getattr(t, "Bp_ENDVERTEX_X")
-    #         BVy = getattr(t, "Bp_ENDVERTEX_Y")
-    #         BVz = getattr(t, "Bp_ENDVERTEX_Z")
-    #         # global BV_offline 
-    #         BV_offline = ROOT.Math.XYZPoint(BVx, BVy, BVz)
-
-    #         params = [m, W, RPz, eventNumber]
-
-    #         change_L = 0
-
-    #         # Single initialisation
-    #         # init[0] = 14
-    #         # run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-    #         # if(status != 0):
-    #         #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
-    #         # if(status != 0):
-    #         #     change_L = 1
-    #         #     run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-    #         # if(status != 0):
-    #         #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
-    #         # if(status != 0):
-    #         #     change_L = 2
-    #         #     run_solver(init[0], year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-    #         # if(status != 0):
-    #         #     run_solver(init[0], year, species, line, BV_offline, params, False, max_iter=10000, eps=0.000001)
-
-    #         # Lowest chi2 (DEFAULT)
-    #         lowest_chi2(year, species, line, BV_offline, params, [0,1,2,3,4], max_iter=10000, eps=0.000001) 
-
-    #         for i in range(N_local_minima[0]):
-    #             M_local[i] =  M_local_minima[i]
-    #             Chi2_local[i] = Chi2_local_minima[i]
-
-    #         U = U_cov(x,params,V)
-
-    #         for i in range(dimM+dimX):
-    #             X[i][0] = x[i]
-    #             X_ERR[i][0] = np.sqrt(U[i][i])
-    #         for i in range(dimM+dimX+dimC):
-    #             F[i][0] = f[i]
-
-    #         chi2[0] =  chi2_value
-    #         tolerance[0] = tol_value
-    #         STATUS[0] = status
-    #         NITER[0] = nIter
-
-    #         mass_squared = x[dimM+6]
-    #         if(mass_squared > 0):
-    #             MB[0] = np.sqrt( mass_squared )
-    #         else:
-    #             MB[0] = - np.sqrt( -mass_squared )
-
-    #         dMB_squared = np.sqrt(U[dimM+6][dimM+6])
-    #         dMB[0] =  dMB_squared/(2*np.abs(MB[0]))
-
-    #         print("init = ", init[0], "status = ", STATUS[0], "MB = ", MB[0], "dMB = ", dMB[0], "chi2 = ", chi2[0], "sum = ", tolerance[0], "N_local = ", N_local_minima[0])
-
-    #         ######################################################################
-    #         # MB0[0] = run_solver(0, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-    #         # MB1[0] = run_solver(1, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-    #         # MB2[0] = run_solver(2, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-    #         # MB3[0] = run_solver(3, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-    #         # MB4[0] = run_solver(4, year, species, line, BV_offline, params, True, max_iter=10000, eps=0.000001)
-
-    #         end = time.time()
-    #         theTime[0] = end-start
-    #         print("time = ", theTime[0], " s")
-
-    #         tree.Fill()
-    #         x_true.clear()
-    #         M_local_minima.clear()
-    #         Chi2_local_minima.clear()
-    #         nIter = 0
-
-    #     Big_end = time.time()
-    #     print("Run in {0} s".format(Big_end-Big_start))
-
     file.cd()
-    if(is_cocktailMC):
+    if(is_cocktailMC and (species > 0)):
         for i in range(4):
             file.mkdir(names[i])
             file.cd(names[i])
