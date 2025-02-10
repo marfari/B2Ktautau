@@ -1,5 +1,5 @@
 import ROOT 
-import sys
+import sys, os
 import numpy as np
 from array import array
 import sympy as sp
@@ -92,8 +92,15 @@ def chisquare(params):
 
     chi2 = 0
     for i in range(dimM):
-        for j in range(dimM):
-            chi2 += ( m[i] - xm_symbols[i] )*W[i,j]*( m[j] - xm_symbols[j] )
+        res_i = m[i] - xm_symbols[i]
+        chi2 += res_i*res_i*W[i,i]
+        for j in range(i):
+            res_j = m[j] - xm_symbols[j]
+            chi2 += 2*res_i*W[i,j]*res_j
+            
+    # for i in range(dimM):
+    #     for j in range(dimM):
+    #         chi2 += ( m[i] - xm_symbols[i] )*W[i,j]*( m[j] - xm_symbols[j] )
     return chi2
 
 def chisquare_value(x, params):
@@ -107,10 +114,10 @@ def lagrangian(params):
     RPz = params[2]
 
     def EB(a, b, c, d):
-        return (a + b**2 + c**2 + d**2)**(0.5)
+        return np.sqrt(a + b**2 + c**2 + d**2)
 
     def EK(e, f, g):
-        return (mkaon**2 + e**2 + f**2 + g**2)**(0.5)
+        return np.sqrt(mkaon**2 + e**2 + f**2 + g**2)
 
     # xm
     PVx = xm_symbols[0]
@@ -180,16 +187,16 @@ def lagrangian(params):
     g.append( ptau1z - p3pi1z - pnu1z ) 
     g.append( Etau1 - E3pi1 - Enu1 ) 
     # tau+ and anti-nu mass constraints
-    g.append( Etau1 - (mtau**2 + ptau1x**2 + ptau1y**2 + ptau1z**2)**(0.5) ) 
-    g.append( Enu1 - (mnu**2 + pnu1x**2 + pnu1y**2 + pnu1z**2)**(0.5) ) 
+    g.append( Etau1 - np.sqrt(mtau**2 + ptau1x**2 + ptau1y**2 + ptau1z**2) ) 
+    g.append( Enu1 - np.sqrt(mnu**2 + pnu1x**2 + pnu1y**2 + pnu1z**2) ) 
     # 4-momentum conservation in DV2
     g.append( ptau2x - p3pi2x - pnu2x ) 
     g.append( ptau2y - p3pi2y - pnu2y ) 
     g.append( ptau2z - p3pi2z - pnu2z ) 
     g.append( Etau2 - E3pi2 - Enu2 ) 
     # tau- and nu mass constraints
-    g.append( Etau2 - (mtau**2 + ptau2x**2 + ptau2y**2 + ptau2z**2)**(0.5) ) 
-    g.append( Enu2 - (mnu**2 + pnu2x**2 + pnu2y**2 + pnu2z**2)**(0.5) ) 
+    g.append( Etau2 - np.sqrt(mtau**2 + ptau2x**2 + ptau2y**2 + ptau2z**2) ) 
+    g.append( Enu2 - np.sqrt(mnu**2 + pnu2x**2 + pnu2y**2 + pnu2z**2) ) 
     # 4-momentum conservation in BV
     g.append( pBx - ptau1x - ptau2x - pKx ) 
     g.append( pBy - ptau1y - ptau2y - pKy ) 
@@ -251,7 +258,7 @@ def second_derivative_test(x,params):
 
     global D
 
-    for i in range(49,69+1):
+    for i in range(49,69+1):  # TODO: Should these numbers 49, 69 be hardcoded?
         s = np.sign( np.linalg.det(get_principal_minor(H,i)) ) 
         D[i-49][0] = s
 
@@ -1887,11 +1894,9 @@ def lowest_chi2(year, species, line, BV_offline, params, init_list, max_iter, ep
     sum_list.clear()
     chi2_list.clear()
 
+@njit
 def absolute_sum(F):
-    abs_sum = 0
-    for i in range(len(F)):
-        abs_sum += np.abs(F[i])
-    return abs_sum
+    return np.sum(np.abs(F))
 
 def run_fdfsolver(year, species, line, x0, params, use_generalised_region, max_iter, eps):
     global x, f, status, nIter
