@@ -5,21 +5,21 @@ void mass_vetoes_plots()
 {
     // Input files
     // 3pi3pi MC
-    TFile* f1 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_10/post_sel_tree.root");
+    TFile* f1 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_10/post_sel_tree_0.8_0.8.root");
     TTree* t1 = (TTree*)f1->Get("DecayTree");  
 
     cout << "3pi3pi MC" << endl;
     cout << t1->GetEntries() << endl;
 
     // RS data
-    TFile* f2 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_2/post_sel_tree.root");
+    TFile* f2 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_2/post_sel_tree_0.8_0.8.root");
     TTree* t2 = (TTree*)f2->Get("DecayTree");  
 
     cout << "RS data" << endl;
     cout << t2->GetEntries() << endl;
 
     // WS data
-    TFile* f3 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_3/post_sel_tree.root");
+    TFile* f3 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_3/post_sel_tree_0.8_0.8.root");
     TTree* t3 = (TTree*)f3->Get("DecayTree");      
 
     cout << "WS data" << endl;
@@ -49,7 +49,30 @@ void mass_vetoes_plots()
     Int_t b5 = 0;
     Int_t b6 = 0;
 
-    TCut mass_vetoe_cuts = "(TMath::Abs(Bp_M0456 - 1864.84) > 25)";
+    TString costheta_pi2 = "(Kp_PX*taup_pi2_PX + Kp_PY*taup_pi2_PY + Kp_PZ*taup_pi2_PZ)/(TMath::Sqrt(pow(Kp_PX,2) + pow(Kp_PY,2) + pow(Kp_PZ,2))*TMath::Sqrt(pow(taup_pi2_PX,2) + pow(taup_pi2_PY,2) + pow(taup_pi2_PZ,2)))";
+    TString costheta_pi4 = "TMath::Acos(  (Kp_PX*taum_pi1_PX + Kp_PY*taum_pi1_PY + Kp_PZ*taum_pi1_PZ)/(TMath::Sqrt(pow(Kp_PX,2) + pow(Kp_PY,2) + pow(Kp_PZ,2))*TMath::Sqrt(pow(taum_pi1_PX,2) + pow(taum_pi1_PY,2) + pow(taum_pi1_PZ,2)))  )";
+    TString costheta_pi6 = "TMath::Acos(  (Kp_PX*taum_pi3_PX + Kp_PY*taum_pi3_PY + Kp_PZ*taum_pi3_PZ)/(TMath::Sqrt(pow(Kp_PX,2) + pow(Kp_PY,2) + pow(Kp_PZ,2))*TMath::Sqrt(pow(taum_pi3_PX,2) + pow(taum_pi3_PY,2) + pow(taum_pi3_PZ,2)))  )";
+
+    gStyle->SetOptStat(0);
+
+    TCanvas c;
+    c.cd();
+    TH1D* h_sig = new TH1D("h_sig", "h_sig", 50, 0.99, 1);
+    TH1D* h_rs = new TH1D("h_rs", "h_rs", 50, 0.99, 1);
+    t1->Draw(costheta_pi2+" >> h_sig", "(TMath::Abs(Bp_M02 - 892) < 50) && (TMath::Abs(Bp_M04 - 892) < 50) && (TMath::Abs(Bp_M06 - 892) < 50)");
+    t2->Draw(costheta_pi2+" >> h_rs", "(TMath::Abs(Bp_M02 - 892) < 50) && (TMath::Abs(Bp_M04 - 892) < 50) && (TMath::Abs(Bp_M06 - 892) < 50)");
+    h_sig->GetXaxis()->SetTitle("cos(#theta_{K,#pi^{2}})");
+    h_sig->GetYaxis()->SetTitle("Normalized entries / (0.04)");
+    h_sig->SetTitle("Events in K*0 mass region (within 50 MeV)");
+    h_rs->SetLineColor(kBlack);
+    h_sig->SetLineColor(kBlue);
+    h_sig->DrawNormalized();
+    h_rs->DrawNormalized("same");
+    c.SaveAs("/panfs/felician/B2Ktautau/workflow/mass_vetoes_plots/costheta2.pdf");
+
+    TCut mass_vetoe_cuts = "(TMath::Abs(Bp_M02 - 1864.84) > 10) && (TMath::Abs(Bp_M04 - 1864.84) > 10) && (TMath::Abs(Bp_M06 - 1864.84) > 10)"; // 2 particles: D0
+    mass_vetoe_cuts += "(TMath::Abs(Bp_M046-1869.66) > 10)"; // 3 particles: D+
+    mass_vetoe_cuts += "(TMath::Abs(Bp_M0126-1864.84) > 10) && (TMath::Abs(Bp_M0146-1864.84) > 10) && (TMath::Abs(Bp_M0234-1864.84) > 10) && (TMath::Abs(Bp_M0236-1864.84) > 10) && (TMath::Abs(Bp_M0245-1864.84) > 10) && (TMath::Abs(Bp_M0256-1864.84) > 10) && (TMath::Abs(Bp_M0346-1864.84) > 10) && (TMath::Abs(Bp_M0456-1864.84) > 25)";
 
     Double_t N_sig_num = t1->GetEntries(mass_vetoe_cuts);
     Double_t N_rs_num = t2->GetEntries(mass_vetoe_cuts);
