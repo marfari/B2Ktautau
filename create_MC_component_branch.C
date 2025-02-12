@@ -1,5 +1,5 @@
 
-void create_MC_component_branch(int year, TString MC_files, int line)
+void create_MC_component_branch(int year, int line)
 {
     struct event
     {
@@ -7,6 +7,7 @@ void create_MC_component_branch(int year, TString MC_files, int line)
         ULong64_t eventNumber;
     };
 
+    TString MC_files = Form("Files_on_grid/MC_201%i.txt",year);
     TFileCollection* fc = new TFileCollection("MC", "MC", MC_files, 1, line);
 
     TChain* t_reco = new TChain("ntuple/DecayTree");
@@ -20,9 +21,13 @@ void create_MC_component_branch(int year, TString MC_files, int line)
     t_gen_3pipi0_3pi->AddFileInfoList((TCollection*)fc->GetList());
     t_gen_3pi_3pi_2pi0->AddFileInfoList((TCollection*)fc->GetList());
 
-    TChain* t_gen_3pi_3pi_pi0 =  new TChain("t_gen_3pi_3pi_pi0", "t_gen_3pi_3pi_pi0");
-    t_gen_3pi_3pi_pi0->Add(t_gen_3pi_3pipi0);
-    t_gen_3pi_3pi_pi0->Add(t_gen_3pipi0_3pi);
+    t_gen_3pi_3pipi0->GetEntries();
+    t_gen_3pipi0_3pi->GetEntries();
+    t_gen_3pi_3pipi0->Add(t_gen_3pipi0_3pi);
+
+    // TChain* t_gen_3pi_3pi_pi0 =  new TChain("t_gen_3pi_3pi_pi0", "t_gen_3pi_3pi_pi0");
+    // t_gen_3pi_3pi_pi0->Add(t_gen_3pi_3pipi0);
+    // t_gen_3pi_3pi_pi0->Add(t_gen_3pipi0_3pi);
 
     // 3pi 3pi (GEN)
     cout << "Looping over GEN 3pi 3pi" << endl;
@@ -49,13 +54,13 @@ void create_MC_component_branch(int year, TString MC_files, int line)
     std::vector<event> events_gen_3pi3pipi0;
     UInt_t runNumber_3pi_3pi_pi0;
     ULong64_t eventNumber_3pi_3pi_pi0;
-    t_gen_3pi_3pi_pi0->SetBranchAddress("runNumber", &runNumber_3pi_3pi_pi0);
-    t_gen_3pi_3pi_pi0->SetBranchAddress("eventNumber", &eventNumber_3pi_3pi_pi0);
+    t_gen_3pi_3pipi0->SetBranchAddress("runNumber", &runNumber_3pi_3pi_pi0);
+    t_gen_3pi_3pipi0->SetBranchAddress("eventNumber", &eventNumber_3pi_3pi_pi0);
 
-    UInt_t gen_3pi_3pi_pi0_entries = t_gen_3pi_3pi_pi0->GetEntries();
+    UInt_t gen_3pi_3pi_pi0_entries = t_gen_3pi_3pipi0->GetEntries();
     for(int i = 0; i < gen_3pi_3pi_pi0_entries; i++)
     {
-        t_gen_3pi_3pi_pi0->GetEntry(i);
+        t_gen_3pi_3pipi0->GetEntry(i);
 
         event e;
         e.runNumber = runNumber_3pi_3pi_pi0;
@@ -83,8 +88,8 @@ void create_MC_component_branch(int year, TString MC_files, int line)
 
         events_gen_3pi3pi2pi0.push_back(e);
     }
-
-    TFile* fout = new TFile(Form("/panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201%i/MC_component_%i.root",year,line), "RECREATE");
+    
+    TFile* fout = new TFile(Form("/panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201%i/%i.root",year,line), "RECREATE");
     fout->cd();
     TTree * newtree = new TTree("DecayTree", "DecayTree");
     Int_t component = -999;
@@ -133,6 +138,10 @@ void create_MC_component_branch(int year, TString MC_files, int line)
                 break;
             }
         }
+        if(component == 2) continue;
+
+        newtree->Fill();
+
     }
     newtree->Write();
     fout->Close();
