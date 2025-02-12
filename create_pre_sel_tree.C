@@ -2,13 +2,12 @@
 Double_t eps_error(Double_t Num, Double_t Den);
 TCut DD_cut(TString name, Int_t mother_ID);
 TCut truthMatch_cocktailMC(TString name);
-void create_table(Int_t year, Int_t species, TString FILES, Bool_t isKtautauMC, Bool_t is_cocktailMC, TCut truthMatch, TCut MC_component, TCut trigger, TCut others);
+void create_table(Int_t year, Int_t species, TString FILES, Bool_t is_cocktailMC, TCut truthMatch, TCut trigger, TCut others);
 
 void create_pre_sel_tree(int year, int species, int line, bool createTable)
 {   
     // TString path = Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/Species_%i/Num_entries/%i.txt",year,species,line);
     // std::ofstream file(path);
-    Bool_t isKtautauMC = false;
     Bool_t isBuDDKp_cocktail = false;
     Bool_t isBdDDKp_cocktail = false;
     Bool_t isBsDDKp_cocktail = false;
@@ -18,51 +17,20 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     Bool_t isBdDD_cocktail = false;
     Bool_t isBsDD_cocktail = false;
 
-    if( (species == 10) || (species == 11) || (species == 12) || (species == 1) )
-    {
-        isKtautauMC = true;
-    }
-    if( (species == 100) || (species == 101) || (species == 102) )
-    {
-        isBuDDKp_cocktail = true;
-    }
-    if(species == 110)
-    {
-        isBdDDKp_cocktail = true;
-    }
-    if(species == 120)
-    {
-        isBsDDKp_cocktail = true;
-    }
-    if(species == 130)
-    {
-        isBuDDK0_cocktail = true;
-    }
-    if( (species == 140) || (species == 141) )
-    {
-        isBdDDK0_cocktail = true;
-    }
-    if( (species == 150) || (species == 151) )
-    {
-        isBuDD_cocktail = true;
-    }
-    if( (species == 160) || (species == 161) || (species == 162) || (species == 163) )
-    {
-        isBdDD_cocktail = true;
-    }
-    if( (species == 170) || (species == 171) || (species == 172) || (species == 173) )
-    {
-        isBsDD_cocktail = true;
-    }
+    if(species == 100){isBuDDKp_cocktail = true;}
+    if(species == 110){isBdDDKp_cocktail = true;}
+    if(species == 120){isBsDDKp_cocktail = true;}
+    if(species == 130){isBuDDK0_cocktail = true;}
+    if(species == 140){isBdDDK0_cocktail = true;}
+    if(species == 150){isBuDD_cocktail = true;}
+    if(species == 160){isBdDD_cocktail = true;}
+    if(species == 170){isBsDD_cocktail = true;}
 
     Bool_t is_cocktailMC = false;
-    if(isBuDDKp_cocktail || isBdDDKp_cocktail || isBsDDKp_cocktail || isBuDDK0_cocktail || isBdDDK0_cocktail || isBuDD_cocktail || isBdDD_cocktail || isBsDD_cocktail)
-    {
-        is_cocktailMC = true;
-    }
+    if(isBuDDKp_cocktail || isBdDDKp_cocktail || isBsDDKp_cocktail || isBuDDK0_cocktail || isBdDDK0_cocktail || isBuDD_cocktail || isBdDD_cocktail || isBsDD_cocktail){is_cocktailMC = true;}
 
     TString FILES;
-    if(isKtautauMC) // Ktautau MC
+    if((species == 1) || (species == 10)) // Ktautau MC
     {
         FILES = Form("/panfs/felician/B2Ktautau/workflow/PIDCalib/201%i/Species_1/pid_corr.txt",year);
     }
@@ -78,11 +46,11 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     {
         FILES = Form("Files_on_grid/data_DDK_201%i.txt",year);
     }
-    else if( (species == 7) || (species == 71) )
+    else if( (species == 7) || (species == 71) || (species == 72) ) // DDs MC
     {
         FILES = Form("/panfs/felician/B2Ktautau/workflow/PIDCalib/201%i/Species_7/pid_corr.txt",year);
     }
-    else if((species == 8) || (species == 81))
+    else if((species == 8) || (species == 81)) // DDs data
     {
         FILES = Form("Files_on_grid/data_D0Dps_201%i.txt",year);
     }
@@ -128,31 +96,31 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     }
 
     TString MC_component_file;
-    TCut MC_component = "";
-    if(isKtautauMC)
+    if((species == 1) || (species == 10))
     {
-        MC_component_file = Form("/panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201%i/%i.root",year,line);
-
-        if(species == 10){MC_component = "component == 0";} // 3pi 3pi
-        else if(species == 11){MC_component = "component == 1";} // 3pi 3pi pi0
-        else if(species == 12){MC_component = "component == 2";} // 3pi 3pi 2pi0
+        MC_component_file = Form("/panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201%i/mc_components.txt",year);
+    }
+    else
+    {
+        MC_component_file = Form("/panfs/felician/B2Ktautau/workflow/separate_reco_cocktail_mc_components/201%i/Species_%i/cocktail_mc_components.txt",year,species);
     }
 
     /////////////////////////////////////////////////// TRUTH MATCH CUTS ///////////////////////////////////////////////////////////////////////
     // Other MC:
     TCut truthMatch;
-    if(isKtautauMC){
+    if(species == 1) // Ktautau 
+    {
         truthMatch = "(abs(Kp_TRUEID) == 321) && (abs(taup_pi1_TRUEID) == 211) && (abs(taup_pi2_TRUEID) == 211) && (abs(taup_pi3_TRUEID) == 211) && (abs(taum_pi1_TRUEID) == 211) && (abs(taum_pi2_TRUEID) == 211) && (abs(taum_pi3_TRUEID) == 211) && (abs(taup_TRUEID) == 15) && (abs(taum_TRUEID) == 15) && (abs(Bp_TRUEID) == 521)";
     } 
-    else if(species == 4) // D+D-K+ MC
+    else if(species == 4) // D+D-K+
     {
         truthMatch = "(abs(Kp_TRUEID) == 321) && (abs(Dp_K_TRUEID) == 321) && (abs(Dp_pi1_TRUEID) == 211) && (abs(Dp_pi2_TRUEID) == 211) && (abs(Dm_K_TRUEID) == 321) && (abs(Dm_pi1_TRUEID) == 211) && (abs(Dm_pi2_TRUEID) == 211) && (abs(Dp_TRUEID) == 411) && (abs(Dm_TRUEID) == 411) && (abs(Bp_TRUEID) == 521)";
     }
-    else if((species == 7) || (species == 71) ) // D0D+s MC
+    else if((species == 7) || (species == 71) ) // D0D+s 
     {
         truthMatch = "(abs(D0bar_K_TRUEID) == 321) && (abs(Dsp_K1_TRUEID) == 321) && (abs(Dsp_K2_TRUEID) == 321) && (abs(D0bar_pi_TRUEID) == 211) && (abs(Dsp_pi_TRUEID) == 211) && (abs(D0bar_TRUEID) == 421) && (abs(Dsp_TRUEID) == 431) && (abs(Bp_TRUEID) == 521)";
     }
-    else if(species == 9) // D0D0K MC
+    else if(species == 9) // D0D0K 
     {
         truthMatch = "(abs(D0bar_K_TRUEID) == 321) && (abs(D0bar_pi1_TRUEID) == 211) && (abs(D0bar_pi2_TRUEID) == 211) && (abs(D0bar_pi3_TRUEID) == 211) && (abs(D0_K_TRUEID) == 321) && (abs(D0_pi1_TRUEID) == 211) && (abs(D0_pi2_TRUEID) == 211) && (abs(D0_pi3_TRUEID) == 211) && (abs(D0bar_TRUEID) == 421) && (abs(D0_TRUEID) == 421) && (abs(Kp_TRUEID) == 321) && (abs(Bp_TRUEID) == 521)";
     }
@@ -166,7 +134,7 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     ///////////////////////////////////////////////////////// Rectangular cuts /////////////////////////////////////////////////////////////////////////////////
     TCut others;
     std::vector<TCut> other_cuts;
-    if(isKtautauMC || (species == 2) || (species == 3) || is_cocktailMC)
+    if((species == 1) || (species == 2) || (species == 3) || is_cocktailMC || (species == 10) )
     {
         other_cuts.push_back("(taup_M > 750) && (taup_M < 1650)");
         other_cuts.push_back("(taum_M > 750) && (taum_M < 1650)");
@@ -184,12 +152,12 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
         other_cuts.push_back("(abs(Dp_M-1869.66) < 50) && (abs(Dm_M < 1869.66) < 50)");
         other_cuts.push_back("(Bp_FD_OWNPV > 2)");
     }
-    if((species == 7) || (species == 8) ) // D0barD+s
+    if((species == 7) || (species == 8) || (species == 72) ) // D0barD+s
     { 
         other_cuts.push_back("(Bp_BPVVD > 4) && (Bp_BPVVD < 80)");
         other_cuts.push_back("(D0bar_M > 1820) && (D0bar_M < 1910)");
         other_cuts.push_back("(Dsp_M > 1930) && (Dsp_M < 2000)");
-        if(species == 7)
+        if((species == 7) || (species == 72))
         {
             other_cuts.push_back("D0bar_K_ProbNNk_pidgen_default > 0.55");
             other_cuts.push_back("Dsp_K1_ProbNNk_pidgen_default > 0.55");
@@ -203,7 +171,7 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
         }
 
     }
-    if((species == 9) || (species == 0) || (species == -1)) // D0D0K MC, RS data, WS data
+    if((species == 9) || (species == 0) || (species == -1)) // D0D0K 
     {
         other_cuts.push_back("Kp_PT > 1000");
         other_cuts.push_back("Kp_ProbNNk > 0.55");
@@ -220,19 +188,19 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     }
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     TCut pre_selections;
-    if(isKtautauMC) // Ktautau MC
-    {
-        pre_selections = MC_component+truthMatch+trigger+others;
-    }
-    else if((species == 2) || (species == 3)) // Ktautau data
-    {
-        pre_selections = trigger+others;
-    }
-    else if((isBuDDKp_cocktail) || (isBdDDKp_cocktail) || (isBsDDKp_cocktail) || (isBuDDK0_cocktail) || (isBdDDK0_cocktail) || (isBuDD_cocktail) || (isBdDD_cocktail) || (isBsDD_cocktail))
+    if(species == 1) // Ktautau MC
     {
         pre_selections = truthMatch+trigger+others;
     }
-    else if((species == 4) || (species == 7) || (species == 9) ) // D+D-K+, D0barD+s, D0D0K MC
+    else if((species == 2) || (species == 3) || (species == 10) || is_cocktailMC) // Ktautau data,  Ktautau MC w/o TM, cocktail MCs w/o TM
+    {
+        pre_selections = trigger+others;
+    }
+    else if(species == 7) // DDs MC
+    {
+        pre_selections = truthMatch+trigger+others+"(Bp_dtf_status[0]==0) && (Bp_dtf_M[0] > 5235) && (Bp_dtf_M[0] < 5355)";
+    }
+    else if((species == 4) || (species == 9) ) // D+D-K+, D0barD+s, D0D0K MC
     {
         pre_selections = truthMatch+trigger+others+"(Bp_dtf_status[0]==0)";
     }
@@ -240,7 +208,11 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     {
         pre_selections = truthMatch+trigger+"(Bp_dtf_status[0]==0)";
     }
-    else if((species == 5) || (species == 6) || (species == 8) || (species == 0) || (species == -1)) // D+D-K+ and D0barD+s data
+    else if((species == 8) || (species == 72)) // DDs data and DDs MC w/o TM cuts
+    {
+        pre_selections = trigger+others+"(Bp_dtf_status[0]==0) && (Bp_dtf_M[0] > 5235) && (Bp_dtf_M[0] < 5355)";
+    }
+    else if((species == 5) || (species == 6) || (species == 0) || (species == -1)) // D+D-K+ and D0barD+s data
     {
         pre_selections = trigger+others+"(Bp_dtf_status[0]==0)";
     }
@@ -248,31 +220,23 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     {
         pre_selections = trigger+"(Bp_dtf_status[0]==0)";
     }
-    else if(species == 85)
-    {
-        pre_selections = "";
-    }
-    else if(is_cocktailMC)
-    {
-        pre_selections = trigger+others;
-    }
 
     if(createTable)
     {
         if((species == 2) || (species == 3))
         {
-            create_table(year, species, Form("Files_on_grid/data_201%i_noSel_DTF.txt",year), isKtautauMC, is_cocktailMC, truthMatch, MC_component, trigger, others);
+            create_table(year, species, Form("Files_on_grid/data_201%i_noSel_DTF.txt",year), is_cocktailMC, truthMatch, trigger, others);
         }
         else
         {
-            create_table(year, species, FILES, isKtautauMC, is_cocktailMC, truthMatch, MC_component, trigger, others);
+            create_table(year, species, FILES, is_cocktailMC, truthMatch, trigger, others);
         }
         return;
     }
 
     TFileCollection* fc = new TFileCollection("fc", "fc", FILES, 1, line);
     TChain* t;
-    if(isKtautauMC || (species == 7) || (species == 71) ) // Ktautau MC + normalisation channel (PID corrected)
+    if((species == 1) || (species == 10) || (species == 7) || (species == 71) || (species == 72) ) // Ktautau MC + normalisation channel (PID corrected)
     {
         t = new TChain("DecayTree");
     }
@@ -286,75 +250,34 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     }
     t->AddFileInfoList((TCollection*)fc->GetList());
 
-    if(isKtautauMC)
+    if((species == 1) || (species == 10) || is_cocktailMC)
     {
-        t->AddFriend("DecayTree", MC_component_file);
+        TFileCollection* fc1 = new TFileCollection("fc1", "fc1", MC_component_file, 1, line);
+        TChain* t1 = new TChain("DecayTree");
+        t1->AddFileInfoList((TCollection*)fc1->GetList());
+
+        Int_t Nraw_entries = t->GetEntries();
+        Int_t Nbranch_entries = t1->GetEntries();
+
+        cout << "From grid: " << Nraw_entries << endl;
+        cout << "MC compo: " << Nbranch_entries << endl;
+        if(Nraw_entries != Nbranch_entries)
+        {
+            cout << "Wrong number of entries" << endl;
+            return;
+        }
+        t->AddFriend(t1, "MC_component");
     }
 
     TString fout_name = Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/Species_%i/%i.root",year,species,line);
-    TFile* fout = new TFile(fout_name, "RECREATE");   
-    fout->cd();
-    if(is_cocktailMC)
-    {
-        TString names1[] = {"BuD0D0Kp", "BuD0starD0Kp", "BuD0D0starKp", "BuD0starD0starKp"}; // B+ -> D0 D0 K+
-        TString names2[] = {"BuDpDmKp", "BuDpstarDmKp", "BuDpDmstarKp", "BuDpstarDmstarKp"}; // B+ -> D+ D- K+
-        TString names3[] = {"BuDsDsKp", "BuDsstarDsKp", "BuDsDsstarKp", "BuDsstarDsstarKp"}; // B+ -> Ds+ Ds- K+
-        TString names4[] = {"BdDmD0Kp", "BdDmstarD0Kp", "BdDmD0starKp", "BdDmstarD0starKp"}; // B0 -> D- D0 K+
-        TString names5[] = {"BsDsD0Kp", "BsDsstarD0Kp", "BsDsD0starKp", "BsDsstarD0starKp"}; // Bs -> Ds- D0 K+
-        TString names6[] = {"BuD0DpK0", "BuD0starDpK0", "BuD0DpstarK0", "BuD0starDpstarK0"}; // B+ -> D0 D+ K0
-        TString names7[] = {"BdDpDmK0", "BdDpstarDmK0", "BdDpDmstarK0", "BdDpstarDmstarK0"}; // B0 -> D+ D- K0
-        TString names8[] = {"BdD0D0K0", "BdD0starD0K0", "BdD0D0starK0", "BdD0starD0starK0"}; // B0 -> D0 D0 K0
-        TString names9[] = {"BuD0Ds", "BuD0starDs", "BuD0Dsstar", "BuD0starDsstar"}; // B+ -> D0 Ds+
-        TString names10[] = {"BuD0Dp", "BuD0starDp", "BuD0Dpstar", "BuD0starDpstar"}; // B+ -> D0 D+
-        TString names11[] = {"BdD0D0", "BdD0starD0", "BdD0D0star", "BdD0starD0star"}; // B0 -> D0 D0
-        TString names12[] = {"BdDpDm", "BdDpstarDm", "BdDpDmstar", "BdDpstarDmstar"}; // B0 -> D+ D-
-        TString names13[] = {"BdDpDs", "BdDpstarDs", "BdDpDsstar", "BdDpstarDsstar"}; // B0 -> D- Ds+
-        TString names14[] = {"BdDsDs", "BdDsstarDs", "BdDsDsstar", "BdDsstarDsstar"}; // B0 -> Ds+ Ds-
-        TString names15[] = {"BsDsDs", "BsDsstarDs", "BsDsDsstar", "BsDsstarDsstar"}; // Bs -> Ds+ Ds-
-        TString names16[] = {"BsDpDs", "BsDpstarDs", "BsDpDsstar", "BsDpstarDsstar"}; // Bs -> D- Ds+
-        TString names17[] = {"BsDpDm", "BsDpstarDm", "BsDpDmstar", "BsDpstarDmstar"}; // Bs -> D+ D-
-        TString names18[] = {"BsD0D0", "BsD0starD0", "BsD0D0star", "BsD0starD0star"}; // Bs -> D0 D0
-
-        for(int i = 0; i < 4; i++)
-        {
-            TString name;
-            if(species == 100){name = names1[i];} // B+ -> D0 D0 K+
-            else if(species == 101){name = names2[i];} // B+ -> D+ D- K+
-            else if(species == 102){name = names3[i];} // B+ -> Ds+ Ds- K+
-            else if(species == 110){name = names4[i];} // B0 -> D- D0 K+
-            else if(species == 120){name = names5[i];} // Bs -> Ds- D0 K+
-            else if(species == 130){name = names6[i];} // B+ -> D0 D+ K0
-            else if(species == 140){name = names7[i];} // B0 -> D+ D- K0
-            else if(species == 141){name = names8[i];} // B0 -> D0 D0 K0
-            else if(species == 150){name = names9[i];} // B+ -> D0 Ds+
-            else if(species == 151){name = names10[i];} // B+ -> D0 D+
-            else if(species == 160){name = names11[i];} // B0 -> D0 D0
-            else if(species == 161){name = names12[i];} // B0 -> D+ D-
-            else if(species == 162){name = names13[i];} // B0 -> D- Ds+
-            else if(species == 163){name = names14[i];} // B0 -> Ds+ Ds-
-            else if(species == 170){name = names15[i];} // Bs -> Ds+ Ds-
-            else if(species == 171){name = names16[i];} // Bs -> D- Ds+
-            else if(species == 172){name = names17[i];} // Bs -> D+ D-
-            else if(species == 173){name = names18[i];} // Bs -> D0 D0
-
-            fout->mkdir(name);
-            TTree* t_pre_sel = (TTree*)t->CopyTree(pre_selections+truthMatch_cocktailMC(name));
-            fout->cd(name);
-            t_pre_sel->Write();
-        }
-    }
-    else
-    {
-        TTree* t_pre_sel = (TTree*)t->CopyTree(pre_selections);
-        t_pre_sel->Write();
-    }
-    fout->Close();
-
+    ROOT::RDataFrame df(*t);
+    df.Filter(pre_selections.GetTitle()).Snapshot("DecayTree", fout_name);
+    
     cout << "Finished successfully" << endl;
 }
 
 
-void create_table(Int_t year, Int_t species, TString FILES, Bool_t isKtautauMC, Bool_t is_cocktailMC, TCut truthMatch, TCut MC_component, TCut trigger, TCut others)
+void create_table(Int_t year, Int_t species, TString FILES, Bool_t is_cocktailMC, TCut truthMatch, TCut trigger, TCut others)
 {
     cout << "Creating pre-selection efficiency tables" << endl;
     std::ofstream file(Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/Species_%i/pre_sel_table.tex",year,species));
@@ -362,7 +285,7 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t isKtautauMC, 
     TFileCollection* fc_reco = new TFileCollection("fc_reco", "fc_reco", FILES);
      
     TChain* t_reco;
-    if(isKtautauMC || (species == 7) || (species == 71) ) // Ktautau MC + normalisation channel (PID corrected)
+    if((species == 1) || (species == 7) || (species == 71) ) // Ktautau MC + normalisation channel (PID corrected)
     {
         t_reco = new TChain("DecayTree");
     }
@@ -378,17 +301,16 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t isKtautauMC, 
 
 
     TFileCollection* fc_comp;
-    if(isKtautauMC)
+    if(species == 1)
     {
         fc_comp = new TFileCollection("fc_comp", "fc_comp", Form("/panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201%i/mc_components.txt",year));
         TChain* t_comp = new TChain("DecayTree");
         t_comp->AddFileInfoList((TCollection*)fc_comp->GetList());
         t_reco->AddFriend(t_comp);
-    
     }
 
     TString FILES1;
-    if(isKtautauMC)
+    if(species == 1)
     {
         FILES1 = Form("Files_on_grid/MC_201%i.txt",year);
     }
@@ -399,49 +321,39 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t isKtautauMC, 
 
     TFileCollection* fc1;
     TChain* t_gen;
+    TChain* t_gen_3pi3pi, *t_gen_3pi_3pi0, *t_gen_3pi3pi_2pi0;
     TChain* t_gen_DD, *t_gen_DstarD, *t_gen_DDstar, *t_gen_DstarDstar;
-    if(isKtautauMC || (species == 4) || (species == 7) || (species == 71) || (species == 9) || is_cocktailMC)
+    if((species == 1) || (species == 4) || (species == 7) || (species == 71) || (species == 9) || is_cocktailMC)
     {
         fc1 = new TFileCollection("fc", "fc", FILES1);
 
-        if(species == 10)
+        if(species == 1)
         {
-            t_gen = new TChain("mc_ntuple_3pi_3pi/MCDecayTree");
-            t_gen->AddFileInfoList((TCollection*)fc1->GetList());
-        }
-        else if(species == 11)
-        {
-            t_gen = new TChain("mc_ntuple_3pi_3pipi0/MCDecayTree");
-            TChain* t1_gen = new TChain("mc_ntuple_3pipi0_3pi/MCDecayTree");
-            t_gen->AddFileInfoList((TCollection*)fc1->GetList());
-            t1_gen->AddFileInfoList((TCollection*)fc1->GetList());
-            t_gen->GetEntries();
-            t1_gen->GetEntries();
-            t_gen->Add(t1_gen);
+            // 3pi3pi
+            t_gen_3pi3pi = new TChain("mc_ntuple_3pi_3pi/MCDecayTree");
+            t_gen_3pi3pi->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_3pi3pi->GetEntries();
+            
+            // 3pi3pi pi0
+            t_gen_3pi_3pi0 = new TChain("mc_ntuple_3pi_3pipi0/MCDecayTree");
+            TChain* t1_gen_3pipi0_3pi = new TChain("mc_ntuple_3pipi0_3pi/MCDecayTree");
+            t_gen_3pi_3pi0->AddFileInfoList((TCollection*)fc1->GetList());
+            t1_gen_3pipi0_3pi->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_3pi_3pi0->GetEntries();
+            t1_gen_3pipi0_3pi->GetEntries();
+            t_gen_3pi_3pi0->Add(t1_gen_3pipi0_3pi);
 
-        }
-        else if(species == 12)
-        {
-            t_gen = new TChain("mc_ntuple_3pipi0_3pipi0/MCDecayTree");
-            t_gen->AddFileInfoList((TCollection*)fc1->GetList());
-        }
-        else if(species == 1)
-        {
+            // 3pi3pi 2pi0
+            t_gen_3pi3pi_2pi0 = new TChain("mc_ntuple_3pipi0_3pipi0/MCDecayTree");
+            t_gen_3pi3pi_2pi0->AddFileInfoList((TCollection*)fc1->GetList());
+            t_gen_3pi3pi_2pi0->GetEntries();
+
+
             t_gen = new TChain("mc_ntuple_3pi_3pi/MCDecayTree");
-            TChain* t1_gen = new TChain("mc_ntuple_3pi_3pipi0/MCDecayTree");
-            TChain* t2_gen = new TChain("mc_ntuple_3pipi0_3pi/MCDecayTree");
-            TChain* t3_gen = new TChain("mc_ntuple_3pipi0_3pipi0/MCDecayTree");
             t_gen->AddFileInfoList((TCollection*)fc1->GetList());
-            t1_gen->AddFileInfoList((TCollection*)fc1->GetList());
-            t2_gen->AddFileInfoList((TCollection*)fc1->GetList());
-            t3_gen->AddFileInfoList((TCollection*)fc1->GetList());
             t_gen->GetEntries();
-            t1_gen->GetEntries();
-            t2_gen->GetEntries();
-            t3_gen->GetEntries();
-            t_gen->Add(t1_gen);
-            t_gen->Add(t2_gen);
-            t_gen->Add(t3_gen);
+            t_gen->Add(t_gen_3pi_3pi0);
+            t_gen->Add(t_gen_3pi3pi_2pi0);
         }
         else if((species == 4) || (species == 7) || (species == 71) || (species == 9))
         {
@@ -540,11 +452,19 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t isKtautauMC, 
     
     // Truth-match efficiency
     Double_t N_gen;
+    Double_t N_gen_3pi3pi, N_gen_3pi3pipi0, N_gen_3pi3pi2pi0;
     Double_t N_gen_DD, N_gen_DstarD, N_gen_DDstar, N_gen_DstarDstar;
-    if(isKtautauMC || (species == 4) || (species == 7) || (species == 71) || (species == 9) || is_cocktailMC)
+    if((species == 1) || (species == 4) || (species == 7) || (species == 71) || (species == 9) || is_cocktailMC)
     {
         cout << "Truth-match efficiency" << endl;
 
+        if(species == 1)
+        {
+            N_gen_3pi3pi = t_gen_3pi3pi->GetEntries();
+            N_gen_3pi3pipi0 = t_gen_3pi_3pi0->GetEntries();
+            N_gen_3pi3pi2pi0 = t_gen_3pi3pi_2pi0->GetEntries();
+            N_gen = N_gen_3pi3pi+N_gen_3pi3pipi0+N_gen_3pi3pi2pi0;
+        }
         if(is_cocktailMC)
         {
             N_gen_DD = t_gen_DD->GetEntries();
@@ -566,13 +486,27 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t isKtautauMC, 
     }
 
     Double_t N_TM;
+    Double_t N_TM_3pi3pi, N_TM_3pi3pipi0, N_TM_3pi3pi2pi0;
     Double_t N_TM_DD, N_TM_DstarD, N_TM_DDstar, N_TM_DstarDstar;
     TCut truthMatch_DD, truthMatch_DstarD, truthMatch_DDstar, truthMatch_DstarDstar;
     Double_t eps_tm;
+    Double_t eps_tm_3pi3pi, eps_tm_3pi3pipi0, eps_tm_3pi3pi2pi0;
     Double_t eps_tm_DD, eps_tm_DstarD, eps_tm_DDstar, eps_tm_DstarDstar;
-    if(isKtautauMC || (species == 4) || (species == 7) || (species == 71) || (species == 9) || is_cocktailMC)
+    if((species == 1) || (species == 4) || (species == 7) || (species == 71) || (species == 9) || is_cocktailMC)
     {
-        if(is_cocktailMC)
+        if(species == 1)
+        {
+            N_TM_3pi3pi = t_reco->GetEntries(truthMatch+"component==0");
+            N_TM_3pi3pipi0 = t_reco->GetEntries(truthMatch+"component==1");
+            N_TM_3pi3pi2pi0 = t_reco->GetEntries(truthMatch+"component==2");
+            N_TM = N_TM_3pi3pi+N_TM_3pi3pipi0+N_TM_3pi3pi2pi0;
+
+            eps_tm_3pi3pi = N_TM_3pi3pi/N_gen_3pi3pi;
+            eps_tm_3pi3pipi0 = N_TM_3pi3pipi0/N_gen_3pi3pipi0;
+            eps_tm_3pi3pi2pi0 = N_TM_3pi3pi2pi0/N_gen_3pi3pi2pi0;
+            eps_tm = N_TM/N_gen;
+        }
+        else if(is_cocktailMC)
         {
             if(species == 100)
             {
@@ -649,7 +583,7 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t isKtautauMC, 
         }
         else
         {
-            N_TM = t_reco->GetEntries(truthMatch+MC_component);
+            N_TM = t_reco->GetEntries(truthMatch);
             eps_tm = N_TM/N_gen;
         }
     }
@@ -663,12 +597,26 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t isKtautauMC, 
     cout << "Trigger efficiency" << endl;
 
     Double_t N_trigger;
+    Double_t N_trigger_3pi3pi, N_trigger_3pi3pipi0, N_trigger_3pi3pi2pi0;
     Double_t N_trigger_DD, N_trigger_DstarD, N_trigger_DDstar, N_trigger_DstarDstar;
     Double_t eps_trigger;
+    Double_t eps_trigger_3pi3pi, eps_trigger_3pi3pipi0, eps_trigger_3pi3pi2pi0;
     Double_t eps_trigger_DD, eps_trigger_DstarD, eps_trigger_DDstar, eps_trigger_DstarDstar;
-    if(isKtautauMC || (species == 4) || (species == 7) || (species == 71) || (species == 9))
+    if(species == 1)
     {
-        N_trigger = t_reco->GetEntries(truthMatch+MC_component+trigger);
+        N_trigger_3pi3pi = t_reco->GetEntries(truthMatch+trigger+"component==0");
+        N_trigger_3pi3pipi0 = t_reco->GetEntries(truthMatch+trigger+"component==1");
+        N_trigger_3pi3pi2pi0 = t_reco->GetEntries(truthMatch+trigger+"component==2");
+        N_trigger = N_trigger_3pi3pi+N_trigger_3pi3pipi0+N_trigger_3pi3pi2pi0;
+
+        eps_trigger_3pi3pi = N_trigger_3pi3pi/N_TM_3pi3pi;
+        eps_trigger_3pi3pipi0 = N_trigger_3pi3pipi0/N_TM_3pi3pipi0;
+        eps_trigger_3pi3pi2pi0 = N_trigger_3pi3pi2pi0/N_TM_3pi3pi2pi0;
+        eps_trigger = N_trigger/N_TM;
+    }
+    else if((species == 4) || (species == 7) || (species == 71) || (species == 9))
+    {
+        N_trigger = t_reco->GetEntries(truthMatch+trigger);
         eps_trigger = N_trigger/N_TM;
     }
     else if(is_cocktailMC)
@@ -693,12 +641,26 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t isKtautauMC, 
     cout << "Rectangular cut efficiency" << endl;
 
     Double_t N_others;
+    Double_t N_others_3pi3pi, N_others_3pi3pipi0, N_others_3pi3pi2pi0;
     Double_t N_others_DD, N_others_DstarD, N_others_DDstar, N_others_DstarDstar;
     Double_t eps_others;
+    Double_t eps_others_3pi3pi, eps_others_3pi3pipi0, eps_others_3pi3pi2pi0;
     Double_t eps_others_DD, eps_others_DstarD, eps_others_DDstar, eps_others_DstarDstar;
-    if(isKtautauMC || (species == 4) || (species == 7) || (species == 71) || (species == 9))
+    if(species == 1)
     {
-        N_others = t_reco->GetEntries(truthMatch+MC_component+trigger+others);
+        N_others_3pi3pi = t_reco->GetEntries(truthMatch+trigger+others+"component==0");
+        N_others_3pi3pipi0 = t_reco->GetEntries(truthMatch+trigger+others+"component==1");
+        N_others_3pi3pi2pi0 = t_reco->GetEntries(truthMatch+trigger+others+"component==2");
+        N_others = N_others_3pi3pi+N_others_3pi3pipi0+N_others_3pi3pi2pi0;
+
+        eps_others_3pi3pi = N_others_3pi3pi/N_trigger_3pi3pi;
+        eps_others_3pi3pipi0 = N_others_3pi3pipi0/N_trigger_3pi3pipi0;
+        eps_others_3pi3pi2pi0 = N_others_3pi3pi2pi0/N_trigger_3pi3pi2pi0;
+        eps_others = N_others/N_trigger;
+    }
+    else if((species == 4) || (species == 7) || (species == 71) || (species == 9))
+    {
+        N_others = t_reco->GetEntries(truthMatch+trigger+others);
         eps_others = N_others/N_trigger;
     }
     else if(is_cocktailMC)
@@ -725,9 +687,26 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t isKtautauMC, 
     file << " \\hline" << std::endl;
     file << " Cut & " << "Efficiency " << " \\\\ " << std::endl;
     file << "\\hline" << std::endl;
-    if(isKtautauMC || (species == 4) || (species == 7) || (species == 71) || (species == 9) || is_cocktailMC)
+    if((species == 1) || (species == 4) || (species == 7) || (species == 71) || (species == 9) || is_cocktailMC)
     {
-        if(is_cocktailMC)
+        if(species == 1)
+        {
+            file << "Truth-match (3pi3pi) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm_3pi3pi*100,  eps_error(N_TM_3pi3pi,N_gen_3pi3pi) ) << " \\\\ " << std::endl;
+            file << "Truth-match (3pi3pi\\_pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm_3pi3pipi0*100,  eps_error(N_TM_3pi3pipi0,N_gen_3pi3pipi0) ) << " \\\\ " << std::endl;
+            file << "Truth-match (3pi3pi\\_2pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm_3pi3pi2pi0*100,  eps_error(N_TM_3pi3pi2pi0,N_gen_3pi3pi2pi0) ) << " \\\\ " << std::endl;
+            file << "Truth-match (All) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm*100,  eps_error(N_TM,N_gen) ) << " \\\\ \\hline" << std::endl;
+
+            file << "Trigger (3pi3pi) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger_3pi3pi*100, eps_error(N_trigger_3pi3pi, N_TM_3pi3pi) ) << " \\\\" << std::endl;
+            file << "Trigger (3pi3pi\\_pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger_3pi3pipi0*100, eps_error(N_trigger_3pi3pipi0, N_TM_3pi3pipi0) ) << " \\\\" << std::endl;
+            file << "Trigger (3pi3pi\\_2pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger_3pi3pi2pi0*100, eps_error(N_trigger_3pi3pi2pi0, N_TM_3pi3pi2pi0) ) << " \\\\" << std::endl;
+            file << "Trigger (All) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger*100, eps_error(N_trigger, N_TM) ) << " \\\\ \\hline" << std::endl;
+
+            file << "Rectangular cuts (3pi3pi) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others_3pi3pi*100, eps_error(N_others_3pi3pi, N_trigger_3pi3pi) ) << " \\\\" << std::endl;
+            file << "Rectangular cuts (3pi3pi\\_pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others_3pi3pipi0*100, eps_error(N_others_3pi3pipi0, N_trigger_3pi3pipi0) ) << " \\\\" << std::endl;
+            file << "Rectangular cuts (3pi3pi\\_2pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others_3pi3pi2pi0*100, eps_error(N_others_3pi3pi2pi0, N_trigger_3pi3pi2pi0) ) << " \\\\" << std::endl;
+            file << "Rectangular cuts (All) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\" << std::endl;
+        }
+        else if(is_cocktailMC)
         {
             file << "Truth-match (DD) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm_DD*100,  eps_error(N_TM_DD,N_gen_DD) ) << " \\\\ " << std::endl;
             file << "Truth-match (DstarD) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm_DstarD*100,  eps_error(N_TM_DstarD,N_gen_DstarD) ) << " \\\\ " << std::endl;
@@ -745,19 +724,84 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t isKtautauMC, 
             file << "Rectangular cuts (DstarDstar) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others_DstarDstar*100, eps_error(N_others_DstarDstar, N_trigger_DstarDstar) ) << " \\\\ " << std::endl;
         }
         else
-        {
-            file << "Truth-match & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm*100,  eps_error(N_TM,N_gen) ) << " \\\\ \\hline " << std::endl;
-            
-            file << "Trigger & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ \\hline " << std::endl;
-            
-            file << "Rectangular cuts & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\ " << std::endl;
+        {            
+            if(species == 7) // For the normalisation channel all the selections are applied here
+            { 
+                file << "Truth-match & " << Form("%.3lf $\\pm$ %.3lf \\% & ", eps_tm*100,  eps_error(N_TM,N_gen) ) << " \\\\ \\hline " << std::endl;
+                file << "Trigger & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ \\hline " << std::endl;
+                file << "Rectangular cuts & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\ \\hline" << std::endl;
+
+                cout << "Pass DTF efficiency" << endl;
+                Double_t N_pass_DTF = t_reco->GetEntries(truthMatch+trigger+others+"Bp_dtf_status[0] == 0");
+                Double_t eps_pass_DTF =  N_pass_DTF/N_others;
+
+                file << "Pass DTF & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_pass_DTF*100, eps_error(N_pass_DTF, N_others) ) << " \\\\ \\hline" << std::endl;
+
+                cout << "Fit region" << endl;
+                Double_t N_fit_region = t_reco->GetEntries(truthMatch+trigger+others+"(Bp_dtf_status[0] == 0) && (Bp_dtf_M[0] > 5235) && (Bp_dtf_M[0] < 5355)");
+                Double_t eps_fit_region = N_fit_region/N_pass_DTF;
+
+                file << "Fit region & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_fit_region*100, eps_error(N_fit_region, N_pass_DTF) ) << " \\\\ \\hline" << std::endl;
+
+                cout << "Total efficiency" << endl;
+                Double_t eps_post_acc = N_fit_region/N_gen;
+                Double_t eps_post_acc_error = eps_error(N_fit_region,N_gen)/100.;
+
+                Double_t eps_acc, eps_acc_error;
+                if(year == 6)
+                {
+                    eps_acc = (14.50/100);
+                    eps_acc_error = (0.10/100);
+                }
+                else if(year == 7)
+                {
+                    eps_acc = (14.48/100);
+                    eps_acc_error = (0.10/100);
+                }
+                else if(year == 8)
+                {
+                    eps_acc = (14.58/100);
+                    eps_acc_error = (0.10/100);
+                }
+
+                Double_t eps_total = eps_post_acc*eps_acc;
+                Double_t eps_total_error = TMath::Sqrt( pow(eps_acc,2)*pow(eps_post_acc_error,2) + pow(eps_post_acc,2)*pow(eps_acc_error,2) );
+
+                file << "Total & " << Form("%.5lf $\\pm$ %.5lf \\% & ", eps_total*100, eps_total_error*100 ) << " \\\\" << std::endl;
+            }
+            else
+            {
+                file << "Truth-match & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm*100,  eps_error(N_TM,N_gen) ) << " \\\\ \\hline " << std::endl;
+                file << "Trigger & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ \\hline " << std::endl;
+                file << "Rectangular cuts & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\ " << std::endl;
+            }
         }
     }
     else
     {
-        file << "Trigger & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ \\hline " << std::endl;
-            
-        file << "Rectangular cuts & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\ " << std::endl;
+        if(species == 8)
+        {
+            file << "Trigger & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ \\hline " << std::endl; 
+            file << "Rectangular cuts & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\ \\hline" << std::endl;
+        
+            cout << "Pass DTF efficiency" << endl;
+            Double_t N_pass_DTF = t_reco->GetEntries(truthMatch+trigger+others+"Bp_dtf_status[0] == 0");
+            Double_t eps_pass_DTF =  N_pass_DTF/N_others;
+
+            file << "Pass DTF & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_pass_DTF*100, eps_error(N_pass_DTF, N_others) ) << " \\\\ \\hline" << std::endl;
+
+            cout << "Fit region" << endl;
+            Double_t N_fit_region = t_reco->GetEntries(truthMatch+trigger+others+"(Bp_dtf_status[0] == 0) && (Bp_dtf_M[0] > 5235) && (Bp_dtf_M[0] < 5355)");
+            Double_t eps_fit_region = N_fit_region/N_pass_DTF;
+
+            file << "Fit region & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_fit_region*100, eps_error(N_fit_region, N_pass_DTF) ) << " \\\\" << std::endl;
+
+        }
+        else
+        {
+            file << "Trigger & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ \\hline " << std::endl; 
+            file << "Rectangular cuts & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\ " << std::endl;
+        }
     }
  
 
