@@ -2126,23 +2126,10 @@ def main(argv):
     # i_first = int(i_first)
     # i_last = int(i_last)
 
-    if(species == -100):
-        RECO_files = "Files_on_grid/MC_201{0}_BuDDKp_cocktail.txt".format(year)
-    elif(species == -110):
-        RECO_files = "Files_on_grid/MC_201{0}_BdDDKp_cocktail.txt".format(year)
-    elif(species == -120):
-        RECO_files = "Files_on_grid/MC_201{0}_BsDDKp_cocktail.txt".format(year)
-    elif(species == -130):
-        RECO_files = "Files_on_grid/MC_201{0}_BuDDK0_cocktail.txt".format(year)
-    elif(species == -150):
-        RECO_files = "Files_on_grid/MC_201{0}_BuDD_cocktail.txt".format(year)
-    elif(species == 13):
-        RECO_files = "/panfs/felician/B2Ktautau/workflow/PIDCalib/201{0}/Species_1/pid_corr.txt".format(year)
-    else:
-        RECO_files = "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{0}/Species_{1}/pre_sel_tree.txt".format(year,species)
+    RECO_files = "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{0}/Species_{1}/pre_sel_tree.txt".format(year,species)
 
     isKtautau = False
-    if((species == 10) or (species == 11) or (species == 12) or (species == 13) or (species == 1) or (species == 2) or (species == 3)):
+    if((species == 1) or (species == 10) or (species == 2) or (species == 3)):
         isKtautau = True
 
     isD0D0K = False
@@ -2162,35 +2149,35 @@ def main(argv):
     isBdDD_cocktail = False
     isBsDD_cocktail = False
 
-    if( (species == 100) or (species == 101) or (species == 102) or (species == -100)):
+    if(species == 100):
         isBuDDKp_cocktail = True
     else:
         isBuDDKp_cocktail = False
-    if( (species == 110) or (species == -110) ):
+    if(species == 110):
         isBdDDKp_cocktail = True
     else:
         isBdDDKp_cocktail = False
-    if( (species == 120) or (species == -120) ):
+    if(species == 120):
         isBsDDKp_cocktail = True
     else:
         isBsDDKp_cocktail = False
-    if( (species == 130) or (species == -130) ):
+    if(species == 130):
         isBuDDK0_cocktail = True
     else:
         isBuDDK0_cocktail = False
-    if( (species == 140) or (species == 141) or (species == -140) ):
+    if(species == 140):
         isBdDDK0_cocktail = True
     else:
         isBdDDK0_cocktail = False
-    if( (species == 150) or (species == 151) or (species == -150) ):
+    if(species == 150):
         isBuDD_cocktail = True
     else: 
         isBuDD_cocktail = False
-    if( (species == 160) or (species == 161) or (species == 162) or (species == 163) or (species == -160) ):
+    if(species == 160):
         isBdDD_cocktail = True
     else:
         isBdDD_cocktail = False
-    if( (species == 170) or (species == 171) or (species == 172) or (species == 173) or (species == -170) ):
+    if(species == 170):
         isBsDD_cocktail = True
     else: 
         isBsDD_cocktail = False
@@ -2328,63 +2315,12 @@ def main(argv):
         lambdify_bH = sp.lambdify( (x_symbols_2nd_test, m_symbols, W_symbols, RPz_symbol), symbolic_bH, "numpy")
 
     # Cocktail MC names
-    if(species == 100):
-        names = ["BuD0D0Kp", "BuD0starD0Kp", "BuD0D0starKp", "BuD0starD0starKp"] # B+ -> D0 D0 K+
-    elif(species == 101):
-        names = ["BuDpDmKp", "BuDpstarDmKp", "BuDpDmstarKp", "BuDpstarDmstarKp"] # B+ -> D+ D- K+
-    elif(species == 102):
-        names = ["BuDsDsKp", "BuDsstarDsKp", "BuDsDsstarKp", "BuDsstarDsstarKp"] # B+ -> Ds+ Ds- K+
-    elif(species == 110):
-        names = ["BdDmD0Kp", "BdDmstarD0Kp", "BdDmD0starKp", "BdDmstarD0starKp"] # B0 -> D- D0 K+
-    elif(species == 120):
-        names = ["BsDsD0Kp", "BsDsstarD0Kp", "BsDsD0starKp", "BsDsstarD0starKp"] # Bs -> Ds- D0 K+
-    elif(species == 130):
-        names = ["BuD0DpK0", "BuD0starDpK0", "BuD0DpstarK0", "BuD0starDpstarK0"] # B+ -> D0 D+ K0
-    elif(species == 140):
-        names = ["BdDpDmK0", "BdDpstarDmK0", "BdDpDmstarK0", "BdDpstarDmstarK0"] # B0 -> D+ D- K0
-    elif(species == 141):
-        names = ["BdD0D0K0", "BdD0starD0K0", "BdD0D0starK0", "BdD0starD0starK0"] # B0 -> D0 D0 K0
-    elif(species == 150):
-        names = ["BuD0Ds", "BuD0starDs", "BuD0Dsstar", "BuD0starDsstar"] # B+ -> D0 Ds+
-    elif(species == 151):
-        names = ["BuD0Dp", "BuD0starDp", "BuD0Dpstar", "BuD0starDpstar"] # B+ -> D0 D+
-    elif(species == 160):
-        names = ["BdD0D0", "BdD0starD0", "BdD0D0star", "BdD0starD0star"] # B0 -> D0 D0
-    elif(species == 161):
-        names = ["BdDpDm", "BdDpstarDm", "BdDpDmstar", "BdDpstarDmstar"] # B0 -> D+ D-
-    elif(species == 162):
-        names = ["BdDpDs", "BdDpstarDs", "BdDpDsstar", "BdDpstarDsstar"] # B0 -> D- Ds+
-    elif(species == 163):
-        names = ["BdDsDs", "BdDsstarDs", "BdDsDsstar", "BdDsstarDsstar"] # B0 -> Ds+ Ds
-    elif(species == 170):
-        names = ["BsDsDs", "BsDsstarDs", "BsDsDsstar", "BsDsstarDsstar"] # Bs -> Ds+ Ds-
-    elif(species == 171):
-        names = ["BsDpDs", "BsDpstarDs", "BsDpDsstar", "BsDpstarDsstar"] # Bs -> D- Ds+
-    elif(species == 172):
-        names = ["BsDpDm", "BsDpstarDm", "BsDpDmstar", "BsDpstarDmstar"] # Bs -> D+ D-
-    elif(species == 173):
-        names = ["BsD0D0", "BsD0starD0", "BsD0D0star", "BsD0starD0star"] # Bs -> D0 D0
-
     fc = ROOT.TFileCollection("fc", "fc", RECO_files, 1, line)
-    if(is_cocktailMC and (species > 0)):
-        inTrees = []
-        for i in range(4):
-            inTrees.append(ROOT.TChain(names[i]+"/DecayTree"))
-            inTrees[i].AddFileInfoList(fc.GetList())
-    else:
-        if(is_cocktailMC):
-            t = ROOT.TChain("ntuple/DecayTree")
-        else:
-            t = ROOT.TChain("DecayTree")
-        t.AddFileInfoList(fc.GetList())
+    t = ROOT.TChain("DecayTree")
+    t.AddFileInfoList(fc.GetList())
 
     file = ROOT.TFile.Open("/panfs/felician/B2Ktautau/workflow/standalone_fitter/201{0}/Species_{1}/{2}.root".format(year,species,line), "UPDATE")
-    if(is_cocktailMC and (species > 0)):
-        outTrees = []
-        for i in range(4):            
-            outTrees.append( ROOT.TTree("DecayTree", "DecayTree") )
-    else:
-        tree = ROOT.TTree("DecayTree", "DecayTree")
+    tree = ROOT.TTree("DecayTree", "DecayTree")
 
     x_names = ["df_PVx", "df_PVy", "df_PVz", "df_DV1x", "df_DV1y", "df_DV1z", "df_3pi1_PX", "df_3pi1_PY", "df_3pi1_PZ", "df_3pi1_PE", "df_DV2x", "df_DV2y", "df_DV2z", "df_3pi2_PX", "df_3pi2_PY", "df_3pi2_PZ", "df_3pi2_PE", "df_RPx", "df_RPy", "df_Kp_PX", "df_Kp_PY", "df_Kp_PZ", "df_BVx", "df_BVy", "df_BVz", "df_Bp_PX", "df_Bp_PY", "df_Bp_PZ", "df_Bp_M2", "df_taup_PX", "df_taup_PY", "df_taup_PZ", "df_taup_PE", "df_antinutau_PX", "df_antinutau_PY", "df_antinutau_PZ", "df_antinutau_PE", "df_taum_PX", "df_taum_PY", "df_taum_PZ", "df_taum_PE", "df_nutau_PX", "df_nutau_PY", "df_nutau_PZ", "df_nutau_PE"]
     x_err_names = ["df_PVx_err", "df_PVy_err", "df_PVz_err", "df_DV1x_err", "df_DV1y_err", "df_DV1z_err", "df_3pi1_PX_err", "df_3pi1_PY_err", "df_3pi1_PZ_err", "df_3pi1_PE_err", "df_DV2x_err", "df_DV2y_err", "df_DV2z_err", "df_3pi2_PX_err", "df_3pi2_PY_err", "df_3pi2_PZ_err", "df_3pi2_PE_err", "df_RPx_err", "df_RPy_err", "df_Kp_PX_err", "df_Kp_PY_err", "df_Kp_PZ_err", "df_BVx_err", "df_BVy_err", "df_BVz_err", "df_Bp_PX_err", "df_Bp_PY_err", "df_Bp_PZ_err", "df_Bp_M2_err", "df_taup_PX_err", "df_taup_PY_err", "df_taup_PZ_err", "df_taup_PE_err", "df_antinutau_PX_err", "df_antinutau_PY_err", "df_antinutau_PZ_err", "df_antinutau_PE_err", "df_taum_PX_err", "df_taum_PY_err", "df_taum_PZ_err", "df_taum_PE_err", "df_nutau_PX_err", "df_nutau_PY_err", "df_nutau_PZ_err", "df_nutau_PE_err"]
@@ -2394,49 +2330,29 @@ def main(argv):
     if isD0D0K:
         x_true_names = ["Bp_TRUEENDVERTEX_X", "Bp_TRUEENDVERTEX_Y", "Bp_TRUEENDVERTEX_Z", "Bp_TRUEP_X", "Bp_TRUEP_Y", "Bp_TRUEP_Z", "D0_TRUEP_X", "D0_TRUEP_Y", "D0_TRUEP_Z", "D0_TRUEP_E", "D0_pi1_TRUEP_X", "D0_pi1_TRUEP_Y", "D0_pi1_TRUEP_Z", "D0_pi1_TRUEP_E", "D0_pi2_TRUEP_X", "D0_pi2_TRUEP_Y", "D0_pi2_TRUEP_Z", "D0_pi2_TRUEP_E", "D0_pi3_TRUEP_X", "D0_pi3_TRUEP_Y", "D0_pi3_TRUEP_Z", "D0_pi3_TRUEP_E", "D0bar_TRUEP_X", "D0bar_TRUEP_Y", "D0bar_TRUEP_Z", "D0bar_TRUEP_E", "D0bar_pi1_TRUEP_X", "D0bar_pi1_TRUEP_Y", "D0bar_pi1_TRUEP_Z", "D0bar_pi1_TRUEP_E", "D0bar_pi2_TRUEP_X", "D0bar_pi2_TRUEP_Y", "D0bar_pi2_TRUEP_Z", "D0bar_pi2_TRUEP_E", "D0bar_pi3_TRUEP_X", "D0bar_pi3_TRUEP_Y", "D0bar_pi3_TRUEP_Z", "D0bar_pi3_TRUEP_E"]
 
-    if(is_cocktailMC and (species > 0)):
-        for k in range(4):
-            for i in range(dimM+dimX):
-                outTrees[k].Branch(x_names[i], X[i], x_names[i]+"/D")
-                outTrees[k].Branch(x_err_names[i], X_ERR[i], x_err_names[i]+"/D")
-            for i in range(dimM+dimX+dimC):
-                outTrees[k].Branch("df_F_{0}".format(i), F[i], "df_F_{0}/D".format(i))
-            outTrees[k].Branch("df_status", STATUS, "df_status/i")
-            outTrees[k].Branch("df_nIter", NITER, "df_nIter/i")
-            outTrees[k].Branch("df_Bp_M", MB, "df_Bp_M/D")
-            outTrees[k].Branch("df_Bp_MERR", dMB, "df_Bp_MERR/D")
-            outTrees[k].Branch("df_chi2", chi2, "df_chi2/D")
-            outTrees[k].Branch("df_tolerance", tolerance, "df_tolerance/D")
-            outTrees[k].Branch("df_init", init, "df_init/i")
-            outTrees[k].Branch("df_N_local_min", N_local_minima, "df_N_local_min/i")
-            outTrees[k].Branch("df_M_local_min", M_local, "df_M_local_min[df_N_local_min]/D")
-            outTrees[k].Branch("df_chi2_local_min", Chi2_local, "df_chi2_local_min[df_N_local_min]/D")
-            outTrees[k].Branch("df_time", theTime, "df_time/D")
-    else:
+    for i in range(dimM+dimX):
+        tree.Branch(x_names[i], X[i], x_names[i]+"/D")
+        tree.Branch(x_err_names[i], X_ERR[i], x_err_names[i]+"/D")
+        # tree.Branch("df_det_{0}".format(i), D[i], "df_det_{0}/D".format(i))
+    for i in range(dimM+dimX+dimC):
+        tree.Branch("df_F_{0}".format(i), F[i], "df_F_{0}/D".format(i))
+    tree.Branch("df_status", STATUS, "df_status/i")
+    tree.Branch("df_nIter", NITER, "df_nIter/i")
+    tree.Branch("df_Bp_M", MB, "df_Bp_M/D")
+    tree.Branch("df_Bp_MERR", dMB, "df_Bp_MERR/D")
+    tree.Branch("df_chi2", chi2, "df_chi2/D")
+    tree.Branch("df_tolerance", tolerance, "df_tolerance/D")
+    tree.Branch("df_init", init, "df_init/i")
+    tree.Branch("df_N_local_min", N_local_minima, "df_N_local_min/i")
+    tree.Branch("df_M_local_min", M_local, "df_M_local_min[df_N_local_min]/D")
+    tree.Branch("df_chi2_local_min", Chi2_local, "df_chi2_local_min[df_N_local_min]/D")
+    tree.Branch("df_time", theTime, "df_time/D")
 
-        for i in range(dimM+dimX):
-            tree.Branch(x_names[i], X[i], x_names[i]+"/D")
-            tree.Branch(x_err_names[i], X_ERR[i], x_err_names[i]+"/D")
-            # tree.Branch("df_det_{0}".format(i), D[i], "df_det_{0}/D".format(i))
-        for i in range(dimM+dimX+dimC):
-            tree.Branch("df_F_{0}".format(i), F[i], "df_F_{0}/D".format(i))
-        tree.Branch("df_status", STATUS, "df_status/i")
-        tree.Branch("df_nIter", NITER, "df_nIter/i")
-        tree.Branch("df_Bp_M", MB, "df_Bp_M/D")
-        tree.Branch("df_Bp_MERR", dMB, "df_Bp_MERR/D")
-        tree.Branch("df_chi2", chi2, "df_chi2/D")
-        tree.Branch("df_tolerance", tolerance, "df_tolerance/D")
-        tree.Branch("df_init", init, "df_init/i")
-        tree.Branch("df_N_local_min", N_local_minima, "df_N_local_min/i")
-        tree.Branch("df_M_local_min", M_local, "df_M_local_min[df_N_local_min]/D")
-        tree.Branch("df_chi2_local_min", Chi2_local, "df_chi2_local_min[df_N_local_min]/D")
-        tree.Branch("df_time", theTime, "df_time/D")
-
-        # tree.Branch("df_MB0", MB0, "df_MB0/D")
-        # tree.Branch("df_MB1", MB1, "df_MB1/D")
-        # tree.Branch("df_MB2", MB2, "df_MB2/D")
-        # tree.Branch("df_MB3", MB3, "df_MB3/D")
-        # tree.Branch("df_MB4", MB4, "df_MB4/D")
+    # tree.Branch("df_MB0", MB0, "df_MB0/D")
+    # tree.Branch("df_MB1", MB1, "df_MB1/D")
+    # tree.Branch("df_MB2", MB2, "df_MB2/D")
+    # tree.Branch("df_MB3", MB3, "df_MB3/D")
+    # tree.Branch("df_MB4", MB4, "df_MB4/D")
 
     # Load TMVA library (once)
     ROOT.TMVA.Tools.Instance()
@@ -2812,23 +2728,10 @@ def main(argv):
     m = np.zeros(dimM)
     V = np.zeros((dimM,dimM))
 
-    if(is_cocktailMC and (species > 0)):
-        for k in range(4):
-            inTree = inTrees[k]
-            outTree = outTrees[k]
-
-            loop_over_tree(inTree, outTree, year, species, line, is_cocktailMC, isD0D0K, m, V, x_true_names, )
-    else:
-        loop_over_tree(t, tree, year, species, line, is_cocktailMC, isD0D0K, m, V, x_true_names)
+    loop_over_tree(t, tree, year, species, line, is_cocktailMC, isD0D0K, m, V, x_true_names)
 
     file.cd()
-    if(is_cocktailMC and (species > 0)):
-        for i in range(4):
-            file.mkdir(names[i])
-            file.cd(names[i])
-            outTrees[i].Write()
-    else:
-        tree.Write()
+    tree.Write()
     file.Close()
 
 if __name__ == "__main__":
