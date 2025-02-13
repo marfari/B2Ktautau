@@ -167,10 +167,7 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
     clf_outputs_second_step = []
 
     for i in range(len(names)):
-        if(is_cocktailMC == True):
-            fout.mkdir(name+"/"+names[i])
-        else:
-            fout.mkdir(names[i])
+        fout.mkdir(names[i])
         trees.append(ROOT.TTree("DecayTree", "Decaytree"))
         
         clf_outputs_first_step.append( array('d', [0]) )
@@ -184,10 +181,7 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
             clf_outputs_second_step[i][0] = decisions_second_step[i][j]
             trees[i].Fill()
         
-        if(is_cocktailMC == True):
-            fout.cd(name+"/"+names[i])
-        else:
-            fout.cd(names[i])
+        fout.cd(names[i])
         trees[i].Write()
 
 def main(argv):
@@ -200,12 +194,12 @@ def main(argv):
     species = int(species)
     line = int(line)
     
-    if((species == 10) or (species == 11) or (species == 12) or (species == 1) or (species == 2) or (species == 3)):
+    if((species == 1) or (species == 10) or (species == 2) or (species == 3)):
         isKtautau = True
     else:
         isKtautau = False
 
-    if( (species == 100) or (species == 101) or (species == 102) ):
+    if(species == 100):
         isBuDDKp_cocktail = True
     else:
         isBuDDKp_cocktail = False
@@ -221,19 +215,19 @@ def main(argv):
         isBuDDK0_cocktail = True
     else:
         isBuDDK0_cocktail = False
-    if( (species == 140) or (species == 141) ):
+    if(species == 140):
         isBdDDK0_cocktail = True
     else:
         isBdDDK0_cocktail = False
-    if( (species == 150) or (species == 151) ):
+    if(species == 150):
         isBuDD_cocktail = True
     else: 
         isBuDD_cocktail = False
-    if( (species == 160) or (species == 161) or (species == 162) or (species == 163) ):
+    if(species == 160):
         isBdDD_cocktail = True
     else:
         isBdDD_cocktail = False
-    if( (species == 170) or (species == 171) or (species == 172) or (species == 173) ):
+    if(species == 170):
         isBsDD_cocktail = True
     else: 
         isBsDD_cocktail = False
@@ -242,81 +236,31 @@ def main(argv):
         is_cocktailMC = True
     else:
         is_cocktailMC = False
-    
-    # Cocktail MC names
-    if(species == 100):
-        speciesNames = ["BuD0D0Kp", "BuD0starD0Kp", "BuD0D0starKp", "BuD0starD0starKp"] # B+ -> D0 D0 K+
-    elif(species == 101):
-        speciesNames = ["BuDpDmKp", "BuDpstarDmKp", "BuDpDmstarKp", "BuDpstarDmstarKp"] # B+ -> D+ D- K+
-    elif(species == 102):
-        speciesNames = ["BuDsDsKp", "BuDsstarDsKp", "BuDsDsstarKp", "BuDsstarDsstarKp"] # B+ -> Ds+ Ds- K+
-    elif(species == 110):
-        speciesNames = ["BdDmD0Kp", "BdDmstarD0Kp", "BdDmD0starKp", "BdDmstarD0starKp"] # B0 -> D- D0 K+
-    elif(species == 120):
-        speciesNames = ["BsDsD0Kp", "BsDsstarD0Kp", "BsDsD0starKp", "BsDsstarD0starKp"] # Bs -> Ds- D0 K+
-    elif(species == 130):
-        speciesNames = ["BuD0DpK0", "BuD0starDpK0", "BuD0DpstarK0", "BuD0starDpstarK0"] # B+ -> D0 D+ K0
-    elif(species == 140):
-        speciesNames = ["BdDpDmK0", "BdDpstarDmK0", "BdDpDmstarK0", "BdDpstarDmstarK0"] # B0 -> D+ D- K0
-    elif(species == 141):
-        speciesNames = ["BdD0D0K0", "BdD0starD0K0", "BdD0D0starK0", "BdD0starD0starK0"] # B0 -> D0 D0 K0
-    elif(species == 150):
-        speciesNames = ["BuD0Ds", "BuD0starDs", "BuD0Dsstar", "BuD0starDsstar"] # B+ -> D0 Ds+
-    elif(species == 151):
-        speciesNames = ["BuD0Dp", "BuD0starDp", "BuD0Dpstar", "BuD0starDpstar"] # B+ -> D0 D+
-    elif(species == 160):
-        speciesNames = ["BdD0D0", "BdD0starD0", "BdD0D0star", "BdD0starD0star"] # B0 -> D0 D0
-    elif(species == 161):
-        speciesNames = ["BdDpDm", "BdDpstarDm", "BdDpDmstar", "BdDpstarDmstar"] # B0 -> D+ D-
-    elif(species == 162):
-        speciesNames = ["BdDpDs", "BdDpstarDs", "BdDpDsstar", "BdDpstarDsstar"] # B0 -> D- Ds+
-    elif(species == 163):
-        speciesNames = ["BdDsDs", "BdDsstarDs", "BdDsDsstar", "BdDsstarDsstar"] # B0 -> Ds+ Ds
-    elif(species == 170):
-        speciesNames = ["BsDsDs", "BsDsstarDs", "BsDsDsstar", "BsDsstarDsstar"] # Bs -> Ds+ Ds-
-    elif(species == 171):
-        speciesNames = ["BsDpDs", "BsDpstarDs", "BsDpDsstar", "BsDpstarDsstar"] # Bs -> D- Ds+
-    elif(species == 172):
-        speciesNames = ["BsDpDm", "BsDpstarDm", "BsDpDmstar", "BsDpstarDmstar"] # Bs -> D+ D-
-    elif(species == 173):
-        speciesNames = ["BsD0D0", "BsD0starD0", "BsD0D0star", "BsD0starD0star"] # Bs -> D0 D0
-
 
     fout = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/sklearn_response/201{0}/Species_{1}/{2}.root".format(year,species,line), "RECREATE")
 
     fc = ROOT.TFileCollection("fc", "fc", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{0}/Species_{1}/pre_sel_tree.txt".format(year,species), 1, line)
+    t = ROOT.TChain("DecayTree")
+    t.AddFileInfoList(fc.GetList())
 
-    if(is_cocktailMC == True):
-        for k in range(4):
-            t = ROOT.TChain(speciesNames[k]+"/DecayTree")
-            t.AddFileInfoList(fc.GetList())
+    if((isKtautau == True) or (is_cocktailMC == True)):
+        fc1 = ROOT.TFileCollection("fc1", "fc1", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/201{0}/Species_{1}/fit_results.txt".format(year,species), 1, line)
+        t1 = ROOT.TChain("DecayTree")
+        t1.AddFileInfoList(fc1.GetList())
+        N = t.GetEntries()
+        N1 = t1.GetEntries()
 
-            fc1 = ROOT.TFileCollection("fc1", "fc1", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/201{0}/Species_{1}/fit_results.txt".format(year,species), 1, line)
-            t1 = ROOT.TChain(speciesNames[k]+"/DecayTree")
-            t1.AddFileInfoList(fc1.GetList())
-            t.AddFriend(t1)
+        print(N)
+        print(N1)
 
-            df = ROOT.RDataFrame(t)
+        if(N != N1):
+            print("Wrong number of entries")
+            quit()
+        t.AddFriend(t1)
+    
+    df = ROOT.RDataFrame(t)
 
-            name = speciesNames[k]
-
-            compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, name)
-
-            fout.cd("../")
-
-    else:
-        t = ROOT.TChain("DecayTree")
-        t.AddFileInfoList(fc.GetList())
-
-        if(isKtautau == True):
-            fc1 = ROOT.TFileCollection("fc1", "fc1", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/201{0}/Species_{1}/fit_results.txt".format(year,species), 1, line)
-            t1 = ROOT.TChain("DecayTree")
-            t1.AddFileInfoList(fc1.GetList())
-            t.AddFriend(t1)
-        
-        df = ROOT.RDataFrame(t)
-
-        compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, "")
+    compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, "")
 
     fout.Close()
 
