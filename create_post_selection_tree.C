@@ -1,17 +1,22 @@
-void create_table(Int_t species, TCut pass_fitter, TCut bdt_cuts, TCut mass_vetoes);
+void create_table(Int_t species, TCut pass_fitter, TCut fit_region, TCut bdt_cuts, TCut mass_vetoes);
 Double_t eps_error(Double_t Num, Double_t Den);
 
 void create_post_selection_tree(Int_t species, bool createTable)
 {
     // Creates post selection tree fot Ktautau
     TCut pass_fitter = "(df_status==0)";
-    TCut bdt_cuts = "(BDT1 > 0.968) && (BDT2 > 0.953)"; // these cuts were optmised with the rough sensitivity study
-    TCut mass_vetoes = "(TMath::Abs(Bp_M0456 - 1864.84) > 25)";
-    TCut cuts = pass_fitter+bdt_cuts+mass_vetoes;
+    TCut fit_region = "(df_Bp_M > 4000) && (df_Bp_M < 8000)";
+    TCut mass_vetoes = "(TMath::Abs(Bp_M02 - 1864.84) > 10) && (TMath::Abs(Bp_M04 - 1864.84) > 10) && (TMath::Abs(Bp_M06 - 1864.84) > 10)"; // 2 particles: D0
+    mass_vetoes += "(TMath::Abs(Bp_M046-1869.66) > 10)"; // 3 particles: D+
+    mass_vetoes += "(TMath::Abs(Bp_M0126-1864.84) > 10) && (TMath::Abs(Bp_M0146-1864.84) > 10) && (TMath::Abs(Bp_M0234-1864.84) > 10) && (TMath::Abs(Bp_M0236-1864.84) > 10) && (TMath::Abs(Bp_M0245-1864.84) > 10) && (TMath::Abs(Bp_M0256-1864.84) > 10) && (TMath::Abs(Bp_M0346-1864.84) > 10) && (TMath::Abs(Bp_M0456-1864.84) > 25)";
+    // TCut bdt_cuts = "";
+    TCut bdt_cuts = "(BDT1 > 0.984) && (BDT2 > 0.989)"; // these cuts were optmised with the rough sensitivity study
+    // TCut bdt_cuts = "(BDT1 > 0.8) && (BDT2 > 0.8)"; 
+    TCut cuts = pass_fitter+fit_region+mass_vetoes+bdt_cuts;
 
     if(createTable)
     {
-        create_table(species, pass_fitter, bdt_cuts, mass_vetoes);
+        create_table(species, pass_fitter, fit_region, bdt_cuts, mass_vetoes);
         return;
     }
 
@@ -108,9 +113,8 @@ void create_post_selection_tree(Int_t species, bool createTable)
 
 }
 
-void create_table(Int_t species, TCut pass_fitter, TCut bdt_cuts, TCut mass_vetoes)
+void create_table(Int_t species, TCut pass_fitter, TCut fit_region, TCut bdt_cuts, TCut mass_vetoes)
 {
-    Bool_t isKtautauMC = false;
     Bool_t isBuDDKp_cocktail = false;
     Bool_t isBdDDKp_cocktail = false;
     Bool_t isBsDDKp_cocktail = false;
@@ -120,11 +124,7 @@ void create_table(Int_t species, TCut pass_fitter, TCut bdt_cuts, TCut mass_veto
     Bool_t isBdDD_cocktail = false;
     Bool_t isBsDD_cocktail = false;
 
-    if( (species == 10) || (species == 11) || (species == 12) || (species == 1) )
-    {
-        isKtautauMC = true;
-    }
-    if( (species == 100) || (species == 101) || (species == 102) )
+    if(species == 100)
     {
         isBuDDKp_cocktail = true;
     }
@@ -140,19 +140,19 @@ void create_table(Int_t species, TCut pass_fitter, TCut bdt_cuts, TCut mass_veto
     {
         isBuDDK0_cocktail = true;
     }
-    if( (species == 140) || (species == 141) )
+    if(species == 140)
     {
         isBdDDK0_cocktail = true;
     }
-    if( (species == 150) || (species == 151) )
+    if(species == 150)
     {
         isBuDD_cocktail = true;
     }
-    if( (species == 160) || (species == 161) || (species == 162) || (species == 163) )
+    if(species == 160)
     {
         isBdDD_cocktail = true;
     }
-    if( (species == 170) || (species == 171) || (species == 172) || (species == 173) )
+    if(species == 170)
     {
         isBsDD_cocktail = true;
     }
@@ -196,52 +196,39 @@ void create_table(Int_t species, TCut pass_fitter, TCut bdt_cuts, TCut mass_veto
 
         // Gen tree
         TChain *t5;
+        TChain *t5_3pi3pi, *t5_3pi3pi_pi0, *t5_3pi3pi2pi0;
         TChain *t5_DD, *t5_DstarD, *t5_DDstar, *t5_DstarDstar;
-        if(isKtautauMC || is_cocktailMC)
+        if((species == 1) || is_cocktailMC)
         {
             TFileCollection *fc5;
-            if(isKtautauMC)
+            if(species == 1)
             {
                 fc5 = new TFileCollection("fc5", "fc5", Form("Files_on_grid/MC_201%i.txt",year));
 
-                if(species == 10)
-                {
-                    t5 = new TChain("mc_ntuple_3pi_3pi/MCDecayTree");
-                    t5->AddFileInfoList((TCollection*)fc5->GetList());
-                }
-                else if(species == 11)
-                {
-                    t5 = new TChain("mc_ntuple_3pi_3pipi0/MCDecayTree");
-                    TChain* t6 = new TChain("mc_ntuple_3pipi0_3pi/MCDecayTree");
-                    t5->AddFileInfoList((TCollection*)fc5->GetList());
-                    t6->AddFileInfoList((TCollection*)fc5->GetList());
-                    t5->GetEntries();
-                    t6->GetEntries();
-                    t5->Add(t6);
-                }
-                else if(species == 12)
-                {
-                    t5 = new TChain("mc_ntuple_3pipi0_3pipi0/MCDecayTree");
-                    t5->AddFileInfoList((TCollection*)fc5->GetList());
-                }
-                else if(species == 1)
-                {
-                    t5 = new TChain("mc_ntuple_3pi_3pi/MCDecayTree");
-                    TChain* t6 = new TChain("mc_ntuple_3pi_3pipi0/MCDecayTree");
-                    TChain* t7 = new TChain("mc_ntuple_3pipi0_3pi/MCDecayTree");
-                    TChain* t8 = new TChain("mc_ntuple_3pipi0_3pipi0/MCDecayTree");
-                    t5->AddFileInfoList((TCollection*)fc5->GetList());
-                    t6->AddFileInfoList((TCollection*)fc5->GetList());
-                    t7->AddFileInfoList((TCollection*)fc5->GetList());
-                    t8->AddFileInfoList((TCollection*)fc5->GetList());
-                    t5->GetEntries();
-                    t6->GetEntries();
-                    t7->GetEntries();
-                    t8->GetEntries();
-                    t5->Add(t6);
-                    t5->Add(t7);
-                    t5->Add(t8);
-                }
+                // 3pi3pi
+                t5_3pi3pi = new TChain("mc_ntuple_3pi_3pi/MCDecayTree");
+                t5_3pi3pi->AddFileInfoList((TCollection*)fc5->GetList());
+                
+                // 3pi3pi pi0
+                t5_3pi3pi_pi0 = new TChain("mc_ntuple_3pi_3pipi0/MCDecayTree");
+                TChain* t5_3pi_pi0_3pi = new TChain("mc_ntuple_3pipi0_3pi/MCDecayTree");
+                t5_3pi3pi_pi0->AddFileInfoList((TCollection*)fc5->GetList());
+                t5_3pi_pi0_3pi->AddFileInfoList((TCollection*)fc5->GetList());
+                t5_3pi3pi_pi0->GetEntries();
+                t5_3pi_pi0_3pi->GetEntries();
+                t5_3pi3pi_pi0->Add(t5_3pi_pi0_3pi);
+                
+                // 3pi3pi 2pi0
+                t5_3pi3pi2pi0 = new TChain("mc_ntuple_3pipi0_3pipi0/MCDecayTree");
+                t5_3pi3pi2pi0->AddFileInfoList((TCollection*)fc5->GetList());
+
+                // All
+                t5 = new TChain("mc_ntuple_3pi_3pi/MCDecayTree");
+                t5->AddFileInfoList((TCollection*)fc5->GetList());
+
+                t5->GetEntries();
+                t5->Add(t5_3pi3pi_pi0);
+                t5->Add(t5_3pi3pi2pi0);
             }
             else if(isBuDDKp_cocktail)
             {
@@ -343,41 +330,123 @@ void create_table(Int_t species, TCut pass_fitter, TCut bdt_cuts, TCut mass_veto
                     t5_DstarDstar->AddFileInfoList((TCollection*)fc5->GetList());
                 }
             }
-
         }
 
         Double_t N_initial;
-        if(isKtautauMC)
+        Double_t N_initial_3pi3pi, N_initial_3pi3pipi0, N_initial_3pi3pi2pi0;
+        if(species == 1)
         {
-            N_initial = t5->GetEntries();
+            N_initial_3pi3pi = t5_3pi3pi->GetEntries();
+            N_initial_3pi3pipi0 = t5_3pi3pi_pi0->GetEntries();
+            N_initial_3pi3pi2pi0 = t5_3pi3pi2pi0->GetEntries();
         }
-        Double_t N_presel = t1->GetEntries();
-        Double_t N_gsl = t1->GetEntries(pass_fitter);
-        Double_t N_bdt = t1->GetEntries(pass_fitter+bdt_cuts);
-        Double_t N_mass_vetoes = t1->GetEntries(pass_fitter+bdt_cuts+mass_vetoes);
+        N_initial = t5->GetEntries();
 
-        Double_t eps_gsl = N_gsl/N_presel;
-        Double_t eps_bdt = N_bdt/N_gsl;
-        Double_t eps_mass = N_mass_vetoes/N_bdt;
-        Double_t eps_post_strip = N_mass_vetoes/N_initial;
+        Double_t N_presel;
+        Double_t N_presel_3pi3pi, N_presel_3pi3pipi0, N_presel_3pi3pi2pi0;
+        if(species == 1)
+        {
+            N_presel_3pi3pi = t1->GetEntries("component==0");
+            N_presel_3pi3pipi0 = t1->GetEntries("component==1");
+            N_presel_3pi3pi2pi0 = t1->GetEntries("component==2");
+        }
+        N_presel = t1->GetEntries();
+
+        Double_t N_gsl;
+        Double_t N_gsl_3pi3pi, N_gsl_3pi3pipi0, N_gsl_3pi3pi2pi0;
+        Double_t eps_gsl;
+        Double_t eps_gsl_3pi3pi, eps_gsl_3pi3pipi0, eps_gsl_3pi3pi2pi0;
+        if(species == 1)
+        {
+            N_gsl_3pi3pi = t1->GetEntries(pass_fitter+"component==0");
+            N_gsl_3pi3pipi0 = t1->GetEntries(pass_fitter+"component==1");
+            N_gsl_3pi3pi2pi0 = t1->GetEntries(pass_fitter+"component==2");
+
+            eps_gsl_3pi3pi = N_gsl_3pi3pi/N_presel_3pi3pi;
+            eps_gsl_3pi3pipi0 = N_gsl_3pi3pipi0/N_presel_3pi3pipi0;
+            eps_gsl_3pi3pi2pi0 = N_gsl_3pi3pi2pi0/N_presel_3pi3pi2pi0;
+        }
+        N_gsl = t1->GetEntries(pass_fitter);
+        eps_gsl = N_gsl/N_presel;
+
+        Double_t N_fit_region;
+        Double_t N_fit_region_3pi3pi, N_fit_region_3pi3pipi0, N_fit_region_3pi3pi2pi0;
+        Double_t eps_fit_region;
+        Double_t eps_fit_region_3pi3pi, eps_fit_region_3pi3pipi0, eps_fit_region_3pi3pi2pi0;
+        if(species == 1)
+        {
+            N_fit_region_3pi3pi = t1->GetEntries(pass_fitter+fit_region+"component==0");
+            N_fit_region_3pi3pipi0 = t1->GetEntries(pass_fitter+fit_region+"component==1");
+            N_fit_region_3pi3pi2pi0 = t1->GetEntries(pass_fitter+fit_region+"component==2");
+
+            eps_fit_region_3pi3pi = N_fit_region_3pi3pi/N_gsl_3pi3pi;
+            eps_fit_region_3pi3pipi0 = N_fit_region_3pi3pipi0/N_gsl_3pi3pipi0;
+            eps_fit_region_3pi3pi2pi0 = N_fit_region_3pi3pi2pi0/N_gsl_3pi3pi2pi0;
+        }
+        N_fit_region = t1->GetEntries(pass_fitter+fit_region);
+        eps_fit_region = N_fit_region/N_gsl;
+
+        Double_t N_mass_vetoes;
+        Double_t N_mass_vetoes_3pi3pi, N_mass_vetoes_3pi3pipi0, N_mass_vetoes_3pi3pi2pi0;
+        Double_t eps_mass;
+        Double_t eps_mass_3pi3pi, eps_mass_3pi3pipi0, eps_mass_3pi3pi2pi0;
+        if(species == 1)
+        {
+            N_mass_vetoes_3pi3pi = t1->GetEntries(pass_fitter+fit_region+mass_vetoes+"component==0");
+            N_mass_vetoes_3pi3pipi0 = t1->GetEntries(pass_fitter+fit_region+mass_vetoes+"component==1");
+            N_mass_vetoes_3pi3pi2pi0 = t1->GetEntries(pass_fitter+fit_region+mass_vetoes+"component==2");
+
+            eps_mass_3pi3pi = N_mass_vetoes_3pi3pi/N_fit_region_3pi3pi;
+            eps_mass_3pi3pipi0 = N_mass_vetoes_3pi3pipi0/N_fit_region_3pi3pipi0;
+            eps_mass_3pi3pi2pi0 = N_mass_vetoes_3pi3pi2pi0/N_fit_region_3pi3pi2pi0;
+        }
+        N_mass_vetoes = t1->GetEntries(pass_fitter+fit_region+mass_vetoes);
+        eps_mass = N_mass_vetoes/N_fit_region;
+
+        Double_t N_bdt;
+        Double_t N_bdt_3pi3pi, N_bdt_3pi3pipi0, N_bdt_3pi3pi2pi0;
+        Double_t eps_bdt;
+        Double_t eps_bdt_3pi3pi, eps_bdt_3pi3pipi0, eps_bdt_3pi3pi2pi0;
+        if(species == 1)
+        {
+            N_bdt_3pi3pi = t1->GetEntries(pass_fitter+fit_region+mass_vetoes+bdt_cuts+"component==0");
+            N_bdt_3pi3pipi0 = t1->GetEntries(pass_fitter+fit_region+mass_vetoes+bdt_cuts+"component==1");
+            N_bdt_3pi3pi2pi0 = t1->GetEntries(pass_fitter+fit_region+mass_vetoes+bdt_cuts+"component==2");
+
+            eps_bdt_3pi3pi = N_bdt_3pi3pi/N_mass_vetoes_3pi3pi;
+            eps_bdt_3pi3pipi0 = N_bdt_3pi3pipi0/N_mass_vetoes_3pi3pipi0;
+            eps_bdt_3pi3pi2pi0 = N_bdt_3pi3pi2pi0/N_mass_vetoes_3pi3pi2pi0; 
+        }
+        N_bdt = t1->GetEntries(pass_fitter+fit_region+mass_vetoes+bdt_cuts);
+        eps_bdt = N_bdt/N_mass_vetoes;
+
+        Double_t eps_post_strip;
+        Double_t eps_post_strip_3pi3pi, eps_post_strip_3pi3pipi0, eps_post_strip_3pi3pi2pi0;
+        if(species == 1)
+        {
+            eps_post_strip_3pi3pi = N_bdt_3pi3pi/N_initial_3pi3pi;
+            eps_post_strip_3pi3pipi0 = N_bdt_3pi3pipi0/N_initial_3pi3pipi0;
+            eps_post_strip_3pi3pi2pi0 = N_bdt_3pi3pi2pi0/N_initial_3pi3pi2pi0;
+        }
+        eps_post_strip = N_bdt/N_initial;
 
         Double_t acc_error, strip_error;
         Double_t eps_acc, eps_strip;
-        if(isKtautauMC && (year == 6))
+        if((species == 1) && (year == 6))
         {
             eps_acc = (5.318/100);
             eps_strip = (1.028/100);
             acc_error = (0.010/100);
             strip_error = (0.003/100);
         }
-        else if(isKtautauMC && (year == 7))
+        else if((species == 1) && (year == 7))
         {
             eps_acc = (5.321/100);
             eps_strip = (1.056/100);
             acc_error = (0.011/100);
             strip_error = (0.003/100);
         }
-        else if(isKtautauMC && (year == 8))
+        else if((species == 1) && (year == 8))
         {
             eps_acc = (5.330/100);
             eps_strip = (1.050/100);
@@ -386,10 +455,14 @@ void create_table(Int_t species, TCut pass_fitter, TCut bdt_cuts, TCut mass_veto
         }
 
         Double_t eps_total;
-        if(isKtautauMC)
+        Double_t eps_total_3pi3pi, eps_total_3pi3pipi0, eps_total_3pi3pi2pi0;
+        if(species == 1)
         {
-            eps_total = eps_post_strip*eps_acc*eps_strip;
+            eps_total_3pi3pi = eps_post_strip_3pi3pi*eps_acc*eps_strip;
+            eps_total_3pi3pipi0 = eps_post_strip_3pi3pipi0*eps_acc*eps_strip;
+            eps_total_3pi3pi2pi0 = eps_post_strip_3pi3pi2pi0*eps_acc*eps_strip;
         }
+        eps_total = eps_post_strip*eps_acc*eps_strip;
 
         file << " \\begin{table}[!htbp]" << std::endl;
         file << " \\centering " << std::endl;
@@ -398,22 +471,45 @@ void create_table(Int_t species, TCut pass_fitter, TCut bdt_cuts, TCut mass_veto
         file << " Cut & " << "Efficiency " << " \\\\ " << std::endl;
         file << "\\hline" << std::endl;
 
-        if(isKtautauMC || (species == 2) || (species == 3))
+        if(species == 1)
+        {
+            file << "Pass GSL (3pi3pi) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_gsl_3pi3pi*100,  eps_error(N_gsl_3pi3pi,N_presel_3pi3pi) ) << " \\\\ " << std::endl;
+            file << "Pass GSL (3pi3pi\\_pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_gsl_3pi3pipi0*100,  eps_error(N_gsl_3pi3pipi0,N_presel_3pi3pipi0) ) << " \\\\ " << std::endl;
+            file << "Pass GSL (3pi3pi\\_2pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_gsl_3pi3pi2pi0*100,  eps_error(N_gsl_3pi3pi2pi0,N_presel_3pi3pi2pi0) ) << " \\\\ " << std::endl;
+            file << "Pass GSL (All) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_gsl*100,  eps_error(N_gsl,N_presel) ) << " \\\\ \\hline" << std::endl;
+
+            file << "Fit region (3pi3pi) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_fit_region_3pi3pi*100,  eps_error(N_fit_region_3pi3pi,N_gsl_3pi3pi) ) << " \\\\" << std::endl;
+            file << "Fit region (3pi3pi\\_pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_fit_region_3pi3pipi0*100,  eps_error(N_fit_region_3pi3pipi0,N_gsl_3pi3pipi0) ) << " \\\\" << std::endl;
+            file << "Fit region (3pi3pi\\_2pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_fit_region_3pi3pi2pi0*100,  eps_error(N_fit_region_3pi3pi2pi0,N_gsl_3pi3pi2pi0) ) << " \\\\" << std::endl;
+            file << "Fit region (All) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_fit_region*100,  eps_error(N_fit_region,N_gsl) ) << " \\\\ \\hline" << std::endl;
+
+            file << "Mass vetoes (3pi3pi) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_mass_3pi3pi*100, eps_error(N_mass_vetoes_3pi3pi, N_fit_region_3pi3pi) ) << " \\\\" << std::endl;
+            file << "Mass vetoes (3pi3pi\\_pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_mass_3pi3pipi0*100, eps_error(N_mass_vetoes_3pi3pipi0, N_fit_region_3pi3pipi0) ) << " \\\\" << std::endl;
+            file << "Mass vetoes (3pi3pi\\_2pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_mass_3pi3pi2pi0*100, eps_error(N_mass_vetoes_3pi3pi2pi0, N_fit_region_3pi3pi2pi0) ) << " \\\\" << std::endl;
+            file << "Mass vetoes (All) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_mass*100, eps_error(N_mass_vetoes, N_fit_region) ) << " \\\\ \\hline" << std::endl;
+
+            file << "BDTs (3pi3pi) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_bdt_3pi3pi*100, eps_error(N_bdt_3pi3pi,N_mass_vetoes_3pi3pi) ) << " \\\\ " << std::endl;
+            file << "BDTs (3pi3pi\\_pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_bdt_3pi3pipi0*100, eps_error(N_bdt_3pi3pipi0,N_mass_vetoes_3pi3pipi0) ) << " \\\\ " << std::endl;
+            file << "BDTs (3pi3pi\\_2pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_bdt_3pi3pi2pi0*100, eps_error(N_bdt_3pi3pi2pi0,N_mass_vetoes_3pi3pi2pi0) ) << " \\\\ " << std::endl;
+            file << "BDTs (All) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_bdt*100, eps_error(N_bdt,N_mass_vetoes) ) << " \\\\ \\hline" << std::endl;
+            
+            Double_t post_strip_error_3pi3pi = eps_error(N_mass_vetoes_3pi3pi, N_initial_3pi3pi)/100.;
+            Double_t post_strip_error_3pi3pipi0 = eps_error(N_mass_vetoes_3pi3pipi0, N_initial_3pi3pipi0)/100.;
+            Double_t post_strip_error_3pi3pi2pi0 = eps_error(N_mass_vetoes_3pi3pi2pi0, N_initial_3pi3pi2pi0)/100.;
+            Double_t post_strip_error = eps_error(N_mass_vetoes, N_initial)/100.;
+
+            file << "Total (3pi3pi) & " << Form("%.6lf $\\pm$ %.6lf \\% & ", eps_total_3pi3pi*100, TMath::Sqrt( pow(eps_acc*eps_strip,2)*pow(post_strip_error_3pi3pi,2) + pow(eps_post_strip_3pi3pi*eps_strip,2)*pow(acc_error,2) + pow(eps_post_strip_3pi3pi*eps_acc,2)*pow(strip_error,2) )*100 ) << " \\\\ " << std::endl;
+            file << "Total (3pi3pi\\_pi0) & " << Form("%.6lf $\\pm$ %.6lf \\% & ", eps_total_3pi3pipi0*100, TMath::Sqrt( pow(eps_acc*eps_strip,2)*pow(post_strip_error_3pi3pipi0,2) + pow(eps_post_strip_3pi3pipi0*eps_strip,2)*pow(acc_error,2) + pow(eps_post_strip_3pi3pipi0*eps_acc,2)*pow(strip_error,2) )*100 ) << " \\\\ " << std::endl;
+            file << "Total (3pi3pi\\_2pi0) & " << Form("%.6lf $\\pm$ %.6lf \\% & ", eps_total_3pi3pi2pi0*100, TMath::Sqrt( pow(eps_acc*eps_strip,2)*pow(post_strip_error_3pi3pi2pi0,2) + pow(eps_post_strip_3pi3pi2pi0*eps_strip,2)*pow(acc_error,2) + pow(eps_post_strip_3pi3pi2pi0*eps_acc,2)*pow(strip_error,2) )*100 ) << " \\\\ " << std::endl;
+            file << "Total (All) & " << Form("%.6lf $\\pm$ %.6lf \\% & ", eps_total*100, TMath::Sqrt( pow(eps_acc*eps_strip,2)*pow(post_strip_error,2) + pow(eps_post_strip*eps_strip,2)*pow(acc_error,2) + pow(eps_post_strip*eps_acc,2)*pow(strip_error,2) )*100 ) << " \\\\ " << std::endl;
+
+        }
+        else if((species == 2) || (species == 3))
         {
             file << "Pass GSL & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_gsl*100,  eps_error(N_gsl,N_presel) ) << " \\\\ \\hline " << std::endl;
-            
-            if(isKtautauMC)
-            {
-                file << "BDTs & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_bdt*100, eps_error(N_bdt,N_gsl) ) << " \\\\ \\hline " << std::endl;
-                file << "Mass vetoes & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_mass*100, eps_error(N_mass_vetoes, N_bdt) ) << " \\\\ \\hline" << std::endl;
-                Double_t post_strip_error = eps_error(N_mass_vetoes, N_initial)/100.;
-                file << "Total & " << Form("%.6lf $\\pm$ %.6lf \\% & ", eps_total*100, TMath::Sqrt( pow(eps_acc*eps_strip,2)*pow(post_strip_error,2) + pow(eps_post_strip*eps_strip,2)*pow(acc_error,2) + pow(eps_post_strip*eps_acc,2)*pow(strip_error,2) )*100 ) << " \\\\ " << std::endl;
-            }
-            else
-            {
-                file << "BDTs & " << Form("%.4lf $\\pm$ %.4lf \\% & ", eps_bdt*100, eps_error(N_bdt,N_gsl) ) << " \\\\ \\hline " << std::endl;
-                file << "Mass vetoes & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_mass*100, eps_error(N_mass_vetoes, N_bdt) ) << " \\\\ " << std::endl;
-            }
+            file << "Fit region & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_fit_region*100,  eps_error(N_fit_region,N_gsl) ) << " \\\\ \\hline " << std::endl;
+            file << "Mass vetoes & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_mass*100, eps_error(N_mass_vetoes, N_fit_region) ) << " \\\\ \\hline" << std::endl;
+            file << "BDTs & " << Form("%.6lf $\\pm$ %.6lf \\% & ", eps_bdt*100, eps_error(N_bdt,N_mass_vetoes) ) << " \\\\ " << std::endl;
         }
 
         file << "\\hline" << std::endl;
