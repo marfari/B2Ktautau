@@ -30,7 +30,7 @@ for i in range(dimM+dimX):
     X_ERR.append(array('d', [0]))
 for i in range(dimM+dimX+dimC):
     F.append(array('d', [0]))
-for i in range(21):
+for i in range(dimM+dimX-dimC): # effective number of free params is dimM+dimX-dimC
     D.append(array('d', [0]))
 
 STATUS = array('i', [0])
@@ -248,6 +248,7 @@ def second_derivative_test(x,params):
     RPz = params[2]
 
     # Bordered Hessian
+    # re-ordering x to put lagrange multipliers first, then measured and unmeasured params
     xprime = np.zeros(dimM+dimX+dimC)
     for i in range(dimC):
         xprime[i] = x[dimM+dimX+i]
@@ -260,13 +261,14 @@ def second_derivative_test(x,params):
 
     global D
 
-    for i in range(49,69+1):  # TODO: Should these numbers 49, 69 be hardcoded?
+    for i in range((2*dimC)+1, dimM+dimX+dimC+1 ):
         s = np.sign( np.linalg.det(get_principal_minor(H,i)) ) 
-        D[i-49][0] = s
+        D[i- ((2*dimC) + 1)][0] = s
 
-        if( s < 0 ):
-            # print(np.linalg.det(get_principal_minor(H,i)))
-            passes_test = False
+        if not s == 0:
+            if not s == (-1)**dimC :
+                # print(np.linalg.det(get_principal_minor(H,i)))
+                passes_test = False
 
     return passes_test
 
