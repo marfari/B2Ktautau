@@ -82,8 +82,10 @@ RPz_symbol = sp.Symbol('RPz_symbol')
 xm_symbols = sp.symbols('PVx PVy PVz DV1x DV1y DV1z p3pi1x p3pi1y p3pi1z E3pi1 DV2x DV2y DV2z p3pi2x p3pi2y p3pi2z E3pi2 RPx RPy pKx pKy pKz')
 xu_symbols = sp.symbols('BVx BVy BVz pBx pBy pBz mB_squared ptau1x ptau1y ptau1z Etau1 pnu1x pnu1y pnu1z Enu1 ptau2x ptau2y ptau2z Etau2 pnu2x pnu2y pnu2z Enu2')
 lb_symbols = sp.symbols('lb0 lb1 lb2 lb3 lb4 lb5 lb6 lb7 lb8 lb9 lb10 lb11 lb12 lb13 lb14 lb15 lb16 lb17 lb18 lb19 lb20 lb21 lb22 lb23')
-x_symbols = sp.symbols('PVx PVy PVz DV1x DV1y DV1z p3pi1x p3pi1y p3pi1z E3pi1 DV2x DV2y DV2z p3pi2x p3pi2y p3pi2z E3pi2 RPx RPy pKx pKy pKz BVx BVy BVz pBx pBy pBz mB_squared ptau1x ptau1y ptau1z Etau1 pnu1x pnu1y pnu1z Enu1 ptau2x ptau2y ptau2z Etau2 pnu2x pnu2y pnu2z Enu2 lb0 lb1 lb2 lb3 lb4 lb5 lb6 lb7 lb8 lb9 lb10 lb11 lb12 lb13 lb14 lb15 lb16 lb17 lb18 lb19 lb20 lb21 lb22 lb23')
-x_symbols_2nd_test = sp.symbols('lb0 lb1 lb2 lb3 lb4 lb5 lb6 lb7 lb8 lb9 lb10 lb11 lb12 lb13 lb14 lb15 lb16 lb17 lb18 lb19 lb20 lb21 lb22 lb23 PVx PVy PVz DV1x DV1y DV1z p3pi1x p3pi1y p3pi1z E3pi1 DV2x DV2y DV2z p3pi2x p3pi2y p3pi2z E3pi2 RPx RPy pKx pKy pKz BVx BVy BVz pBx pBy pBz mB_squared ptau1x ptau1y ptau1z Etau1 pnu1x pnu1y pnu1z Enu1 ptau2x ptau2y ptau2z Etau2 pnu2x pnu2y pnu2z Enu2')
+x_symbols = xm_symbols + xu_symbols + lb_symbols # they are just tuples. Can be concatenated
+x_symbols_2nd_test = lb_symbols + xm_symbols + xu_symbols
+# x_symbols = sp.symbols('PVx PVy PVz DV1x DV1y DV1z p3pi1x p3pi1y p3pi1z E3pi1 DV2x DV2y DV2z p3pi2x p3pi2y p3pi2z E3pi2 RPx RPy pKx pKy pKz BVx BVy BVz pBx pBy pBz mB_squared ptau1x ptau1y ptau1z Etau1 pnu1x pnu1y pnu1z Enu1 ptau2x ptau2y ptau2z Etau2 pnu2x pnu2y pnu2z Enu2 lb0 lb1 lb2 lb3 lb4 lb5 lb6 lb7 lb8 lb9 lb10 lb11 lb12 lb13 lb14 lb15 lb16 lb17 lb18 lb19 lb20 lb21 lb22 lb23')
+# x_symbols_2nd_test = sp.symbols('lb0 lb1 lb2 lb3 lb4 lb5 lb6 lb7 lb8 lb9 lb10 lb11 lb12 lb13 lb14 lb15 lb16 lb17 lb18 lb19 lb20 lb21 lb22 lb23 PVx PVy PVz DV1x DV1y DV1z p3pi1x p3pi1y p3pi1z E3pi1 DV2x DV2y DV2z p3pi2x p3pi2y p3pi2z E3pi2 RPx RPy pKx pKy pKz BVx BVy BVz pBx pBy pBz mB_squared ptau1x ptau1y ptau1z Etau1 pnu1x pnu1y pnu1z Enu1 ptau2x ptau2y ptau2z Etau2 pnu2x pnu2y pnu2z Enu2')
 
 # FUNCTIONS:
 def chisquare(params):
@@ -114,10 +116,10 @@ def lagrangian(params):
     RPz = params[2]
 
     def EB(a, b, c, d):
-        return np.sqrt(a + b**2 + c**2 + d**2)
+        return sp.sqrt(a + b**2 + c**2 + d**2)
 
     def EK(e, f, g):
-        return np.sqrt(mkaon**2 + e**2 + f**2 + g**2)
+        return sp.sqrt(mkaon**2 + e**2 + f**2 + g**2)
 
     # xm
     PVx = xm_symbols[0]
@@ -187,16 +189,16 @@ def lagrangian(params):
     g.append( ptau1z - p3pi1z - pnu1z ) 
     g.append( Etau1 - E3pi1 - Enu1 ) 
     # tau+ and anti-nu mass constraints
-    g.append( Etau1 - np.sqrt(mtau**2 + ptau1x**2 + ptau1y**2 + ptau1z**2) ) 
-    g.append( Enu1 - np.sqrt(mnu**2 + pnu1x**2 + pnu1y**2 + pnu1z**2) ) 
+    g.append( Etau1 - sp.sqrt(mtau**2 + ptau1x**2 + ptau1y**2 + ptau1z**2) ) 
+    g.append( Enu1 - sp.sqrt(mnu**2 + pnu1x**2 + pnu1y**2 + pnu1z**2) ) 
     # 4-momentum conservation in DV2
     g.append( ptau2x - p3pi2x - pnu2x ) 
     g.append( ptau2y - p3pi2y - pnu2y ) 
     g.append( ptau2z - p3pi2z - pnu2z ) 
     g.append( Etau2 - E3pi2 - Enu2 ) 
     # tau- and nu mass constraints
-    g.append( Etau2 - np.sqrt(mtau**2 + ptau2x**2 + ptau2y**2 + ptau2z**2) ) 
-    g.append( Enu2 - np.sqrt(mnu**2 + pnu2x**2 + pnu2y**2 + pnu2z**2) ) 
+    g.append( Etau2 - sp.sqrt(mtau**2 + ptau2x**2 + ptau2y**2 + ptau2z**2) ) 
+    g.append( Enu2 - sp.sqrt(mnu**2 + pnu2x**2 + pnu2y**2 + pnu2z**2) ) 
     # 4-momentum conservation in BV
     g.append( pBx - ptau1x - ptau2x - pKx ) 
     g.append( pBy - ptau1y - ptau2y - pKy ) 
