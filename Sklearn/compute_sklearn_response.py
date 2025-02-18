@@ -62,12 +62,12 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
         X1['VTXISODCHI2ONETRACK_D_min'] = np.minimum( x['Bp_VTXISODCHI2ONETRACK_D0bar'], x['Bp_VTXISODCHI2ONETRACK_Dsp'] )
         X1['VTXISODCHI2TWOTRACK_D_max'] = np.maximum( x['Bp_VTXISODCHI2TWOTRACK_D0bar'], x['Bp_VTXISODCHI2TWOTRACK_Dsp'] ) 
         X1['VTXISODCHI2ONETRACK_B'] = x['Bp_VTXISODCHI2ONETRACK_B']
-        X1['CC_05_IT_B'] = x['Bp_CC_05_IT_B'] 
+        X1['D_iso_second_value_max'] = np.maximum( x['Bp_Bstautau_ISOBDTSECONDVALUE_taup'], x['Bp_Bstautau_ISOBDTSECONDVALUE_taum'] ) 
+        X1['D_iso_third_value_max'] = np.maximum( x['Bp_Bstautau_ISOBDTTHIRDVALUE_taup'], x['Bp_Bstautau_ISOBDTTHIRDVALUE_taum'] )
+        X1['VTXISONUMVTX_D_max'] = np.maximum( x['Bp_VTXISONUMVTX_D0bar'], x['Bp_VTXISONUMVTX_Dsp'] )
         X1['TRKISOBDTFIRSTVALUE_D_pi_min_min'] = np.minimum( np.minimum( x['Bp_TRKISOBDTFIRSTVALUE_D0bar_K'], x['Bp_TRKISOBDTFIRSTVALUE_D0bar_pi'] ), np.minimum( x['Bp_TRKISOBDTFIRSTVALUE_Dsp_K1'], x['Bp_TRKISOBDTFIRSTVALUE_Dsp_K2'], x['Bp_TRKISOBDTFIRSTVALUE_Dsp_pi'] ) )
         X1['TRKISOBDTTHIRDVALUE_D_pi_min_min'] = np.minimum( np.minimum( x['Bp_TRKISOBDTTHIRDVALUE_D0bar_K'], x['Bp_TRKISOBDTTHIRDVALUE_D0bar_pi'] ), np.minimum( x['Bp_TRKISOBDTTHIRDVALUE_Dsp_K1'], x['Bp_TRKISOBDTTHIRDVALUE_Dsp_K2'], x['Bp_TRKISOBDTTHIRDVALUE_Dsp_pi'] ) )
-        X1['TRKISOBDTFIRSTVALUE_D_pi_max_min'] = np.maximum( np.minimum( x['Bp_TRKISOBDTFIRSTVALUE_D0bar_K'], x['Bp_TRKISOBDTFIRSTVALUE_D0bar_pi'] ), np.minimum( x['Bp_TRKISOBDTFIRSTVALUE_Dsp_K1'], x['Bp_TRKISOBDTFIRSTVALUE_Dsp_K2'], x['Bp_TRKISOBDTFIRSTVALUE_Dsp_pi'] ) )
-        X1['TRKISOBDTSECONDVALUE_D_pi_max_min'] = np.maximum( np.minimum( x['Bp_TRKISOBDTSECONDVALUE_D0bar_K'], x['Bp_TRKISOBDTSECONDVALUE_D0bar_pi'] ), np.minimum( x['Bp_TRKISOBDTSECONDVALUE_Dsp_K1'], x['Bp_TRKISOBDTSECONDVALUE_Dsp_K2'], x['Bp_TRKISOBDTSECONDVALUE_Dsp_pi'] ) )
-
+            
     ############################################################################ Topology #####################################################################
     if((isKtautau == True) or (is_cocktailMC == True)):
         X2['tau_M_max'] = np.maximum( x['taup_M'], x['taum_M'] )
@@ -100,8 +100,6 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
                 X2['log10_df_chi2'][i] = -99999
     else:
         X2['log10_1_minus_D_DIRA_BV_min'] = np.minimum( np.log10(1 - np.abs(x['D0bar_DIRA_ORIVX'] ))*np.sign( x['D0bar_DIRA_ORIVX']),  np.log10(1 - np.abs(x['Dsp_DIRA_ORIVX'] ))*np.sign( x['Dsp_DIRA_ORIVX'] ) )
-        X2['D_FD_BV_min'] = np.minimum( x['D0bar_FD_ORIVX'], x['Dsp_FD_ORIVX'] )
-        X2['DV1_DV2_distance'] = np.sqrt( (x['D0bar_ENDVERTEX_X'] - x['Dsp_ENDVERTEX_X'])**2 + (x['D0bar_ENDVERTEX_Y'] - x['Dsp_ENDVERTEX_Y'])**2 + (x['D0bar_ENDVERTEX_Z'] - x['Dsp_ENDVERTEX_Z'])**2 )
 
         dtf_chi2_x = x['Bp_dtf_chi2']
         for i in range(len(dtf_chi2_x)):
@@ -110,10 +108,6 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
             else:
                 dtf_chi2_x[i] = np.log10( dtf_chi2_x[i][0]) 
         X2['log10_DTF_chi2'] = dtf_chi2_x.astype(float)
-
-        for i in range(len(X2['log10_1_minus_D_DIRA_BV_min'])):
-            if np.isnan(X2['log10_1_minus_D_DIRA_BV_min'][i]):
-                X2['log10_1_minus_D_DIRA_BV_min'][i] = -99999
 
     ##################################################################################################################################################################
     names = ["XGBoost"]
