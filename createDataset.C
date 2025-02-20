@@ -132,13 +132,11 @@ void createDataset(int year, int species)
             "D0bar_K_ProbNNpi_pidgen_default", "D0bar_pi_ProbNNpi_pidgen_default", "Dsp_K1_ProbNNpi_pidgen_default", "Dsp_K2_ProbNNpi_pidgen_default", "Dsp_pi_ProbNNpi_pidgen_default"};
 
         Int_t n_vars1;
-        RooArgList arg_list1("arg_list1");
-
         n_vars1 = sizeof(variables1)/sizeof(variables1[0]);
         store_vars_in_workspace(w, t_cut, n_vars1, variables1);
         for(int i = 0; i < n_vars1; i++)
         {
-            arg_list1.add(*w->var(variables1[i]));
+            arg_list.add(*w->var(variables1[i]));
         }
     }
     
