@@ -373,9 +373,9 @@ void bdt_corr_with_bmass()
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     /////////////////////////////////////////////////////////////////////////////////////////// RS data /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    TFileCollection *fc_rs_data_2016 = new TFileCollection("fc_rs_data_2016", "fc_rs_data_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_2/fit_results.txt", 100);
-    TFileCollection *fc_rs_data_2017 = new TFileCollection("fc_rs_data_2017", "fc_rs_data_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_2/fit_results.txt", 100);
-    TFileCollection *fc_rs_data_2018 = new TFileCollection("fc_rs_data_2018", "fc_rs_data_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_2/fit_results.txt", 100);
+    TFileCollection *fc_rs_data_2016 = new TFileCollection("fc_rs_data_2016", "fc_rs_data_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_2/fit_results.txt");
+    TFileCollection *fc_rs_data_2017 = new TFileCollection("fc_rs_data_2017", "fc_rs_data_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_2/fit_results.txt");
+    TFileCollection *fc_rs_data_2018 = new TFileCollection("fc_rs_data_2018", "fc_rs_data_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_2/fit_results.txt");
 
     TChain *t_rs_data_2016 = new TChain("DecayTree");
     TChain *t_rs_data_2017 = new TChain("DecayTree");
@@ -392,9 +392,9 @@ void bdt_corr_with_bmass()
     t_rs_data_2016->Add(t_rs_data_2017);
     t_rs_data_2016->Add(t_rs_data_2018);
 
-    TFileCollection *fc1_rs_data_2016 = new TFileCollection("fc1_rs_data_2016", "fc1_rs_data_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_2/bdt_output.txt", 100);
-    TFileCollection *fc1_rs_data_2017 = new TFileCollection("fc1_rs_data_2017", "fc1_rs_data_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_2/bdt_output.txt", 100);
-    TFileCollection *fc1_rs_data_2018 = new TFileCollection("fc1_rs_data_2018", "fc1_rs_data_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_2/bdt_output.txt", 100);
+    TFileCollection *fc1_rs_data_2016 = new TFileCollection("fc1_rs_data_2016", "fc1_rs_data_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_2/bdt_output.txt");
+    TFileCollection *fc1_rs_data_2017 = new TFileCollection("fc1_rs_data_2017", "fc1_rs_data_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_2/bdt_output.txt");
+    TFileCollection *fc1_rs_data_2018 = new TFileCollection("fc1_rs_data_2018", "fc1_rs_data_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_2/bdt_output.txt");
 
     TChain *t1_rs_data_2016 = new TChain("XGBoost/DecayTree");
     TChain *t1_rs_data_2017 = new TChain("XGBoost/DecayTree");
@@ -564,9 +564,9 @@ void bdt_corr_with_bmass()
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////////////////////////////////////////// WS data /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    TFileCollection *fc_ws_data_2016 = new TFileCollection("fc_ws_data_2016", "fc_ws_data_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_3/fit_results.txt", 100);
-    TFileCollection *fc_ws_data_2017 = new TFileCollection("fc_ws_data_2017", "fc_ws_data_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_3/fit_results.txt", 100);
-    TFileCollection *fc_ws_data_2018 = new TFileCollection("fc_ws_data_2018", "fc_ws_data_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_3/fit_results.txt", 100);
+    TFileCollection *fc_ws_data_2016 = new TFileCollection("fc_ws_data_2016", "fc_ws_data_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_3/fit_results.txt");
+    TFileCollection *fc_ws_data_2017 = new TFileCollection("fc_ws_data_2017", "fc_ws_data_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_3/fit_results.txt");
+    TFileCollection *fc_ws_data_2018 = new TFileCollection("fc_ws_data_2018", "fc_ws_data_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_3/fit_results.txt");
 
     TChain *t_ws_data_2016 = new TChain("DecayTree");
     TChain *t_ws_data_2017 = new TChain("DecayTree");
@@ -583,9 +583,9 @@ void bdt_corr_with_bmass()
     t_ws_data_2016->Add(t_ws_data_2017);
     t_ws_data_2016->Add(t_ws_data_2018);
 
-    TFileCollection *fc1_ws_data_2016 = new TFileCollection("fc1_ws_data_2016", "fc1_ws_data_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_3/bdt_output.txt", 100);
-    TFileCollection *fc1_ws_data_2017 = new TFileCollection("fc1_ws_data_2017", "fc1_ws_data_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_3/bdt_output.txt", 100);
-    TFileCollection *fc1_ws_data_2018 = new TFileCollection("fc1_ws_data_2018", "fc1_ws_data_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_3/bdt_output.txt", 100);
+    TFileCollection *fc1_ws_data_2016 = new TFileCollection("fc1_ws_data_2016", "fc1_ws_data_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_3/bdt_output.txt");
+    TFileCollection *fc1_ws_data_2017 = new TFileCollection("fc1_ws_data_2017", "fc1_ws_data_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_3/bdt_output.txt");
+    TFileCollection *fc1_ws_data_2018 = new TFileCollection("fc1_ws_data_2018", "fc1_ws_data_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_3/bdt_output.txt");
 
     TChain *t1_ws_data_2016 = new TChain("XGBoost/DecayTree");
     TChain *t1_ws_data_2017 = new TChain("XGBoost/DecayTree");
@@ -1207,8 +1207,8 @@ void bdt_corr_with_bmass()
 
     for(int i = 0; i < N; i++)
     {
-        histos_isolation_norm_bkg.push_back( new TH1D( Form("h_iso_norm_bkg_%i",i), Form("h_iso_norm_bkg_%i",i), 100, 5320, 5355) );
-        histos_kinematic_norm_bkg.push_back( new TH1D( Form("h_kin_norm_bkg_%i",i), Form("h_kin_norm_bkg_%i",i), 100, 5320, 5355) );
+        histos_isolation_norm_bkg.push_back( new TH1D( Form("h_iso_norm_bkg_%i",i), Form("h_iso_norm_bkg_%i",i), 100, 5320, 5600) );
+        histos_kinematic_norm_bkg.push_back( new TH1D( Form("h_kin_norm_bkg_%i",i), Form("h_kin_norm_bkg_%i",i), 100, 5320, 5600) );
 
         t_norm_data_2016->Draw(Form("Bp_dtf_M[0] >> h_iso_norm_bkg_%i",i), Form("(BDT1 > %f) && (Bp_dtf_M[0] > 5320)",bdt_cuts[i]));
         t_norm_data_2016->Draw(Form("Bp_dtf_M[0] >> h_kin_norm_bkg_%i",i), Form("(BDT2 > %f) && (Bp_dtf_M[0] > 5320)",bdt_cuts[i]));
@@ -1262,8 +1262,8 @@ void bdt_corr_with_bmass()
     leg_kinematic_norm_bkg->Draw("same");
     c_norm_bkg_kinematic.SaveAs("/panfs/felician/B2Ktautau/workflow/sklearn_correlation/Bmass_kinematic_bdt_cut_norm_bkg.pdf");
 
-    TH2D* h2D_isolation_norm_bkg = new TH2D("h2d_iso_norm_bkg", "h2d_iso_norm_bkg", 100, 5320, 5355, 100, 0, 1);
-    TH2D* h2D_kinematic_norm_bkg = new TH2D("h2d_kin_norm_bkg", "h2d_kin_norm_bkg", 100, 5320, 5355, 100, 0, 1);
+    TH2D* h2D_isolation_norm_bkg = new TH2D("h2d_iso_norm_bkg", "h2d_iso_norm_bkg", 100, 5320, 5600, 100, 0, 1);
+    TH2D* h2D_kinematic_norm_bkg = new TH2D("h2d_kin_norm_bkg", "h2d_kin_norm_bkg", 100, 5320, 5600, 100, 0, 1);
 
     t_norm_data_2016->Draw("BDT1 : Bp_dtf_M[0] >> h2d_iso_norm_bkg", "Bp_dtf_M[0] > 5320");
     t_norm_data_2016->Draw("BDT2 : Bp_dtf_M[0] >> h2d_kin_norm_bkg", "Bp_dtf_M[0] > 5320");
