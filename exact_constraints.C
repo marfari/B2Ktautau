@@ -1,5 +1,254 @@
 Double_t eps_error(Double_t Num, Double_t Den);
 double FWHM(TH1* h);
+std::vector<TH1D*> gsl_pull_distributions(TChain* t, TCut pass_GSL);
+
+Int_t dimM = 22;
+Int_t dimX = 23;
+Int_t dimC = 24;
+
+// Name of the true variable
+TString true_name[] = {
+    "Bp_TRUEORIGINVERTEX_X",
+    "Bp_TRUEORIGINVERTEX_Y",
+    "Bp_TRUEORIGINVERTEX_Z",
+    "taup_TRUEENDVERTEX_X",
+    "taup_TRUEENDVERTEX_Y",
+    "taup_TRUEENDVERTEX_Z",
+    "(taup_pi1_TRUEP_X + taup_pi2_TRUEP_X + taup_pi3_TRUEP_X)",
+    "(taup_pi1_TRUEP_Y + taup_pi2_TRUEP_Y + taup_pi3_TRUEP_Y)",
+    "(taup_pi1_TRUEP_Z + taup_pi2_TRUEP_Z + taup_pi3_TRUEP_Z)",
+    "(taup_pi1_TRUEP_E + taup_pi2_TRUEP_E + taup_pi3_TRUEP_E)",
+    "taum_TRUEENDVERTEX_X",
+    "taum_TRUEENDVERTEX_Y",
+    "taum_TRUEENDVERTEX_Z",
+    "(taum_pi1_TRUEP_X + taum_pi2_TRUEP_X + taum_pi3_TRUEP_X)",
+    "(taum_pi1_TRUEP_Y + taum_pi2_TRUEP_Y + taum_pi3_TRUEP_Y)",
+    "(taum_pi1_TRUEP_Z + taum_pi2_TRUEP_Z + taum_pi3_TRUEP_Z)",
+    "(taum_pi1_TRUEP_E + taum_pi2_TRUEP_E + taum_pi3_TRUEP_E)",
+    "Bp_TRUEENDVERTEX_X",
+    "Bp_TRUEENDVERTEX_Y",
+    "Kp_TRUEP_X",
+    "Kp_TRUEP_Y",
+    "Kp_TRUEP_Z",
+    "Bp_TRUEENDVERTEX_X",
+    "Bp_TRUEENDVERTEX_Y",
+    "Bp_TRUEENDVERTEX_Z",
+    "Bp_TRUEP_X",
+    "Bp_TRUEP_Y",
+    "Bp_TRUEP_Z",
+    "5279.41",
+    "taup_TRUEP_X",
+    "taup_TRUEP_Y",
+    "taup_TRUEP_Z",
+    "taup_TRUEP_E",
+    "(taup_TRUEP_X - taup_pi1_TRUEP_X - taup_pi2_TRUEP_X - taup_pi3_TRUEP_X)",
+    "(taup_TRUEP_Y - taup_pi1_TRUEP_Y - taup_pi2_TRUEP_Y - taup_pi3_TRUEP_Y)",
+    "(taup_TRUEP_Z - taup_pi1_TRUEP_Z - taup_pi2_TRUEP_Z - taup_pi3_TRUEP_Z)",
+    "(taup_TRUEP_E - taup_pi1_TRUEP_E - taup_pi2_TRUEP_E - taup_pi3_TRUEP_E)",
+    "taum_TRUEP_X",
+    "taum_TRUEP_Y",
+    "taum_TRUEP_Z",
+    "taum_TRUEP_E",
+    "(taum_TRUEP_X - taum_pi1_TRUEP_X - taum_pi2_TRUEP_X - taum_pi3_TRUEP_X)",
+    "(taum_TRUEP_Y - taum_pi1_TRUEP_Y - taum_pi2_TRUEP_Y - taum_pi3_TRUEP_Y)",
+    "(taum_TRUEP_Z - taum_pi1_TRUEP_Z - taum_pi2_TRUEP_Z - taum_pi3_TRUEP_Z)",
+    "(taum_TRUEP_E - taum_pi1_TRUEP_E - taum_pi2_TRUEP_E - taum_pi3_TRUEP_E)"
+};
+
+// Name of the fitted error variable
+TString df_err_name[] = {
+    "df_PVx_err",
+    "df_PVy_err",
+    "df_PVz_err",
+    "df_DV1x_err",
+    "df_DV1y_err",
+    "df_DV1z_err",
+    "df_3pi1_PX_err",
+    "df_3pi1_PY_err",
+    "df_3pi1_PZ_err",
+    "df_3pi1_PE_err",
+    "df_DV2x_err",
+    "df_DV2y_err",
+    "df_DV2z_err",
+    "df_3pi2_PX_err",
+    "df_3pi2_PY_err",
+    "df_3pi2_PZ_err",
+    "df_3pi2_PE_err",
+    "df_RPx_err",
+    "df_RPy_err",
+    "df_Kp_PX_err",
+    "df_Kp_PY_err",
+    "df_Kp_PZ_err",
+    "df_BVx_err",
+    "df_BVy_err",
+    "df_BVz_err",
+    "df_Bp_PX_err",
+    "df_Bp_PY_err",
+    "df_Bp_PZ_err",
+    "df_Bp_MERR",
+    "df_taup_PX_err",
+    "df_taup_PY_err",
+    "df_taup_PZ_err",
+    "df_taup_PE_err",
+    "df_antinutau_PX_err",
+    "df_antinutau_PY_err",
+    "df_antinutau_PZ_err",
+    "df_antinutau_PE_err",
+    "df_taum_PX_err",
+    "df_taum_PY_err",
+    "df_taum_PZ_err",
+    "df_taum_PE_err",
+    "df_nutau_PX_err",
+    "df_nutau_PY_err",
+    "df_nutau_PZ_err",
+    "df_nutau_PE_err"
+};
+
+// name of the fitted variable
+TString df_name[] = {
+    "df_PVx",
+    "df_PVy",
+    "df_PVz",
+    "df_DV1x",
+    "df_DV1y",
+    "df_DV1z",
+    "df_3pi1_PX",
+    "df_3pi1_PY",
+    "df_3pi1_PZ",
+    "df_3pi1_PE",
+    "df_DV2x",
+    "df_DV2y",
+    "df_DV2z",
+    "df_3pi2_PX",
+    "df_3pi2_PY",
+    "df_3pi2_PZ",
+    "df_3pi2_PE",
+    "df_RPx",
+    "df_RPy",
+    "df_Kp_PX",
+    "df_Kp_PY",
+    "df_Kp_PZ",
+    "df_BVx",
+    "df_BVy",
+    "df_BVz",
+    "df_Bp_PX",
+    "df_Bp_PY",
+    "df_Bp_PZ",
+    "df_Bp_M",
+    "df_taup_PX",
+    "df_taup_PY",
+    "df_taup_PZ",
+    "df_taup_PE",
+    "df_antinutau_PX",
+    "df_antinutau_PY",
+    "df_antinutau_PZ",
+    "df_antinutau_PE",
+    "df_taum_PX",
+    "df_taum_PY",
+    "df_taum_PZ",
+    "df_taum_PE",
+    "df_nutau_PX",
+    "df_nutau_PY",
+    "df_nutau_PZ",
+    "df_nutau_PE"
+};
+
+TString label_name[] = {
+    "PVx (mm)",
+    "PVy (mm)",
+    "PVz (mm)",
+    "DV1x (mm)",
+    "DV1y (mm)",
+    "DV1z (mm)",
+    "p3pi1x (MeV)",
+    "p3pi1y (MeV)",
+    "p3pi1z (MeV)",
+    "E3pi1 (MeV)",
+    "DV2x (mm)",
+    "DV2y (mm)",
+    "DV2z (mm)",
+    "p3pi2x (MeV)",
+    "p3pi2y (MeV)",
+    "p3pi2z (MeV)",
+    "E3pi2 (MeV)",
+    "RPx (mm)",
+    "RPy (mm)",
+    "pKx (MeV)",
+    "pKy (MeV)",
+    "pKz (MeV)",
+    "BVx (mm)",
+    "BVy (mm)",
+    "BVz (mm)",
+    "pBx (MeV)",
+    "pBy (MeV)",
+    "pBz (MeV)",
+    "MB (MeV)",
+    "ptau1x (MeV)",
+    "ptau1y (MeV)",
+    "ptau1z (MeV)",
+    "Etau1 (MeV)",
+    "pnu1x (MeV)",
+    "pnu1y (MeV)",
+    "pnu1z (MeV)",
+    "Enu1 (MeV)",
+    "ptau2x (MeV)",
+    "ptau2y (MeV)",
+    "ptau2z (MeV)",
+    "Etau2 (MeV)",
+    "pnu2x (MeV)",
+    "pnu2y (MeV)",
+    "pnu2z (MeV)",
+    "Enu2 (MeV)"
+};
+
+TString title_name[] = {
+    "PVx",
+    "PVy",
+    "PVz",
+    "DV1x",
+    "DV1y",
+    "DV1z",
+    "p3pi1x",
+    "p3pi1y",
+    "p3pi1z",
+    "E3pi1",
+    "DV2x",
+    "DV2y",
+    "DV2z",
+    "p3pi2x",
+    "p3pi2y",
+    "p3pi2z",
+    "E3pi2",
+    "RPx",
+    "RPy",
+    "pKx",
+    "pKy",
+    "pKz",
+    "BVx",
+    "BVy",
+    "BVz",
+    "pBx",
+    "pBy",
+    "pBz",
+    "MB",
+    "ptau1x",
+    "ptau1y",
+    "ptau1z",
+    "Etau1",
+    "pnu1x",
+    "pnu1y",
+    "pnu1z",
+    "Enu1",
+    "ptau2x",
+    "ptau2y",
+    "ptau2z",
+    "Etau2",
+    "pnu2x",
+    "pnu2y",
+    "pnu2z",
+    "Enu2"
+};
+
 
 void exact_constraints()
 {
@@ -162,16 +411,13 @@ void exact_constraints()
     h_3pi3pi_2016->SetTitle("2016");
 
     h_3pi3pi_2016->SetLineColor(kBlue);
-    h_3pi3pi_2016->SetFillColorAlpha(kBlue, 0.5);
-    h_3pi3pi_2016->SetFillStyle(3009);
+    h_3pi3pi_2016->SetFillColorAlpha(kBlue, 0.25);
 
     h_3pi3pipi0_2016->SetLineColor(kCyan+1);
-    h_3pi3pipi0_2016->SetFillColorAlpha(kCyan+1, 0.5);
-    h_3pi3pipi0_2016->SetFillStyle(3009);
+    h_3pi3pipi0_2016->SetFillColorAlpha(kCyan+1, 0.25);
 
     h_3pi3pi2pi0_2016->SetLineColor(kGreen+1);
-    h_3pi3pi2pi0_2016->SetFillColorAlpha(kGreen+1, 0.5);
-    h_3pi3pi2pi0_2016->SetFillStyle(3009);
+    h_3pi3pi2pi0_2016->SetFillColorAlpha(kGreen+1, 0.25);
 
     h_3pi3pi_2016->DrawNormalized();
     h_3pi3pipi0_2016->DrawNormalized("same");
@@ -202,16 +448,13 @@ void exact_constraints()
     h_3pi3pi_2017->SetTitle("2017");
 
     h_3pi3pi_2017->SetLineColor(kBlue);
-    h_3pi3pi_2017->SetFillColorAlpha(kBlue, 0.5);
-    h_3pi3pi_2017->SetFillStyle(3009);
+    h_3pi3pi_2017->SetFillColorAlpha(kBlue, 0.25);
 
     h_3pi3pipi0_2017->SetLineColor(kCyan+1);
-    h_3pi3pipi0_2017->SetFillColorAlpha(kCyan+1, 0.5);
-    h_3pi3pipi0_2017->SetFillStyle(3009);
+    h_3pi3pipi0_2017->SetFillColorAlpha(kCyan+1, 0.25);
 
     h_3pi3pi2pi0_2017->SetLineColor(kGreen+1);
-    h_3pi3pi2pi0_2017->SetFillColorAlpha(kGreen+1, 0.5);
-    h_3pi3pi2pi0_2017->SetFillStyle(3009);
+    h_3pi3pi2pi0_2017->SetFillColorAlpha(kGreen+1, 0.25);
 
     h_3pi3pi_2017->DrawNormalized();
     h_3pi3pipi0_2017->DrawNormalized("same");
@@ -242,16 +485,13 @@ void exact_constraints()
     h_3pi3pi_2018->SetTitle("2018");
 
     h_3pi3pi_2018->SetLineColor(kBlue);
-    h_3pi3pi_2018->SetFillColorAlpha(kBlue, 0.5);
-    h_3pi3pi_2018->SetFillStyle(3009);
+    h_3pi3pi_2018->SetFillColorAlpha(kBlue, 0.25);
 
     h_3pi3pipi0_2018->SetLineColor(kCyan+1);
-    h_3pi3pipi0_2018->SetFillColorAlpha(kCyan+1, 0.5);
-    h_3pi3pipi0_2018->SetFillStyle(3009);
+    h_3pi3pipi0_2018->SetFillColorAlpha(kCyan+1, 0.25);
 
     h_3pi3pi2pi0_2018->SetLineColor(kGreen+1);
-    h_3pi3pi2pi0_2018->SetFillColorAlpha(kGreen+1, 0.5);
-    h_3pi3pi2pi0_2018->SetFillStyle(3009);
+    h_3pi3pi2pi0_2018->SetFillColorAlpha(kGreen+1, 0.25);
 
     h_3pi3pi_2018->DrawNormalized();
     h_3pi3pipi0_2018->DrawNormalized("same");
@@ -364,28 +604,22 @@ void exact_constraints()
     t_ws_2018->Draw("df_Bp_M >> h_ws_2018", pass_GSL);
 
     h_rs_2016->SetLineColor(kBlack);
-    h_rs_2016->SetFillColorAlpha(kBlack, 0.5);
-    h_rs_2016->SetFillStyle(3009);
+    h_rs_2016->SetFillColorAlpha(kBlack, 0.25);
 
     h_rs_2017->SetLineColor(kBlack);
-    h_rs_2017->SetFillColorAlpha(kBlack, 0.5);
-    h_rs_2017->SetFillStyle(3009);
+    h_rs_2017->SetFillColorAlpha(kBlack, 0.25);
 
     h_rs_2018->SetLineColor(kBlack);
-    h_rs_2018->SetFillColorAlpha(kBlack, 0.5);
-    h_rs_2018->SetFillStyle(3009);
+    h_rs_2018->SetFillColorAlpha(kBlack, 0.25);
 
     h_ws_2016->SetLineColor(kRed);
-    h_ws_2016->SetFillColorAlpha(kRed, 0.5);
-    h_ws_2016->SetFillStyle(3009);
+    h_ws_2016->SetFillColorAlpha(kRed, 0.25);
 
     h_ws_2017->SetLineColor(kRed);
-    h_ws_2017->SetFillColorAlpha(kRed, 0.5);
-    h_ws_2017->SetFillStyle(3009);
+    h_ws_2017->SetFillColorAlpha(kRed, 0.25);
 
     h_ws_2018->SetLineColor(kRed);
-    h_ws_2018->SetFillColorAlpha(kRed, 0.5);
-    h_ws_2018->SetFillStyle(3009);
+    h_ws_2018->SetFillColorAlpha(kRed, 0.25);
 
     TCanvas c1_2016 = new TCanvas();
     c1_2016.cd();
@@ -496,40 +730,31 @@ void exact_constraints()
     h_chi2_3pi3pi_2018->SetTitle("2018");
 
     h_chi2_3pi3pi_2016->SetLineColor(kBlue);
-    h_chi2_3pi3pi_2016->SetFillColorAlpha(kBlue, 0.5);
-    h_chi2_3pi3pi_2016->SetFillStyle(3009);
+    h_chi2_3pi3pi_2016->SetFillColorAlpha(kBlue, 0.25);
 
     h_chi2_3pi3pi_2017->SetLineColor(kBlue);
-    h_chi2_3pi3pi_2017->SetFillColorAlpha(kBlue, 0.5);
-    h_chi2_3pi3pi_2017->SetFillStyle(3009);
+    h_chi2_3pi3pi_2017->SetFillColorAlpha(kBlue, 0.25);
 
     h_chi2_3pi3pi_2018->SetLineColor(kBlue);
-    h_chi2_3pi3pi_2018->SetFillColorAlpha(kBlue, 0.5);
-    h_chi2_3pi3pi_2018->SetFillStyle(3009);
+    h_chi2_3pi3pi_2018->SetFillColorAlpha(kBlue, 0.25);
 
     h_chi2_rs_2016->SetLineColor(kBlack);
-    h_chi2_rs_2016->SetFillColorAlpha(kBlack, 0.5);
-    h_chi2_rs_2016->SetFillStyle(3009);
+    h_chi2_rs_2016->SetFillColorAlpha(kBlack, 0.25);
 
     h_chi2_rs_2017->SetLineColor(kBlack);
-    h_chi2_rs_2017->SetFillColorAlpha(kBlack, 0.5);
-    h_chi2_rs_2017->SetFillStyle(3009);
+    h_chi2_rs_2017->SetFillColorAlpha(kBlack, 0.25);
 
     h_chi2_rs_2018->SetLineColor(kBlack);
-    h_chi2_rs_2018->SetFillColorAlpha(kBlack, 0.5);
-    h_chi2_rs_2018->SetFillStyle(3009);
+    h_chi2_rs_2018->SetFillColorAlpha(kBlack, 0.25);
 
     h_chi2_ws_2016->SetLineColor(kRed);
-    h_chi2_ws_2016->SetFillColorAlpha(kRed, 0.5);
-    h_chi2_ws_2016->SetFillStyle(3009);
+    h_chi2_ws_2016->SetFillColorAlpha(kRed, 0.25);
 
     h_chi2_ws_2017->SetLineColor(kRed);
-    h_chi2_ws_2017->SetFillColorAlpha(kRed, 0.5);
-    h_chi2_ws_2017->SetFillStyle(3009);
+    h_chi2_ws_2017->SetFillColorAlpha(kRed, 0.25);
 
     h_chi2_ws_2018->SetLineColor(kRed);
-    h_chi2_ws_2018->SetFillColorAlpha(kRed, 0.5);
-    h_chi2_ws_2018->SetFillStyle(3009);
+    h_chi2_ws_2018->SetFillColorAlpha(kRed, 0.25);
 
     TCanvas c2_2016 = new TCanvas();
     c2_2016.cd();
@@ -607,40 +832,31 @@ void exact_constraints()
     h_init_rs_2018->SetTitle("2018");
 
     h_init_3pi3pi_2016->SetLineColor(kBlue);
-    h_init_3pi3pi_2016->SetFillColorAlpha(kBlue, 0.5);
-    h_init_3pi3pi_2016->SetFillStyle(3009);
+    h_init_3pi3pi_2016->SetFillColorAlpha(kBlue, 0.25);
 
     h_init_3pi3pi_2017->SetLineColor(kBlue);
-    h_init_3pi3pi_2017->SetFillColorAlpha(kBlue, 0.5);
-    h_init_3pi3pi_2017->SetFillStyle(3009);
+    h_init_3pi3pi_2017->SetFillColorAlpha(kBlue, 0.25);
 
     h_init_3pi3pi_2018->SetLineColor(kBlue);
-    h_init_3pi3pi_2018->SetFillColorAlpha(kBlue, 0.5);
-    h_init_3pi3pi_2018->SetFillStyle(3009);
+    h_init_3pi3pi_2018->SetFillColorAlpha(kBlue, 0.25);
 
     h_init_rs_2016->SetLineColor(kBlack);
-    h_init_rs_2016->SetFillColorAlpha(kBlack, 0.5);
-    h_init_rs_2016->SetFillStyle(3009);
+    h_init_rs_2016->SetFillColorAlpha(kBlack, 0.25);
 
     h_init_rs_2017->SetLineColor(kBlack);
-    h_init_rs_2017->SetFillColorAlpha(kBlack, 0.5);
-    h_init_rs_2017->SetFillStyle(3009);
+    h_init_rs_2017->SetFillColorAlpha(kBlack, 0.25);
 
     h_init_rs_2018->SetLineColor(kBlack);
-    h_init_rs_2018->SetFillColorAlpha(kBlack, 0.5);
-    h_init_rs_2018->SetFillStyle(3009);
+    h_init_rs_2018->SetFillColorAlpha(kBlack, 0.25);
 
     h_init_ws_2016->SetLineColor(kRed);
-    h_init_ws_2016->SetFillColorAlpha(kRed, 0.5);
-    h_init_ws_2016->SetFillStyle(3009);
+    h_init_ws_2016->SetFillColorAlpha(kRed, 0.25);
 
     h_init_ws_2017->SetLineColor(kRed);
-    h_init_ws_2017->SetFillColorAlpha(kRed, 0.5);
-    h_init_ws_2017->SetFillStyle(3009);
+    h_init_ws_2017->SetFillColorAlpha(kRed, 0.25);
 
     h_init_ws_2018->SetLineColor(kRed);
-    h_init_ws_2018->SetFillColorAlpha(kRed, 0.5);
-    h_init_ws_2018->SetFillStyle(3009);
+    h_init_ws_2018->SetFillColorAlpha(kRed, 0.25);
 
     TCanvas c3_2016 = new TCanvas();
     c3_2016.cd();
@@ -718,40 +934,31 @@ void exact_constraints()
     h_min_rs_2018->SetTitle("2018");
 
     h_min_3pi3pi_2016->SetLineColor(kBlue);
-    h_min_3pi3pi_2016->SetFillColorAlpha(kBlue, 0.5);
-    h_min_3pi3pi_2016->SetFillStyle(3009);
+    h_min_3pi3pi_2016->SetFillColorAlpha(kBlue, 0.25);
 
     h_min_3pi3pi_2017->SetLineColor(kBlue);
-    h_min_3pi3pi_2017->SetFillColorAlpha(kBlue, 0.5);
-    h_min_3pi3pi_2017->SetFillStyle(3009);
+    h_min_3pi3pi_2017->SetFillColorAlpha(kBlue, 0.25);
 
     h_min_3pi3pi_2018->SetLineColor(kBlue);
-    h_min_3pi3pi_2018->SetFillColorAlpha(kBlue, 0.5);
-    h_min_3pi3pi_2018->SetFillStyle(3009);
+    h_min_3pi3pi_2018->SetFillColorAlpha(kBlue, 0.25);
 
     h_min_rs_2016->SetLineColor(kBlack);
-    h_min_rs_2016->SetFillColorAlpha(kBlack, 0.5);
-    h_min_rs_2016->SetFillStyle(3009);
+    h_min_rs_2016->SetFillColorAlpha(kBlack, 0.25);
 
     h_min_rs_2017->SetLineColor(kBlack);
-    h_min_rs_2017->SetFillColorAlpha(kBlack, 0.5);
-    h_min_rs_2017->SetFillStyle(3009);
+    h_min_rs_2017->SetFillColorAlpha(kBlack, 0.25);
 
     h_min_rs_2018->SetLineColor(kBlack);
-    h_min_rs_2018->SetFillColorAlpha(kBlack, 0.5);
-    h_min_rs_2018->SetFillStyle(3009);
+    h_min_rs_2018->SetFillColorAlpha(kBlack, 0.25);
 
     h_min_ws_2016->SetLineColor(kRed);
-    h_min_ws_2016->SetFillColorAlpha(kRed, 0.5);
-    h_min_ws_2016->SetFillStyle(3009);
+    h_min_ws_2016->SetFillColorAlpha(kRed, 0.25);
 
     h_min_ws_2017->SetLineColor(kRed);
-    h_min_ws_2017->SetFillColorAlpha(kRed, 0.5);
-    h_min_ws_2017->SetFillStyle(3009);
+    h_min_ws_2017->SetFillColorAlpha(kRed, 0.25);
 
     h_min_ws_2018->SetLineColor(kRed);
-    h_min_ws_2018->SetFillColorAlpha(kRed, 0.5);
-    h_min_ws_2018->SetFillStyle(3009);
+    h_min_ws_2018->SetFillColorAlpha(kRed, 0.25);
 
     TCanvas c4_2016 = new TCanvas();
     c4_2016.cd();
@@ -842,16 +1049,13 @@ void exact_constraints()
     h_merr_ws->SetTitle("2016-2018");
 
     h_merr_mc->SetLineColor(kBlue);
-    h_merr_mc->SetFillColorAlpha(kBlue, 0.5);
-    h_merr_mc->SetFillStyle(3009);
+    h_merr_mc->SetFillColorAlpha(kBlue, 0.25);
 
     h_merr_rs->SetLineColor(kBlack);
-    h_merr_rs->SetFillColorAlpha(kBlack, 0.5);
-    h_merr_rs->SetFillStyle(3009);
+    h_merr_rs->SetFillColorAlpha(kBlack, 0.25);
 
     h_merr_ws->SetLineColor(kRed);
-    h_merr_ws->SetFillColorAlpha(kRed, 0.5);
-    h_merr_ws->SetFillStyle(3009);
+    h_merr_ws->SetFillColorAlpha(kRed, 0.25);
 
     TCanvas c5 = new TCanvas();
     c5.cd();
@@ -952,16 +1156,13 @@ void exact_constraints()
     c6.cd();
 
     h_3pi3pi_0->SetLineColor(kBlue);
-    h_3pi3pi_0->SetFillColorAlpha(kBlue, 0.5);
-    h_3pi3pi_0->SetFillStyle(3009);
+    h_3pi3pi_0->SetFillColorAlpha(kBlue, 0.25);
 
     h_3pi3pi_1->SetLineColor(kGreen+1);
-    h_3pi3pi_1->SetFillColorAlpha(kGreen+1, 0.5);
-    h_3pi3pi_1->SetFillStyle(3009);
+    h_3pi3pi_1->SetFillColorAlpha(kGreen+1, 0.25);
 
     h_3pi3pi_2->SetLineColor(kRed);
-    h_3pi3pi_2->SetFillColorAlpha(kRed, 0.5);
-    h_3pi3pi_2->SetFillStyle(3009);
+    h_3pi3pi_2->SetFillColorAlpha(kRed, 0.25);
 
     h_3pi3pi_0->DrawNormalized();
     h_3pi3pi_1->DrawNormalized("same");
@@ -978,16 +1179,13 @@ void exact_constraints()
     c7.cd();
 
     h_3pi3pipi0_0->SetLineColor(kBlue);
-    h_3pi3pipi0_0->SetFillColorAlpha(kBlue, 0.5);
-    h_3pi3pipi0_0->SetFillStyle(3009);
+    h_3pi3pipi0_0->SetFillColorAlpha(kBlue, 0.25);
 
     h_3pi3pipi0_1->SetLineColor(kGreen+1);
-    h_3pi3pipi0_1->SetFillColorAlpha(kGreen+1, 0.5);
-    h_3pi3pipi0_1->SetFillStyle(3009);
+    h_3pi3pipi0_1->SetFillColorAlpha(kGreen+1, 0.25);
 
     h_3pi3pipi0_2->SetLineColor(kRed);
-    h_3pi3pipi0_2->SetFillColorAlpha(kRed, 0.5);
-    h_3pi3pipi0_2->SetFillStyle(3009);
+    h_3pi3pipi0_2->SetFillColorAlpha(kRed, 0.25);
 
     h_3pi3pipi0_0->DrawNormalized();
     h_3pi3pipi0_1->DrawNormalized("same");
@@ -1000,16 +1198,13 @@ void exact_constraints()
     c8.cd();
 
     h_3pi3pi2pi0_0->SetLineColor(kBlue);
-    h_3pi3pi2pi0_0->SetFillColorAlpha(kBlue, 0.5);
-    h_3pi3pi2pi0_0->SetFillStyle(3009);
+    h_3pi3pi2pi0_0->SetFillColorAlpha(kBlue, 0.25);
 
     h_3pi3pi2pi0_1->SetLineColor(kGreen+1);
-    h_3pi3pi2pi0_1->SetFillColorAlpha(kGreen+1, 0.5);
-    h_3pi3pi2pi0_1->SetFillStyle(3009);
+    h_3pi3pi2pi0_1->SetFillColorAlpha(kGreen+1, 0.25);
 
     h_3pi3pi2pi0_2->SetLineColor(kRed);
-    h_3pi3pi2pi0_2->SetFillColorAlpha(kRed, 0.5);
-    h_3pi3pi2pi0_2->SetFillStyle(3009);
+    h_3pi3pi2pi0_2->SetFillColorAlpha(kRed, 0.25);
 
     h_3pi3pi2pi0_0->DrawNormalized();
     h_3pi3pi2pi0_1->DrawNormalized("same");
@@ -1022,16 +1217,13 @@ void exact_constraints()
     c9.cd();
 
     h_all_mc_0->SetLineColor(kBlue);
-    h_all_mc_0->SetFillColorAlpha(kBlue, 0.5);
-    h_all_mc_0->SetFillStyle(3009);
+    h_all_mc_0->SetFillColorAlpha(kBlue, 0.25);
 
     h_all_mc_1->SetLineColor(kGreen+1);
-    h_all_mc_1->SetFillColorAlpha(kGreen+1, 0.5);
-    h_all_mc_1->SetFillStyle(3009);
+    h_all_mc_1->SetFillColorAlpha(kGreen+1, 0.25);
 
     h_all_mc_2->SetLineColor(kRed);
-    h_all_mc_2->SetFillColorAlpha(kRed, 0.5);
-    h_all_mc_2->SetFillStyle(3009);
+    h_all_mc_2->SetFillColorAlpha(kRed, 0.25);
 
     h_all_mc_0->DrawNormalized();
     h_all_mc_1->DrawNormalized("same");
@@ -1044,16 +1236,13 @@ void exact_constraints()
     c10.cd();
 
     h_rs_0->SetLineColor(kBlue);
-    h_rs_0->SetFillColorAlpha(kBlue, 0.5);
-    h_rs_0->SetFillStyle(3009);
+    h_rs_0->SetFillColorAlpha(kBlue, 0.25);
 
     h_rs_1->SetLineColor(kGreen+1);
-    h_rs_1->SetFillColorAlpha(kGreen+1, 0.5);
-    h_rs_1->SetFillStyle(3009);
+    h_rs_1->SetFillColorAlpha(kGreen+1, 0.25);
 
     h_rs_2->SetLineColor(kRed);
-    h_rs_2->SetFillColorAlpha(kRed, 0.5);
-    h_rs_2->SetFillStyle(3009);
+    h_rs_2->SetFillColorAlpha(kRed, 0.25);
 
     h_rs_0->DrawNormalized();
     h_rs_1->DrawNormalized("same");
@@ -1066,16 +1255,13 @@ void exact_constraints()
     c11.cd();
 
     h_ws_0->SetLineColor(kBlue);
-    h_ws_0->SetFillColorAlpha(kBlue, 0.5);
-    h_ws_0->SetFillStyle(3009);
+    h_ws_0->SetFillColorAlpha(kBlue, 0.25);
 
     h_ws_1->SetLineColor(kGreen+1);
-    h_ws_1->SetFillColorAlpha(kGreen+1, 0.5);
-    h_ws_1->SetFillStyle(3009);
+    h_ws_1->SetFillColorAlpha(kGreen+1, 0.25);
 
     h_ws_2->SetLineColor(kRed);
-    h_ws_2->SetFillColorAlpha(kRed, 0.5);
-    h_ws_2->SetFillStyle(3009);
+    h_ws_2->SetFillColorAlpha(kRed, 0.25);
 
     h_ws_0->DrawNormalized();
     h_ws_1->DrawNormalized("same");
@@ -1179,16 +1365,13 @@ void exact_constraints()
     h_3pi3pi->SetTitle("All events: 2016-2018");
 
     h_3pi3pi->SetLineColor(kBlue);
-    h_3pi3pi->SetFillColorAlpha(kBlue, 0.5);
-    h_3pi3pi->SetFillStyle(3009);
+    h_3pi3pi->SetFillColorAlpha(kBlue, 0.25);
 
     h_rs->SetLineColor(kBlack);
-    h_rs->SetFillColorAlpha(kBlack, 0.5);
-    h_rs->SetFillStyle(3009);
+    h_rs->SetFillColorAlpha(kBlack, 0.25);
 
     h_ws->SetLineColor(kRed);
-    h_ws->SetFillColorAlpha(kRed, 0.5);
-    h_ws->SetFillStyle(3009);
+    h_ws->SetFillColorAlpha(kRed, 0.25);
 
     h_3pi3pi->DrawNormalized();
     h_rs->DrawNormalized("same");
@@ -1207,16 +1390,13 @@ void exact_constraints()
     h_3pi3pi_0->SetTitle("#Delta m_{B} #in [0,100] MeV: 2016-2018");
 
     h_3pi3pi_0->SetLineColor(kBlue);
-    h_3pi3pi_0->SetFillColorAlpha(kBlue, 0.5);
-    h_3pi3pi_0->SetFillStyle(3009);
+    h_3pi3pi_0->SetFillColorAlpha(kBlue, 0.25);
 
     h_rs_0->SetLineColor(kBlack);
-    h_rs_0->SetFillColorAlpha(kBlack, 0.5);
-    h_rs_0->SetFillStyle(3009);
+    h_rs_0->SetFillColorAlpha(kBlack, 0.25);
 
     h_ws_0->SetLineColor(kRed);
-    h_ws_0->SetFillColorAlpha(kRed, 0.5);
-    h_ws_0->SetFillStyle(3009);
+    h_ws_0->SetFillColorAlpha(kRed, 0.25);
 
     h_3pi3pi_0->DrawNormalized();
     h_rs_0->DrawNormalized("same");
@@ -1230,16 +1410,13 @@ void exact_constraints()
     h_3pi3pi_1->SetTitle("#Delta m_{B} #in ]100,250] MeV: 2016-2018");
 
     h_3pi3pi_1->SetLineColor(kBlue);
-    h_3pi3pi_1->SetFillColorAlpha(kBlue, 0.5);
-    h_3pi3pi_1->SetFillStyle(3009);
+    h_3pi3pi_1->SetFillColorAlpha(kBlue, 0.25);
 
     h_rs_1->SetLineColor(kBlack);
-    h_rs_1->SetFillColorAlpha(kBlack, 0.5);
-    h_rs_1->SetFillStyle(3009);
+    h_rs_1->SetFillColorAlpha(kBlack, 0.25);
 
     h_ws_1->SetLineColor(kRed);
-    h_ws_1->SetFillColorAlpha(kRed, 0.5);
-    h_ws_1->SetFillStyle(3009);
+    h_ws_1->SetFillColorAlpha(kRed, 0.25);
 
     h_3pi3pi_1->DrawNormalized();
     h_rs_1->DrawNormalized("same");
@@ -1253,16 +1430,13 @@ void exact_constraints()
     h_3pi3pi_2->SetTitle("#Delta m_{B} > 250 MeV: 2016-2018");
 
     h_3pi3pi_2->SetLineColor(kBlue);
-    h_3pi3pi_2->SetFillColorAlpha(kBlue, 0.5);
-    h_3pi3pi_2->SetFillStyle(3009);
+    h_3pi3pi_2->SetFillColorAlpha(kBlue, 0.25);
 
     h_rs_2->SetLineColor(kBlack);
-    h_rs_2->SetFillColorAlpha(kBlack, 0.5);
-    h_rs_2->SetFillStyle(3009);
+    h_rs_2->SetFillColorAlpha(kBlack, 0.25);
 
     h_ws_2->SetLineColor(kRed);
-    h_ws_2->SetFillColorAlpha(kRed, 0.5);
-    h_ws_2->SetFillStyle(3009);
+    h_ws_2->SetFillColorAlpha(kRed, 0.25);
 
     h_3pi3pi_2->DrawNormalized();
     h_rs_2->DrawNormalized("same");
@@ -1270,6 +1444,8 @@ void exact_constraints()
     leg7->Draw("same");
 
     FourPads->SaveAs("/panfs/felician/B2Ktautau/workflow/exact_constraints/bmass_mc_vs_data_error_categories.pdf");
+
+    gsl_pull_distributions(t_mc, pass_GSL);
 
     /*
 
@@ -1444,312 +1620,6 @@ void exact_constraints()
         c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/exact_constraints/Species_%i/F%i.pdf",species,i));
     }
 
-    // B+ mass
-    TH1D* h1_mb = new TH1D("h1_mb", "h1_mb", 100, 4000, 8000);
-    TH1D* h2_mb = new TH1D("h2_mb", "h2_mb", 100, 4000, 8000);
-
-    if( (species == 4) || (species == 5) )
-    {
-        t->Draw("Bp_dtf_DDK_M[0] >> h1_mb",passDTF);
-    }
-    else if (species == 9)
-    {
-        t->Draw("Bp_dtf_M[0] >> h1_mb",passDTF);
-    }
-    else
-    {
-        t->Draw("Bp_dtf_M[0] >> h1_mb",passDTF);
-    }
-    t->Draw("df_Bp_M >> h2_mb", df_status);
-
-    gStyle->SetOptStat(0);
-
-    TCanvas c1;
-    c1.cd();
-    h2_mb->GetXaxis()->SetTitle("m_{B} (MeV)");
-    h2_mb->GetYaxis()->SetTitle( TString::Format("Events /(%g)",(h2_mb->GetXaxis()->GetXmax() - h2_mb->GetXaxis()->GetXmin())/100) );
-    h2_mb->SetTitle("");
-    h1_mb->SetLineColor(kBlack);
-    h1_mb->SetFillColorAlpha(kBlack, 0.25);
-    h2_mb->SetLineColor(kBlue);
-    h2_mb->SetFillColorAlpha(kBlue, 0.25);
-    h2_mb->DrawNormalized();
-    h1_mb->DrawNormalized("same");
-
-    TLegend* leg = new TLegend(0.6, 0.6, 0.85, 0.85);
-    leg->SetBorderSize(0);
-    leg->SetTitle(0.03);
-    leg->AddEntry(h1_mb,Form("DTF: m %0.2f w %0.2f", h1_mb->GetMean(), h1_mb->GetStdDev()),"f");
-    leg->AddEntry(h2_mb,Form("Fitter: m %0.2f w %0.2f", h2_mb->GetMean(), h2_mb->GetStdDev()),"f");
-    leg->Draw("same");
-
-    int bin1_1 = h1_mb->FindFirstBinAbove(h1_mb->GetMaximum()/2);
-    int bin2_1 = h1_mb->FindLastBinAbove(h1_mb->GetMaximum()/2);
-    double fwhm_1 = h1_mb->GetBinCenter(bin2_1) - h1_mb->GetBinCenter(bin1_1);
-
-    int bin1_2 = h2_mb->FindFirstBinAbove(h2_mb->GetMaximum()/2);
-    int bin2_2 = h2_mb->FindLastBinAbove(h2_mb->GetMaximum()/2);
-    double fwhm_2 = h2_mb->GetBinCenter(bin2_2) - h2_mb->GetBinCenter(bin1_2);
-
-    double sig_1 = fwhm_1/2.355;
-    double sig_2 = fwhm_2/2.355;
-
-    int bin1_max = h1_mb->GetMaximumBin();
-    int bin2_max = h2_mb->GetMaximumBin();
-    double m1_peak = h1_mb->GetBinCenter(bin1_max);
-    double m2_peak = h1_mb->GetBinCenter(bin2_max);
-
-    cout << "Nominal DTF : B+ mass has resolution of " << sig_1 << " MeV" << endl;
-    cout << "Standalone fit : B+ mass has resolution of " << sig_2 << " MeV" << endl;
-
-    cout << "Nominal DTF: B+ mass peak is " << m1_peak << " MeV" << endl;
-    cout << "Standalone fit: B+ mass peak is " << m2_peak << " MeV" << endl;
-
-    double DTF_num = t->GetEntries(passDTF);
-    double fitter_num = t->GetEntries(df_status);
-    double num_entries = t->GetEntries();
-
-    double DTF_pass = DTF_num/num_entries;
-    double fitter_pass = fitter_num/num_entries;
-
-    cout << "Nominal DTF : passing rate of " << DTF_pass*100 << " \% " << endl;
-    cout << "Standalone fit : passing rate of " << fitter_pass*100 << " \% " << endl;
-
-    c1.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/exact_constraints/Species_%i/Bmass.pdf",species));
-
-    // B+ mass error
-    TH1D* h1_mberr = new TH1D("h1_mberr", "h1_mberr", 100, 0, 1000);
-    TH1D* h2_mberr = new TH1D("h2_mberr", "h2_mberr", 100, 0, 1000);
-    if( (species == 4) || (species == 5) )
-    {
-        t->Draw("Bp_dtf_DDK_MERR[0] >> h1_mberr",passDTF);
-    }
-    else if(species == 9)
-    {
-        t->Draw("Bp_dtf_MERR[0] >> h1_mberr",passDTF);
-    }
-    else
-    {
-        t->Draw("Bp_dtf_MERR[0] >> h1_mberr",passDTF);
-    }
-    t->Draw("df_Bp_MERR >> h2_mberr", df_status);
-
-    TCanvas c2;
-    c2.cd();
-    h2_mberr->GetXaxis()->SetTitle("#Delta m_{B} (MeV)");
-    h2_mberr->GetYaxis()->SetTitle( TString::Format("Events /(%g)",(h2_mberr->GetXaxis()->GetXmax() - h2_mberr->GetXaxis()->GetXmin())/100) );
-    h2_mberr->SetTitle("");
-    h1_mberr->SetLineColor(kBlack);
-    h1_mberr->SetFillColorAlpha(kBlack, 0.25);
-    h2_mberr->SetLineColor(kBlue);
-    h2_mberr->SetFillColorAlpha(kBlue, 0.25);
-    h2_mberr->DrawNormalized();
-    h1_mberr->DrawNormalized("same");
-
-    TLegend* leg1 = new TLegend(0.6, 0.6, 0.85, 0.85);
-    leg1->SetBorderSize(0);
-    leg1->SetTitle(0.03);
-    leg1->AddEntry(h1_mberr,Form("DTF: m %0.2f w %0.2f",h1_mberr->GetMean(),h1_mberr->GetStdDev()),"f");
-    leg1->AddEntry(h2_mberr,Form("Fitter: m %0.2f w %0.2f",h2_mberr->GetMean(),h2_mberr->GetStdDev()),"f");
-    leg1->Draw("same");
-    c2.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/exact_constraints/Species_%i/Bmass_err.pdf",species));
-
-    // B+ mass pull
-    TH1D* h1_bmass_pull = new TH1D("h1_bmass_pull", "h1_bmass_pull", 100, -10, 10);
-    TH1D* h2_bmass_pull = new TH1D("h2_bmass_pull", "h2_bmass_pull", 100, -10, 10);
-    if( (species == 4) || (species == 5) )
-    {
-        t->Draw("(Bp_dtf_DDK_M[0] - 5279.41 )/Bp_dtf_DDK_MERR[0] >> h1_bmass_pull",passDTF);
-    }
-    else if(species == 9)
-    {
-        t->Draw("(Bp_dtf_M[0] - 5279.41)/Bp_dtf_MERR[0] >> h1_bmass_pull",passDTF);
-    }
-    else
-    {
-        t->Draw("(Bp_dtf_M[0] - 5279.41)/Bp_dtf_MERR[0] >> h1_bmass_pull",passDTF);
-    }
-    t->Draw("(df_Bp_M - 5279.41)/df_Bp_MERR >> h2_bmass_pull", df_status);
-
-    TCanvas c22;
-    c22.cd();
-    h2_bmass_pull->GetXaxis()->SetTitle("#Delta m_{B} (MeV)");
-    h2_bmass_pull->GetYaxis()->SetTitle( TString::Format("Events /(%g)",(h2_bmass_pull->GetXaxis()->GetXmax() - h2_bmass_pull->GetXaxis()->GetXmin())/100) );
-    h2_bmass_pull->SetTitle("");
-    h1_bmass_pull->SetLineColor(kBlack);
-    h1_bmass_pull->SetFillColorAlpha(kBlack, 0.25);
-    h2_bmass_pull->SetLineColor(kBlue);
-    h2_bmass_pull->SetFillColorAlpha(kBlue, 0.25);
-    h1_bmass_pull->DrawNormalized();
-    h2_bmass_pull->DrawNormalized("same");
-
-    TLegend* leg22 = new TLegend(0.6, 0.6, 0.85, 0.85);
-    leg22->SetBorderSize(0);
-    leg22->SetTitle(0.03);
-    leg22->AddEntry(h1_bmass_pull,Form("DTF: m %0.2f w %0.2f",h1_bmass_pull->GetMean(),h1_bmass_pull->GetStdDev()),"f");
-    leg22->AddEntry(h2_bmass_pull,Form("Fitter: m %0.2f w %0.2f",h2_bmass_pull->GetMean(),h2_bmass_pull->GetStdDev()),"f");
-    leg22->Draw("same");
-    c22.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/exact_constraints/Species_%i/Bmass_pull.pdf",species));
-
-    // Tau mass
-    TH1D* h1_mtau = new TH1D("h1_mtau", "h1_mtau", 100, 1776, 1778);
-    TH1D* h2_mtau = new TH1D("h2_mtau", "h2_mtau", 100, 1776, 1778);
-    if((species == 4) || (species == 5))
-    {
-        t->Draw("Bp_dtf_DDK_Dminus_M[0] >> h1_mtau",passDTF);
-    }
-    else if(species == 9)
-    {
-        t->Draw("Bp_dtf_MERR[0] >> h1_mtau",passDTF);
-    }
-    else
-    {
-        t->Draw("Bp_dtf_tauminus_M[0] >> h1_mtau",passDTF);
-    }
-    t->Draw("sqrt( pow(df_taup_PE,2) - pow(df_taup_PX,2) - pow(df_taup_PY,2) - pow(df_taup_PZ,2) ) >> h2_mtau", df_status);
-
-    TCanvas c2_1;
-    c2_1.cd();
-    h2_mtau->GetXaxis()->SetTitle("m_{#tau} (MeV)");
-    h2_mtau->GetYaxis()->SetTitle( TString::Format("Events /(%g)",(h2_mtau->GetXaxis()->GetXmax() - h2_mtau->GetXaxis()->GetXmin())/100) );
-    h2_mtau->SetTitle("");
-    h1_mtau->SetLineColor(kBlack);
-    h1_mtau->SetFillColorAlpha(kBlack, 0.25);
-    h2_mtau->SetLineColor(kBlue);
-    h2_mtau->SetFillColorAlpha(kBlue, 0.25);
-    h2_mtau->DrawNormalized();
-    h1_mtau->DrawNormalized("same");
-
-    TLegend* leg1_1 = new TLegend(0.6, 0.6, 0.85, 0.85);
-    leg1_1->SetBorderSize(0);
-    leg1_1->SetTitle(0.03);
-    leg1_1->AddEntry(h1_mtau,Form("DTF: m %0.2f w %0.2f",h1_mtau->GetMean(),h1_mtau->GetStdDev()),"f");
-    leg1_1->AddEntry(h2_mtau,Form("Fitter: m %0.2f w %0.2f",h2_mtau->GetMean(),h2_mtau->GetStdDev()),"f");
-    leg1_1->Draw("same");
-    c2_1.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/exact_constraints/Species_%i/taumass.pdf",species));
-
-    // Nu mass
-    TH1D* h1_mnu = new TH1D("h1_mnu", "h1_mnu", 100, -1, 1);
-    TH1D* h2_mnu = new TH1D("h2_mnu", "h2_mnu", 100, -1, 1);
-    if((species == 4) || (species == 5))
-    {
-        t->Draw("sqrt( pow(Bp_dtf_DDK_tauminus_nu_tau_PE[0],2) - pow(Bp_dtf_DDK_tauminus_nu_tau_PX[0],2) - pow(Bp_dtf_DDK_tauminus_nu_tau_PY[0],2) - pow(Bp_dtf_DDK_tauminus_nu_tau_PZ[0],2) ) >> h1_mnu",passDTF);
-    }
-    else
-    {
-        t->Draw("sqrt( pow(Bp_dtf_tauminus_nu_tau_PE[0],2) - pow(Bp_dtf_tauminus_nu_tau_PX[0],2) - pow(Bp_dtf_tauminus_nu_tau_PY[0],2) - pow(Bp_dtf_tauminus_nu_tau_PZ[0],2) ) >> h1_mnu",passDTF);
-    }
-    t->Draw("sqrt( pow(df_antinutau_PE,2) - pow(df_antinutau_PX,2) - pow(df_antinutau_PY,2) - pow(df_antinutau_PZ,2) ) >> h2_mnu", df_status);
-
-    TCanvas c2_2;
-    c2_2.cd();
-    h2_mnu->GetXaxis()->SetTitle("m_{#nu} (MeV)");
-    h2_mnu->GetYaxis()->SetTitle( TString::Format("Events /(%g)",(h2_mnu->GetXaxis()->GetXmax() - h2_mnu->GetXaxis()->GetXmin())/100) );
-    h2_mnu->SetTitle("");
-    h1_mnu->SetLineColor(kBlack);
-    h1_mnu->SetFillColorAlpha(kBlack, 0.25);
-    h2_mnu->SetLineColor(kBlue);
-    h2_mnu->SetFillColorAlpha(kBlue, 0.25);
-    h2_mnu->DrawNormalized();
-    h1_mnu->DrawNormalized("same");
-
-    TLegend* leg1_2 = new TLegend(0.6, 0.6, 0.85, 0.85);
-    leg1_2->SetBorderSize(0);
-    leg1_2->SetTitle(0.03);
-    leg1_2->AddEntry(h1_mnu,Form("DTF: m %0.2f w %0.2f",h1_mnu->GetMean(),h1_mnu->GetStdDev()),"f");
-    leg1_2->AddEntry(h2_mnu,Form("Fitter: m %0.2f w %0.2f",h2_mnu->GetMean(),h2_mnu->GetStdDev()),"f");
-    leg1_2->Draw("same");
-    c2_2.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/exact_constraints/Species_%i/numass.pdf",species));
-
-    // B+ mass pull
-    if(isMC)
-    {
-        TH1D* h1_pull = new TH1D("h1_pull", "h1_pull", 100, -10, 10);
-        TH1D* h2_pull = new TH1D("h2_pull", "h2_pull", 100, -10, 10);
-
-        if(species == 4)
-        {
-            t->Draw("(Bp_dtf_DDK_M[0]-5279)/Bp_dtf_DDK_MERR[0] >> h1_pull",passDTF);
-        }
-        else if(species == 9)
-        {
-            t->Draw("Bp_dtf_MERR[0] >> h1_mtau",passDTF);
-        }
-        else
-        {
-            t->Draw("(Bp_dtf_M[0]-5279.41)/Bp_dtf_MERR[0] >> h1_pull",passDTF);
-        }
-        t->Draw("(df_Bp_M - 5279.41)/df_Bp_MERR >> h2_pull", df_status);
-
-        TCanvas c3;
-        c3.cd();
-        h1_pull->GetXaxis()->SetTitle("(m_{B}-m_{B}^{PDG})/#Delta m_{B}");
-        h1_pull->GetYaxis()->SetTitle( TString::Format("Events /(%g)",(h1_pull->GetXaxis()->GetXmax() - h1_pull->GetXaxis()->GetXmin())/100) );
-        h1_pull->SetTitle("");
-        h1_pull->SetLineColor(kBlack);
-        h1_pull->SetFillColorAlpha(kBlack, 0.25);
-        h2_pull->SetLineColor(kBlue);
-        h2_pull->SetFillColorAlpha(kBlue, 0.25);
-        h1_pull->DrawNormalized();
-        h2_pull->DrawNormalized("same");
-
-        TLegend* leg2 = new TLegend(0.6, 0.6, 0.85, 0.85);
-        leg2->SetBorderSize(0);
-        leg2->SetTitle(0.03);
-        leg2->AddEntry(h1_pull,Form("DTF: m %0.2f w %0.2f",h1_pull->GetMean(),h1_pull->GetStdDev()),"f");
-        leg2->AddEntry(h2_pull,Form("Fitter: m %0.2f w %0.2f",h2_pull->GetMean(),h2_pull->GetStdDev()),"f");
-        leg2->Draw("same");
-        c3.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/exact_constraints/Species_%i/Bmass_pull.pdf",species));
-    }
-
-    Double_t range[] = {
-        0.2, // PVx
-        0.2, // PVy
-        1,  // PVz
-        2, // DV1x
-        2, // DV1y
-        20, // DV1z
-        100, // p3pi1x
-        100, // p3pi1y
-        1000, // p3pi1z
-        1000, // E3pi1
-        2, // DV2x
-        2, // DV2y
-        20, // DV2z
-        100, // p3pi2x
-        100, // p3pi2y
-        1000, // p3pi2z
-        1000, // E3pi2
-        1, // RPx
-        1, // RPy
-        200, // pKx
-        200, // pKy
-        1000, // pKz
-        0.4, // BVx
-        0.4, // BVy
-        10, // BVz
-        10000, // pBx
-        10000, // pBy
-        250000, // pBz
-        5*pow(10,7), // mB^2
-        10000, // ptau1x
-        10000, // ptau1y
-        200000, // ptau1z
-        200000, // Etau1
-        20000, // pnu1x
-        20000, // pnu1y
-        200000, // pnu1z
-        200000, // Enu1
-        10000, // ptau2x
-        10000, // ptau2y
-        200000, // ptau2z
-        200000, // Etau2
-        20000, // pnu2x
-        20000, // pnu2y
-        200000, // pnu2z
-        200000 // Enu2
-    };
-
     Double_t var_min[] = {
         0.4, // PVx
         -0.4, // PVy
@@ -1846,54 +1716,7 @@ void exact_constraints()
         100000 // Enu2
     };
 
-    // Bias in fit parameters
-    TString df_name[] = {
-        "df_PVx",
-        "df_PVy",
-        "df_PVz",
-        "df_DV1x",
-        "df_DV1y",
-        "df_DV1z",
-        "df_3pi1_PX",
-        "df_3pi1_PY",
-        "df_3pi1_PZ",
-        "df_3pi1_PE",
-        "df_DV2x",
-        "df_DV2y",
-        "df_DV2z",
-        "df_3pi2_PX",
-        "df_3pi2_PY",
-        "df_3pi2_PZ",
-        "df_3pi2_PE",
-        "df_RPx",
-        "df_RPy",
-        "df_Kp_PX",
-        "df_Kp_PY",
-        "df_Kp_PZ",
-        "df_BVx",
-        "df_BVy",
-        "df_BVz",
-        "df_Bp_PX",
-        "df_Bp_PY",
-        "df_Bp_PZ",
-        "df_Bp_M",
-        "df_taup_PX",
-        "df_taup_PY",
-        "df_taup_PZ",
-        "df_taup_PE",
-        "df_antinutau_PX",
-        "df_antinutau_PY",
-        "df_antinutau_PZ",
-        "df_antinutau_PE",
-        "df_taum_PX",
-        "df_taum_PY",
-        "df_taum_PZ",
-        "df_taum_PE",
-        "df_nutau_PX",
-        "df_nutau_PY",
-        "df_nutau_PZ",
-        "df_nutau_PE"
-    };
+    // Bias in fit parameter
 
     TString DTF_name[] = {
         "Bp_dtf_PV_X[0]",
@@ -1941,246 +1764,6 @@ void exact_constraints()
         "(Bp_dtf_tauminus_0_PY[0] - Bp_dtf_tauminus_0_piplus_PY[0] - Bp_dtf_tauminus_0_piplus_0_PY[0] - Bp_dtf_tauminus_0_piplus_1_PY[0])",
         "(Bp_dtf_tauminus_0_PZ[0] - Bp_dtf_tauminus_0_piplus_PZ[0] - Bp_dtf_tauminus_0_piplus_0_PZ[0] - Bp_dtf_tauminus_0_piplus_1_PZ[0])",
         "(Bp_dtf_tauminus_0_PE[0] - Bp_dtf_tauminus_0_piplus_PE[0] - Bp_dtf_tauminus_0_piplus_0_PE[0] - Bp_dtf_tauminus_0_piplus_1_PE[0])"
-    };
-
-    TString DTF_name_DDK[] = {
-        "Bp_dtf_DDK_PV_X",
-        "Bp_dtf_DDK_PV_Y",
-        "Bp_dtf_DDK_PV_Z",
-        "Bp_dtf_DDK_Dp_ENDVERTEX_X",
-        "Bp_dtf_DDK_Dp_ENDVERTEX_Y",
-        "Bp_dtf_DDK_Dp_ENDVERTEX_Z",
-        "(Bp_dtf_DDK_Dminus_piplus_PX + Bp_dtf_DDK_Dminus_piplus_0_PX + Bp_dtf_DDK_Dminus_Kplus_PX)",
-        "(Bp_dtf_DDK_Dminus_piplus_PY + Bp_dtf_DDK_Dminus_piplus_0_PY + Bp_dtf_DDK_Dminus_Kplus_PY)",
-        "(Bp_dtf_DDK_Dminus_piplus_PZ + Bp_dtf_DDK_Dminus_piplus_0_PZ + Bp_dtf_DDK_Dminus_Kplus_PZ)",
-        "(Bp_dtf_DDK_Dminus_piplus_PE + Bp_dtf_DDK_Dminus_piplus_0_PE + Bp_dtf_DDK_Dminus_Kplus_PE)",
-        "Bp_dtf_DDK_taum_ENDVERTEX_X",
-        "Bp_dtf_DDK_taum_ENDVERTEX_Y",
-        "Bp_dtf_DDK_taum_ENDVERTEX_Z",
-        "(Bp_dtf_DDK_Dminus_0_piplus_PX + Bp_dtf_DDK_Dminus_0_piplus_0_PX + Bp_dtf_DDK_Dminus_0_Kplus_PX)",
-        "(Bp_dtf_DDK_Dminus_0_piplus_PY + Bp_dtf_DDK_Dminus_0_piplus_0_PY + Bp_dtf_DDK_Dminus_0_Kplus_PY)",
-        "(Bp_dtf_DDK_Dminus_0_piplus_PZ + Bp_dtf_DDK_Dminus_0_piplus_0_PZ + Bp_dtf_DDK_Dminus_0_Kplus_PZ)",
-        "(Bp_dtf_DDK_Dminus_0_piplus_PE + Bp_dtf_DDK_Dminus_0_piplus_0_PE + Bp_dtf_DDK_Dminus_0_Kplus_PE)",
-        "Bp_dtf_DDK_Bp_ENDVERTEX_X",
-        "Bp_dtf_DDK_Bp_ENDVERTEX_Y",
-        "Bp_dtf_DDK_Kplus_PX",
-        "Bp_dtf_DDK_Kplus_PY",
-        "Bp_dtf_DDK_Kplus_PZ",
-        "Bp_dtf_DDK_Bp_ENDVERTEX_X",
-        "Bp_dtf_DDK_Bp_ENDVERTEX_Y",
-        "Bp_dtf_DDK_Bp_ENDVERTEX_Z",
-        "Bp_dtf_DDK_PX",
-        "Bp_dtf_DDK_PY",
-        "Bp_dtf_DDK_PZ",
-        "pow(Bp_dtf_DDK_M,2)",
-        "Bp_dtf_DDK_Dminus_PX",
-        "Bp_dtf_DDK_Dminus_PY",
-        "Bp_dtf_DDK_Dminus_PZ",
-        "Bp_dtf_DDK_Dminus_PE",
-        "(Bp_dtf_DDK_Dminus_PX - Bp_dtf_DDK_Dminus_piplus_PX - Bp_dtf_DDK_Dminus_piplus_0_PX - Bp_dtf_DDK_Dminus_Kplus_PX)",
-        "(Bp_dtf_DDK_Dminus_PY - Bp_dtf_DDK_Dminus_piplus_PY - Bp_dtf_DDK_Dminus_piplus_0_PY - Bp_dtf_DDK_Dminus_Kplus_PY)",
-        "(Bp_dtf_DDK_Dminus_PZ - Bp_dtf_DDK_Dminus_piplus_PZ - Bp_dtf_DDK_Dminus_piplus_0_PZ - Bp_dtf_DDK_Dminus_Kplus_PZ)",
-        "(Bp_dtf_DDK_Dminus_PE - Bp_dtf_DDK_Dminus_piplus_PE - Bp_dtf_DDK_Dminus_piplus_0_PE - Bp_dtf_DDK_Dminus_Kplus_PE)",
-        "Bp_dtf_DDK_Dminus_0_PX",
-        "Bp_dtf_DDK_Dminus_0_PY",
-        "Bp_dtf_DDK_Dminus_0_PZ",
-        "Bp_dtf_DDK_Dminus_0_PE",
-        "(Bp_dtf_DDK_Dminus_0_PX - Bp_dtf_DDK_Dminus_0_piplus_PX - Bp_dtf_DDK_Dminus_0_piplus_0_PX - Bp_dtf_DDK_Dminus_0_Kplus_PX)",
-        "(Bp_dtf_DDK_Dminus_0_PY - Bp_dtf_DDK_Dminus_0_piplus_PY - Bp_dtf_DDK_Dminus_0_piplus_0_PY - Bp_dtf_DDK_Dminus_0_Kplus_PY)",
-        "(Bp_dtf_DDK_Dminus_0_PZ - Bp_dtf_DDK_Dminus_0_piplus_PZ - Bp_dtf_DDK_Dminus_0_piplus_0_PZ - Bp_dtf_DDK_Dminus_0_Kplus_PZ)",
-        "(Bp_dtf_DDK_Dminus_0_PE - Bp_dtf_DDK_Dminus_0_piplus_PE - Bp_dtf_DDK_Dminus_0_piplus_0_PE - Bp_dtf_DDK_Dminus_0_Kplus_PE)"
-    };
-
-    TString true_name[] = {
-        "Bp_TRUEORIGINVERTEX_X",
-        "Bp_TRUEORIGINVERTEX_Y",
-        "Bp_TRUEORIGINVERTEX_Z",
-        "taup_TRUEENDVERTEX_X",
-        "taup_TRUEENDVERTEX_Y",
-        "taup_TRUEENDVERTEX_Z",
-        "(taup_pi1_TRUEP_X + taup_pi2_TRUEP_X + taup_pi3_TRUEP_X)",
-        "(taup_pi1_TRUEP_Y + taup_pi2_TRUEP_Y + taup_pi3_TRUEP_Y)",
-        "(taup_pi1_TRUEP_Z + taup_pi2_TRUEP_Z + taup_pi3_TRUEP_Z)",
-        "(taup_pi1_TRUEP_E + taup_pi2_TRUEP_E + taup_pi3_TRUEP_E)",
-        "taum_TRUEENDVERTEX_X",
-        "taum_TRUEENDVERTEX_Y",
-        "taum_TRUEENDVERTEX_Z",
-        "(taum_pi1_TRUEP_X + taum_pi2_TRUEP_X + taum_pi3_TRUEP_X)",
-        "(taum_pi1_TRUEP_Y + taum_pi2_TRUEP_Y + taum_pi3_TRUEP_Y)",
-        "(taum_pi1_TRUEP_Z + taum_pi2_TRUEP_Z + taum_pi3_TRUEP_Z)",
-        "(taum_pi1_TRUEP_E + taum_pi2_TRUEP_E + taum_pi3_TRUEP_E)",
-        "Bp_TRUEENDVERTEX_X",
-        "Bp_TRUEENDVERTEX_Y",
-        "Kp_TRUEP_X",
-        "Kp_TRUEP_Y",
-        "Kp_TRUEP_Z",
-        "Bp_TRUEENDVERTEX_X",
-        "Bp_TRUEENDVERTEX_Y",
-        "Bp_TRUEENDVERTEX_Z",
-        "Bp_TRUEP_X",
-        "Bp_TRUEP_Y",
-        "Bp_TRUEP_Z",
-        "5279.41",
-        "taup_TRUEP_X",
-        "taup_TRUEP_Y",
-        "taup_TRUEP_Z",
-        "taup_TRUEP_E",
-        "(taup_TRUEP_X - taup_pi1_TRUEP_X - taup_pi2_TRUEP_X - taup_pi3_TRUEP_X)",
-        "(taup_TRUEP_Y - taup_pi1_TRUEP_Y - taup_pi2_TRUEP_Y - taup_pi3_TRUEP_Y)",
-        "(taup_TRUEP_Z - taup_pi1_TRUEP_Z - taup_pi2_TRUEP_Z - taup_pi3_TRUEP_Z)",
-        "(taup_TRUEP_E - taup_pi1_TRUEP_E - taup_pi2_TRUEP_E - taup_pi3_TRUEP_E)",
-        "taum_TRUEP_X",
-        "taum_TRUEP_Y",
-        "taum_TRUEP_Z",
-        "taum_TRUEP_E",
-        "(taum_TRUEP_X - taum_pi1_TRUEP_X - taum_pi2_TRUEP_X - taum_pi3_TRUEP_X)",
-        "(taum_TRUEP_Y - taum_pi1_TRUEP_Y - taum_pi2_TRUEP_Y - taum_pi3_TRUEP_Y)",
-        "(taum_TRUEP_Z - taum_pi1_TRUEP_Z - taum_pi2_TRUEP_Z - taum_pi3_TRUEP_Z)",
-        "(taum_TRUEP_E - taum_pi1_TRUEP_E - taum_pi2_TRUEP_E - taum_pi3_TRUEP_E)"
-    };
-
-    TString true_name_DDK[] = {
-        "Bp_TRUEORIGINVERTEX_X",
-        "Bp_TRUEORIGINVERTEX_Y",
-        "Bp_TRUEORIGINVERTEX_Z",
-        "Dp_TRUEENDVERTEX_X",
-        "Dp_TRUEENDVERTEX_Y",
-        "Dp_TRUEENDVERTEX_Z",
-        "(Dp_pi1_TRUEP_X + Dp_pi2_TRUEP_X + Dp_K_TRUEP_X)",
-        "(Dp_pi1_TRUEP_Y + Dp_pi2_TRUEP_Y + Dp_K_TRUEP_Y)",
-        "(Dp_pi1_TRUEP_Z + Dp_pi2_TRUEP_Z + Dp_K_TRUEP_Z)",
-        "(Dp_pi1_TRUEP_E + Dp_pi2_TRUEP_E + Dp_K_TRUEP_E)",
-        "Dm_TRUEENDVERTEX_X",
-        "Dm_TRUEENDVERTEX_Y",
-        "Dm_TRUEENDVERTEX_Z",
-        "(Dm_pi1_TRUEP_X + Dm_pi2_TRUEP_X + Dm_K_TRUEP_X)",
-        "(Dm_pi1_TRUEP_Y + Dm_pi2_TRUEP_Y + Dm_K_TRUEP_Y)",
-        "(Dm_pi1_TRUEP_Z + Dm_pi2_TRUEP_Z + Dm_K_TRUEP_Z)",
-        "(Dm_pi1_TRUEP_E + Dm_pi2_TRUEP_E + Dm_K_TRUEP_E)",
-        "Bp_TRUEENDVERTEX_X",
-        "Bp_TRUEENDVERTEX_Y",
-        "Kp_TRUEP_X",
-        "Kp_TRUEP_Y",
-        "Kp_TRUEP_Z",
-        "Bp_TRUEENDVERTEX_X",
-        "Bp_TRUEENDVERTEX_Y",
-        "Bp_TRUEENDVERTEX_Z",
-        "Bp_TRUEP_X",
-        "Bp_TRUEP_Y",
-        "Bp_TRUEP_Z",
-        "pow(5279.34,2)",
-        "Dp_TRUEP_X",
-        "Dp_TRUEP_Y",
-        "Dp_TRUEP_Z",
-        "Dp_TRUEP_E",
-        "(Dp_TRUEP_X - Dp_pi1_TRUEP_X - Dp_pi2_TRUEP_X - Dp_K_TRUEP_X)",
-        "(Dp_TRUEP_Y - Dp_pi1_TRUEP_Y - Dp_pi2_TRUEP_Y - Dp_K_TRUEP_Y)",
-        "(Dp_TRUEP_Z - Dp_pi1_TRUEP_Z - Dp_pi2_TRUEP_Z - Dp_K_TRUEP_Z)",
-        "(Dp_TRUEP_E - Dp_pi1_TRUEP_E - Dp_pi2_TRUEP_E - Dp_K_TRUEP_E)",
-        "Dm_TRUEP_X",
-        "Dm_TRUEP_Y",
-        "Dm_TRUEP_Z",
-        "Dm_TRUEP_E",
-        "(Dm_TRUEP_X - Dm_pi1_TRUEP_X - Dm_pi2_TRUEP_X - Dm_K_TRUEP_X)",
-        "(Dm_TRUEP_Y - Dm_pi1_TRUEP_Y - Dm_pi2_TRUEP_Y - Dm_K_TRUEP_Y)",
-        "(Dm_TRUEP_Z - Dm_pi1_TRUEP_Z - Dm_pi2_TRUEP_Z - Dm_K_TRUEP_Z)",
-        "(Dm_TRUEP_E - Dm_pi1_TRUEP_E - Dm_pi2_TRUEP_E - Dm_K_TRUEP_E)"
-    };
-
-    TString true_name_D0D0K[] = {
-        "Bp_TRUEORIGINVERTEX_X",
-        "Bp_TRUEORIGINVERTEX_Y",
-        "Bp_TRUEORIGINVERTEX_Z",
-        "D0bar_TRUEENDVERTEX_X",
-        "D0bar_TRUEENDVERTEX_Y",
-        "D0bar_TRUEENDVERTEX_Z",
-        "(D0bar_pi1_TRUEP_X + D0bar_pi2_TRUEP_X + D0bar_pi3_TRUEP_X)",
-        "(D0bar_pi1_TRUEP_Y + D0bar_pi2_TRUEP_Y + D0bar_pi3_TRUEP_Y)",
-        "(D0bar_pi1_TRUEP_Z + D0bar_pi2_TRUEP_Z + D0bar_pi3_TRUEP_Z)",
-        "(D0bar_pi1_TRUEP_E + D0bar_pi2_TRUEP_E + D0bar_pi3_TRUEP_E)",
-        "D0_TRUEENDVERTEX_X",
-        "D0_TRUEENDVERTEX_Y",
-        "D0_TRUEENDVERTEX_Z",
-        "(D0_pi1_TRUEP_X + D0_pi2_TRUEP_X + D0_pi3_TRUEP_X)",
-        "(D0_pi1_TRUEP_Y + D0_pi2_TRUEP_Y + D0_pi3_TRUEP_Y)",
-        "(D0_pi1_TRUEP_Z + D0_pi2_TRUEP_Z + D0_pi3_TRUEP_Z)",
-        "(D0_pi1_TRUEP_E + D0_pi2_TRUEP_E + D0_pi3_TRUEP_E)",
-        "Bp_TRUEENDVERTEX_X",
-        "Bp_TRUEENDVERTEX_Y",
-        "Kp_TRUEP_X",
-        "Kp_TRUEP_Y",
-        "Kp_TRUEP_Z",
-        "Bp_TRUEENDVERTEX_X",
-        "Bp_TRUEENDVERTEX_Y",
-        "Bp_TRUEENDVERTEX_Z",
-        "Bp_TRUEP_X",
-        "Bp_TRUEP_Y",
-        "Bp_TRUEP_Z",
-        "pow(5279.34,2)",
-        "D0bar_TRUEP_X",
-        "D0bar_TRUEP_Y",
-        "D0bar_TRUEP_Z",
-        "D0bar_TRUEP_E",
-        "(D0bar_TRUEP_X - D0bar_pi1_TRUEP_X - D0bar_pi2_TRUEP_X - D0bar_pi3_TRUEP_X)",
-        "(D0bar_TRUEP_Y - D0bar_pi1_TRUEP_Y - D0bar_pi2_TRUEP_Y - D0bar_pi3_TRUEP_Y)",
-        "(D0bar_TRUEP_Z - D0bar_pi1_TRUEP_Z - D0bar_pi2_TRUEP_Z - D0bar_pi3_TRUEP_Z)",
-        "(D0bar_TRUEP_E - D0bar_pi1_TRUEP_E - D0bar_pi2_TRUEP_E - D0bar_pi3_TRUEP_E)",
-        "D0_TRUEP_X",
-        "D0_TRUEP_Y",
-        "D0_TRUEP_Z",
-        "D0_TRUEP_E",
-        "(D0_TRUEP_X - D0_pi1_TRUEP_X - D0_pi2_TRUEP_X - D0_pi3_TRUEP_X)",
-        "(D0_TRUEP_Y - D0_pi1_TRUEP_Y - D0_pi2_TRUEP_Y - D0_pi3_TRUEP_Y)",
-        "(D0_TRUEP_Z - D0_pi1_TRUEP_Z - D0_pi2_TRUEP_Z - D0_pi3_TRUEP_Z)",
-        "(D0_TRUEP_E - D0_pi1_TRUEP_E - D0_pi2_TRUEP_E - D0_pi3_TRUEP_E)"
-    };
-
-    TString name1[] = {
-        "PVx (mm)",
-        "PVy (mm)",
-        "PVz (mm)",
-        "DV1x (mm)",
-        "DV1y (mm)",
-        "DV1z (mm)",
-        "p3pi1x (MeV)",
-        "p3pi1y (MeV)",
-        "p3pi1z (MeV)",
-        "E3pi1 (MeV)",
-        "DV2x (mm)",
-        "DV2y (mm)",
-        "DV2z (mm)",
-        "p3pi2x (MeV)",
-        "p3pi2y (MeV)",
-        "p3pi2z (MeV)",
-        "E3pi2 (MeV)",
-        "RPx (mm)",
-        "RPy (mm)",
-        "pKx (MeV)",
-        "pKy (MeV)",
-        "pKz (MeV)",
-        "BVx (mm)",
-        "BVy (mm)",
-        "BVz (mm)",
-        "pBx (MeV)",
-        "pBy (MeV)",
-        "pBz (MeV)",
-        "MB (MeV)",
-        "ptau1x (MeV)",
-        "ptau1y (MeV)",
-        "ptau1z (MeV)",
-        "Etau1 (MeV)",
-        "pnu1x (MeV)",
-        "pnu1y (MeV)",
-        "pnu1z (MeV)",
-        "Enu1 (MeV)",
-        "ptau2x (MeV)",
-        "ptau2y (MeV)",
-        "ptau2z (MeV)",
-        "Etau2 (MeV)",
-        "pnu2x (MeV)",
-        "pnu2y (MeV)",
-        "pnu2z (MeV)",
-        "Enu2 (MeV)"
     };
 
     std::vector<TH1D> df_histos;
@@ -2337,96 +1920,12 @@ void exact_constraints()
     }
 
 
-    // Pulls 1: (fitted - truth)/fitted_error
-    TString df_err_name[] = {
-        "df_PVx_err",
-        "df_PVy_err",
-        "df_PVz_err",
-        "df_DV1x_err",
-        "df_DV1y_err",
-        "df_DV1z_err",
-        "df_3pi1_PX_err",
-        "df_3pi1_PY_err",
-        "df_3pi1_PZ_err",
-        "df_3pi1_PE_err",
-        "df_DV2x_err",
-        "df_DV2y_err",
-        "df_DV2z_err",
-        "df_3pi2_PX_err",
-        "df_3pi2_PY_err",
-        "df_3pi2_PZ_err",
-        "df_3pi2_PE_err",
-        "df_RPx_err",
-        "df_RPy_err",
-        "df_Kp_PX_err",
-        "df_Kp_PY_err",
-        "df_Kp_PZ_err",
-        "df_BVx_err",
-        "df_BVy_err",
-        "df_BVz_err",
-        "df_Bp_PX_err",
-        "df_Bp_PY_err",
-        "df_Bp_PZ_err",
-        "df_Bp_MERR",
-        "df_taup_PX_err",
-        "df_taup_PY_err",
-        "df_taup_PZ_err",
-        "df_taup_PE_err",
-        "df_antinutau_PX_err",
-        "df_antinutau_PY_err",
-        "df_antinutau_PZ_err",
-        "df_antinutau_PE_err",
-        "df_taum_PX_err",
-        "df_taum_PY_err",
-        "df_taum_PZ_err",
-        "df_taum_PE_err",
-        "df_nutau_PX_err",
-        "df_nutau_PY_err",
-        "df_nutau_PZ_err",
-        "df_nutau_PE_err"
-    };
-
     gStyle->SetOptStat(1);
 
     std::vector<TH1D> df_histos1;
     for(int i = 0; i < dimM+dimX; i++)
     {
         df_histos1.push_back( TH1D(Form("df_h1_%i",i), Form("df_h1_%i",i), 100, -10, 10) );
-    }
-
-    if(isMC)
-    {
-        for(int i = 0; i < dimM+dimX; i++)
-        {
-            if(species == 4)
-            {
-                t->Draw("("+df_name[i]+" - "+true_name_DDK[i]+") / "+df_err_name[i]+Form(" >> df_h1_%i",i),df_status);   
-            }
-            else if(species == 9)
-            {
-                t->Draw("("+df_name[i]+" - "+true_name_D0D0K[i]+") / "+df_err_name[i]+Form(" >> df_h1_%i",i),df_status);
-            }
-            else
-            {
-                t->Draw("("+df_name[i]+" - "+true_name[i]+") / "+df_err_name[i]+Form(" >> df_h1_%i",i),df_status);
-            }
-        }
-
-        for(int i = 0; i < dimM+dimX;i++)
-        {
-            TCanvas c4 = new TCanvas();
-            c4.cd();
-            df_histos1[i].GetXaxis()->SetTitle("(fitted - true)/fitted_error : "+name1[i]);
-            df_histos1[i].GetYaxis()->SetTitle( TString::Format("Events /(%g)",(df_histos1[i].GetXaxis()->GetXmax() - df_histos1[i].GetXaxis()->GetXmin())/100) );
-            df_histos1[i].SetTitle("");
-
-            df_histos1[i].SetLineColor(kBlue);
-            df_histos1[i].SetFillColorAlpha(kBlue, 0.25);
-
-            df_histos1[i].Draw();
-
-            c4.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/exact_constraints/Species_%i/pull_%i.pdf",species,i));
-        }
     }
     */
 }
@@ -2442,4 +1941,30 @@ double FWHM(TH1* h1)
    int bin2 = h1->FindLastBinAbove(h1->GetMaximum()/2);
    double fwhm = h1->GetBinCenter(bin2) - h1->GetBinCenter(bin1);
    return fwhm;
+}
+
+std::vector<TH1D*> gsl_pull_distributions(TChain* t, TCut pass_GSL)
+{
+    gStyle->SetOptStat(1);
+    std::vector<TH1D*> pull_histos;
+    std::vector<TCanvas> pull_c;
+    for(int i = 0; i < dimM+dimX; i++)
+    {
+        pull_histos.push_back( new TH1D(Form("h_gsl_pull_%i",i), Form("h_gsl_pull_%i",i), 100, -10, 10) );
+
+        t->Draw( "("+df_name[i]+" - "+true_name[i]+")/"+df_err_name[i]+Form(" >> h_gsl_pull_%i",i), pass_GSL+"component==0");
+
+        pull_histos[i]->GetXaxis()->SetTitle(label_name[i]);
+        pull_histos[i]->GetYaxis()->SetTitle(Form("Entries / (%.2f)", (pull_histos[i]->GetXaxis()->GetXmax() - pull_histos[i]->GetXaxis()->GetXmin())/pull_histos[i]->GetNbinsX() ));
+        pull_histos[i]->SetTitle(title_name[i]+" : 3#pi3#pi MC (2016-2018)");
+
+        pull_histos[i]->SetLineColor(kBlue);
+        pull_histos[i]->SetFillColorAlpha(kBlue, 0.25);
+
+        TCanvas c = new TCanvas(Form("c_%i",i), Form("c_%i",i));
+        c.cd();
+        pull_histos[i]->Draw();
+        c.SaveAs("/panfs/felician/B2Ktautau/workflow/exact_constraints/GSL_pulls/"+title_name[i]+".pdf");
+    }
+    return pull_histos;
 }
