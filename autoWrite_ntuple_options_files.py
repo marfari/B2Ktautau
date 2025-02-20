@@ -13,7 +13,7 @@ from PhysSelPython.Wrappers import AutomaticData
 
 isMC = True
 year = '2016'
-pol = 'MagDown'
+pol = 'MagUp'
 applySel = False
 if(not isMC):
 	applySel = True
@@ -925,13 +925,13 @@ def addDTF(branch):
 	# dtf_mlp.init = 0
 
 	# modified DTF (Low chi2 init)
-	# dtf_low = branch.addTupleTool("TupleToolKTauTauDTF/dtf")
-	# dtf_low.daughtersToConstrain = ['nu_tau', 'tau+']
-	# dtf_low.UseFullTreeInName = True
-	# dtf_low.UpdateDaughters = True
-	# dtf_low.Verbose = True
-	# dtf_low.constrainToOriginVertex = True
-	# dtf_low.init = 1
+	dtf_low = branch.addTupleTool("TupleToolKTauTauDTF/dtf")
+	dtf_low.daughtersToConstrain = ['nu_tau', 'tau+']
+	dtf_low.UseFullTreeInName = True
+	dtf_low.UpdateDaughters = True
+	dtf_low.Verbose = True
+	dtf_low.constrainToOriginVertex = True
+	dtf_low.init = 1
 
 def addTISTOS( branch ):
     ttb = branch.addTupleTool("TupleToolTISTOS")
@@ -999,8 +999,8 @@ def addTools( DecayTreeTuple, stream, line, year ):
 string2_BuKtautau = """
 # Configure DaVinci
 if isMC:
-	# DaVinci().TupleFile = 'DVntuple_MC_BuKtautau_'+year+'_'+pol+'.root'
-	DaVinci().TupleFile = '/panfs/felician/B2Ktautau/ROOT_Sim/DVntuple_MC_'+year+'_'+pol+'.root'
+	DaVinci().TupleFile = 'DVntuple_MC_BuKtautau_'+year+'_'+pol+'.root'
+	# DaVinci().TupleFile = '/panfs/felician/B2Ktautau/ROOT_Sim/DVntuple_MC_'+year+'_'+pol+'.root'
 else:
 	DaVinci().TupleFile = 'DVntuple_data_BuKtautau_'+year+'_'+pol+'.root'
 	# DaVinci().TupleFile = '/panfs/felician/B2Ktautau/ROOT_Data//DVntuple_data_'+year+'_'+pol+'.root'
@@ -1008,8 +1008,8 @@ else:
 string2_BuDDKp = """
 # Configure DaVinci
 if isMC:
-	# DaVinci().TupleFile = 'DVntuple_MC_BuDDKp_cocktail_'+year+'_'+pol+'.root'
-	DaVinci().TupleFile = '/panfs/felician/BuDDKp_cocktail/DVntuple_MC_'+year+'_'+pol+'.root'
+	DaVinci().TupleFile = 'DVntuple_MC_BuDDKp_cocktail_'+year+'_'+pol+'.root'
+	# DaVinci().TupleFile = '/panfs/felician/BuDDKp_cocktail/DVntuple_MC_'+year+'_'+pol+'.root'
 else:
 	DaVinci().TupleFile = 'DVntuple_data_BuDDKp_cocktail_'+year+'_'+pol+'.root'
 	# DaVinci().TupleFile = '/panfs/felician/BuDDKp_cocktail//DVntuple_data_'+year+'_'+pol+'.root'
@@ -1017,8 +1017,8 @@ else:
 string2_BdDDKp = """
 # Configure DaVinci
 if isMC:
-	# DaVinci().TupleFile = 'DVntuple_MC_BdDDKp_cocktail_'+year+'_'+pol+'.root'
-	DaVinci().TupleFile = '/panfs/felician/BdDDKp_cocktail/DVntuple_MC_'+year+'_'+pol+'.root'
+	DaVinci().TupleFile = 'DVntuple_MC_BdDDKp_cocktail_'+year+'_'+pol+'.root'
+	# DaVinci().TupleFile = '/panfs/felician/BdDDKp_cocktail/DVntuple_MC_'+year+'_'+pol+'.root'
 else:
 	DaVinci().TupleFile = 'DVntuple_data_BdDDKp_cocktail_'+year+'_'+pol+'.root'
 	# DaVinci().TupleFile = '/panfs/felician/BdDDKp_cocktail//DVntuple_data_'+year+'_'+pol+'.root'
@@ -1026,8 +1026,8 @@ else:
 string2_BsDDKp = """
 # Configure DaVinci
 if isMC:
-	# DaVinci().TupleFile = 'DVntuple_MC_BsDDKp_cocktail_'+year+'_'+pol+'.root'
-	DaVinci().TupleFile = '/panfs/felician/BsDDKp_cocktail/DVntuple_MC_'+year+'_'+pol+'.root'
+	DaVinci().TupleFile = 'DVntuple_MC_BsDDKp_cocktail_'+year+'_'+pol+'.root'
+	# DaVinci().TupleFile = '/panfs/felician/BsDDKp_cocktail/DVntuple_MC_'+year+'_'+pol+'.root'
 else:
 	DaVinci().TupleFile = 'DVntuple_data_BdDDKp_cocktail_'+year+'_'+pol+'.root'
 	# DaVinci().TupleFile = '/panfs/felician/BdDDKp_cocktail//DVntuple_data_'+year+'_'+pol+'.root'
@@ -1035,8 +1035,8 @@ else:
 string2_BuDDK0 = """
 # Configure DaVinci
 if isMC:
-	# DaVinci().TupleFile = 'DVntuple_MC_BuDDK0_cocktail_'+year+'_'+pol+'.root'
-	DaVinci().TupleFile = '/panfs/felician/BuDDK0_cocktail/DVntuple_MC_'+year+'_'+pol+'.root'
+	DaVinci().TupleFile = 'DVntuple_MC_BuDDK0_cocktail_'+year+'_'+pol+'.root'
+	# DaVinci().TupleFile = '/panfs/felician/BuDDK0_cocktail/DVntuple_MC_'+year+'_'+pol+'.root'
 else:
 	DaVinci().TupleFile = 'DVntuple_data_BuDDK0_cocktail_'+year+'_'+pol+'.root'
 	# DaVinci().TupleFile = '/panfs/felician/BuDDK0_cocktail//DVntuple_data_'+year+'_'+pol+'.root'
@@ -1044,8 +1044,8 @@ else:
 string2_BdDDK0 = """
 # Configure DaVinci
 if isMC:
-	# DaVinci().TupleFile = 'DVntuple_MC_BdDDK0_cocktail_'+year+'_'+pol+'.root'
-	DaVinci().TupleFile = '/panfs/felician/BdDDK0_cocktail/DVntuple_MC_'+year+'_'+pol+'.root'
+	DaVinci().TupleFile = 'DVntuple_MC_BdDDK0_cocktail_'+year+'_'+pol+'.root'
+	# DaVinci().TupleFile = '/panfs/felician/BdDDK0_cocktail/DVntuple_MC_'+year+'_'+pol+'.root'
 else:
 	DaVinci().TupleFile = 'DVntuple_data_BdDDKp_cocktail_'+year+'_'+pol+'.root'
 	# DaVinci().TupleFile = '/panfs/felician/BdDDK0_cocktail//DVntuple_data_'+year+'_'+pol+'.root'
@@ -1053,8 +1053,8 @@ else:
 string2_BuDD = """
 # Configure DaVinci
 if isMC:
-	# DaVinci().TupleFile = 'DVntuple_MC_BuDD_cocktail_'+year+'_'+pol+'.root'
-	DaVinci().TupleFile = '/panfs/felician/BuDD_cocktail/DVntuple_MC_'+year+'_'+pol+'.root'
+	DaVinci().TupleFile = 'DVntuple_MC_BuDD_cocktail_'+year+'_'+pol+'.root'
+	# DaVinci().TupleFile = '/panfs/felician/BuDD_cocktail/DVntuple_MC_'+year+'_'+pol+'.root'
 else:
 	DaVinci().TupleFile = 'DVntuple_data_BuDD_cocktail_'+year+'_'+pol+'.root'
 	# DaVinci().TupleFile = '/panfs/felician/BuDD_cocktail//DVntuple_data_'+year+'_'+pol+'.root'
@@ -1062,8 +1062,8 @@ else:
 string2_BdDD = """
 # Configure DaVinci
 if isMC:
-	# DaVinci().TupleFile = 'DVntuple_MC_BdDD_cocktail_'+year+'_'+pol+'.root'
-	DaVinci().TupleFile = '/panfs/felician/BdDD_cocktail/DVntuple_MC_'+year+'_'+pol+'.root'
+	DaVinci().TupleFile = 'DVntuple_MC_BdDD_cocktail_'+year+'_'+pol+'.root'
+	# DaVinci().TupleFile = '/panfs/felician/BdDD_cocktail/DVntuple_MC_'+year+'_'+pol+'.root'
 else:
 	DaVinci().TupleFile = 'DVntuple_data_BdDD_cocktail_'+year+'_'+pol+'.root'
 	# DaVinci().TupleFile = '/panfs/felician/BdDD_cocktail//DVntuple_data_'+year+'_'+pol+'.root'
@@ -1071,8 +1071,8 @@ else:
 string2_BsDD = """
 # Configure DaVinci
 if isMC:
-	# DaVinci().TupleFile = 'DVntuple_MC_BsDD_cocktail_'+year+'_'+pol+'.root'
-	DaVinci().TupleFile = '/panfs/felician/BsDD_cocktail/DVntuple_MC_'+year+'_'+pol+'.root'
+	DaVinci().TupleFile = 'DVntuple_MC_BsDD_cocktail_'+year+'_'+pol+'.root'
+	# DaVinci().TupleFile = '/panfs/felician/BsDD_cocktail/DVntuple_MC_'+year+'_'+pol+'.root'
 else:
 	DaVinci().TupleFile = 'DVntuple_data_BsDD_cocktail_'+year+'_'+pol+'.root'
 	# DaVinci().TupleFile = '/panfs/felician/BsDD_cocktail//DVntuple_data_'+year+'_'+pol+'.root'
@@ -1146,10 +1146,122 @@ mcdtt_3pi_3pipi0 = MCDecayTreeTuple('mc_ntuple_3pi_3pipi0')
 mcdtt_3pipi0_3pi = MCDecayTreeTuple('mc_ntuple_3pipi0_3pi')
 mcdtt_3pipi0_3pipi0 = MCDecayTreeTuple('mc_ntuple_3pipi0_3pipi0')
 """
-string4_others = "mcdtt = MCDecayTreeTuple('mc_ntuple')"
+string4_BuDDKp = """
+mcdtt = MCDecayTreeTuple('mc_ntuple')
+# B+ -> D0D0 K+
+mcdtt_BuD0D0Kp = MCDecayTreeTuple('mc_ntuple_BuD0D0Kp')
+mcdtt_BuD0starD0Kp = MCDecayTreeTuple('mc_ntuple_BuD0starD0Kp')
+mcdtt_BuD0D0starKp = MCDecayTreeTuple('mc_ntuple_BuD0D0starKp')
+mcdtt_BuD0starD0starKp = MCDecayTreeTuple('mc_ntuple_BuD0starD0starKp')
+# B+ -> D+D- K+
+mcdtt_BuDpDmKp = MCDecayTreeTuple('mc_ntuple_BuDpDmKp')
+mcdtt_BuDpstarDmKp = MCDecayTreeTuple('mc_ntuple_BuDpstarDmKp')
+mcdtt_BuDpDmstarKp = MCDecayTreeTuple('mc_ntuple_BuDpDmstarKp')
+mcdtt_BuDpstarDmstarKp = MCDecayTreeTuple('mc_ntuple_BuDpstarDmstarKp')
+# B+ -> Ds+Ds- K+
+mcdtt_BuDsDsKp = MCDecayTreeTuple('mc_ntuple_BuDsDsKp')
+mcdtt_BuDsstarDsKp = MCDecayTreeTuple('mc_ntuple_BuDsstarDsKp')
+mcdtt_BuDsDsstarKp = MCDecayTreeTuple('mc_ntuple_BuDsDsstarKp')
+mcdtt_BuDsstarDsstarKp = MCDecayTreeTuple('mc_ntuple_BuDsstarDsstarKp')
+"""
+string4_BdDDKp = """
+mcdtt = MCDecayTreeTuple('mc_ntuple')
+# B0 -> D- D0 K+
+mcdtt_BdDmD0Kp = MCDecayTreeTuple('mc_ntuple_BdDmD0Kp')
+mcdtt_BdDmstarD0Kp = MCDecayTreeTuple('mc_ntuple_BdDmstarD0Kp')
+mcdtt_BdDmD0starKp = MCDecayTreeTuple('mc_ntuple_BdDmD0starKp')
+mcdtt_BdDmstarD0starKp = MCDecayTreeTuple('mc_ntuple_BdDmstarD0starKp')
+"""
+string4_BsDDKp = """
+mcdtt = MCDecayTreeTuple('mc_ntuple')
+# Bs -> Ds- D0 K+
+mcdtt_BsDsD0Kp = MCDecayTreeTuple('mc_ntuple_BsDsD0Kp')
+mcdtt_BsDsstarD0Kp = MCDecayTreeTuple('mc_ntuple_BsDsstarD0Kp')
+mcdtt_BsDsD0starKp = MCDecayTreeTuple('mc_ntuple_BsDsD0starKp')
+mcdtt_BsDsstarD0starKp = MCDecayTreeTuple('mc_ntuple_BsDsstarD0starKp')
+"""
+string4_BuDDK0 = """
+mcdtt = MCDecayTreeTuple('mc_ntuple')
+# B+ -> D0barD+K0
+mcdtt_BuD0DpK0 = MCDecayTreeTuple('mc_ntuple_BuD0DpK0')
+mcdtt_BuD0starDpK0 = MCDecayTreeTuple('mc_ntuple_BuD0starDpK0')
+mcdtt_BuD0DpstarK0 = MCDecayTreeTuple('mc_ntuple_BuD0DpstarK0')
+mcdtt_BuD0starDpstarK0 = MCDecayTreeTuple('mc_ntuple_BuD0starDpstarK0')
+"""
+string4_BdDDK0 = """
+mcdtt = MCDecayTreeTuple('mc_ntuple')
+# B0 -> D+D-K0
+mcdtt_BdDpDmK0 = MCDecayTreeTuple('mc_ntuple_BdDpDmK0')
+mcdtt_BdDpstarDmK0 = MCDecayTreeTuple('mc_ntuple_BdDpstarDmK0')
+mcdtt_BdDpDmstarK0 = MCDecayTreeTuple('mc_ntuple_BdDpDmstarK0')
+mcdtt_BdDpstarDmstarK0 = MCDecayTreeTuple('mc_ntuple_BdDpstarDmstarK0')
+# B0 -> D0D0K0
+mcdtt_BdD0D0K0 = MCDecayTreeTuple('mc_ntuple_BdD0D0K0')
+mcdtt_BdD0starD0K0 = MCDecayTreeTuple('mc_ntuple_BdD0starD0K0')
+mcdtt_BdD0D0starK0 = MCDecayTreeTuple('mc_ntuple_BdD0D0starK0')
+mcdtt_BdD0starD0starK0 = MCDecayTreeTuple('mc_ntuple_BdD0starD0starK0')
+"""
+string4_BuDD = """ 
+mcdtt = MCDecayTreeTuple('mc_ntuple')
+# B+ -> D0Ds+
+mcdtt_BuD0Ds = MCDecayTreeTuple('mc_ntuple_BuD0Ds')
+mcdtt_BuD0starDs = MCDecayTreeTuple('mc_ntuple_BuD0starDs')
+mcdtt_BuD0Dsstar = MCDecayTreeTuple('mc_ntuple_BuD0Dsstar')
+mcdtt_BuD0starDsstar = MCDecayTreeTuple('mc_ntuple_BuD0starDsstar')
+# B+ -> D0D+
+mcdtt_BuD0Dp = MCDecayTreeTuple('mc_ntuple_BuD0Dp')
+mcdtt_BuD0starDp = MCDecayTreeTuple('mc_ntuple_BuD0starDp')
+mcdtt_BuD0Dpstar = MCDecayTreeTuple('mc_ntuple_BuD0Dpstar')
+mcdtt_BuD0starDpstar = MCDecayTreeTuple('mc_ntuple_BuD0starDpstar')
+"""
+string4_BdDD = """
+mcdtt = MCDecayTreeTuple('mc_ntuple')
+# B0 -> D0D0
+mcdtt_BdD0D0 = MCDecayTreeTuple('mc_ntuple_BdD0D0')
+mcdtt_BdD0starD0 = MCDecayTreeTuple('mc_ntuple_BdD0starD0')
+mcdtt_BdD0D0star = MCDecayTreeTuple('mc_ntuple_BdD0D0star')
+mcdtt_BdD0starD0star = MCDecayTreeTuple('mc_ntuple_BdD0starD0star')
+# B0 -> D+D-
+mcdtt_BdDpDm = MCDecayTreeTuple('mc_ntuple_BdDpDm')
+mcdtt_BdDpstarDm = MCDecayTreeTuple('mc_ntuple_BdDpstarDm')
+mcdtt_BdDpDmstar = MCDecayTreeTuple('mc_ntuple_BdDpDmstar')
+mcdtt_BdDpstarDmstar = MCDecayTreeTuple('mc_ntuple_BdDpstarDmstar')
+# B0 -> D-Ds+
+mcdtt_BdDpDs = MCDecayTreeTuple('mc_ntuple_BdDpDs')
+mcdtt_BdDpstarDs = MCDecayTreeTuple('mc_ntuple_BdDpstarDs')
+mcdtt_BdDpDsstar = MCDecayTreeTuple('mc_ntuple_BdDpDsstar')
+mcdtt_BdDpstarDsstar = MCDecayTreeTuple('mc_ntuple_BdDpstarDsstar')
+# B0 -> Ds+Ds-
+mcdtt_BdDsDs = MCDecayTreeTuple('mc_ntuple_BdDsDs')
+mcdtt_BdDsstarDs = MCDecayTreeTuple('mc_ntuple_BdDsstarDs')
+mcdtt_BdDsDsstar = MCDecayTreeTuple('mc_ntuple_BdDsDsstar')
+mcdtt_BdDsstarDsstar = MCDecayTreeTuple('mc_ntuple_BdDsstarDsstar')
+"""
+string4_BsDD = """
+mcdtt = MCDecayTreeTuple('mc_ntuple')
+#  Bs -> Ds+Ds-
+mcdtt_BsDsDs = MCDecayTreeTuple('mc_ntuple_BsDsDs')
+mcdtt_BsDsstarDs = MCDecayTreeTuple('mc_ntuple_BsDsstarDs')
+mcdtt_BsDsDsstar = MCDecayTreeTuple('mc_ntuple_BsDsDsstar')
+mcdtt_BsDsstarDsstar = MCDecayTreeTuple('mc_ntuple_BsDsstarDsstar')
+# Bs -> D-Ds+
+mcdtt_BsDpDs = MCDecayTreeTuple('mc_ntuple_BsDpDs')
+mcdtt_BsDpstarDs = MCDecayTreeTuple('mc_ntuple_BsDpstarDs')
+mcdtt_BsDpDsstar = MCDecayTreeTuple('mc_ntuple_BsDpDsstar')
+mcdtt_BsDpstarDsstar = MCDecayTreeTuple('mc_ntuple_BsDpstarDsstar')
+# Bs -> D+D-
+mcdtt_BsDpDm = MCDecayTreeTuple('mc_ntuple_BsDpDm')
+mcdtt_BsDpstarDm = MCDecayTreeTuple('mc_ntuple_BsDpstarDm')
+mcdtt_BsDpDmstar = MCDecayTreeTuple('mc_ntuple_BsDpDmstar')
+mcdtt_BsDpstarDmstar = MCDecayTreeTuple('mc_ntuple_BsDpstarDmstar')
+# Bs -> D0D0
+mcdtt_BsD0D0 = MCDecayTreeTuple('mc_ntuple_BsD0D0')
+mcdtt_BsD0starD0 = MCDecayTreeTuple('mc_ntuple_BsD0starD0')
+mcdtt_BsD0D0star = MCDecayTreeTuple('mc_ntuple_BsD0D0star')
+mcdtt_BsD0starD0star = MCDecayTreeTuple('mc_ntuple_BsD0starD0star')
+"""
 
 string5 = """
-
 # Preselections to reduce the size of the tuples (in data)
 filtercode = "(NINGENERATION( (M < 750) & (ABSID=='tau+') , 1) == 0) & (NINGENERATION( (M > 1650) & (ABSID=='tau+') , 1) == 0) & (NINGENERATION( (BPVVD < 4) & (ABSID=='B+') , 0) == 0) & ( ((RELINFO('/Event/{0}/Phys/{1}/BVars_VertexIsoInfo', 'VTXISODCHI2MASSONETRACK', -100) > 3600) & (RELINFO('/Event/{0}/Phys/{1}/BVars_VertexIsoBDTInfo', 'VTXISOBDTHARDFIRSTVALUE', -100.) < 0) ) | ((RELINFO('/Event/{0}/Phys/{2}/BVars_VertexIsoInfo', 'VTXISODCHI2MASSONETRACK', -100) > 3600) & (RELINFO('/Event/{0}/Phys/{2}/BVars_VertexIsoBDTInfo', 'VTXISOBDTHARDFIRSTVALUE', -100.) < 0) ) )".format(stream,line,line_SS)
 
@@ -1188,15 +1300,138 @@ mcdtt_3pi_3pipi0.Decay = '${Bp}[B+ => ${taup}(tau+ => ${taup_pi1}pi+ ${taup_pi2}
 mcdtt_3pipi0_3pi.Decay = '${Bp}[B+ => ${taup}(tau+ => ${taup_pi1}pi+ ${taup_pi2}pi- ${taup_pi3}pi+ ${taup_nutau}nu_tau~ ${taup_pi0}pi0) ${taum}(tau- => ${taum_pi1}pi- ${taum_pi2}pi+ ${taum_pi3}pi- ${taum_nutau}nu_tau) ${Kp}K+]CC'
 mcdtt_3pipi0_3pipi0.Decay = '${Bp}[B+ => ${taup}(tau+ => ${taup_pi1}pi+ ${taup_pi2}pi- ${taup_pi3}pi+ ${taup_nutau}nu_tau~ ${taup_pi0}pi0) ${taum}(tau- => ${taum_pi1}pi- ${taum_pi2}pi+ ${taum_pi3}pi- ${taum_nutau}nu_tau ${taum_pi0}pi0) ${Kp}K+]CC'
 """
-string6_BuDDKp = "mcdtt.setDescriptorTemplate('${Bp}[B+ => ${charm1}(Charm ==> ${charm1_pi1}pi+ ${charm1_pi2}pi- ${charm1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ${charm2}(Charm ==> ${charm2_pi1}pi- ${charm2_pi2}pi+ ${charm2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC')"
-string6_BdDDKp = "mcdtt.setDescriptorTemplate('${B0}[B0 => ${charm1}(Charm ==> ${charm1_pi1}pi+ ${charm1_pi2}pi- ${charm1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X})  ${charm2}(Charm ==> ${charm2_pi1}pi- ${charm2_pi2}pi+ ${charm2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC')"
-string6_BsDDKp = "mcdtt.setDescriptorTemplate('${Bs}[B_s0 => ${charm1}(Charm ==> ${charm1_pi1}pi+ ${charm1_pi2}pi- ${charm1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ${charm2}(Charm ==> ${charm2_pi1}pi- ${charm2_pi2}pi+ ${charm2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC')"
-string6_BuDDK0 = "mcdtt.setDescriptorTemplate('${Bp}[B+ => ${charm1}(Charm ==> ${charm1_pi1}pi+ ${charm1_pi2}pi- ${charm1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ${charm2}(Charm ==> ${charm2_pi1}pi- ${charm2_pi2}pi+ ${charm2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC')"
-string6_BdDDK0 = "mcdtt.setDescriptorTemplate('${B0}[B0 => ${charm1}(Charm ==> ${charm1_pi1}pi+ ${charm1_pi2}pi- ${charm1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ${charm2}(Charm ==> ${charm2_pi1}pi- ${charm2_pi2}pi+ ${charm2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC')"
-string6_BuDD = "mcdtt.setDescriptorTemplate('${Bp}[B+ => ${charm1}(Charm ==> ${charm1_pi1}pi+ ${charm1_pi2}pi- ${charm1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ${charm2}(Charm ==> ${charm2_pi1}pi- ${charm2_pi2}pi+ ${charm2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X})]CC')"
-string6_BdDD = "mcdtt.setDescriptorTemplate('${B0}[B0 => ${charm1}(Charm ==> ${charm1_pi1}pi+ ${charm1_pi2}pi- ${charm1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ${charm2}(Charm ==> ${charm2_pi1}pi- ${charm2_pi2}pi+ ${charm2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X})]CC')"
-string6_BsDD = "mcdtt.setDescriptorTemplate('${Bs}[B_s0 => ${charm1}(Charm ==> ${charm1_pi1}pi+ ${charm1_pi2}pi- ${charm1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X}) ${charm2}(Charm ==> ${charm2_pi1}pi- ${charm2_pi2}pi+ ${charm2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X})]CC')"
+string6_BuDDKp = """
+mcdtt.setDescriptorTemplate('${Bp}[B+ => ${D1}(Charm ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(Charm ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC')
 
+# B+ -> D0D0 K+
+mcdtt_BuD0D0Kp.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D0 ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC) || (${Bp}[B+ => ${D1}(D~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D0 ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC)')
+mcdtt_BuD0starD0Kp.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D0 ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC) || (${Bp}[B+ => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D0 ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC)')
+mcdtt_BuD0D0starKp.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2007)0 ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC) || (${Bp}[B+ => ${D1}(D~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2007)0 ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC)')
+mcdtt_BuD0starD0starKp.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2007)0 ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC) || (${Bp}[B+ => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2007)0 ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC)')
+
+# B+ -> D+D- K+
+mcdtt_BuDpDmKp.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC) || (${Bp}[B+ => ${D1}(D+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC)')
+mcdtt_BuDpstarDmKp.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D*(2010)+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC) || (${Bp}[B+ => ${D1}(D*(2010)+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC)')
+mcdtt_BuDpDmstarKp.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC) || (${Bp}[B+ => ${D1}(D+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC)')
+mcdtt_BuDpstarDmstarKp.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D*(2010)+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC) || (${Bp}[B+ => ${D1}(D*(2010)+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC)')
+
+# B+ -> Ds+Ds- K+
+mcdtt_BuDsDsKp.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D_s+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC) || (${Bp}[B+ => ${D1}(D_s+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC)')
+mcdtt_BuDsstarDsKp.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D*_s+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC) || (${Bp}[B+ => ${D1}(D*_s+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC)')
+mcdtt_BuDsDsstarKp.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D_s+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC) || (${Bp}[B+ => ${D1}(D_s+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC)')
+mcdtt_BuDsstarDsstarKp.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D*_s+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC) || (${Bp}[B+ => ${D1}(D*_s+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC)')
+"""
+string6_BdDDKp = """
+mcdtt.setDescriptorTemplate('${B0}[[B0]cc => ${D1}(Charm ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})  ${D2}(Charm ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC')
+
+# B0 -> D-D0K+
+mcdtt_BdDmD0Kp.setDescriptorTemplate('(${B0}[[B0]cc => ${D1}(D- ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})  ${D2}(D0 ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC) || (${B0}[[B0]cc => ${D1}(D- ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})  ${D2}(D0 ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC)')
+mcdtt_BdDmstarD0Kp.setDescriptorTemplate('(${B0}[[B0]cc => ${D1}(D*(2010)- ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})  ${D2}(D0 ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC) || (${B0}[[B0]cc => ${D1}(D*(2010)- ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})  ${D2}(D0 ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC)')
+mcdtt_BdDmD0starKp.setDescriptorTemplate('(${B0}[[B0]cc => ${D1}(D- ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})  ${D2}(D*(2007)0  ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC) || (${B0}[[B0]cc => ${D1}(D- ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})  ${D2}(D*(2007)0  ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC)')
+mcdtt_BdDmstarD0starKp.setDescriptorTemplate('(${B0}[[B0]cc => ${D1}(D*(2010)- ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})  ${D2}(D*(2007)0  ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC) || (${B0}[[B0]cc => ${D1}(D*(2010)- ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})  ${D2}(D*(2007)0  ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC)')
+"""
+string6_BsDDKp = """
+mcdtt.setDescriptorTemplate('${Bs}[[B_s0]cc => ${D1}(Charm ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(Charm ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC')
+
+# Bs -> Ds-D0 K+
+mcdtt_BsDsD0Kp.setDescriptorTemplate('(${Bs}[[B_s0]cc => ${D1}(D_s- ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D0 ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC) || (${Bs}[[B_s0]cc => ${D1}(D_s- ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D0 ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC)')
+mcdtt_BsDsstarD0Kp.setDescriptorTemplate('(${Bs}[[B_s0]cc => ${D1}(D*_s- ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D0 ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC) || (${Bs}[[B_s0]cc => ${D1}(D*_s- ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D0 ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC)')
+mcdtt_BsDsD0starKp.setDescriptorTemplate('(${Bs}[[B_s0]cc => ${D1}(D_s- ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2007)0  ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC) || (${Bs}[[B_s0]cc => ${D1}(D_s- ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2007)0  ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC)')
+mcdtt_BsDsstarD0starKp.setDescriptorTemplate('(${Bs}[[B_s0]cc => ${D1}(D*_s- ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2007)0  ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC) || (${Bs}[[B_s0]cc => ${D1}(D*_s- ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2007)0  ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${Kp}K+]CC)')
+"""
+string6_BuDDK0 = """
+mcdtt.setDescriptorTemplate('${Bp}[B+ => ${D1}(Charm ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(Charm ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC')
+
+# B+ -> D0barD+K0
+mcdtt_BuD0DpK0.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D+ ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC) || (${Bp}[B+ => ${D1}(D~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D+ ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC)')
+mcdtt_BuD0starDpK0.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D+ ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC) || (${Bp}[B+ => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D+ ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC)')
+mcdtt_BuD0DpstarK0.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)+ ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC) || (${Bp}[B+ => ${D1}(D~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)+ ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC)')
+mcdtt_BuD0starDpstarK0.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)+ ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC) || (${Bp}[B+ => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)+ ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC)')
+"""
+string6_BdDDK0 = """
+mcdtt.setDescriptorTemplate('${B0}[[B0]cc => ${D1}(Charm ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(Charm ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC')
+
+# B0 -> D+D-K0
+mcdtt_BdDpDmK0.setDescriptorTemplate('(${B0}[[B0]cc => ${D1}(D+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC) || (${B0}[[B0]cc => ${D1}(D+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC)')
+mcdtt_BdDpstarDmK0.setDescriptorTemplate('(${B0}[[B0]cc => ${D1}(D*(2010)+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC) || (${B0}[[B0]cc => ${D1}(D*(2010)+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC)')
+mcdtt_BdDpDmstarK0.setDescriptorTemplate('(${B0}[[B0]cc => ${D1}(D+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC) || (${B0}[[B0]cc => ${D1}(D+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC)')
+mcdtt_BdDpstarDmstarK0.setDescriptorTemplate('(${B0}[[B0]cc => ${D1}(D*(2010)+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC) || (${B0}[[B0]cc => ${D1}(D*(2010)+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC)')
+
+# B0 -> D0D0K0
+mcdtt_BdD0D0K0.setDescriptorTemplate('(${B0}[[B0]cc => ${D1}(D~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}([D0]cc ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC) || (${B0}[[B0]cc => ${D1}(D~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}([D0]cc ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC)')
+mcdtt_BdD0starD0K0.setDescriptorTemplate('(${B0}[[B0]cc => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}([D0]cc ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC) || (${B0}[[B0]cc => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}([D0]cc ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC)')
+mcdtt_BdD0D0starK0.setDescriptorTemplate('(${B0}[[B0]cc => ${D1}(D~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}([D*(2007)0]cc ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC) || (${B0}[[B0]cc => ${D1}(D~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}([D*(2007)0]cc ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC)')
+mcdtt_BdD0starD0starK0.setDescriptorTemplate('(${B0}[[B0]cc => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}([D*(2007)0]cc ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC) || (${B0}[[B0]cc => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}([D*(2007)0]cc ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${K0}K0]CC)')
+"""
+string6_BuDD = """
+mcdtt.setDescriptorTemplate('${Bp}[B+ => ${D1}(Charm ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(Charm ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC')
+
+# B+ -> D0Ds+
+mcdtt_BuD0Ds.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s+ ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bp}[B+ => ${D1}(D~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s+ ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BuD0starDs.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s+ ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bp}[B+ => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s+ ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BuD0Dsstar.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s+ ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bp}[B+ => ${D1}(D~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s+ ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BuD0starDsstar.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s+ ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bp}[B+ => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s+ ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+
+# B+ -> D0D+
+mcdtt_BuD0Dp.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D+ ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bp}[B+ => ${D1}(D~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D+ ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BuD0starDp.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D+ ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bp}[B+ => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D+ ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BuD0Dpstar.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)+ ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bp}[B+ => ${D1}(D~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)+ ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BuD0starDpstar.setDescriptorTemplate('(${Bp}[B+ => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)+ ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bp}[B+ => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)+ ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+"""
+string6_BdDD = """
+mcdtt.setDescriptorTemplate('${B0}[[B0]cc => ${D1}(Charm ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(Charm ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC')
+
+# B0 -> D0D0
+mcdtt_BdD0D0.setDescriptorTemplate('(${Bs}[B0 => ${D1}(D~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D0 ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B0 => ${D1}(D~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D0 ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BdD0starD0.setDescriptorTemplate('(${Bs}[B0 => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D0 ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B0 => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D0 ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BdD0D0star.setDescriptorTemplate('(${Bs}[B0 => ${D1}(D~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2007)0 ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B0 => ${D1}(D~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2007)0 ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BdD0starD0star.setDescriptorTemplate('(${Bs}[B0 => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2007)0 ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B0 => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2007)0 ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+
+# B0 -> D+D-
+mcdtt_BdDpDm.setDescriptorTemplate('(${Bs}[B0 => ${D1}(D+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B0 => ${D1}(D+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BdDpstarDm.setDescriptorTemplate('(${Bs}[B0 => ${D1}(D*(2010)+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B0 => ${D1}(D*(2010)+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BdDpDmstar.setDescriptorTemplate('(${Bs}[B0 => ${D1}(D+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B0 => ${D1}(D+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BdDpstarDmstar.setDescriptorTemplate('(${Bs}[B0 => ${D1}(D*(2010)+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B0 => ${D1}(D*(2010)+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+
+# B0 -> D-Ds+
+mcdtt_BdDpDs.setDescriptorTemplate('(${Bs}[[B0]cc => ${D1}(D- ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s+ ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[[B0]cc => ${D1}(D- ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s+ ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BdDpstarDs.setDescriptorTemplate('(${Bs}[[B0]cc => ${D1}(D*(2010)- ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s+ ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[[B0]cc => ${D1}(D*(2010)- ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s+ ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BdDpDsstar.setDescriptorTemplate('(${Bs}[[B0]cc => ${D1}(D- ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s+ ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[[B0]cc => ${D1}(D- ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s+ ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BdDpstarDsstar.setDescriptorTemplate('(${Bs}[[B0]cc => ${D1}(D*(2010)- ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s+ ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[[B0]cc => ${D1}(D*(2010)- ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s+ ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+
+# B0 -> Ds+Ds-
+mcdtt_BdDsDs.setDescriptorTemplate('(${Bs}[B0 => ${D1}(D_s+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B0 => ${D1}(D_s+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BdDsstarDs.setDescriptorTemplate('(${Bs}[B0 => ${D1}(D*_s+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B0 => ${D1}(D*_s+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BdDsDsstar.setDescriptorTemplate('(${Bs}[B0 => ${D1}(D_s+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B0 => ${D1}(D_s+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BdDsstarDsstar.setDescriptorTemplate('(${Bs}[B0 => ${D1}(D*_s+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B0 => ${D1}(D*_s+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+"""
+string6_BsDD = """
+mcdtt.setDescriptorTemplate('${Bs}[[B_s0]cc => ${D1}(Charm ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(Charm ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC')
+
+#  Bs -> Ds+Ds-
+mcdtt_BsDsDs.setDescriptorTemplate('(${Bs}[B_s0 => ${D1}(D_s+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B_s0 => ${D1}(D_s+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BsDsstarDs.setDescriptorTemplate('(${Bs}[B_s0 => ${D1}(D*_s+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B_s0 => ${D1}(D*_s+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BsDsDsstar.setDescriptorTemplate('(${Bs}[B_s0 => ${D1}(D_s+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B_s0 => ${D1}(D_s+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BsDsstarDsstar.setDescriptorTemplate('(${Bs}[B_s0 => ${D1}(D*_s+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B_s0 => ${D1}(D*_s+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+
+# Bs -> D-Ds+
+mcdtt_BsDpDs.setDescriptorTemplate('(${Bs}[[B_s0]cc => ${D1}(D- ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s+ ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[[B_s0]cc => ${D1}(D- ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s+ ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BsDpstarDs.setDescriptorTemplate('(${Bs}[[B_s0]cc => ${D1}(D*(2010)- ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s+ ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[[B_s0]cc => ${D1}(D*(2010)- ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D_s+ ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BsDpDsstar.setDescriptorTemplate('(${Bs}[[B_s0]cc => ${D1}(D- ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s+ ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[[B_s0]cc => ${D1}(D- ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s+ ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BsDpstarDsstar.setDescriptorTemplate('(${Bs}[[B_s0]cc => ${D1}(D*(2010)- ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s+ ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[[B_s0]cc => ${D1}(D*(2010)- ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*_s+ ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+
+# Bs -> D+D-
+mcdtt_BsDpDm.setDescriptorTemplate('(${Bs}[B_s0 => ${D1}(D+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B_s0 => ${D1}(D+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BsDpstarDm.setDescriptorTemplate('(${Bs}[B_s0 => ${D1}(D*(2010)+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B_s0 => ${D1}(D*(2010)+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BsDpDmstar.setDescriptorTemplate('(${Bs}[B_s0 => ${D1}(D+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B_s0 => ${D1}(D+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BsDpstarDmstar.setDescriptorTemplate('(${Bs}[B_s0 => ${D1}(D*(2010)+ ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)- ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B_s0 => ${D1}(D*(2010)+ ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2010)- ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+
+# Bs -> D0D0
+mcdtt_BsD0D0.setDescriptorTemplate('(${Bs}[B_s0 => ${D1}(D~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D0 ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B_s0 => ${D1}(D~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D0 ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BsD0starD0.setDescriptorTemplate('(${Bs}[B_s0 => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D0 ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B_s0 => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D0 ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BsD0D0star.setDescriptorTemplate('(${Bs}[B_s0 => ${D1}(D~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2007)0 ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B_s0 => ${D1}(D~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2007)0 ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+mcdtt_BsD0starD0star.setDescriptorTemplate('(${Bs}[B_s0 => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi+ ${D1_pi2}pi- ${D1_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2007)0 ==> ${D2_pi1}pi- ${D2_pi2}pi+ ${D2_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC) || (${Bs}[B_s0 => ${D1}(D*(2007)~0 ==> ${D1_pi1}pi- ${D1_pi2}pi+ ${D1_pi3}pi- {X} {X} {X} {X} {X} {X} {X} {X} {X} {X}) ${D2}(D*(2007)0 ==> ${D2_pi1}pi+ ${D2_pi2}pi- ${D2_pi3}pi+ {X} {X} {X} {X} {X} {X} {X} {X} {X} {X})]CC)')
+"""
 string7 = """
 
 # TUPLE TOOLS
@@ -1236,9 +1471,120 @@ if isMC:
 	mcdtt_3pipi0_3pi.ToolList += GENToolList
 	mcdtt_3pipi0_3pipi0.ToolList += GENToolList
 """
-string8_others = """
+string8_BuDDKp = """
 if isMC:
 	mcdtt.ToolList += GENToolList
+
+	mcdtt_BuD0D0Kp.ToolList += GENToolList
+	mcdtt_BuD0starD0Kp.ToolList += GENToolList
+	mcdtt_BuD0D0starKp.ToolList += GENToolList
+	mcdtt_BuD0starD0starKp.ToolList += GENToolList
+
+	mcdtt_BuDpDmKp.ToolList += GENToolList
+	mcdtt_BuDpstarDmKp.ToolList += GENToolList
+	mcdtt_BuDpDmstarKp.ToolList += GENToolList
+	mcdtt_BuDpstarDmstarKp.ToolList += GENToolList
+
+	mcdtt_BuDsDsKp.ToolList += GENToolList
+	mcdtt_BuDsstarDsKp.ToolList += GENToolList
+	mcdtt_BuDsDsstarKp.ToolList += GENToolList
+	mcdtt_BuDsstarDsstarKp.ToolList += GENToolList
+"""
+string8_BdDDKp = """ 
+if isMC:
+	mcdtt.ToolList += GENToolList
+	mcdtt_BdDmD0Kp.ToolList += GENToolList
+	mcdtt_BdDmstarD0Kp.ToolList += GENToolList
+	mcdtt_BdDmD0starKp.ToolList += GENToolList
+	mcdtt_BdDmstarD0starKp.ToolList += GENToolList
+"""
+string8_BsDDKp = """ 
+if isMC:
+	mcdtt.ToolList += GENToolList
+	mcdtt_BsDsD0Kp.ToolList += GENToolList
+	mcdtt_BsDsstarD0Kp.ToolList += GENToolList
+	mcdtt_BsDsD0starKp.ToolList += GENToolList
+	mcdtt_BsDsstarD0starKp.ToolList += GENToolList
+"""
+string8_BuDDK0 = """ 
+if isMC:
+	mcdtt.ToolList += GENToolList
+	mcdtt_BuD0DpK0.ToolList += GENToolList
+	mcdtt_BuD0starDpK0.ToolList += GENToolList
+	mcdtt_BuD0DpstarK0.ToolList += GENToolList
+	mcdtt_BuD0starDpstarK0.ToolList += GENToolList
+"""
+string8_BdDDK0 = """ 
+if isMC:
+	mcdtt.ToolList += GENToolList
+	mcdtt_BdDpDmK0.ToolList += GENToolList
+	mcdtt_BdDpstarDmK0.ToolList += GENToolList
+	mcdtt_BdDpDmstarK0.ToolList += GENToolList
+	mcdtt_BdDpstarDmstarK0.ToolList += GENToolList
+
+	mcdtt_BdD0D0K0.ToolList += GENToolList
+	mcdtt_BdD0starD0K0.ToolList += GENToolList
+	mcdtt_BdD0D0starK0.ToolList += GENToolList
+	mcdtt_BdD0starD0starK0.ToolList += GENToolList
+"""
+string8_BuDD = """ 
+if isMC:
+	mcdtt.ToolList += GENToolList
+	mcdtt_BuD0Ds.ToolList += GENToolList
+	mcdtt_BuD0starDs.ToolList += GENToolList
+	mcdtt_BuD0Dsstar.ToolList += GENToolList
+	mcdtt_BuD0starDsstar.ToolList += GENToolList
+
+	mcdtt_BuD0Dp.ToolList += GENToolList
+	mcdtt_BuD0starDp.ToolList += GENToolList
+	mcdtt_BuD0Dpstar.ToolList += GENToolList
+	mcdtt_BuD0starDpstar.ToolList += GENToolList
+"""
+string8_BdDD = """ 
+if isMC:
+	mcdtt.ToolList += GENToolList
+	mcdtt_BdD0D0.ToolList += GENToolList
+	mcdtt_BdD0starD0.ToolList += GENToolList
+	mcdtt_BdD0D0star.ToolList += GENToolList
+	mcdtt_BdD0starD0star.ToolList += GENToolList
+
+	mcdtt_BdDpDm.ToolList += GENToolList
+	mcdtt_BdDpstarDm.ToolList += GENToolList
+	mcdtt_BdDpDmstar.ToolList += GENToolList
+	mcdtt_BdDpstarDmstar.ToolList += GENToolList
+
+	mcdtt_BdDpDs.ToolList += GENToolList
+	mcdtt_BdDpstarDs.ToolList += GENToolList
+	mcdtt_BdDpDsstar.ToolList += GENToolList
+	mcdtt_BdDpstarDsstar.ToolList += GENToolList
+
+	mcdtt_BdDsDs.ToolList += GENToolList
+	mcdtt_BdDsstarDs.ToolList += GENToolList
+	mcdtt_BdDsDsstar.ToolList += GENToolList
+	mcdtt_BdDsstarDsstar.ToolList += GENToolList
+"""
+string8_BsDD = """ 
+if isMC:
+	mcdtt.ToolList += GENToolList
+	mcdtt_BsDsDs.ToolList += GENToolList
+	mcdtt_BsDsstarDs.ToolList += GENToolList
+	mcdtt_BsDsDsstar.ToolList += GENToolList
+	mcdtt_BsDsstarDsstar.ToolList += GENToolList
+
+	mcdtt_BsDpDs.ToolList += GENToolList
+	mcdtt_BsDpstarDs.ToolList += GENToolList
+	mcdtt_BsDpDsstar.ToolList += GENToolList
+	mcdtt_BsDpstarDsstar.ToolList += GENToolList
+
+	mcdtt_BsDpDm.ToolList += GENToolList
+	mcdtt_BsDpstarDm.ToolList += GENToolList
+	mcdtt_BsDpDmstar.ToolList += GENToolList
+	mcdtt_BsDpstarDmstar.ToolList += GENToolList
+
+	mcdtt_BsD0D0.ToolList += GENToolList
+	mcdtt_BsD0starD0.ToolList += GENToolList
+	mcdtt_BsD0D0star.ToolList += GENToolList
+	mcdtt_BsD0starD0star.ToolList += GENToolList
 """
 
 string9 = """
@@ -1272,9 +1618,69 @@ if isMC:
 else:
     DaVinci().UserAlgorithms += [dtt_SS]
 """
-string10_others = """
+string10_BuDDKp = """
 if isMC:
 	DaVinci().UserAlgorithms += [mcdtt]
+	DaVinci().UserAlgorithms += [mcdtt_BuD0D0Kp, mcdtt_BuD0starD0Kp, mcdtt_BuD0D0starKp, mcdtt_BuD0starD0starKp]
+	DaVinci().UserAlgorithms += [mcdtt_BuDpDmKp, mcdtt_BuDpstarDmKp, mcdtt_BuDpDmstarKp, mcdtt_BuDpstarDmstarKp]
+	DaVinci().UserAlgorithms += [mcdtt_BuDsDsKp, mcdtt_BuDsstarDsKp, mcdtt_BuDsDsstarKp, mcdtt_BuDsstarDsstarKp]
+else:
+    DaVinci().UserAlgorithms += [dtt_SS]
+"""
+string10_BdDDKp = """ 
+if isMC:
+	DaVinci().UserAlgorithms += [mcdtt]
+	DaVinci().UserAlgorithms += [mcdtt_BdDmD0Kp, mcdtt_BdDmstarD0Kp, mcdtt_BdDmD0starKp, mcdtt_BdDmstarD0starKp]
+else:
+    DaVinci().UserAlgorithms += [dtt_SS]
+"""
+string10_BsDDKp = """ 
+if isMC:
+	DaVinci().UserAlgorithms += [mcdtt]
+	DaVinci().UserAlgorithms += [mcdtt_BsDsD0Kp, mcdtt_BsDsstarD0Kp, mcdtt_BsDsD0starKp, mcdtt_BsDsstarD0starKp]
+else:
+    DaVinci().UserAlgorithms += [dtt_SS]
+"""
+string10_BuDDK0 = """
+if isMC:
+	DaVinci().UserAlgorithms += [mcdtt]
+	DaVinci().UserAlgorithms += [mcdtt_BuD0DpK0, mcdtt_BuD0starDpK0, mcdtt_BuD0DpstarK0, mcdtt_BuD0starDpstarK0]
+else:
+    DaVinci().UserAlgorithms += [dtt_SS]
+"""
+string10_BdDDK0 = """ 
+if isMC:
+	DaVinci().UserAlgorithms += [mcdtt]
+	DaVinci().UserAlgorithms += [mcdtt_BdDpDmK0, mcdtt_BdDpstarDmK0, mcdtt_BdDpDmstarK0, mcdtt_BdDpstarDmstarK0]
+	DaVinci().UserAlgorithms += [mcdtt_BdD0D0K0, mcdtt_BdD0starD0K0, mcdtt_BdD0D0starK0, mcdtt_BdD0starD0starK0]
+else:
+    DaVinci().UserAlgorithms += [dtt_SS]
+"""
+string10_BuDD = """ 
+if isMC:
+	DaVinci().UserAlgorithms += [mcdtt]
+	DaVinci().UserAlgorithms += [mcdtt_BuD0Ds, mcdtt_BuD0starDs, mcdtt_BuD0Dsstar, mcdtt_BuD0starDsstar]
+	DaVinci().UserAlgorithms += [mcdtt_BuD0Dp, mcdtt_BuD0starDp, mcdtt_BuD0Dpstar, mcdtt_BuD0starDpstar]
+else:
+    DaVinci().UserAlgorithms += [dtt_SS]
+"""
+string10_BdDD = """ 
+if isMC:
+	DaVinci().UserAlgorithms += [mcdtt]
+	DaVinci().UserAlgorithms += [mcdtt_BdD0D0, mcdtt_BdD0starD0, mcdtt_BdD0D0star, mcdtt_BdD0starD0star]
+	DaVinci().UserAlgorithms += [mcdtt_BdDpDm, mcdtt_BdDpstarDm, mcdtt_BdDpDmstar, mcdtt_BdDpstarDmstar]
+	DaVinci().UserAlgorithms += [mcdtt_BdDpDs, mcdtt_BdDpstarDs, mcdtt_BdDpDsstar, mcdtt_BdDpstarDsstar]
+	DaVinci().UserAlgorithms += [mcdtt_BdDsDs, mcdtt_BdDsstarDs, mcdtt_BdDsDsstar, mcdtt_BdDsstarDsstar]
+else:
+    DaVinci().UserAlgorithms += [dtt_SS]
+"""
+string10_BsDD = """ 
+if isMC:
+	DaVinci().UserAlgorithms += [mcdtt]
+	DaVinci().UserAlgorithms += [mcdtt_BsDsDs, mcdtt_BsDsstarDs, mcdtt_BsDsDsstar, mcdtt_BsDsstarDsstar]
+	DaVinci().UserAlgorithms += [mcdtt_BsDpDs, mcdtt_BsDpstarDs, mcdtt_BsDpDsstar, mcdtt_BsDpstarDsstar]
+	DaVinci().UserAlgorithms += [mcdtt_BsDpDm, mcdtt_BsDpstarDm, mcdtt_BsDpDmstar, mcdtt_BsDpstarDmstar]
+	DaVinci().UserAlgorithms += [mcdtt_BsD0D0, mcdtt_BsD0starD0, mcdtt_BsD0D0star, mcdtt_BsD0starD0star]
 else:
     DaVinci().UserAlgorithms += [dtt_SS]
 """
@@ -1289,67 +1695,67 @@ string11_BuKtautau = """
 """
 string11_BuDDKp = """
 # Use the local input data
-from GaudiConf import IOHelper
-filename = '/panfs/felician/SimulationJobs/12693500/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
-with open(filename) as file:
-    input_files = [line.rstrip() for line in file]
-IOHelper('ROOT').inputFiles(input_files, clear=True)
+# from GaudiConf import IOHelper
+# filename = '/panfs/felician/SimulationJobs/12693500/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
+# with open(filename) as file:
+#     input_files = [line.rstrip() for line in file]
+# IOHelper('ROOT').inputFiles(input_files, clear=True)
 """
 string11_BdDDKp = """
 # Use the local input data
-from GaudiConf import IOHelper
-filename = '/panfs/felician/SimulationJobs/11293500/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
-with open(filename) as file:
-    input_files = [line.rstrip() for line in file]
-IOHelper('ROOT').inputFiles(input_files, clear=True)
+# from GaudiConf import IOHelper
+# filename = '/panfs/felician/SimulationJobs/11293500/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
+# with open(filename) as file:
+#     input_files = [line.rstrip() for line in file]
+# IOHelper('ROOT').inputFiles(input_files, clear=True)
 """
 string11_BsDDKp = """
 # Use the local input data
-from GaudiConf import IOHelper
-filename = '/panfs/felician/SimulationJobs/13297500/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
-with open(filename) as file:
-    input_files = [line.rstrip() for line in file]
-IOHelper('ROOT').inputFiles(input_files, clear=True)
+# from GaudiConf import IOHelper
+# filename = '/panfs/felician/SimulationJobs/13297500/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
+# with open(filename) as file:
+#     input_files = [line.rstrip() for line in file]
+# IOHelper('ROOT').inputFiles(input_files, clear=True)
 """
 string11_BuDDK0 = """
 # Use the local input data
-from GaudiConf import IOHelper
-filename = '/panfs/felician/SimulationJobs/12293500/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
-with open(filename) as file:
-    input_files = [line.rstrip() for line in file]
-IOHelper('ROOT').inputFiles(input_files, clear=True)
+# from GaudiConf import IOHelper
+# filename = '/panfs/felician/SimulationJobs/12293500/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
+# with open(filename) as file:
+#     input_files = [line.rstrip() for line in file]
+# IOHelper('ROOT').inputFiles(input_files, clear=True)
 """
 string11_BdDDK0 = """
 # Use the local input data
-from GaudiConf import IOHelper
-filename = '/panfs/felician/SimulationJobs/11294100/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
-with open(filename) as file:
-    input_files = [line.rstrip() for line in file]
-IOHelper('ROOT').inputFiles(input_files, clear=True)
+# from GaudiConf import IOHelper
+# filename = '/panfs/felician/SimulationJobs/11294100/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
+# with open(filename) as file:
+#     input_files = [line.rstrip() for line in file]
+# IOHelper('ROOT').inputFiles(input_files, clear=True)
 """
 string11_BuDD = """
 # Use the local input data
-from GaudiConf import IOHelper
-filename = '/panfs/felician/SimulationJobs/12696700/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
-with open(filename) as file:
-    input_files = [line.rstrip() for line in file]
-IOHelper('ROOT').inputFiles(input_files, clear=True)
+# from GaudiConf import IOHelper
+# filename = '/panfs/felician/SimulationJobs/12696700/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
+# with open(filename) as file:
+#     input_files = [line.rstrip() for line in file]
+# IOHelper('ROOT').inputFiles(input_files, clear=True)
 """
 string11_BdDD = """
 # Use the local input data
-from GaudiConf import IOHelper
-filename = '/panfs/felician/SimulationJobs/11697700/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
-with open(filename) as file:
-    input_files = [line.rstrip() for line in file]
-IOHelper('ROOT').inputFiles(input_files, clear=True)
+# from GaudiConf import IOHelper
+# filename = '/panfs/felician/SimulationJobs/11697700/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
+# with open(filename) as file:
+#     input_files = [line.rstrip() for line in file]
+# IOHelper('ROOT').inputFiles(input_files, clear=True)
 """
 string11_BsDD = """
 # Use the local input data
-from GaudiConf import IOHelper
-filename = '/panfs/felician/SimulationJobs/13699600/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
-with open(filename) as file:
-    input_files = [line.rstrip() for line in file]
-IOHelper('ROOT').inputFiles(input_files, clear=True)
+# from GaudiConf import IOHelper
+# filename = '/panfs/felician/SimulationJobs/13699600/2016/Sim10c_ReDecay/{0}/2016_{0}.txt'.format(pol)
+# with open(filename) as file:
+#     input_files = [line.rstrip() for line in file]
+# IOHelper('ROOT').inputFiles(input_files, clear=True)
 """
 
 # B+ -> tau+ tau- K+
@@ -1372,13 +1778,13 @@ fileOut_BuDDKp = open('ntuple_options_BuDDKp_cocktail.py', 'w')
 fileOut_BuDDKp.write(string1)
 fileOut_BuDDKp.write(string2_BuDDKp)
 fileOut_BuDDKp.write(string3)
-fileOut_BuDDKp.write(string4_others)
+fileOut_BuDDKp.write(string4_BuDDKp)
 fileOut_BuDDKp.write(string5)
 fileOut_BuDDKp.write(string6_BuDDKp)
 fileOut_BuDDKp.write(string7)
-fileOut_BuDDKp.write(string8_others)
+fileOut_BuDDKp.write(string8_BuDDKp)
 fileOut_BuDDKp.write(string9)
-fileOut_BuDDKp.write(string10_others)
+fileOut_BuDDKp.write(string10_BuDDKp)
 fileOut_BuDDKp.write(string11_BuDDKp)
 fileOut_BuDDKp.close()
 
@@ -1387,13 +1793,13 @@ fileOut_BdDDKp = open('ntuple_options_BdDDKp_cocktail.py', 'w')
 fileOut_BdDDKp.write(string1)
 fileOut_BdDDKp.write(string2_BdDDKp)
 fileOut_BdDDKp.write(string3)
-fileOut_BdDDKp.write(string4_others)
+fileOut_BdDDKp.write(string4_BdDDKp)
 fileOut_BdDDKp.write(string5)
 fileOut_BdDDKp.write(string6_BdDDKp)
 fileOut_BdDDKp.write(string7)
-fileOut_BdDDKp.write(string8_others)
+fileOut_BdDDKp.write(string8_BdDDKp)
 fileOut_BdDDKp.write(string9)
-fileOut_BdDDKp.write(string10_others)
+fileOut_BdDDKp.write(string10_BdDDKp)
 fileOut_BdDDKp.write(string11_BdDDKp)
 fileOut_BdDDKp.close()
 
@@ -1402,13 +1808,13 @@ fileOut_BsDDKp = open('ntuple_options_BsDDKp_cocktail.py', 'w')
 fileOut_BsDDKp.write(string1)
 fileOut_BsDDKp.write(string2_BsDDKp)
 fileOut_BsDDKp.write(string3)
-fileOut_BsDDKp.write(string4_others)
+fileOut_BsDDKp.write(string4_BsDDKp)
 fileOut_BsDDKp.write(string5)
 fileOut_BsDDKp.write(string6_BsDDKp)
 fileOut_BsDDKp.write(string7)
-fileOut_BsDDKp.write(string8_others)
+fileOut_BsDDKp.write(string8_BsDDKp)
 fileOut_BsDDKp.write(string9)
-fileOut_BsDDKp.write(string10_others)
+fileOut_BsDDKp.write(string10_BsDDKp)
 fileOut_BsDDKp.write(string11_BsDDKp)
 fileOut_BsDDKp.close()
 
@@ -1417,13 +1823,13 @@ fileOut_BuDDK0 = open('ntuple_options_BuDDK0_cocktail.py', 'w')
 fileOut_BuDDK0.write(string1)
 fileOut_BuDDK0.write(string2_BuDDK0)
 fileOut_BuDDK0.write(string3)
-fileOut_BuDDK0.write(string4_others)
+fileOut_BuDDK0.write(string4_BuDDK0)
 fileOut_BuDDK0.write(string5)
 fileOut_BuDDK0.write(string6_BuDDK0)
 fileOut_BuDDK0.write(string7)
-fileOut_BuDDK0.write(string8_others)
+fileOut_BuDDK0.write(string8_BuDDK0)
 fileOut_BuDDK0.write(string9)
-fileOut_BuDDK0.write(string10_others)
+fileOut_BuDDK0.write(string10_BuDDK0)
 fileOut_BuDDK0.write(string11_BuDDK0)
 fileOut_BuDDK0.close()
 
@@ -1432,13 +1838,13 @@ fileOut_BdDDK0 = open('ntuple_options_BdDDK0_cocktail.py', 'w')
 fileOut_BdDDK0.write(string1)
 fileOut_BdDDK0.write(string2_BdDDK0)
 fileOut_BdDDK0.write(string3)
-fileOut_BdDDK0.write(string4_others)
+fileOut_BdDDK0.write(string4_BdDDK0)
 fileOut_BdDDK0.write(string5)
 fileOut_BdDDK0.write(string6_BdDDK0)
 fileOut_BdDDK0.write(string7)
-fileOut_BdDDK0.write(string8_others)
+fileOut_BdDDK0.write(string8_BdDDK0)
 fileOut_BdDDK0.write(string9)
-fileOut_BdDDK0.write(string10_others)
+fileOut_BdDDK0.write(string10_BdDDK0)
 fileOut_BdDDK0.write(string11_BdDDK0)
 fileOut_BdDDK0.close()
 
@@ -1447,13 +1853,13 @@ fileOut_BuDD = open('ntuple_options_BuDD_cocktail.py', 'w')
 fileOut_BuDD.write(string1)
 fileOut_BuDD.write(string2_BuDD)
 fileOut_BuDD.write(string3)
-fileOut_BuDD.write(string4_others)
+fileOut_BuDD.write(string4_BuDD)
 fileOut_BuDD.write(string5)
 fileOut_BuDD.write(string6_BuDD)
 fileOut_BuDD.write(string7)
-fileOut_BuDD.write(string8_others)
+fileOut_BuDD.write(string8_BuDD)
 fileOut_BuDD.write(string9)
-fileOut_BuDD.write(string10_others)
+fileOut_BuDD.write(string10_BuDD)
 fileOut_BuDD.write(string11_BuDD)
 fileOut_BuDD.close()
 
@@ -1462,13 +1868,13 @@ fileOut_BdDD = open('ntuple_options_BdDD_cocktail.py', 'w')
 fileOut_BdDD.write(string1)
 fileOut_BdDD.write(string2_BdDD)
 fileOut_BdDD.write(string3)
-fileOut_BdDD.write(string4_others)
+fileOut_BdDD.write(string4_BdDD)
 fileOut_BdDD.write(string5)
 fileOut_BdDD.write(string6_BdDD)
 fileOut_BdDD.write(string7)
-fileOut_BdDD.write(string8_others)
+fileOut_BdDD.write(string8_BdDD)
 fileOut_BdDD.write(string9)
-fileOut_BdDD.write(string10_others)
+fileOut_BdDD.write(string10_BdDD)
 fileOut_BdDD.write(string11_BdDD)
 fileOut_BdDD.close()
 
@@ -1477,12 +1883,12 @@ fileOut_BsDD = open('ntuple_options_BsDD_cocktail.py', 'w')
 fileOut_BsDD.write(string1)
 fileOut_BsDD.write(string2_BsDD)
 fileOut_BsDD.write(string3)
-fileOut_BsDD.write(string4_others)
+fileOut_BsDD.write(string4_BsDD)
 fileOut_BsDD.write(string5)
 fileOut_BsDD.write(string6_BsDD)
 fileOut_BsDD.write(string7)
-fileOut_BsDD.write(string8_others)
+fileOut_BsDD.write(string8_BsDD)
 fileOut_BsDD.write(string9)
-fileOut_BsDD.write(string10_others)
+fileOut_BsDD.write(string10_BsDD)
 fileOut_BsDD.write(string11_BsDD)
 fileOut_BsDD.close()
