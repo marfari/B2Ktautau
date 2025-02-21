@@ -1,25 +1,25 @@
-void draw_mass_plot(Int_t entry, TTree* t1, TTree* t2, TTree* t3, TString name, TCut mass_vetoe_cuts, Int_t Npar, Bool_t isWrong);
+void draw_mass_plot(Int_t entry, TTree* t1, TTree* t2, TTree* t3, TString name, TCut mass_vetoe_cuts, Int_t Npar, Int_t isWrong);
 Int_t n_choose_k(Int_t n, Int_t k);
 
 void mass_vetoes_plots()
 {
     // Input files
     // 3pi3pi MC
-    TFile* f1 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_10/post_sel_tree_0.8_0.8.root");
+    TFile* f1 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_1/post_sel_tree_bdt1_0.8_bdt2_0.8.root");
     TTree* t1 = (TTree*)f1->Get("DecayTree");  
 
     cout << "3pi3pi MC" << endl;
     cout << t1->GetEntries() << endl;
 
     // RS data
-    TFile* f2 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_2/post_sel_tree_0.8_0.8.root");
+    TFile* f2 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_2/post_sel_tree_bdt1_0.8_bdt2_0.8.root");
     TTree* t2 = (TTree*)f2->Get("DecayTree");  
 
     cout << "RS data" << endl;
     cout << t2->GetEntries() << endl;
 
     // WS data
-    TFile* f3 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_3/post_sel_tree_0.8_0.8.root");
+    TFile* f3 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_3/post_sel_tree_bdt1_0.8_bdt2_0.8.root");
     TTree* t3 = (TTree*)f3->Get("DecayTree");      
 
     cout << "WS data" << endl;
@@ -70,9 +70,12 @@ void mass_vetoes_plots()
     h_rs->DrawNormalized("same");
     c.SaveAs("/panfs/felician/B2Ktautau/workflow/mass_vetoes_plots/costheta2.pdf");
 
-    TCut mass_vetoe_cuts = "(TMath::Abs(Bp_M02 - 1864.84) > 10) && (TMath::Abs(Bp_M04 - 1864.84) > 10) && (TMath::Abs(Bp_M06 - 1864.84) > 10)"; // 2 particles: D0
-    mass_vetoe_cuts += "(TMath::Abs(Bp_M046-1869.66) > 10)"; // 3 particles: D+
-    mass_vetoe_cuts += "(TMath::Abs(Bp_M0126-1864.84) > 10) && (TMath::Abs(Bp_M0146-1864.84) > 10) && (TMath::Abs(Bp_M0234-1864.84) > 10) && (TMath::Abs(Bp_M0236-1864.84) > 10) && (TMath::Abs(Bp_M0245-1864.84) > 10) && (TMath::Abs(Bp_M0256-1864.84) > 10) && (TMath::Abs(Bp_M0346-1864.84) > 10) && (TMath::Abs(Bp_M0456-1864.84) > 25)";
+    TCut mass_vetoe_cuts = "";
+    mass_vetoe_cuts += "(TMath::Abs(Bp_M02-1864.84) > 20) && (TMath::Abs(Bp_M04-1864.84) > 20) && (TMath::Abs(Bp_M06-1864.84) > 20)"; // 2 particles: D0
+    mass_vetoe_cuts += "(TMath::Abs(Bp_M046-1869.66) > 20)"; // 3 particles: D+
+    mass_vetoe_cuts += "(TMath::Abs(Bp_M0456-1864.84) > 30)"; // 4 particles: D0
+    mass_vetoe_cuts += "(TMath::Abs(Bp_M02456-2010.26) > 30)"; // 5 particle: D*-
+    // mass_vetoe_cuts += "(TMath::Abs(Bp_M0126-1864.84) > 20) && (TMath::Abs(Bp_M0234-1864.84) > 20) && (TMath::Abs(Bp_M0236-1864.84) > 20) && (TMath::Abs(Bp_M0245-1864.84) > 20) && (TMath::Abs(Bp_M0256-1864.84) > 20) && (TMath::Abs(Bp_M0346-1864.84) > 20) && (TMath::Abs(Bp_M0456-1864.84) > 25)"; // 4 particles: D0
 
     Double_t N_sig_num = t1->GetEntries(mass_vetoe_cuts);
     Double_t N_rs_num = t2->GetEntries(mass_vetoe_cuts);
@@ -89,13 +92,13 @@ void mass_vetoes_plots()
             if(i2 > i1)
             {
                 TString name2 = Form("Bp_M%i%i",i1,i2);
-                draw_mass_plot(a2, t1, t2, t3, name2, mass_vetoe_cuts, 2, false);
+                draw_mass_plot(a2, t1, t2, t3, name2, mass_vetoe_cuts, 2, 0);
                 TString name2_massH1 = Form("Bp_M%i%i_massH1",i1,i2);
-                draw_mass_plot(a2, t1, t2, t3, name2_massH1, mass_vetoe_cuts, 2, true);
+                draw_mass_plot(a2, t1, t2, t3, name2_massH1, mass_vetoe_cuts, 2, 1);
                 if(i1 == 0)
                 {
                     TString name2_massH2 = Form("Bp_M%i%i_massH2",i1,i2);
-                    draw_mass_plot(b2, t1, t2, t3, name2_massH2, mass_vetoe_cuts, 2, true);
+                    draw_mass_plot(b2, t1, t2, t3, name2_massH2, mass_vetoe_cuts, 2, 2);
                     b2 += 1;
                 }
                 for(int i3 = 1; i3 < 7; i3++)
@@ -103,13 +106,13 @@ void mass_vetoes_plots()
                     if(i3 > i2)
                     {
                         TString name3 = Form("Bp_M%i%i%i",i1,i2,i3);
-                        draw_mass_plot(a3, t1, t2, t3, name3, mass_vetoe_cuts, 3, false);
+                        draw_mass_plot(a3, t1, t2, t3, name3, mass_vetoe_cuts, 3, 0);
                         TString name3_massH1 = Form("Bp_M%i%i%i_massH1",i1,i2,i3);
-                        draw_mass_plot(a3, t1, t2, t3, name3_massH1, mass_vetoe_cuts, 3, true);
+                        draw_mass_plot(a3, t1, t2, t3, name3_massH1, mass_vetoe_cuts, 3, 1);
                         if(i1 == 0)
                         {
                             TString name3_massH2 = Form("Bp_M%i%i%i_massH2",i1,i2,i3);
-                            draw_mass_plot(b3, t1, t2, t3, name3_massH2, mass_vetoe_cuts, 3, true);
+                            draw_mass_plot(b3, t1, t2, t3, name3_massH2, mass_vetoe_cuts, 3, 2);
                             b3 += 1;
                         }
                         for(int i4 = 1; i4 < 7; i4++)
@@ -117,13 +120,13 @@ void mass_vetoes_plots()
                             if(i4 > i3)
                             {
                                 TString name4 = Form("Bp_M%i%i%i%i",i1,i2,i3,i4);
-                                draw_mass_plot(a4, t1, t2, t3, name4, mass_vetoe_cuts, 4, false);
+                                draw_mass_plot(a4, t1, t2, t3, name4, mass_vetoe_cuts, 4, 0);
                                 TString name4_massH1 = Form("Bp_M%i%i%i%i_massH1",i1,i2,i3,i4);
-                                draw_mass_plot(a4, t1, t2, t3, name4_massH1, mass_vetoe_cuts, 4, true);
+                                draw_mass_plot(a4, t1, t2, t3, name4_massH1, mass_vetoe_cuts, 4, 1);
                                 if(i1 == 0)
                                 {
                                     TString name4_massH2 = Form("Bp_M%i%i%i%i_massH2",i1,i2,i3,i4);
-                                    draw_mass_plot(b4, t1, t2, t3, name4_massH2, mass_vetoe_cuts, 4, true);
+                                    draw_mass_plot(b4, t1, t2, t3, name4_massH2, mass_vetoe_cuts, 4, 2);
                                     b4 += 1;
                                 }
                                 for(int i5 = 1; i5 < 7; i5++)
@@ -131,13 +134,13 @@ void mass_vetoes_plots()
                                     if(i5 > i4)
                                     {
                                         TString name5 = Form("Bp_M%i%i%i%i%i",i1,i2,i3,i4,i5);
-                                        draw_mass_plot(a5, t1, t2, t3, name5, mass_vetoe_cuts, 5, false);
+                                        draw_mass_plot(a5, t1, t2, t3, name5, mass_vetoe_cuts, 5, 0);
                                         TString name5_massH1 = Form("Bp_M%i%i%i%i%i_massH1",i1,i2,i3,i4,i5);
-                                        draw_mass_plot(a5, t1, t2, t3, name5_massH1, mass_vetoe_cuts, 5, true);
+                                        draw_mass_plot(a5, t1, t2, t3, name5_massH1, mass_vetoe_cuts, 5, 1);
                                         if(i1 ==  0)
                                         {
                                             TString name5_massH2 = Form("Bp_M%i%i%i%i%i_massH2",i1,i2,i3,i4,i5);
-                                            draw_mass_plot(b5, t1, t2, t3, name5_massH2, mass_vetoe_cuts, 5, true);
+                                            draw_mass_plot(b5, t1, t2, t3, name5_massH2, mass_vetoe_cuts, 5, 2);
                                             b5 += 1;
 
                                         }
@@ -146,13 +149,13 @@ void mass_vetoes_plots()
                                             if(i6 > i5)
                                             {
                                                 TString name6 = Form("Bp_M%i%i%i%i%i%i",i1,i2,i3,i4,i5,i6);
-                                                draw_mass_plot(a6, t1, t2, t3, name6, mass_vetoe_cuts, 6, false);
+                                                draw_mass_plot(a6, t1, t2, t3, name6, mass_vetoe_cuts, 6, 0);
                                                 TString name6_massH1 = Form("Bp_M%i%i%i%i%i%i_massH1",i1,i2,i3,i4,i5,i6);
-                                                draw_mass_plot(a6, t1, t2, t3, name6_massH1, mass_vetoe_cuts, 6, true);
+                                                draw_mass_plot(a6, t1, t2, t3, name6_massH1, mass_vetoe_cuts, 6, 1);
                                                 if(i1 == 0)
                                                 {
                                                     TString name6_massH2 = Form("Bp_M%i%i%i%i%i%i_massH2",i1,i2,i3,i4,i5,i6);
-                                                    draw_mass_plot(b6, t1, t2, t3, name6_massH2, mass_vetoe_cuts, 6, true);
+                                                    draw_mass_plot(b6, t1, t2, t3, name6_massH2, mass_vetoe_cuts, 6, 2);
                                                     b6 += 1;
                                                 }
                                                 a6 += 1;
@@ -174,7 +177,7 @@ void mass_vetoes_plots()
     
 }
 
-void draw_mass_plot(Int_t entry, TTree* t1, TTree* t2, TTree* t3, TString name, TCut mass_vetoe_cuts, Int_t Npar, Bool_t isWrong)
+void draw_mass_plot(Int_t entry, TTree* t1, TTree* t2, TTree* t3, TString name, TCut mass_vetoe_cuts, Int_t Npar, Int_t isWrong)
 {
     gStyle->SetOptStat(0);
     // MC vs RS data vs WS data
@@ -261,6 +264,10 @@ void draw_mass_plot(Int_t entry, TTree* t1, TTree* t2, TTree* t3, TString name, 
     else if( (h1_mc->GetMaximum() > h_mc->GetMaximum()) && (h1_mc->GetMaximum() > h_rs_data->GetMaximum()) &&  (h1_mc->GetMaximum() > h1_rs_data->GetMaximum()) )
     {
         h_mc->GetYaxis()->SetRangeUser(0, 1.1*(h1_mc->GetMaximum()));
+    }
+    else
+    {
+        h_mc->GetYaxis()->SetRangeUser(0, 1.1*(h_mc->GetMaximum()));
     }
 
     h_mc->Draw("HIST");
