@@ -691,57 +691,57 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t is_cocktailMC
     {
         if(species == 1)
         {
-            file << "Truth-match (3pi3pi) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm_3pi3pi*100,  eps_error(N_TM_3pi3pi,N_gen_3pi3pi) ) << " \\\\ " << std::endl;
-            file << "Truth-match (3pi3pi\\_pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm_3pi3pipi0*100,  eps_error(N_TM_3pi3pipi0,N_gen_3pi3pipi0) ) << " \\\\ " << std::endl;
-            file << "Truth-match (3pi3pi\\_2pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm_3pi3pi2pi0*100,  eps_error(N_TM_3pi3pi2pi0,N_gen_3pi3pi2pi0) ) << " \\\\ " << std::endl;
-            file << "Truth-match (All) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm*100,  eps_error(N_TM,N_gen) ) << " \\\\ \\hline" << std::endl;
+            file << Form("Truth-match (3pi3pi) & %.2lf $\\pm$ %.2lf \\%% ", eps_tm_3pi3pi*100,  eps_error(N_TM_3pi3pi,N_gen_3pi3pi) ) << " \\\\ " << std::endl;
+            file << Form("Truth-match (3pi3pi\\_pi0) & %.2lf $\\pm$ %.2lf \\%% ", eps_tm_3pi3pipi0*100,  eps_error(N_TM_3pi3pipi0,N_gen_3pi3pipi0) ) << " \\\\ " << std::endl;
+            file << Form("Truth-match (3pi3pi\\_2pi0) & %.2lf $\\pm$ %.2lf \\%% ", eps_tm_3pi3pi2pi0*100,  eps_error(N_TM_3pi3pi2pi0,N_gen_3pi3pi2pi0) ) << " \\\\ " << std::endl;
+            file << Form("Truth-match (All) & %.2lf $\\pm$ %.2lf \\%% ", eps_tm*100,  eps_error(N_TM,N_gen) ) << " \\\\ \\hline" << std::endl;
 
-            file << "Trigger (3pi3pi) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger_3pi3pi*100, eps_error(N_trigger_3pi3pi, N_TM_3pi3pi) ) << " \\\\" << std::endl;
-            file << "Trigger (3pi3pi\\_pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger_3pi3pipi0*100, eps_error(N_trigger_3pi3pipi0, N_TM_3pi3pipi0) ) << " \\\\" << std::endl;
-            file << "Trigger (3pi3pi\\_2pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger_3pi3pi2pi0*100, eps_error(N_trigger_3pi3pi2pi0, N_TM_3pi3pi2pi0) ) << " \\\\" << std::endl;
-            file << "Trigger (All) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger*100, eps_error(N_trigger, N_TM) ) << " \\\\ \\hline" << std::endl;
+            file << Form("Trigger (3pi3pi) & %.2lf $\\pm$ %.2lf \\%% ", eps_trigger_3pi3pi*100, eps_error(N_trigger_3pi3pi, N_TM_3pi3pi) ) << " \\\\" << std::endl;
+            file << Form("Trigger (3pi3pi\\_pi0) & %.2lf $\\pm$ %.2lf \\%% ", eps_trigger_3pi3pipi0*100, eps_error(N_trigger_3pi3pipi0, N_TM_3pi3pipi0) ) << " \\\\" << std::endl;
+            file << Form("Trigger (3pi3pi\\_2pi0) & %.2lf $\\pm$ %.2lf \\%% ", eps_trigger_3pi3pi2pi0*100, eps_error(N_trigger_3pi3pi2pi0, N_TM_3pi3pi2pi0) ) << " \\\\" << std::endl;
+            file << Form("Trigger (All) & %.2lf $\\pm$ %.2lf \\%% ", eps_trigger*100, eps_error(N_trigger, N_TM) ) << " \\\\ \\hline" << std::endl;
 
-            file << "Rectangular cuts (3pi3pi) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others_3pi3pi*100, eps_error(N_others_3pi3pi, N_trigger_3pi3pi) ) << " \\\\" << std::endl;
-            file << "Rectangular cuts (3pi3pi\\_pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others_3pi3pipi0*100, eps_error(N_others_3pi3pipi0, N_trigger_3pi3pipi0) ) << " \\\\" << std::endl;
-            file << "Rectangular cuts (3pi3pi\\_2pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others_3pi3pi2pi0*100, eps_error(N_others_3pi3pi2pi0, N_trigger_3pi3pi2pi0) ) << " \\\\" << std::endl;
-            file << "Rectangular cuts (All) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\" << std::endl;
+            file << Form("Rectangular cuts (3pi3pi) & %.2lf $\\pm$ %.2lf \\%% ", eps_others_3pi3pi*100, eps_error(N_others_3pi3pi, N_trigger_3pi3pi) ) << " \\\\" << std::endl;
+            file << Form("Rectangular cuts (3pi3pi\\_pi0) & %.2lf $\\pm$ %.2lf \\%% ", eps_others_3pi3pipi0*100, eps_error(N_others_3pi3pipi0, N_trigger_3pi3pipi0) ) << " \\\\" << std::endl;
+            file << Form("Rectangular cuts (3pi3pi\\_2pi0) & %.2lf $\\pm$ %.2lf \\%% ", eps_others_3pi3pi2pi0*100, eps_error(N_others_3pi3pi2pi0, N_trigger_3pi3pi2pi0) ) << " \\\\" << std::endl;
+            file << Form("Rectangular cuts (All) & %.2lf $\\pm$ %.2lf \\%% ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\" << std::endl;
         }
         else if(is_cocktailMC)
         {
-            file << "Truth-match (DD) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm_DD*100,  eps_error(N_TM_DD,N_gen_DD) ) << " \\\\ " << std::endl;
-            file << "Truth-match (DstarD) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm_DstarD*100,  eps_error(N_TM_DstarD,N_gen_DstarD) ) << " \\\\ " << std::endl;
-            file << "Truth-match (DDstar) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm_DDstar*100,  eps_error(N_TM_DDstar,N_gen_DDstar) ) << " \\\\ " << std::endl;
-            file << "Truth-match (DstarDstar) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm_DstarDstar*100,  eps_error(N_TM_DstarDstar,N_gen_DstarDstar) ) << " \\\\ \\hline " << std::endl;
+            file << Form("Truth-match (DD) & %.2lf $\\pm$ %.2lf \\%% ", eps_tm_DD*100,  eps_error(N_TM_DD,N_gen_DD) ) << " \\\\ " << std::endl;
+            file << Form("Truth-match (DstarD) & %.2lf $\\pm$ %.2lf \\%% ", eps_tm_DstarD*100,  eps_error(N_TM_DstarD,N_gen_DstarD) ) << " \\\\ " << std::endl;
+            file << Form("Truth-match (DDstar) & %.2lf $\\pm$ %.2lf \\%% ", eps_tm_DDstar*100,  eps_error(N_TM_DDstar,N_gen_DDstar) ) << " \\\\ " << std::endl;
+            file << Form("Truth-match (DstarDstar) & %.2lf $\\pm$ %.2lf \\%% ", eps_tm_DstarDstar*100,  eps_error(N_TM_DstarDstar,N_gen_DstarDstar) ) << " \\\\ \\hline " << std::endl;
 
-            file << "Trigger (DD) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger_DD*100, eps_error(N_trigger_DD, N_TM_DD) ) << " \\\\" << std::endl;
-            file << "Trigger (DstarD) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger_DstarD*100, eps_error(N_trigger_DstarD, N_TM_DstarD) ) << " \\\\ " << std::endl;
-            file << "Trigger (DDstar) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger_DDstar*100, eps_error(N_trigger_DDstar, N_TM_DDstar) ) << " \\\\ " << std::endl;
-            file << "Trigger (DstarDstar) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger_DstarDstar*100, eps_error(N_trigger_DstarDstar, N_TM_DstarDstar) ) << " \\\\ \\hline " << std::endl;
+            file << Form("Trigger (DD) & %.2lf $\\pm$ %.2lf \\%% ", eps_trigger_DD*100, eps_error(N_trigger_DD, N_TM_DD) ) << " \\\\" << std::endl;
+            file << Form("Trigger (DstarD) & %.2lf $\\pm$ %.2lf \\%% ", eps_trigger_DstarD*100, eps_error(N_trigger_DstarD, N_TM_DstarD) ) << " \\\\ " << std::endl;
+            file << Form("Trigger (DDstar) & %.2lf $\\pm$ %.2lf \\%% ", eps_trigger_DDstar*100, eps_error(N_trigger_DDstar, N_TM_DDstar) ) << " \\\\ " << std::endl;
+            file << Form("Trigger (DstarDstar) & %.2lf $\\pm$ %.2lf \\%% ", eps_trigger_DstarDstar*100, eps_error(N_trigger_DstarDstar, N_TM_DstarDstar) ) << " \\\\ \\hline " << std::endl;
 
-            file << "Rectangular cuts (DD) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others_DD*100, eps_error(N_others_DD, N_trigger_DD) ) << " \\\\" << std::endl;
-            file << "Rectangular cuts (DstarD) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others_DstarD*100, eps_error(N_others_DstarD, N_trigger_DstarD) ) << " \\\\ " << std::endl;
-            file << "Rectangular cuts (DDstar) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others_DDstar*100, eps_error(N_others_DDstar, N_trigger_DDstar) ) << " \\\\ " << std::endl;
-            file << "Rectangular cuts (DstarDstar) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others_DstarDstar*100, eps_error(N_others_DstarDstar, N_trigger_DstarDstar) ) << " \\\\ " << std::endl;
+            file << Form("Rectangular cuts (DD) & %.2lf $\\pm$ %.2lf \\%% ", eps_others_DD*100, eps_error(N_others_DD, N_trigger_DD) ) << " \\\\" << std::endl;
+            file << Form("Rectangular cuts (DstarD) & %.2lf $\\pm$ %.2lf \\%% ", eps_others_DstarD*100, eps_error(N_others_DstarD, N_trigger_DstarD) ) << " \\\\ " << std::endl;
+            file << Form("Rectangular cuts (DDstar) & %.2lf $\\pm$ %.2lf \\%% ", eps_others_DDstar*100, eps_error(N_others_DDstar, N_trigger_DDstar) ) << " \\\\ " << std::endl;
+            file << Form("Rectangular cuts (DstarDstar) & %.2lf $\\pm$ %.2lf \\%% ", eps_others_DstarDstar*100, eps_error(N_others_DstarDstar, N_trigger_DstarDstar) ) << " \\\\ " << std::endl;
         }
         else
         {            
             if(species == 7) // For the normalisation channel all the selections are applied here
             { 
-                file << "Truth-match & " << Form("%.3lf $\\pm$ %.3lf \\% & ", eps_tm*100,  eps_error(N_TM,N_gen) ) << " \\\\ \\hline " << std::endl;
-                file << "Trigger & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ \\hline " << std::endl;
-                file << "Rectangular cuts & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\ \\hline" << std::endl;
+                file << Form("Truth-match &  %.3lf $\\pm$ %.3lf \\%% ", eps_tm*100,  eps_error(N_TM,N_gen) ) << " \\\\ \\hline " << std::endl;
+                file << Form("Trigger & %.2lf $\\pm$ %.2lf \\%% ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ \\hline " << std::endl;
+                file << Form("Rectangular cuts & %.2lf $\\pm$ %.2lf \\%% ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\ \\hline" << std::endl;
 
                 cout << "Pass DTF efficiency" << endl;
                 Double_t N_pass_DTF = t_reco->GetEntries(truthMatch+trigger+others+"Bp_dtf_status[0] == 0");
                 Double_t eps_pass_DTF =  N_pass_DTF/N_others;
 
-                file << "Pass DTF & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_pass_DTF*100, eps_error(N_pass_DTF, N_others) ) << " \\\\ \\hline" << std::endl;
+                file << Form("Pass DTF &  %.2lf $\\pm$ %.2lf \\%% ", eps_pass_DTF*100, eps_error(N_pass_DTF, N_others) ) << " \\\\ \\hline" << std::endl;
 
                 cout << "Fit region" << endl;
                 Double_t N_fit_region = t_reco->GetEntries(truthMatch+trigger+others+"(Bp_dtf_status[0] == 0) && (Bp_dtf_M[0] > 5235) && (Bp_dtf_M[0] < 5355)");
                 Double_t eps_fit_region = N_fit_region/N_pass_DTF;
 
-                file << "Fit region & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_fit_region*100, eps_error(N_fit_region, N_pass_DTF) ) << " \\\\ \\hline" << std::endl;
+                file << Form("Fit region & %.2lf $\\pm$ %.2lf \\%% ", eps_fit_region*100, eps_error(N_fit_region, N_pass_DTF) ) << " \\\\ \\hline" << std::endl;
 
                 cout << "Total efficiency" << endl;
                 Double_t eps_post_acc = N_fit_region/N_gen;
@@ -767,13 +767,13 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t is_cocktailMC
                 Double_t eps_total = eps_post_acc*eps_acc;
                 Double_t eps_total_error = TMath::Sqrt( pow(eps_acc,2)*pow(eps_post_acc_error,2) + pow(eps_post_acc,2)*pow(eps_acc_error,2) );
 
-                file << "Total & " << Form("%.5lf $\\pm$ %.5lf \\% & ", eps_total*100, eps_total_error*100 ) << " \\\\" << std::endl;
+                file << Form("Total & %.5lf $\\pm$ %.5lf \\%% ", eps_total*100, eps_total_error*100 ) << " \\\\" << std::endl;
             }
             else
             {
-                file << "Truth-match & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_tm*100,  eps_error(N_TM,N_gen) ) << " \\\\ \\hline " << std::endl;
-                file << "Trigger & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ \\hline " << std::endl;
-                file << "Rectangular cuts & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\ " << std::endl;
+                file << Form("Truth-match & %.2lf $\\pm$ %.2lf \\%% ", eps_tm*100,  eps_error(N_TM,N_gen) ) << " \\\\ \\hline " << std::endl;
+                file << Form("Trigger & %.2lf $\\pm$ %.2lf \\%% ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ \\hline " << std::endl;
+                file << Form("Rectangular cuts & %.2lf $\\pm$ %.2lf \\%% ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\ " << std::endl;
             }
         }
     }
@@ -781,26 +781,26 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t is_cocktailMC
     {
         if(species == 8)
         {
-            file << "Trigger & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ \\hline " << std::endl; 
-            file << "Rectangular cuts & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\ \\hline" << std::endl;
+            file << Form("Trigger & %.2lf $\\pm$ %.2lf \\%% ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ \\hline " << std::endl; 
+            file << Form("Rectangular cuts & %.2lf $\\pm$ %.2lf \\%% ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\ \\hline" << std::endl;
         
             cout << "Pass DTF efficiency" << endl;
             Double_t N_pass_DTF = t_reco->GetEntries(truthMatch+trigger+others+"Bp_dtf_status[0] == 0");
             Double_t eps_pass_DTF =  N_pass_DTF/N_others;
 
-            file << "Pass DTF & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_pass_DTF*100, eps_error(N_pass_DTF, N_others) ) << " \\\\ \\hline" << std::endl;
+            file << Form("Pass DTF & %.2lf $\\pm$ %.2lf \\%% ", eps_pass_DTF*100, eps_error(N_pass_DTF, N_others) ) << " \\\\ \\hline" << std::endl;
 
             cout << "Fit region" << endl;
             Double_t N_fit_region = t_reco->GetEntries(truthMatch+trigger+others+"(Bp_dtf_status[0] == 0) && (Bp_dtf_M[0] > 5235) && (Bp_dtf_M[0] < 5355)");
             Double_t eps_fit_region = N_fit_region/N_pass_DTF;
 
-            file << "Fit region & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_fit_region*100, eps_error(N_fit_region, N_pass_DTF) ) << " \\\\" << std::endl;
+            file << Form("Fit region & %.2lf $\\pm$ %.2lf \\%% ", eps_fit_region*100, eps_error(N_fit_region, N_pass_DTF) ) << " \\\\" << std::endl;
 
         }
         else
         {
-            file << "Trigger & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ \\hline " << std::endl; 
-            file << "Rectangular cuts & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\ " << std::endl;
+            file << Form("Trigger & %.2lf $\\pm$ %.2lf \\%% ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ \\hline " << std::endl; 
+            file << Form("Rectangular cuts & %.2lf $\\pm$ %.2lf \\%% ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\ " << std::endl;
         }
     }
  

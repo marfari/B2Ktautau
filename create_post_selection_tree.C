@@ -1,17 +1,21 @@
 void create_table(Int_t species, TCut pass_fitter, TCut fit_region, TCut bdt_cuts, TCut mass_vetoes);
 Double_t eps_error(Double_t Num, Double_t Den);
 
-void create_post_selection_tree(Int_t species, bool createTable)
+void create_post_selection_tree(Int_t species, Double_t BDT1, Double_t BDT2, bool createTable)
 {
     // Creates post selection tree fot Ktautau
     TCut pass_fitter = "(df_status==0)";
     TCut fit_region = "(df_Bp_M > 4000) && (df_Bp_M < 8000)";
-    TCut mass_vetoes = "(TMath::Abs(Bp_M02 - 1864.84) > 10) && (TMath::Abs(Bp_M04 - 1864.84) > 10) && (TMath::Abs(Bp_M06 - 1864.84) > 10)"; // 2 particles: D0
-    mass_vetoes += "(TMath::Abs(Bp_M046-1869.66) > 10)"; // 3 particles: D+
-    mass_vetoes += "(TMath::Abs(Bp_M0126-1864.84) > 10) && (TMath::Abs(Bp_M0146-1864.84) > 10) && (TMath::Abs(Bp_M0234-1864.84) > 10) && (TMath::Abs(Bp_M0236-1864.84) > 10) && (TMath::Abs(Bp_M0245-1864.84) > 10) && (TMath::Abs(Bp_M0256-1864.84) > 10) && (TMath::Abs(Bp_M0346-1864.84) > 10) && (TMath::Abs(Bp_M0456-1864.84) > 25)";
-    // TCut bdt_cuts = "";
-    TCut bdt_cuts = "(BDT1 > 0.984) && (BDT2 > 0.989)"; // these cuts were optmised with the rough sensitivity study
-    // TCut bdt_cuts = "(BDT1 > 0.8) && (BDT2 > 0.8)"; 
+    TCut mass_vetoes = "";
+    if((BDT1 != 0.8) && (BDT2 != 0.8)) // no BDT cut
+    {   
+        cout << "Applying mass vetoe cuts" << endl;
+        mass_vetoes += "(TMath::Abs(Bp_M02-1864.84) > 20) && (TMath::Abs(Bp_M04-1864.84) > 20) && (TMath::Abs(Bp_M06-1864.84) > 20)"; // 2 particles: D0
+        mass_vetoes += "(TMath::Abs(Bp_M046-1869.66) > 20)"; // 3 particles: D+
+        mass_vetoes += "(TMath::Abs(Bp_M0456-1864.84) > 30)"; // 4 particles: D0
+        mass_vetoes += "(TMath::Abs(Bp_M02456-2010.26) > 30)"; // 5 particle: D*-
+    }
+    TCut bdt_cuts = Form("(BDT1 > %f) && (BDT2 > %f)",BDT1,BDT2);
     TCut cuts = pass_fitter+fit_region+mass_vetoes+bdt_cuts;
 
     if(createTable)
@@ -109,7 +113,7 @@ void create_post_selection_tree(Int_t species, bool createTable)
     t1_2016->AddFriend(t4_2016, "mass");
 
     ROOT::RDataFrame df(*t1_2016);
-    df.Filter(cuts.GetTitle()).Snapshot("DecayTree", Form("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_%i/post_sel_tree.root",species));
+    df.Filter(cuts.GetTitle()).Snapshot("DecayTree", Form("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_%i/post_sel_tree_bdt1_%.1f_bdt2_%.1f.root",species,BDT1,BDT2));
 
 }
 
@@ -339,8 +343,8 @@ void create_table(Int_t species, TCut pass_fitter, TCut fit_region, TCut bdt_cut
             N_initial_3pi3pi = t5_3pi3pi->GetEntries();
             N_initial_3pi3pipi0 = t5_3pi3pi_pi0->GetEntries();
             N_initial_3pi3pi2pi0 = t5_3pi3pi2pi0->GetEntries();
+            N_initial = t5->GetEntries();
         }
-        N_initial = t5->GetEntries();
 
         Double_t N_presel;
         Double_t N_presel_3pi3pi, N_presel_3pi3pipi0, N_presel_3pi3pi2pi0;
@@ -473,43 +477,43 @@ void create_table(Int_t species, TCut pass_fitter, TCut fit_region, TCut bdt_cut
 
         if(species == 1)
         {
-            file << "Pass GSL (3pi3pi) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_gsl_3pi3pi*100,  eps_error(N_gsl_3pi3pi,N_presel_3pi3pi) ) << " \\\\ " << std::endl;
-            file << "Pass GSL (3pi3pi\\_pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_gsl_3pi3pipi0*100,  eps_error(N_gsl_3pi3pipi0,N_presel_3pi3pipi0) ) << " \\\\ " << std::endl;
-            file << "Pass GSL (3pi3pi\\_2pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_gsl_3pi3pi2pi0*100,  eps_error(N_gsl_3pi3pi2pi0,N_presel_3pi3pi2pi0) ) << " \\\\ " << std::endl;
-            file << "Pass GSL (All) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_gsl*100,  eps_error(N_gsl,N_presel) ) << " \\\\ \\hline" << std::endl;
+            file << Form("Pass GSL (3pi3pi) & %.2lf $\\pm$ %.2lf \\%% ", eps_gsl_3pi3pi*100,  eps_error(N_gsl_3pi3pi,N_presel_3pi3pi) ) << " \\\\ " << std::endl;
+            file << Form("Pass GSL (3pi3pi\\_pi0) & %.2lf $\\pm$ %.2lf \\%% ", eps_gsl_3pi3pipi0*100,  eps_error(N_gsl_3pi3pipi0,N_presel_3pi3pipi0) ) << " \\\\ " << std::endl;
+            file << Form("Pass GSL (3pi3pi\\_2pi0) & %.2lf $\\pm$ %.2lf \\%% ", eps_gsl_3pi3pi2pi0*100,  eps_error(N_gsl_3pi3pi2pi0,N_presel_3pi3pi2pi0) ) << " \\\\ " << std::endl;
+            file << Form("Pass GSL (All) & %.2lf $\\pm$ %.2lf \\%% ", eps_gsl*100,  eps_error(N_gsl,N_presel) ) << " \\\\ \\hline" << std::endl;
 
-            file << "Fit region (3pi3pi) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_fit_region_3pi3pi*100,  eps_error(N_fit_region_3pi3pi,N_gsl_3pi3pi) ) << " \\\\" << std::endl;
-            file << "Fit region (3pi3pi\\_pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_fit_region_3pi3pipi0*100,  eps_error(N_fit_region_3pi3pipi0,N_gsl_3pi3pipi0) ) << " \\\\" << std::endl;
-            file << "Fit region (3pi3pi\\_2pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_fit_region_3pi3pi2pi0*100,  eps_error(N_fit_region_3pi3pi2pi0,N_gsl_3pi3pi2pi0) ) << " \\\\" << std::endl;
-            file << "Fit region (All) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_fit_region*100,  eps_error(N_fit_region,N_gsl) ) << " \\\\ \\hline" << std::endl;
+            file << Form("Fit region (3pi3pi) & %.2lf $\\pm$ %.2lf \\%% ", eps_fit_region_3pi3pi*100,  eps_error(N_fit_region_3pi3pi,N_gsl_3pi3pi) ) << " \\\\" << std::endl;
+            file << Form("Fit region (3pi3pi\\_pi0) & %.2lf $\\pm$ %.2lf \\%% ", eps_fit_region_3pi3pipi0*100,  eps_error(N_fit_region_3pi3pipi0,N_gsl_3pi3pipi0) ) << " \\\\" << std::endl;
+            file << Form("Fit region (3pi3pi\\_2pi0) & %.2lf $\\pm$ %.2lf \\%% ", eps_fit_region_3pi3pi2pi0*100,  eps_error(N_fit_region_3pi3pi2pi0,N_gsl_3pi3pi2pi0) ) << " \\\\" << std::endl;
+            file << Form("Fit region (All) & %.2lf $\\pm$ %.2lf \\%% ", eps_fit_region*100,  eps_error(N_fit_region,N_gsl) ) << " \\\\ \\hline" << std::endl;
 
-            file << "Mass vetoes (3pi3pi) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_mass_3pi3pi*100, eps_error(N_mass_vetoes_3pi3pi, N_fit_region_3pi3pi) ) << " \\\\" << std::endl;
-            file << "Mass vetoes (3pi3pi\\_pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_mass_3pi3pipi0*100, eps_error(N_mass_vetoes_3pi3pipi0, N_fit_region_3pi3pipi0) ) << " \\\\" << std::endl;
-            file << "Mass vetoes (3pi3pi\\_2pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_mass_3pi3pi2pi0*100, eps_error(N_mass_vetoes_3pi3pi2pi0, N_fit_region_3pi3pi2pi0) ) << " \\\\" << std::endl;
-            file << "Mass vetoes (All) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_mass*100, eps_error(N_mass_vetoes, N_fit_region) ) << " \\\\ \\hline" << std::endl;
+            file << Form("Mass vetoes (3pi3pi) & %.2lf $\\pm$ %.2lf \\%% ", eps_mass_3pi3pi*100, eps_error(N_mass_vetoes_3pi3pi, N_fit_region_3pi3pi) ) << " \\\\" << std::endl;
+            file << Form("Mass vetoes (3pi3pi\\_pi0) & %.2lf $\\pm$ %.2lf \\%% ", eps_mass_3pi3pipi0*100, eps_error(N_mass_vetoes_3pi3pipi0, N_fit_region_3pi3pipi0) ) << " \\\\" << std::endl;
+            file << Form("Mass vetoes (3pi3pi\\_2pi0) & %.2lf $\\pm$ %.2lf \\%% ", eps_mass_3pi3pi2pi0*100, eps_error(N_mass_vetoes_3pi3pi2pi0, N_fit_region_3pi3pi2pi0) ) << " \\\\" << std::endl;
+            file << Form("Mass vetoes (All) & %.2lf $\\pm$ %.2lf \\%% ", eps_mass*100, eps_error(N_mass_vetoes, N_fit_region) ) << " \\\\ \\hline" << std::endl;
 
-            file << "BDTs (3pi3pi) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_bdt_3pi3pi*100, eps_error(N_bdt_3pi3pi,N_mass_vetoes_3pi3pi) ) << " \\\\ " << std::endl;
-            file << "BDTs (3pi3pi\\_pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_bdt_3pi3pipi0*100, eps_error(N_bdt_3pi3pipi0,N_mass_vetoes_3pi3pipi0) ) << " \\\\ " << std::endl;
-            file << "BDTs (3pi3pi\\_2pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_bdt_3pi3pi2pi0*100, eps_error(N_bdt_3pi3pi2pi0,N_mass_vetoes_3pi3pi2pi0) ) << " \\\\ " << std::endl;
-            file << "BDTs (All) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_bdt*100, eps_error(N_bdt,N_mass_vetoes) ) << " \\\\ \\hline" << std::endl;
+            // file << "BDTs (3pi3pi) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_bdt_3pi3pi*100, eps_error(N_bdt_3pi3pi,N_mass_vetoes_3pi3pi) ) << " \\\\ " << std::endl;
+            // file << "BDTs (3pi3pi\\_pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_bdt_3pi3pipi0*100, eps_error(N_bdt_3pi3pipi0,N_mass_vetoes_3pi3pipi0) ) << " \\\\ " << std::endl;
+            // file << "BDTs (3pi3pi\\_2pi0) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_bdt_3pi3pi2pi0*100, eps_error(N_bdt_3pi3pi2pi0,N_mass_vetoes_3pi3pi2pi0) ) << " \\\\ " << std::endl;
+            // file << "BDTs (All) & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_bdt*100, eps_error(N_bdt,N_mass_vetoes) ) << " \\\\ \\hline" << std::endl;
             
             Double_t post_strip_error_3pi3pi = eps_error(N_mass_vetoes_3pi3pi, N_initial_3pi3pi)/100.;
             Double_t post_strip_error_3pi3pipi0 = eps_error(N_mass_vetoes_3pi3pipi0, N_initial_3pi3pipi0)/100.;
             Double_t post_strip_error_3pi3pi2pi0 = eps_error(N_mass_vetoes_3pi3pi2pi0, N_initial_3pi3pi2pi0)/100.;
             Double_t post_strip_error = eps_error(N_mass_vetoes, N_initial)/100.;
 
-            file << "Total (3pi3pi) & " << Form("%.6lf $\\pm$ %.6lf \\% & ", eps_total_3pi3pi*100, TMath::Sqrt( pow(eps_acc*eps_strip,2)*pow(post_strip_error_3pi3pi,2) + pow(eps_post_strip_3pi3pi*eps_strip,2)*pow(acc_error,2) + pow(eps_post_strip_3pi3pi*eps_acc,2)*pow(strip_error,2) )*100 ) << " \\\\ " << std::endl;
-            file << "Total (3pi3pi\\_pi0) & " << Form("%.6lf $\\pm$ %.6lf \\% & ", eps_total_3pi3pipi0*100, TMath::Sqrt( pow(eps_acc*eps_strip,2)*pow(post_strip_error_3pi3pipi0,2) + pow(eps_post_strip_3pi3pipi0*eps_strip,2)*pow(acc_error,2) + pow(eps_post_strip_3pi3pipi0*eps_acc,2)*pow(strip_error,2) )*100 ) << " \\\\ " << std::endl;
-            file << "Total (3pi3pi\\_2pi0) & " << Form("%.6lf $\\pm$ %.6lf \\% & ", eps_total_3pi3pi2pi0*100, TMath::Sqrt( pow(eps_acc*eps_strip,2)*pow(post_strip_error_3pi3pi2pi0,2) + pow(eps_post_strip_3pi3pi2pi0*eps_strip,2)*pow(acc_error,2) + pow(eps_post_strip_3pi3pi2pi0*eps_acc,2)*pow(strip_error,2) )*100 ) << " \\\\ " << std::endl;
-            file << "Total (All) & " << Form("%.6lf $\\pm$ %.6lf \\% & ", eps_total*100, TMath::Sqrt( pow(eps_acc*eps_strip,2)*pow(post_strip_error,2) + pow(eps_post_strip*eps_strip,2)*pow(acc_error,2) + pow(eps_post_strip*eps_acc,2)*pow(strip_error,2) )*100 ) << " \\\\ " << std::endl;
+            file << Form("Total (3pi3pi) & %.6lf $\\pm$ %.6lf \\%% ", eps_total_3pi3pi*100, TMath::Sqrt( pow(eps_acc*eps_strip,2)*pow(post_strip_error_3pi3pi,2) + pow(eps_post_strip_3pi3pi*eps_strip,2)*pow(acc_error,2) + pow(eps_post_strip_3pi3pi*eps_acc,2)*pow(strip_error,2) )*100 ) << " \\\\ " << std::endl;
+            file << Form("Total (3pi3pi\\_pi0) & %.6lf $\\pm$ %.6lf \\%% ", eps_total_3pi3pipi0*100, TMath::Sqrt( pow(eps_acc*eps_strip,2)*pow(post_strip_error_3pi3pipi0,2) + pow(eps_post_strip_3pi3pipi0*eps_strip,2)*pow(acc_error,2) + pow(eps_post_strip_3pi3pipi0*eps_acc,2)*pow(strip_error,2) )*100 ) << " \\\\ " << std::endl;
+            file << Form("Total (3pi3pi\\_2pi0) & %.6lf $\\pm$ %.6lf \\%% ", eps_total_3pi3pi2pi0*100, TMath::Sqrt( pow(eps_acc*eps_strip,2)*pow(post_strip_error_3pi3pi2pi0,2) + pow(eps_post_strip_3pi3pi2pi0*eps_strip,2)*pow(acc_error,2) + pow(eps_post_strip_3pi3pi2pi0*eps_acc,2)*pow(strip_error,2) )*100 ) << " \\\\ " << std::endl;
+            file << Form("Total (All) & %.6lf $\\pm$ %.6lf \\%% ", eps_total*100, TMath::Sqrt( pow(eps_acc*eps_strip,2)*pow(post_strip_error,2) + pow(eps_post_strip*eps_strip,2)*pow(acc_error,2) + pow(eps_post_strip*eps_acc,2)*pow(strip_error,2) )*100 ) << " \\\\ " << std::endl;
 
         }
         else if((species == 2) || (species == 3))
         {
-            file << "Pass GSL & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_gsl*100,  eps_error(N_gsl,N_presel) ) << " \\\\ \\hline " << std::endl;
-            file << "Fit region & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_fit_region*100,  eps_error(N_fit_region,N_gsl) ) << " \\\\ \\hline " << std::endl;
-            file << "Mass vetoes & " << Form("%.2lf $\\pm$ %.2lf \\% & ", eps_mass*100, eps_error(N_mass_vetoes, N_fit_region) ) << " \\\\ \\hline" << std::endl;
-            file << "BDTs & " << Form("%.6lf $\\pm$ %.6lf \\% & ", eps_bdt*100, eps_error(N_bdt,N_mass_vetoes) ) << " \\\\ " << std::endl;
+            file << Form("Pass GSL & %.2lf $\\pm$ %.2lf \\%% ", eps_gsl*100,  eps_error(N_gsl,N_presel) ) << " \\\\ \\hline " << std::endl;
+            file << Form("Fit region & %.2lf $\\pm$ %.2lf \\%% ", eps_fit_region*100,  eps_error(N_fit_region,N_gsl) ) << " \\\\ \\hline " << std::endl;
+            file << Form("Mass vetoes & %.2lf $\\pm$ %.2lf \\%% ", eps_mass*100, eps_error(N_mass_vetoes, N_fit_region) ) << " \\\\" << std::endl;
+            // file << "BDTs & " << Form("%.6lf $\\pm$ %.6lf \\% & ", eps_bdt*100, eps_error(N_bdt,N_mass_vetoes) ) << " \\\\ " << std::endl;
         }
 
         file << "\\hline" << std::endl;
