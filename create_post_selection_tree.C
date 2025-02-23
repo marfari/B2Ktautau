@@ -113,7 +113,14 @@ void create_post_selection_tree(Int_t species, Double_t BDT1, Double_t BDT2, boo
     t1_2016->AddFriend(t4_2016, "mass");
 
     ROOT::RDataFrame df(*t1_2016);
-    df.Filter(cuts.GetTitle()).Snapshot("DecayTree", Form("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_%i/post_sel_tree_bdt1_%.1f_bdt2_%.1f.root",species,BDT1,BDT2));
+    if((BDT1 == 0) && (BDT2 == 0))
+    {
+        df.Filter(cuts.GetTitle()).Snapshot("DecayTree", Form("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_%i/post_sel_tree_bdt1_%.0f_bdt2_%.0f.root",species,BDT1,BDT2));
+    }
+    else
+    {
+        df.Filter(cuts.GetTitle()).Snapshot("DecayTree", Form("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_%i/post_sel_tree_bdt1_%.1f_bdt2_%.1f.root",species,BDT1,BDT2));
+    }
 
 }
 
