@@ -17,6 +17,10 @@ void create_post_selection_tree(Int_t species, Double_t BDT1, Double_t BDT2, boo
     }
     TCut bdt_cuts = Form("(BDT1 > %f) && (BDT2 > %f)",BDT1,BDT2);
     TCut cuts = pass_fitter+fit_region+mass_vetoes+bdt_cuts;
+    if(species != 1)
+    {
+        cuts += "is_best_cand == 1";
+    }
 
     if(createTable)
     {
@@ -111,6 +115,32 @@ void create_post_selection_tree(Int_t species, Double_t BDT1, Double_t BDT2, boo
     t1_2016->AddFriend(t2_2016, "gsl");
     t1_2016->AddFriend(t3_2016, "bdt");
     t1_2016->AddFriend(t4_2016, "mass");
+    
+    if(species != 1) // If it is not the truth-match MC
+    {
+        // Best candidate 
+        TFileCollection *fc5_2016 = new TFileCollection("fc5_2016", "fc5_2016", Form("/panfs/felician/B2Ktautau/workflow/multiple_events/2016/Species_%i/multiple_events.txt",species));
+        TFileCollection *fc5_2017 = new TFileCollection("fc5_2017", "fc5_2017", Form("/panfs/felician/B2Ktautau/workflow/multiple_events/2017/Species_%i/multiple_events.txt",species));
+        TFileCollection *fc5_2018 = new TFileCollection("fc5_2018", "fc5_2018", Form("/panfs/felician/B2Ktautau/workflow/multiple_events/2018/Species_%i/multiple_events.txt",species));
+
+        TChain* t5_2016 = new TChain("DecayTree");
+        TChain* t5_2017 = new TChain("DecayTree");
+        TChain* t5_2018 = new TChain("DecayTree");
+
+        t5_2016->AddFileInfoList((TCollection*)fc5_2016->GetList());
+        t5_2017->AddFileInfoList((TCollection*)fc5_2017->GetList());
+        t5_2018->AddFileInfoList((TCollection*)fc5_2018->GetList());
+
+        cout << "Best candidate" << endl;
+        cout << t5_2016->GetEntries() << endl;
+        cout << t5_2017->GetEntries() << endl;
+        cout << t5_2018->GetEntries() << endl;
+
+        t5_2016->Add(t5_2017);
+        t5_2016->Add(t5_2018);
+
+        t1_2016->AddFriend(t5_2016, "best_cand");
+    }
 
     ROOT::RDataFrame df(*t1_2016);
     if((BDT1 == 0) && (BDT2 == 0))
