@@ -40,9 +40,13 @@ void createDataset(int year, int species)
 {
     cout << "Opening .root files" << endl;
 
-    TChain* t, *t1;
-
-    if(year != -1) // w/o best candidate selection
+    TChain* t ,*t1;
+    if(year == -1) // With best candidate selection branch (merge 3 years)
+    {
+        TFile* f = new TFile(Form("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_%i/post_sel_tree_bdt1_0_bdt2_0.root",species));
+        t = (TChain*)f->Get("DecayTree");
+    }
+    else
     {
         TFileCollection *fc = new TFileCollection("fc", "fc", Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/Species_%i/pre_sel_tree.txt",year,species));
         t = new TChain("DecayTree");
@@ -63,11 +67,6 @@ void createDataset(int year, int species)
         {
             t->AddFriend(t1);
         }
-    } 
-    else // w/ best candidate selection
-    {   
-        TFile* f = new TFile(Form("/panfs/felician/B2Ktautau/workflow/multiple_events/Species_%i/single_candidate_post_sel.root",species));
-        t = (TChain*)f->Get("DecayTree");
     }
 
     TFile* fout = new TFile( Form("/panfs/felician/B2Ktautau/workflow/create_dataset/201%i/Species_%i/mass_dataset.root",year,species), "RECREATE"); 

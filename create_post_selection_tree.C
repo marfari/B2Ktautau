@@ -3,6 +3,18 @@ Double_t eps_error(Double_t Num, Double_t Den);
 
 void create_post_selection_tree(Int_t species, Double_t BDT1, Double_t BDT2, bool createTable)
 {
+    Bool_t isKtautau = false;
+    if((species == 1) || (species == 10) || (species == 2) || (species == 3))
+    {
+        isKtautau = true;
+    }
+
+    Bool_t is_cocktailMC = false;
+    if((species == 100) || (species == 110) || (species == 120) || (species == 130) || (species == 150))
+    {
+        is_cocktailMC = true;
+    }
+
     // Creates post selection tree fot Ktautau
     TCut pass_fitter = "(df_status==0)";
     TCut fit_region = "(df_Bp_M > 4000) && (df_Bp_M < 8000)";
@@ -16,8 +28,13 @@ void create_post_selection_tree(Int_t species, Double_t BDT1, Double_t BDT2, boo
         mass_vetoes += "(TMath::Abs(Bp_M02456-2010.26) > 30)"; // 5 particle: D*-
     }
     TCut bdt_cuts = Form("(BDT1 > %f) && (BDT2 > %f)",BDT1,BDT2);
-    TCut cuts = pass_fitter+fit_region+mass_vetoes+bdt_cuts;
-    if(species != 1)
+    
+    TCut cuts = "";
+    if(isKtautau || is_cocktailMC)
+    {
+        cuts += pass_fitter+fit_region+mass_vetoes+bdt_cuts;
+    }    
+    if((species != 1) && (species != 7))
     {
         cuts += "is_best_cand == 1";
     }
@@ -50,25 +67,30 @@ void create_post_selection_tree(Int_t species, Double_t BDT1, Double_t BDT2, boo
     t1_2016->Add(t1_2018);
 
     // Fit results
-    TFileCollection *fc2_2016 = new TFileCollection("fc2_2016", "fc2_2016", Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_%i/fit_results.txt",species));
-    TFileCollection *fc2_2017 = new TFileCollection("fc2_2017", "fc2_2017", Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_%i/fit_results.txt",species));
-    TFileCollection *fc2_2018 = new TFileCollection("fc2_2018", "fc2_2018", Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_%i/fit_results.txt",species));
+    if(isKtautau || is_cocktailMC)
+    {
+        TFileCollection *fc2_2016 = new TFileCollection("fc2_2016", "fc2_2016", Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_%i/fit_results.txt",species));
+        TFileCollection *fc2_2017 = new TFileCollection("fc2_2017", "fc2_2017", Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_%i/fit_results.txt",species));
+        TFileCollection *fc2_2018 = new TFileCollection("fc2_2018", "fc2_2018", Form("/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_%i/fit_results.txt",species));
 
-    TChain* t2_2016 = new TChain("DecayTree");
-    TChain* t2_2017 = new TChain("DecayTree");
-    TChain* t2_2018 = new TChain("DecayTree");
+        TChain* t2_2016 = new TChain("DecayTree");
+        TChain* t2_2017 = new TChain("DecayTree");
+        TChain* t2_2018 = new TChain("DecayTree");
 
-    t2_2016->AddFileInfoList((TCollection*)fc2_2016->GetList());
-    t2_2017->AddFileInfoList((TCollection*)fc2_2017->GetList());
-    t2_2018->AddFileInfoList((TCollection*)fc2_2018->GetList());
+        t2_2016->AddFileInfoList((TCollection*)fc2_2016->GetList());
+        t2_2017->AddFileInfoList((TCollection*)fc2_2017->GetList());
+        t2_2018->AddFileInfoList((TCollection*)fc2_2018->GetList());
 
-    cout << "Fit results" << endl;
-    cout << t2_2016->GetEntries() << endl;
-    cout << t2_2017->GetEntries() << endl;
-    cout << t2_2018->GetEntries() << endl;
+        cout << "Fit results" << endl;
+        cout << t2_2016->GetEntries() << endl;
+        cout << t2_2017->GetEntries() << endl;
+        cout << t2_2018->GetEntries() << endl;
 
-    t2_2016->Add(t2_2017);
-    t2_2016->Add(t2_2018);
+        t2_2016->Add(t2_2017);
+        t2_2016->Add(t2_2018);
+
+        t1_2016->AddFriend(t2_2016, "gsl");
+    }
 
     // BDT response
     TFileCollection *fc3_2016 = new TFileCollection("fc3_2016", "fc3_2016", Form("/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_%i/bdt_output.txt",species));
@@ -91,32 +113,36 @@ void create_post_selection_tree(Int_t species, Double_t BDT1, Double_t BDT2, boo
     t3_2016->Add(t3_2017);
     t3_2016->Add(t3_2018);
 
-    // Mass combinations
-    TFileCollection *fc4_2016 = new TFileCollection("fc4_2016", "fc4_2016", Form("/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_%i/invariant_mass_tree.txt",species));
-    TFileCollection *fc4_2017 = new TFileCollection("fc4_2017", "fc4_2017", Form("/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_%i/invariant_mass_tree.txt",species));
-    TFileCollection *fc4_2018 = new TFileCollection("fc4_2018", "fc4_2018", Form("/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_%i/invariant_mass_tree.txt",species));
-
-    TChain* t4_2016 = new TChain("DecayTree");
-    TChain* t4_2017 = new TChain("DecayTree");
-    TChain* t4_2018 = new TChain("DecayTree");
-
-    t4_2016->AddFileInfoList((TCollection*)fc4_2016->GetList());
-    t4_2017->AddFileInfoList((TCollection*)fc4_2017->GetList());
-    t4_2018->AddFileInfoList((TCollection*)fc4_2018->GetList());
-
-    cout << "Mass combinations" << endl;
-    cout << t4_2016->GetEntries() << endl;
-    cout << t4_2017->GetEntries() << endl;
-    cout << t4_2018->GetEntries() << endl;
-
-    t4_2016->Add(t4_2017);
-    t4_2016->Add(t4_2018);
-
-    t1_2016->AddFriend(t2_2016, "gsl");
     t1_2016->AddFriend(t3_2016, "bdt");
-    t1_2016->AddFriend(t4_2016, "mass");
-    
-    if(species != 1) // If it is not the truth-match MC
+
+    // Mass combinations
+    TChain* t4_2016;
+    if(isKtautau || is_cocktailMC)
+    {
+        TFileCollection *fc4_2016 = new TFileCollection("fc4_2016", "fc4_2016", Form("/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_%i/invariant_mass_tree.txt",species));
+        TFileCollection *fc4_2017 = new TFileCollection("fc4_2017", "fc4_2017", Form("/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_%i/invariant_mass_tree.txt",species));
+        TFileCollection *fc4_2018 = new TFileCollection("fc4_2018", "fc4_2018", Form("/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_%i/invariant_mass_tree.txt",species));
+
+        TChain* t4_2016 = new TChain("DecayTree");
+        TChain* t4_2017 = new TChain("DecayTree");
+        TChain* t4_2018 = new TChain("DecayTree");
+
+        t4_2016->AddFileInfoList((TCollection*)fc4_2016->GetList());
+        t4_2017->AddFileInfoList((TCollection*)fc4_2017->GetList());
+        t4_2018->AddFileInfoList((TCollection*)fc4_2018->GetList());
+
+        cout << "Mass combinations" << endl;
+        cout << t4_2016->GetEntries() << endl;
+        cout << t4_2017->GetEntries() << endl;
+        cout << t4_2018->GetEntries() << endl;
+
+        t4_2016->Add(t4_2017);
+        t4_2016->Add(t4_2018);
+
+        t1_2016->AddFriend(t4_2016, "mass");
+    }
+
+    if((species != 1) && (species != 7)) // If it is not the truth-match MC
     {
         // Best candidate 
         TFileCollection *fc5_2016 = new TFileCollection("fc5_2016", "fc5_2016", Form("/panfs/felician/B2Ktautau/workflow/multiple_events/2016/Species_%i/multiple_events.txt",species));
