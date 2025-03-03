@@ -8,64 +8,207 @@ void best_candidate_selection_plots()
     TTree* t_ktautau_mc_tm = (TTree*)f_ktautau_mc_tm->Get("DecayTree");
 
     // Un-TM MC
-    TFile* f_ktautau_mc = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_10/post_sel_tree_bdt1_0_bdt2_0.root");
-    TTree* t_ktautau_mc = (TTree*)f_ktautau_mc->Get("DecayTree");
+    TFileCollection *fc_mc_2016 = new TFileCollection("fc_mc_2016", "fc_mc_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_10/pre_sel_tree.txt");
+    TFileCollection *fc_mc_2017 = new TFileCollection("fc_mc_2017", "fc_mc_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_10/pre_sel_tree.txt");
+    TFileCollection *fc_mc_2018 = new TFileCollection("fc_mc_2018", "fc_mc_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_10/pre_sel_tree.txt");
 
-    // Best MC
-    TFile* f_ktautau_mc_best = new TFile("/panfs/felician/B2Ktautau/workflow/multiple_events/Species_10/is_best_candidate_branch.root");
-    TTree* t_ktautau_mc_best = (TTree*)f_ktautau_mc_best->Get("DecayTree");
+    TChain* t_ktautau_mc = new TChain("DecayTree");
+    TChain* t_ktautau_mc_2017 = new TChain("DecayTree");
+    TChain* t_ktautau_mc_2018 = new TChain("DecayTree");
+
+    t_ktautau_mc->AddFileInfoList((TCollection*)fc_mc_2016->GetList());
+    t_ktautau_mc_2017->AddFileInfoList((TCollection*)fc_mc_2017->GetList());
+    t_ktautau_mc_2018->AddFileInfoList((TCollection*)fc_mc_2018->GetList());
+
+    cout << "Pre-selection files" << endl;
+    cout << t_ktautau_mc->GetEntries() << endl;
+    cout << t_ktautau_mc_2017->GetEntries() << endl;
+    cout << t_ktautau_mc_2018->GetEntries() << endl;
+
+    t_ktautau_mc->Add(t_ktautau_mc_2017);
+    t_ktautau_mc->Add(t_ktautau_mc_2018);
+
+    TFileCollection *fc1_mc_2016 = new TFileCollection("fc1_mc_2016", "fc1_mc_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_10/fit_results.txt");
+    TFileCollection *fc1_mc_2017 = new TFileCollection("fc1_mc_2017", "fc1_mc_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_10/fit_results.txt");
+    TFileCollection *fc1_mc_2018 = new TFileCollection("fc1_mc_2018", "fc1_mc_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_10/fit_results.txt");
+
+    TChain* t1_ktautau_mc = new TChain("DecayTree");
+    TChain* t1_ktautau_mc_2017 = new TChain("DecayTree");
+    TChain* t1_ktautau_mc_2018 = new TChain("DecayTree");
+
+    t1_ktautau_mc->AddFileInfoList((TCollection*)fc1_mc_2016->GetList());
+    t1_ktautau_mc_2017->AddFileInfoList((TCollection*)fc1_mc_2017->GetList());
+    t1_ktautau_mc_2018->AddFileInfoList((TCollection*)fc1_mc_2018->GetList());
+
+    cout << "Fit results" << endl;
+    cout << t1_ktautau_mc->GetEntries() << endl;
+    cout << t1_ktautau_mc_2017->GetEntries() << endl;
+    cout << t1_ktautau_mc_2018->GetEntries() << endl;
+
+    t1_ktautau_mc->Add(t1_ktautau_mc_2017);
+    t1_ktautau_mc->Add(t1_ktautau_mc_2018);
+
+    TFileCollection *fc2_mc_2016 = new TFileCollection("fc2_mc_2016", "fc2_mc_2016", "/panfs/felician/B2Ktautau/workflow/multiple_events/2016/Species_10/multiple_events.txt");
+    TFileCollection *fc2_mc_2017 = new TFileCollection("fc2_mc_2017", "fc2_mc_2017", "/panfs/felician/B2Ktautau/workflow/multiple_events/2017/Species_10/multiple_events.txt");
+    TFileCollection *fc2_mc_2018 = new TFileCollection("fc2_mc_2018", "fc2_mc_2018", "/panfs/felician/B2Ktautau/workflow/multiple_events/2018/Species_10/multiple_events.txt");
+
+    TChain* t2_ktautau_mc = new TChain("DecayTree");
+    TChain* t2_ktautau_mc_2017 = new TChain("DecayTree");
+    TChain* t2_ktautau_mc_2018 = new TChain("DecayTree");
+
+    t2_ktautau_mc->AddFileInfoList((TCollection*)fc2_mc_2016->GetList());
+    t2_ktautau_mc_2017->AddFileInfoList((TCollection*)fc2_mc_2017->GetList());
+    t2_ktautau_mc_2018->AddFileInfoList((TCollection*)fc2_mc_2018->GetList());
+
+    cout << "Best candidate" << endl;
+    cout << t2_ktautau_mc->GetEntries() << endl;
+    cout << t2_ktautau_mc_2017->GetEntries() << endl;
+    cout << t2_ktautau_mc_2018->GetEntries() << endl;
+
+    t2_ktautau_mc->Add(t2_ktautau_mc_2017);
+    t2_ktautau_mc->Add(t2_ktautau_mc_2018);
+
+    TFileCollection *fc3_mc_2016 = new TFileCollection("fc3_mc_2016", "fc3_mc_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_10/bdt_output.txt");
+    TFileCollection *fc3_mc_2017 = new TFileCollection("fc3_mc_2017", "fc3_mc_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_10/bdt_output.txt");
+    TFileCollection *fc3_mc_2018 = new TFileCollection("fc3_mc_2018", "fc3_mc_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_10/bdt_output.txt");
+
+    TChain* t3_ktautau_mc = new TChain("XGBoost/DecayTree");
+    TChain* t3_ktautau_mc_2017 = new TChain("XGBoost/DecayTree");
+    TChain* t3_ktautau_mc_2018 = new TChain("XGBoost/DecayTree");
+
+    t3_ktautau_mc->AddFileInfoList((TCollection*)fc3_mc_2016->GetList());
+    t3_ktautau_mc_2017->AddFileInfoList((TCollection*)fc3_mc_2017->GetList());
+    t3_ktautau_mc_2018->AddFileInfoList((TCollection*)fc3_mc_2018->GetList());
+
+    cout << "Best candidate" << endl;
+    cout << t3_ktautau_mc->GetEntries() << endl;
+    cout << t3_ktautau_mc_2017->GetEntries() << endl;
+    cout << t3_ktautau_mc_2018->GetEntries() << endl;
+
+    t3_ktautau_mc->Add(t3_ktautau_mc_2017);
+    t3_ktautau_mc->Add(t3_ktautau_mc_2018);
 
     Int_t N_mc = t_ktautau_mc->GetEntries();
-    Int_t N_mc_best = t_ktautau_mc_best->GetEntries();
-    if(N_mc != N_mc_best)
+    Int_t N1_mc = t1_ktautau_mc->GetEntries();
+    Int_t N2_mc = t2_ktautau_mc->GetEntries();
+    Int_t N3_mc = t3_ktautau_mc->GetEntries();
+    if((N_mc == N1_mc) && (N_mc == N2_mc) && (N_mc == N3_mc))
     {
-        cout << "Wrong number of entries in Ktautau MC" << endl;
-        return;
+        t_ktautau_mc->AddFriend(t1_ktautau_mc, "gsl");
+        t_ktautau_mc->AddFriend(t2_ktautau_mc, "best_cand");
+        t_ktautau_mc->AddFriend(t3_ktautau_mc, "sklearn");
     }
     else
     {
-        t_ktautau_mc->AddFriend(t_ktautau_mc_best);
+        cout << "wrong number of entries" << endl;
+        return;
     }
 
     // RS data
-    TFile* f_ktautau_rs_data = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_2/post_sel_tree_bdt1_0_bdt2_0.root");
-    TTree* t_ktautau_rs_data = (TTree*)f_ktautau_rs_data->Get("DecayTree");
+    TFileCollection *fc_rs_2016 = new TFileCollection("fc_rs_2016", "fc_rs_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_2/fit_results.txt");
+    TFileCollection *fc_rs_2017 = new TFileCollection("fc_rs_2017", "fc_rs_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_2/fit_results.txt");
+    TFileCollection *fc_rs_2018 = new TFileCollection("fc_rs_2018", "fc_rs_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_2/fit_results.txt");
 
-    // Best RS data
-    // TFile* f_ktautau_rs_data_best = new TFile("/panfs/felician/B2Ktautau/workflow/multiple_events/Species_2/is_best_candidate_branch.root");
-    // TTree* t_ktautau_rs_data_best = (TTree*)f_ktautau_rs_data_best->Get("DecayTree");
+    TChain* t_ktautau_rs_data = new TChain("DecayTree");
+    TChain* t_ktautau_rs_data_2017 = new TChain("DecayTree");
+    TChain* t_ktautau_rs_data_2018 = new TChain("DecayTree");
 
-    // Int_t N_rs_data = t_ktautau_rs_data->GetEntries();
-    // Int_t N_rs_data_best = t_ktautau_rs_data_best->GetEntries();
-    // if(N_rs_data != N_rs_data_best)
-    // {
-    //     cout << "Wrong number of entries" << endl;
-    //     return;
-    // }
-    // else
-    // {
-    //     t_ktautau_rs_data->AddFriend(t_ktautau_rs_data_best);
-    // }
+    t_ktautau_rs_data->AddFileInfoList((TCollection*)fc_rs_2016->GetList());
+    t_ktautau_rs_data_2017->AddFileInfoList((TCollection*)fc_rs_2017->GetList());
+    t_ktautau_rs_data_2018->AddFileInfoList((TCollection*)fc_rs_2018->GetList());
+
+    cout << "Fit results" << endl;
+    cout << t_ktautau_rs_data->GetEntries() << endl;
+    cout << t_ktautau_rs_data_2017->GetEntries() << endl;
+    cout << t_ktautau_rs_data_2018->GetEntries() << endl;
+
+    t_ktautau_rs_data->Add(t_ktautau_rs_data_2017);
+    t_ktautau_rs_data->Add(t_ktautau_rs_data_2018);
+
+    TFileCollection *fc1_rs_2016 = new TFileCollection("fc1_rs_2016", "fc1_rs_2016", "/panfs/felician/B2Ktautau/workflow/multiple_events/2016/Species_2/multiple_events.txt");
+    TFileCollection *fc1_rs_2017 = new TFileCollection("fc1_rs_2017", "fc1_rs_2017", "/panfs/felician/B2Ktautau/workflow/multiple_events/2017/Species_2/multiple_events.txt");
+    TFileCollection *fc1_rs_2018 = new TFileCollection("fc1_rs_2018", "fc1_rs_2018", "/panfs/felician/B2Ktautau/workflow/multiple_events/2018/Species_2/multiple_events.txt");
+
+    TChain* t1_ktautau_rs = new TChain("DecayTree");
+    TChain* t1_ktautau_rs_2017 = new TChain("DecayTree");
+    TChain* t1_ktautau_rs_2018 = new TChain("DecayTree");
+
+    t1_ktautau_rs->AddFileInfoList((TCollection*)fc1_rs_2016->GetList());
+    t1_ktautau_rs_2017->AddFileInfoList((TCollection*)fc1_rs_2017->GetList());
+    t1_ktautau_rs_2018->AddFileInfoList((TCollection*)fc1_rs_2018->GetList());
+
+    cout << "Best candidate" << endl;
+    cout << t1_ktautau_rs->GetEntries() << endl;
+    cout << t1_ktautau_rs_2017->GetEntries() << endl;
+    cout << t1_ktautau_rs_2018->GetEntries() << endl;
+
+    t1_ktautau_rs->Add(t1_ktautau_rs_2017);
+    t1_ktautau_rs->Add(t1_ktautau_rs_2018);
+
+    Int_t N_rs = t_ktautau_rs_data->GetEntries();
+    Int_t N1_rs = t1_ktautau_rs->GetEntries();
+    if(N_rs == N1_rs)
+    {
+        t_ktautau_rs_data->AddFriend(t1_ktautau_rs, "best_cand");
+    }
+    else
+    {
+        cout << "wrong number of entries" << endl;
+        return;
+    }
 
     // WS data
-    TFile* f_ktautau_ws_data = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_3/post_sel_tree_bdt1_0_bdt2_0.root");
-    TTree* t_ktautau_ws_data = (TTree*)f_ktautau_ws_data->Get("DecayTree");
+    TFileCollection *fc_ws_2016 = new TFileCollection("fc_ws_2016", "fc_ws_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_3/fit_results.txt");
+    TFileCollection *fc_ws_2017 = new TFileCollection("fc_ws_2017", "fc_ws_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_3/fit_results.txt");
+    TFileCollection *fc_ws_2018 = new TFileCollection("fc_ws_2018", "fc_ws_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_3/fit_results.txt");
 
-    // WS data best
-    // TFile* f_ktautau_ws_data_best = new TFile("/panfs/felician/B2Ktautau/workflow/multiple_events/Species_3/is_best_candidate_branch.root");
-    // TTree* t_ktautau_ws_data_best = (TTree*)f_ktautau_ws_data_best->Get("DecayTree");
+    TChain* t_ktautau_ws_data = new TChain("DecayTree");
+    TChain* t_ktautau_ws_data_2017 = new TChain("DecayTree");
+    TChain* t_ktautau_ws_data_2018 = new TChain("DecayTree");
 
-    // Int_t N_ws = t_ktautau_ws_data->GetEntries();
-    // Int_t N_ws_best = t_ktautau_ws_data_best->GetEntries();
-    // if(N_ws != N_ws_best)
-    // {
-    //     cout << "Wrong number of entries" << endl;
-    //     return;
-    // }
-    // else
-    // {
-    //     t_ktautau_ws_data->AddFriend(t_ktautau_ws_data_best);
-    // }
+    t_ktautau_ws_data->AddFileInfoList((TCollection*)fc_ws_2016->GetList());
+    t_ktautau_ws_data_2017->AddFileInfoList((TCollection*)fc_ws_2017->GetList());
+    t_ktautau_ws_data_2018->AddFileInfoList((TCollection*)fc_ws_2018->GetList());
+
+    cout << "Fit results" << endl;
+    cout << t_ktautau_ws_data->GetEntries() << endl;
+    cout << t_ktautau_ws_data_2017->GetEntries() << endl;
+    cout << t_ktautau_ws_data_2018->GetEntries() << endl;
+
+    t_ktautau_ws_data->Add(t_ktautau_ws_data_2017);
+    t_ktautau_ws_data->Add(t_ktautau_ws_data_2018);
+
+    TFileCollection *fc1_ws_2016 = new TFileCollection("fc1_ws_2016", "fc1_ws_2016", "/panfs/felician/B2Ktautau/workflow/multiple_events/2016/Species_3/multiple_events.txt");
+    TFileCollection *fc1_ws_2017 = new TFileCollection("fc1_ws_2017", "fc1_ws_2017", "/panfs/felician/B2Ktautau/workflow/multiple_events/2017/Species_3/multiple_events.txt");
+    TFileCollection *fc1_ws_2018 = new TFileCollection("fc1_ws_2018", "fc1_ws_2018", "/panfs/felician/B2Ktautau/workflow/multiple_events/2018/Species_3/multiple_events.txt");
+
+    TChain* t1_ktautau_ws = new TChain("DecayTree");
+    TChain* t1_ktautau_ws_2017 = new TChain("DecayTree");
+    TChain* t1_ktautau_ws_2018 = new TChain("DecayTree");
+
+    t1_ktautau_ws->AddFileInfoList((TCollection*)fc1_ws_2016->GetList());
+    t1_ktautau_ws_2017->AddFileInfoList((TCollection*)fc1_ws_2017->GetList());
+    t1_ktautau_ws_2018->AddFileInfoList((TCollection*)fc1_ws_2018->GetList());
+
+    cout << "Best candidate" << endl;
+    cout << t1_ktautau_ws->GetEntries() << endl;
+    cout << t1_ktautau_ws_2017->GetEntries() << endl;
+    cout << t1_ktautau_ws_2018->GetEntries() << endl;
+
+    t1_ktautau_ws->Add(t1_ktautau_ws_2017);
+    t1_ktautau_ws->Add(t1_ktautau_ws_2018);
+
+    Int_t N_ws = t_ktautau_ws_data->GetEntries();
+    Int_t N1_ws = t1_ktautau_ws->GetEntries();
+    if(N_ws == N1_ws)
+    {
+        t_ktautau_ws_data->AddFriend(t1_ktautau_ws, "best_cand");
+    }
+    else
+    {
+        cout << "wrong number of entries" << endl;
+        return;
+    }
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     /////////////////////////////////////////////////////////////////// DDs //////////////////////////////////////////////////////////////////////////////
@@ -110,8 +253,24 @@ void best_candidate_selection_plots()
     t_dds_mc->Add(t_dds_mc_2018);
 
     // MC best
-    TFile* fc_dds_mc_best = new TFile("/panfs/felician/B2Ktautau/workflow/multiple_events/Species_72/is_best_candidate_branch.root");
-    TChain* t_dds_mc_best = (TChain*)fc_dds_mc_best->Get("DecayTree");
+    TFileCollection* fc_dds_mc_best_2016 = new TFileCollection("fc_dds_mc_best_2016", "fc_dds_mc_best_2016", "/panfs/felician/B2Ktautau/workflow/multiple_events/2016/Species_72/multiple_events.txt");
+    TFileCollection* fc_dds_mc_best_2017 = new TFileCollection("fc_dds_mc_best_2017", "fc_dds_mc_best_2017", "/panfs/felician/B2Ktautau/workflow/multiple_events/2017/Species_72/multiple_events.txt");
+    TFileCollection* fc_dds_mc_best_2018 = new TFileCollection("fc_dds_mc_best_2018", "fc_dds_mc_best_2018", "/panfs/felician/B2Ktautau/workflow/multiple_events/2018/Species_72/multiple_events.txt");
+
+    TChain* t_dds_mc_best = new TChain("DecayTree");
+    TChain* t_dds_mc_best_2017 = new TChain("DecayTree");
+    TChain* t_dds_mc_best_2018 = new TChain("DecayTree");
+
+    t_dds_mc_best->AddFileInfoList((TCollection*)fc_dds_mc_best_2016->GetList());
+    t_dds_mc_best_2017->AddFileInfoList((TCollection*)fc_dds_mc_best_2017->GetList());
+    t_dds_mc_best_2018->AddFileInfoList((TCollection*)fc_dds_mc_best_2018->GetList());
+
+    t_dds_mc_best->GetEntries();
+    t_dds_mc_best_2017->GetEntries();
+    t_dds_mc_best_2018->GetEntries();
+
+    t_dds_mc_best->Add(t_dds_mc_best_2017);
+    t_dds_mc_best->Add(t_dds_mc_best_2018);
 
     Int_t N_dds_mc = t_dds_mc->GetEntries();
     Int_t N_dds_mc_best = t_dds_mc_best->GetEntries();
@@ -146,8 +305,24 @@ void best_candidate_selection_plots()
     t_dds_data->Add(t_dds_data_2018);
 
     // Data best
-    TFile* f_dds_data_best = new TFile("/panfs/felician/B2Ktautau/workflow/multiple_events/Species_8/is_best_candidate_branch.root");
-    TChain* t_dds_data_best = (TChain*)f_dds_data_best->Get("DecayTree");
+    TFileCollection* fc_dds_data_best_2016 = new TFileCollection("fc_dds_data_best_2016", "fc_dds_data_best_2016", "/panfs/felician/B2Ktautau/workflow/multiple_events/2016/Species_8/multiple_events.txt");
+    TFileCollection* fc_dds_data_best_2017 = new TFileCollection("fc_dds_data_best_2017", "fc_dds_data_best_2017", "/panfs/felician/B2Ktautau/workflow/multiple_events/2017/Species_8/multiple_events.txt");
+    TFileCollection* fc_dds_data_best_2018 = new TFileCollection("fc_dds_data_best_2018", "fc_dds_data_best_2018", "/panfs/felician/B2Ktautau/workflow/multiple_events/2018/Species_8/multiple_events.txt");
+
+    TChain* t_dds_data_best = new TChain("DecayTree");
+    TChain* t_dds_data_best_2017 = new TChain("DecayTree");
+    TChain* t_dds_data_best_2018 = new TChain("DecayTree");
+
+    t_dds_data_best->AddFileInfoList((TCollection*)fc_dds_data_best_2016->GetList());
+    t_dds_data_best_2017->AddFileInfoList((TCollection*)fc_dds_data_best_2017->GetList());
+    t_dds_data_best_2018->AddFileInfoList((TCollection*)fc_dds_data_best_2018->GetList());
+
+    t_dds_data_best->GetEntries();
+    t_dds_data_best_2017->GetEntries();
+    t_dds_data_best_2018->GetEntries();
+
+    t_dds_data_best->Add(t_dds_data_best_2017);
+    t_dds_data_best->Add(t_dds_data_best_2018);
 
     Int_t N_dds_data = t_dds_data->GetEntries();
     Int_t N_dds_data_best = t_dds_data_best->GetEntries();
@@ -164,98 +339,488 @@ void best_candidate_selection_plots()
 
     ///////////////////////////////////////////////////////// Cocktail MCs ////////////////////////////////////////////////////////////////////////////////////
     // B+ -> DD K+
-    TFile* f_BuDDKp = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_100/post_sel_tree_bdt1_0_bdt2_0.root");
-    TTree* t_BuDDKp = (TTree*)f_BuDDKp->Get("DecayTree");
+    TFileCollection *fc_BuDDKp_2016 = new TFileCollection("fc_BuDDKp_2016", "fc_BuDDKp_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_100/pre_sel_tree.txt");
+    TFileCollection *fc_BuDDKp_2017 = new TFileCollection("fc_BuDDKp_2017", "fc_BuDDKp_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_100/pre_sel_tree.txt");
+    TFileCollection *fc_BuDDKp_2018 = new TFileCollection("fc_BuDDKp_2018", "fc_BuDDKp_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_100/pre_sel_tree.txt");
 
-    TFile* f_BuDDKp_best = new TFile("/panfs/felician/B2Ktautau/workflow/multiple_events/Species_100/is_best_candidate_branch.root");
-    TTree* t_BuDDKp_best = (TTree*)f_BuDDKp_best->Get("DecayTree");
+    TChain* t_BuDDKp = new TChain("DecayTree");
+    TChain* t_BuDDKp_2017 = new TChain("DecayTree");
+    TChain* t_BuDDKp_2018 = new TChain("DecayTree");
 
-    Int_t N_100 = t_BuDDKp->GetEntries();
-    Int_t N_100_best = t_BuDDKp_best->GetEntries();
-    if(N_100 != N_100_best)
+    t_BuDDKp->AddFileInfoList((TCollection*)fc_BuDDKp_2016->GetList());
+    t_BuDDKp_2017->AddFileInfoList((TCollection*)fc_BuDDKp_2017->GetList());
+    t_BuDDKp_2018->AddFileInfoList((TCollection*)fc_BuDDKp_2018->GetList());
+
+    cout << "Pre-selection files" << endl;
+    cout << t_BuDDKp->GetEntries() << endl;
+    cout << t_BuDDKp_2017->GetEntries() << endl;
+    cout << t_BuDDKp_2018->GetEntries() << endl;
+
+    t_BuDDKp->Add(t_BuDDKp_2017);
+    t_BuDDKp->Add(t_BuDDKp_2018);
+
+    TFileCollection *fc1_BuDDKp_2016 = new TFileCollection("fc1_BuDDKp_2016", "fc1_BuDDKp_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_100/fit_results.txt");
+    TFileCollection *fc1_BuDDKp_2017 = new TFileCollection("fc1_BuDDKp_2017", "fc1_BuDDKp_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_100/fit_results.txt");
+    TFileCollection *fc1_BuDDKp_2018 = new TFileCollection("fc1_BuDDKp_2018", "fc1_BuDDKp_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_100/fit_results.txt");
+
+    TChain* t1_BuDDKp = new TChain("DecayTree");
+    TChain* t1_BuDDKp_2017 = new TChain("DecayTree");
+    TChain* t1_BuDDKp_2018 = new TChain("DecayTree");
+
+    t1_BuDDKp->AddFileInfoList((TCollection*)fc1_BuDDKp_2016->GetList());
+    t1_BuDDKp_2017->AddFileInfoList((TCollection*)fc1_BuDDKp_2017->GetList());
+    t1_BuDDKp_2018->AddFileInfoList((TCollection*)fc1_BuDDKp_2018->GetList());
+
+    cout << "Fit results" << endl;
+    cout << t1_BuDDKp->GetEntries() << endl;
+    cout << t1_BuDDKp_2017->GetEntries() << endl;
+    cout << t1_BuDDKp_2018->GetEntries() << endl;
+
+    t1_BuDDKp->Add(t1_BuDDKp_2017);
+    t1_BuDDKp->Add(t1_BuDDKp_2018);
+
+    TFileCollection *fc2_BuDDKp_2016 = new TFileCollection("fc2_BuDDKp_2016", "fc2_BuDDKp_2016", "/panfs/felician/B2Ktautau/workflow/multiple_events/2016/Species_100/multiple_events.txt");
+    TFileCollection *fc2_BuDDKp_2017 = new TFileCollection("fc2_BuDDKp_2017", "fc2_BuDDKp_2017", "/panfs/felician/B2Ktautau/workflow/multiple_events/2017/Species_100/multiple_events.txt");
+    TFileCollection *fc2_BuDDKp_2018 = new TFileCollection("fc2_BuDDKp_2018", "fc2_BuDDKp_2018", "/panfs/felician/B2Ktautau/workflow/multiple_events/2018/Species_100/multiple_events.txt");
+
+    TChain* t2_BuDDKp = new TChain("DecayTree");
+    TChain* t2_BuDDKp_2017 = new TChain("DecayTree");
+    TChain* t2_BuDDKp_2018 = new TChain("DecayTree");
+
+    t2_BuDDKp->AddFileInfoList((TCollection*)fc2_BuDDKp_2016->GetList());
+    t2_BuDDKp_2017->AddFileInfoList((TCollection*)fc2_BuDDKp_2017->GetList());
+    t2_BuDDKp_2018->AddFileInfoList((TCollection*)fc2_BuDDKp_2018->GetList());
+
+    cout << "Best candidate" << endl;
+    cout << t2_BuDDKp->GetEntries() << endl;
+    cout << t2_BuDDKp_2017->GetEntries() << endl;
+    cout << t2_BuDDKp_2018->GetEntries() << endl;
+
+    t2_BuDDKp->Add(t2_BuDDKp_2017);
+    t2_BuDDKp->Add(t2_BuDDKp_2018);
+
+    TFileCollection *fc3_BuDDKp_2016 = new TFileCollection("fc3_BuDDKp_2016", "fc3_BuDDKp_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_100/bdt_output.txt");
+    TFileCollection *fc3_BuDDKp_2017 = new TFileCollection("fc3_BuDDKp_2017", "fc3_BuDDKp_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_100/bdt_output.txt");
+    TFileCollection *fc3_BuDDKp_2018 = new TFileCollection("fc3_BuDDKp_2018", "fc3_BuDDKp_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_100/bdt_output.txt");
+
+    TChain* t3_BuDDKp = new TChain("XGBoost/DecayTree");
+    TChain* t3_BuDDKp_2017 = new TChain("XGBoost/DecayTree");
+    TChain* t3_BuDDKp_2018 = new TChain("XGBoost/DecayTree");
+
+    t3_BuDDKp->AddFileInfoList((TCollection*)fc3_BuDDKp_2016->GetList());
+    t3_BuDDKp_2017->AddFileInfoList((TCollection*)fc3_BuDDKp_2017->GetList());
+    t3_BuDDKp_2018->AddFileInfoList((TCollection*)fc3_BuDDKp_2018->GetList());
+
+    cout << "Best candidate" << endl;
+    cout << t3_BuDDKp->GetEntries() << endl;
+    cout << t3_BuDDKp_2017->GetEntries() << endl;
+    cout << t3_BuDDKp_2018->GetEntries() << endl;
+
+    t3_BuDDKp->Add(t3_BuDDKp_2017);
+    t3_BuDDKp->Add(t3_BuDDKp_2018);
+
+    Int_t N_BuDDKp = t_BuDDKp->GetEntries();
+    Int_t N1_BuDDKp = t1_BuDDKp->GetEntries();
+    Int_t N2_BuDDKp = t2_BuDDKp->GetEntries();
+    Int_t N3_BuDDKp = t3_BuDDKp->GetEntries();
+    if((N_BuDDKp == N1_BuDDKp) && (N_BuDDKp == N2_BuDDKp) && (N_BuDDKp == N3_BuDDKp))
     {
-        cout << "Wrong number of entries in BuDDKp MC" << endl;
-        return;
+        t_BuDDKp->AddFriend(t1_BuDDKp, "gsl");
+        t_BuDDKp->AddFriend(t2_BuDDKp, "best_cand");
+        t_BuDDKp->AddFriend(t3_BuDDKp, "sklearn");
     }
     else
     {
-        t_BuDDKp->AddFriend(t_BuDDKp_best);
+        cout << "wrong number of entries" << endl;
+        return;
     }
 
     // B0 -> DD K+
-    TFile* f_BdDDKp = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_110/post_sel_tree_bdt1_0_bdt2_0.root");
-    TTree* t_BdDDKp = (TTree*)f_BdDDKp->Get("DecayTree");
+    TFileCollection *fc_BdDDKp_2016 = new TFileCollection("fc_BdDDKp_2016", "fc_BdDDKp_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_110/pre_sel_tree.txt");
+    TFileCollection *fc_BdDDKp_2017 = new TFileCollection("fc_BdDDKp_2017", "fc_BdDDKp_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_110/pre_sel_tree.txt");
+    TFileCollection *fc_BdDDKp_2018 = new TFileCollection("fc_BdDDKp_2018", "fc_BdDDKp_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_110/pre_sel_tree.txt");
 
-    TFile* f_BdDDKp_best = new TFile("/panfs/felician/B2Ktautau/workflow/multiple_events/Species_110/is_best_candidate_branch.root");
-    TTree* t_BdDDKp_best = (TTree*)f_BdDDKp_best->Get("DecayTree");
+    TChain* t_BdDDKp = new TChain("DecayTree");
+    TChain* t_BdDDKp_2017 = new TChain("DecayTree");
+    TChain* t_BdDDKp_2018 = new TChain("DecayTree");
 
-    Int_t N_110 = t_BdDDKp->GetEntries();
-    Int_t N_110_best = t_BdDDKp_best->GetEntries();
-    if(N_110 != N_110_best)
+    t_BdDDKp->AddFileInfoList((TCollection*)fc_BdDDKp_2016->GetList());
+    t_BdDDKp_2017->AddFileInfoList((TCollection*)fc_BdDDKp_2017->GetList());
+    t_BdDDKp_2018->AddFileInfoList((TCollection*)fc_BdDDKp_2018->GetList());
+
+    cout << "Pre-selection files" << endl;
+    cout << t_BdDDKp->GetEntries() << endl;
+    cout << t_BdDDKp_2017->GetEntries() << endl;
+    cout << t_BdDDKp_2018->GetEntries() << endl;
+
+    t_BdDDKp->Add(t_BdDDKp_2017);
+    t_BdDDKp->Add(t_BdDDKp_2018);
+
+    TFileCollection *fc1_BdDDKp_2016 = new TFileCollection("fc1_BdDDKp_2016", "fc1_BdDDKp_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_110/fit_results.txt");
+    TFileCollection *fc1_BdDDKp_2017 = new TFileCollection("fc1_BdDDKp_2017", "fc1_BdDDKp_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_110/fit_results.txt");
+    TFileCollection *fc1_BdDDKp_2018 = new TFileCollection("fc1_BdDDKp_2018", "fc1_BdDDKp_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_110/fit_results.txt");
+
+    TChain* t1_BdDDKp = new TChain("DecayTree");
+    TChain* t1_BdDDKp_2017 = new TChain("DecayTree");
+    TChain* t1_BdDDKp_2018 = new TChain("DecayTree");
+
+    t1_BdDDKp->AddFileInfoList((TCollection*)fc1_BdDDKp_2016->GetList());
+    t1_BdDDKp_2017->AddFileInfoList((TCollection*)fc1_BdDDKp_2017->GetList());
+    t1_BdDDKp_2018->AddFileInfoList((TCollection*)fc1_BdDDKp_2018->GetList());
+
+    cout << "Fit results" << endl;
+    cout << t1_BdDDKp->GetEntries() << endl;
+    cout << t1_BdDDKp_2017->GetEntries() << endl;
+    cout << t1_BdDDKp_2018->GetEntries() << endl;
+
+    t1_BdDDKp->Add(t1_BdDDKp_2017);
+    t1_BdDDKp->Add(t1_BdDDKp_2018);
+
+    TFileCollection *fc2_BdDDKp_2016 = new TFileCollection("fc2_BdDDKp_2016", "fc2_BdDDKp_2016", "/panfs/felician/B2Ktautau/workflow/multiple_events/2016/Species_110/multiple_events.txt");
+    TFileCollection *fc2_BdDDKp_2017 = new TFileCollection("fc2_BdDDKp_2017", "fc2_BdDDKp_2017", "/panfs/felician/B2Ktautau/workflow/multiple_events/2017/Species_110/multiple_events.txt");
+    TFileCollection *fc2_BdDDKp_2018 = new TFileCollection("fc2_BdDDKp_2018", "fc2_BdDDKp_2018", "/panfs/felician/B2Ktautau/workflow/multiple_events/2018/Species_110/multiple_events.txt");
+
+    TChain* t2_BdDDKp = new TChain("DecayTree");
+    TChain* t2_BdDDKp_2017 = new TChain("DecayTree");
+    TChain* t2_BdDDKp_2018 = new TChain("DecayTree");
+
+    t2_BdDDKp->AddFileInfoList((TCollection*)fc2_BdDDKp_2016->GetList());
+    t2_BdDDKp_2017->AddFileInfoList((TCollection*)fc2_BdDDKp_2017->GetList());
+    t2_BdDDKp_2018->AddFileInfoList((TCollection*)fc2_BdDDKp_2018->GetList());
+
+    cout << "Best candidate" << endl;
+    cout << t2_BdDDKp->GetEntries() << endl;
+    cout << t2_BdDDKp_2017->GetEntries() << endl;
+    cout << t2_BdDDKp_2018->GetEntries() << endl;
+
+    t2_BdDDKp->Add(t2_BdDDKp_2017);
+    t2_BdDDKp->Add(t2_BdDDKp_2018);
+
+    TFileCollection *fc3_BdDDKp_2016 = new TFileCollection("fc3_BdDDKp_2016", "fc3_BdDDKp_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_110/bdt_output.txt");
+    TFileCollection *fc3_BdDDKp_2017 = new TFileCollection("fc3_BdDDKp_2017", "fc3_BdDDKp_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_110/bdt_output.txt");
+    TFileCollection *fc3_BdDDKp_2018 = new TFileCollection("fc3_BdDDKp_2018", "fc3_BdDDKp_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_110/bdt_output.txt");
+
+    TChain* t3_BdDDKp = new TChain("XGBoost/DecayTree");
+    TChain* t3_BdDDKp_2017 = new TChain("XGBoost/DecayTree");
+    TChain* t3_BdDDKp_2018 = new TChain("XGBoost/DecayTree");
+
+    t3_BdDDKp->AddFileInfoList((TCollection*)fc3_BdDDKp_2016->GetList());
+    t3_BdDDKp_2017->AddFileInfoList((TCollection*)fc3_BdDDKp_2017->GetList());
+    t3_BdDDKp_2018->AddFileInfoList((TCollection*)fc3_BdDDKp_2018->GetList());
+
+    cout << "Best candidate" << endl;
+    cout << t3_BdDDKp->GetEntries() << endl;
+    cout << t3_BdDDKp_2017->GetEntries() << endl;
+    cout << t3_BdDDKp_2018->GetEntries() << endl;
+
+    t3_BdDDKp->Add(t3_BdDDKp_2017);
+    t3_BdDDKp->Add(t3_BdDDKp_2018);
+
+    Int_t N_BdDDKp = t_BdDDKp->GetEntries();
+    Int_t N1_BdDDKp = t1_BdDDKp->GetEntries();
+    Int_t N2_BdDDKp = t2_BdDDKp->GetEntries();
+    Int_t N3_BdDDKp = t3_BdDDKp->GetEntries();
+    if((N_BdDDKp == N1_BdDDKp) && (N_BdDDKp == N2_BdDDKp) && (N_BdDDKp == N3_BdDDKp))
     {
-        cout << "Wrong number of entries in BdDDKp MC" << endl;
-        return;
+        t_BdDDKp->AddFriend(t1_BdDDKp, "gsl");
+        t_BdDDKp->AddFriend(t2_BdDDKp, "best_cand");
+        t_BdDDKp->AddFriend(t3_BdDDKp, "sklearn");
     }
     else
     {
-        t_BdDDKp->AddFriend(t_BdDDKp_best);
+        cout << "wrong number of entries" << endl;
+        return;
     }
 
     // Bs -> DD K+
-    TFile* f_BsDDKp = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_120/post_sel_tree_bdt1_0_bdt2_0.root");
-    TTree* t_BsDDKp = (TTree*)f_BsDDKp->Get("DecayTree");
+    TFileCollection *fc_BsDDKp_2016 = new TFileCollection("fc_BsDDKp_2016", "fc_BsDDKp_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_120/pre_sel_tree.txt");
+    TFileCollection *fc_BsDDKp_2017 = new TFileCollection("fc_BsDDKp_2017", "fc_BsDDKp_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_120/pre_sel_tree.txt");
+    TFileCollection *fc_BsDDKp_2018 = new TFileCollection("fc_BsDDKp_2018", "fc_BsDDKp_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_120/pre_sel_tree.txt");
 
-    TFile* f_BsDDKp_best = new TFile("/panfs/felician/B2Ktautau/workflow/multiple_events/Species_120/is_best_candidate_branch.root");
-    TTree* t_BsDDKp_best = (TTree*)f_BsDDKp_best->Get("DecayTree");
+    TChain* t_BsDDKp = new TChain("DecayTree");
+    TChain* t_BsDDKp_2017 = new TChain("DecayTree");
+    TChain* t_BsDDKp_2018 = new TChain("DecayTree");
 
-    Int_t N_120 = t_BsDDKp->GetEntries();
-    Int_t N_120_best = t_BsDDKp_best->GetEntries();
-    if(N_120 != N_120_best)
+    t_BsDDKp->AddFileInfoList((TCollection*)fc_BsDDKp_2016->GetList());
+    t_BsDDKp_2017->AddFileInfoList((TCollection*)fc_BsDDKp_2017->GetList());
+    t_BsDDKp_2018->AddFileInfoList((TCollection*)fc_BsDDKp_2018->GetList());
+
+    cout << "Pre-selection files" << endl;
+    cout << t_BsDDKp->GetEntries() << endl;
+    cout << t_BsDDKp_2017->GetEntries() << endl;
+    cout << t_BsDDKp_2018->GetEntries() << endl;
+
+    t_BsDDKp->Add(t_BsDDKp_2017);
+    t_BsDDKp->Add(t_BsDDKp_2018);
+
+    TFileCollection *fc1_BsDDKp_2016 = new TFileCollection("fc1_BsDDKp_2016", "fc1_BsDDKp_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_120/fit_results.txt");
+    TFileCollection *fc1_BsDDKp_2017 = new TFileCollection("fc1_BsDDKp_2017", "fc1_BsDDKp_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_120/fit_results.txt");
+    TFileCollection *fc1_BsDDKp_2018 = new TFileCollection("fc1_BsDDKp_2018", "fc1_BsDDKp_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_120/fit_results.txt");
+
+    TChain* t1_BsDDKp = new TChain("DecayTree");
+    TChain* t1_BsDDKp_2017 = new TChain("DecayTree");
+    TChain* t1_BsDDKp_2018 = new TChain("DecayTree");
+
+    t1_BsDDKp->AddFileInfoList((TCollection*)fc1_BsDDKp_2016->GetList());
+    t1_BsDDKp_2017->AddFileInfoList((TCollection*)fc1_BsDDKp_2017->GetList());
+    t1_BsDDKp_2018->AddFileInfoList((TCollection*)fc1_BsDDKp_2018->GetList());
+
+    cout << "Fit results" << endl;
+    cout << t1_BsDDKp->GetEntries() << endl;
+    cout << t1_BsDDKp_2017->GetEntries() << endl;
+    cout << t1_BsDDKp_2018->GetEntries() << endl;
+
+    t1_BsDDKp->Add(t1_BsDDKp_2017);
+    t1_BsDDKp->Add(t1_BsDDKp_2018);
+
+    TFileCollection *fc2_BsDDKp_2016 = new TFileCollection("fc2_BsDDKp_2016", "fc2_BsDDKp_2016", "/panfs/felician/B2Ktautau/workflow/multiple_events/2016/Species_120/multiple_events.txt");
+    TFileCollection *fc2_BsDDKp_2017 = new TFileCollection("fc2_BsDDKp_2017", "fc2_BsDDKp_2017", "/panfs/felician/B2Ktautau/workflow/multiple_events/2017/Species_120/multiple_events.txt");
+    TFileCollection *fc2_BsDDKp_2018 = new TFileCollection("fc2_BsDDKp_2018", "fc2_BsDDKp_2018", "/panfs/felician/B2Ktautau/workflow/multiple_events/2018/Species_120/multiple_events.txt");
+
+    TChain* t2_BsDDKp = new TChain("DecayTree");
+    TChain* t2_BsDDKp_2017 = new TChain("DecayTree");
+    TChain* t2_BsDDKp_2018 = new TChain("DecayTree");
+
+    t2_BsDDKp->AddFileInfoList((TCollection*)fc2_BsDDKp_2016->GetList());
+    t2_BsDDKp_2017->AddFileInfoList((TCollection*)fc2_BsDDKp_2017->GetList());
+    t2_BsDDKp_2018->AddFileInfoList((TCollection*)fc2_BsDDKp_2018->GetList());
+
+    cout << "Best candidate" << endl;
+    cout << t2_BsDDKp->GetEntries() << endl;
+    cout << t2_BsDDKp_2017->GetEntries() << endl;
+    cout << t2_BsDDKp_2018->GetEntries() << endl;
+
+    t2_BsDDKp->Add(t2_BsDDKp_2017);
+    t2_BsDDKp->Add(t2_BsDDKp_2018);
+
+    TFileCollection *fc3_BsDDKp_2016 = new TFileCollection("fc3_BsDDKp_2016", "fc3_BsDDKp_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_120/bdt_output.txt");
+    TFileCollection *fc3_BsDDKp_2017 = new TFileCollection("fc3_BsDDKp_2017", "fc3_BsDDKp_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_120/bdt_output.txt");
+    TFileCollection *fc3_BsDDKp_2018 = new TFileCollection("fc3_BsDDKp_2018", "fc3_BsDDKp_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_120/bdt_output.txt");
+
+    TChain* t3_BsDDKp = new TChain("XGBoost/DecayTree");
+    TChain* t3_BsDDKp_2017 = new TChain("XGBoost/DecayTree");
+    TChain* t3_BsDDKp_2018 = new TChain("XGBoost/DecayTree");
+
+    t3_BsDDKp->AddFileInfoList((TCollection*)fc3_BsDDKp_2016->GetList());
+    t3_BsDDKp_2017->AddFileInfoList((TCollection*)fc3_BsDDKp_2017->GetList());
+    t3_BsDDKp_2018->AddFileInfoList((TCollection*)fc3_BsDDKp_2018->GetList());
+
+    cout << "Best candidate" << endl;
+    cout << t3_BsDDKp->GetEntries() << endl;
+    cout << t3_BsDDKp_2017->GetEntries() << endl;
+    cout << t3_BsDDKp_2018->GetEntries() << endl;
+
+    t3_BsDDKp->Add(t3_BsDDKp_2017);
+    t3_BsDDKp->Add(t3_BsDDKp_2018);
+
+    Int_t N_BsDDKp = t_BsDDKp->GetEntries();
+    Int_t N1_BsDDKp = t1_BsDDKp->GetEntries();
+    Int_t N2_BsDDKp = t2_BsDDKp->GetEntries();
+    Int_t N3_BsDDKp = t3_BsDDKp->GetEntries();
+    if((N_BsDDKp == N1_BsDDKp) && (N_BsDDKp == N2_BsDDKp) && (N_BsDDKp == N3_BsDDKp))
     {
-        cout << "Wrong number of entries in BsDDKp MC" << endl;
-        return;
+        t_BsDDKp->AddFriend(t1_BsDDKp, "gsl");
+        t_BsDDKp->AddFriend(t2_BsDDKp, "best_cand");
+        t_BsDDKp->AddFriend(t3_BsDDKp, "sklearn");
     }
     else
     {
-        t_BsDDKp->AddFriend(t_BsDDKp_best);
+        cout << "wrong number of entries" << endl;
+        return;
     }
 
     // B+ -> DD K0
-    TFile* f_BuDDK0 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_130/post_sel_tree_bdt1_0_bdt2_0.root");
-    TTree* t_BuDDK0 = (TTree*)f_BuDDK0->Get("DecayTree");
+    TFileCollection *fc_BuDDK0_2016 = new TFileCollection("fc_BuDDK0_2016", "fc_BuDDK0_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_130/pre_sel_tree.txt");
+    TFileCollection *fc_BuDDK0_2017 = new TFileCollection("fc_BuDDK0_2017", "fc_BuDDK0_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_130/pre_sel_tree.txt");
+    TFileCollection *fc_BuDDK0_2018 = new TFileCollection("fc_BuDDK0_2018", "fc_BuDDK0_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_130/pre_sel_tree.txt");
 
-    TFile* f_BuDDK0_best = new TFile("/panfs/felician/B2Ktautau/workflow/multiple_events/Species_130/is_best_candidate_branch.root");
-    TTree* t_BuDDK0_best = (TTree*)f_BuDDK0_best->Get("DecayTree");
+    TChain* t_BuDDK0 = new TChain("DecayTree");
+    TChain* t_BuDDK0_2017 = new TChain("DecayTree");
+    TChain* t_BuDDK0_2018 = new TChain("DecayTree");
 
-    Int_t N_130 = t_BuDDK0->GetEntries();
-    Int_t N_130_best = t_BuDDK0_best->GetEntries();
-    if(N_130 != N_130_best)
+    t_BuDDK0->AddFileInfoList((TCollection*)fc_BuDDK0_2016->GetList());
+    t_BuDDK0_2017->AddFileInfoList((TCollection*)fc_BuDDK0_2017->GetList());
+    t_BuDDK0_2018->AddFileInfoList((TCollection*)fc_BuDDK0_2018->GetList());
+
+    cout << "Pre-selection files" << endl;
+    cout << t_BuDDK0->GetEntries() << endl;
+    cout << t_BuDDK0_2017->GetEntries() << endl;
+    cout << t_BuDDK0_2018->GetEntries() << endl;
+
+    t_BuDDK0->Add(t_BuDDK0_2017);
+    t_BuDDK0->Add(t_BuDDK0_2018);
+
+    TFileCollection *fc1_BuDDK0_2016 = new TFileCollection("fc1_BuDDK0_2016", "fc1_BuDDK0_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_130/fit_results.txt");
+    TFileCollection *fc1_BuDDK0_2017 = new TFileCollection("fc1_BuDDK0_2017", "fc1_BuDDK0_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_130/fit_results.txt");
+    TFileCollection *fc1_BuDDK0_2018 = new TFileCollection("fc1_BuDDK0_2018", "fc1_BuDDK0_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_130/fit_results.txt");
+
+    TChain* t1_BuDDK0 = new TChain("DecayTree");
+    TChain* t1_BuDDK0_2017 = new TChain("DecayTree");
+    TChain* t1_BuDDK0_2018 = new TChain("DecayTree");
+
+    t1_BuDDK0->AddFileInfoList((TCollection*)fc1_BuDDK0_2016->GetList());
+    t1_BuDDK0_2017->AddFileInfoList((TCollection*)fc1_BuDDK0_2017->GetList());
+    t1_BuDDK0_2018->AddFileInfoList((TCollection*)fc1_BuDDK0_2018->GetList());
+
+    cout << "Fit results" << endl;
+    cout << t1_BuDDK0->GetEntries() << endl;
+    cout << t1_BuDDK0_2017->GetEntries() << endl;
+    cout << t1_BuDDK0_2018->GetEntries() << endl;
+
+    t1_BuDDK0->Add(t1_BuDDK0_2017);
+    t1_BuDDK0->Add(t1_BuDDK0_2018);
+
+    TFileCollection *fc2_BuDDK0_2016 = new TFileCollection("fc2_BuDDK0_2016", "fc2_BuDDK0_2016", "/panfs/felician/B2Ktautau/workflow/multiple_events/2016/Species_130/multiple_events.txt");
+    TFileCollection *fc2_BuDDK0_2017 = new TFileCollection("fc2_BuDDK0_2017", "fc2_BuDDK0_2017", "/panfs/felician/B2Ktautau/workflow/multiple_events/2017/Species_130/multiple_events.txt");
+    TFileCollection *fc2_BuDDK0_2018 = new TFileCollection("fc2_BuDDK0_2018", "fc2_BuDDK0_2018", "/panfs/felician/B2Ktautau/workflow/multiple_events/2018/Species_130/multiple_events.txt");
+
+    TChain* t2_BuDDK0 = new TChain("DecayTree");
+    TChain* t2_BuDDK0_2017 = new TChain("DecayTree");
+    TChain* t2_BuDDK0_2018 = new TChain("DecayTree");
+
+    t2_BuDDK0->AddFileInfoList((TCollection*)fc2_BuDDK0_2016->GetList());
+    t2_BuDDK0_2017->AddFileInfoList((TCollection*)fc2_BuDDK0_2017->GetList());
+    t2_BuDDK0_2018->AddFileInfoList((TCollection*)fc2_BuDDK0_2018->GetList());
+
+    cout << "Best candidate" << endl;
+    cout << t2_BuDDK0->GetEntries() << endl;
+    cout << t2_BuDDK0_2017->GetEntries() << endl;
+    cout << t2_BuDDK0_2018->GetEntries() << endl;
+
+    t2_BuDDK0->Add(t2_BuDDK0_2017);
+    t2_BuDDK0->Add(t2_BuDDK0_2018);
+
+    TFileCollection *fc3_BuDDK0_2016 = new TFileCollection("fc3_BuDDK0_2016", "fc3_BuDDK0_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_130/bdt_output.txt");
+    TFileCollection *fc3_BuDDK0_2017 = new TFileCollection("fc3_BuDDK0_2017", "fc3_BuDDK0_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_130/bdt_output.txt");
+    TFileCollection *fc3_BuDDK0_2018 = new TFileCollection("fc3_BuDDK0_2018", "fc3_BuDDK0_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_130/bdt_output.txt");
+
+    TChain* t3_BuDDK0 = new TChain("XGBoost/DecayTree");
+    TChain* t3_BuDDK0_2017 = new TChain("XGBoost/DecayTree");
+    TChain* t3_BuDDK0_2018 = new TChain("XGBoost/DecayTree");
+
+    t3_BuDDK0->AddFileInfoList((TCollection*)fc3_BuDDK0_2016->GetList());
+    t3_BuDDK0_2017->AddFileInfoList((TCollection*)fc3_BuDDK0_2017->GetList());
+    t3_BuDDK0_2018->AddFileInfoList((TCollection*)fc3_BuDDK0_2018->GetList());
+
+    cout << "Best candidate" << endl;
+    cout << t3_BuDDK0->GetEntries() << endl;
+    cout << t3_BuDDK0_2017->GetEntries() << endl;
+    cout << t3_BuDDK0_2018->GetEntries() << endl;
+
+    t3_BuDDK0->Add(t3_BuDDK0_2017);
+    t3_BuDDK0->Add(t3_BuDDK0_2018);
+
+    Int_t N_BuDDK0 = t_BuDDK0->GetEntries();
+    Int_t N1_BuDDK0 = t1_BuDDK0->GetEntries();
+    Int_t N2_BuDDK0 = t2_BuDDK0->GetEntries();
+    Int_t N3_BuDDK0 = t3_BuDDK0->GetEntries();
+    if((N_BuDDK0 == N1_BuDDK0) && (N_BuDDK0 == N2_BuDDK0) && (N_BuDDK0 == N3_BuDDK0))
     {
-        cout << "Wrong number of entries in BuDDK0 MC" << endl;
-        return;
+        t_BuDDK0->AddFriend(t1_BuDDK0, "gsl");
+        t_BuDDK0->AddFriend(t2_BuDDK0, "best_cand");
+        t_BuDDK0->AddFriend(t3_BuDDK0, "sklearn");
     }
     else
     {
-        t_BuDDK0->AddFriend(t_BuDDK0_best);
+        cout << "wrong number of entries" << endl;
+        return;
     }
 
     // B+ -> DD 
-    TFile* f_BuDD = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_150/post_sel_tree_bdt1_0_bdt2_0.root");
-    TTree* t_BuDD = (TTree*)f_BuDD->Get("DecayTree");
+    TFileCollection *fc_BuDD_2016 = new TFileCollection("fc_BuDD_2016", "fc_BuDD_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_150/pre_sel_tree.txt");
+    TFileCollection *fc_BuDD_2017 = new TFileCollection("fc_BuDD_2017", "fc_BuDD_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_150/pre_sel_tree.txt");
+    TFileCollection *fc_BuDD_2018 = new TFileCollection("fc_BuDD_2018", "fc_BuDD_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_150/pre_sel_tree.txt");
 
-    TFile* f_BuDD_best = new TFile("/panfs/felician/B2Ktautau/workflow/multiple_events/Species_150/is_best_candidate_branch.root");
-    TTree* t_BuDD_best = (TTree*)f_BuDD_best->Get("DecayTree");
+    TChain* t_BuDD = new TChain("DecayTree");
+    TChain* t_BuDD_2017 = new TChain("DecayTree");
+    TChain* t_BuDD_2018 = new TChain("DecayTree");
 
-    Int_t N_150 = t_BuDD->GetEntries();
-    Int_t N_150_best = t_BuDD_best->GetEntries();
-    if(N_150 != N_150_best)
+    t_BuDD->AddFileInfoList((TCollection*)fc_BuDD_2016->GetList());
+    t_BuDD_2017->AddFileInfoList((TCollection*)fc_BuDD_2017->GetList());
+    t_BuDD_2018->AddFileInfoList((TCollection*)fc_BuDD_2018->GetList());
+
+    cout << "Pre-selection files" << endl;
+    cout << t_BuDD->GetEntries() << endl;
+    cout << t_BuDD_2017->GetEntries() << endl;
+    cout << t_BuDD_2018->GetEntries() << endl;
+
+    t_BuDD->Add(t_BuDD_2017);
+    t_BuDD->Add(t_BuDD_2018);
+
+    TFileCollection *fc1_BuDD_2016 = new TFileCollection("fc1_BuDD_2016", "fc1_BuDD_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_150/fit_results.txt");
+    TFileCollection *fc1_BuDD_2017 = new TFileCollection("fc1_BuDD_2017", "fc1_BuDD_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_150/fit_results.txt");
+    TFileCollection *fc1_BuDD_2018 = new TFileCollection("fc1_BuDD_2018", "fc1_BuDD_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_150/fit_results.txt");
+
+    TChain* t1_BuDD = new TChain("DecayTree");
+    TChain* t1_BuDD_2017 = new TChain("DecayTree");
+    TChain* t1_BuDD_2018 = new TChain("DecayTree");
+
+    t1_BuDD->AddFileInfoList((TCollection*)fc1_BuDD_2016->GetList());
+    t1_BuDD_2017->AddFileInfoList((TCollection*)fc1_BuDD_2017->GetList());
+    t1_BuDD_2018->AddFileInfoList((TCollection*)fc1_BuDD_2018->GetList());
+
+    cout << "Fit results" << endl;
+    cout << t1_BuDD->GetEntries() << endl;
+    cout << t1_BuDD_2017->GetEntries() << endl;
+    cout << t1_BuDD_2018->GetEntries() << endl;
+
+    t1_BuDD->Add(t1_BuDD_2017);
+    t1_BuDD->Add(t1_BuDD_2018);
+
+    TFileCollection *fc2_BuDD_2016 = new TFileCollection("fc2_BuDD_2016", "fc2_BuDD_2016", "/panfs/felician/B2Ktautau/workflow/multiple_events/2016/Species_150/multiple_events.txt");
+    TFileCollection *fc2_BuDD_2017 = new TFileCollection("fc2_BuDD_2017", "fc2_BuDD_2017", "/panfs/felician/B2Ktautau/workflow/multiple_events/2017/Species_150/multiple_events.txt");
+    TFileCollection *fc2_BuDD_2018 = new TFileCollection("fc2_BuDD_2018", "fc2_BuDD_2018", "/panfs/felician/B2Ktautau/workflow/multiple_events/2018/Species_150/multiple_events.txt");
+
+    TChain* t2_BuDD = new TChain("DecayTree");
+    TChain* t2_BuDD_2017 = new TChain("DecayTree");
+    TChain* t2_BuDD_2018 = new TChain("DecayTree");
+
+    t2_BuDD->AddFileInfoList((TCollection*)fc2_BuDD_2016->GetList());
+    t2_BuDD_2017->AddFileInfoList((TCollection*)fc2_BuDD_2017->GetList());
+    t2_BuDD_2018->AddFileInfoList((TCollection*)fc2_BuDD_2018->GetList());
+
+    cout << "Best candidate" << endl;
+    cout << t2_BuDD->GetEntries() << endl;
+    cout << t2_BuDD_2017->GetEntries() << endl;
+    cout << t2_BuDD_2018->GetEntries() << endl;
+
+    t2_BuDD->Add(t2_BuDD_2017);
+    t2_BuDD->Add(t2_BuDD_2018);
+
+    TFileCollection *fc3_BuDD_2016 = new TFileCollection("fc3_BuDD_2016", "fc3_BuDD_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_150/bdt_output.txt");
+    TFileCollection *fc3_BuDD_2017 = new TFileCollection("fc3_BuDD_2017", "fc3_BuDD_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_150/bdt_output.txt");
+    TFileCollection *fc3_BuDD_2018 = new TFileCollection("fc3_BuDD_2018", "fc3_BuDD_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_150/bdt_output.txt");
+
+    TChain* t3_BuDD = new TChain("XGBoost/DecayTree");
+    TChain* t3_BuDD_2017 = new TChain("XGBoost/DecayTree");
+    TChain* t3_BuDD_2018 = new TChain("XGBoost/DecayTree");
+
+    t3_BuDD->AddFileInfoList((TCollection*)fc3_BuDD_2016->GetList());
+    t3_BuDD_2017->AddFileInfoList((TCollection*)fc3_BuDD_2017->GetList());
+    t3_BuDD_2018->AddFileInfoList((TCollection*)fc3_BuDD_2018->GetList());
+
+    cout << "Best candidate" << endl;
+    cout << t3_BuDD->GetEntries() << endl;
+    cout << t3_BuDD_2017->GetEntries() << endl;
+    cout << t3_BuDD_2018->GetEntries() << endl;
+
+    t3_BuDD->Add(t3_BuDD_2017);
+    t3_BuDD->Add(t3_BuDD_2018);
+
+    Int_t N_BuDD = t_BuDD->GetEntries();
+    Int_t N1_BuDD = t1_BuDD->GetEntries();
+    Int_t N2_BuDD = t2_BuDD->GetEntries();
+    Int_t N3_BuDD = t3_BuDD->GetEntries();
+    if((N_BuDD == N1_BuDD) && (N_BuDD == N2_BuDD) && (N_BuDD == N3_BuDD))
     {
-        cout << "Wrong number of entries in BuDD MC" << endl;
-        return;
+        t_BuDD->AddFriend(t1_BuDD, "gsl");
+        t_BuDD->AddFriend(t2_BuDD, "best_cand");
+        t_BuDD->AddFriend(t3_BuDD, "sklearn");
     }
     else
     {
-        t_BuDD->AddFriend(t_BuDD_best);
+        cout << "wrong number of entries" << endl;
+        return;
     }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -472,13 +1037,12 @@ void best_candidate_selection_plots()
     leg1->Draw("same");
     d5.SaveAs("/panfs/felician/B2Ktautau/workflow/best_candidate_selection_plots/dds_mc_best_notTM.pdf");
 
-    /*
     // Ktautau data
     TH1D* h_rs_data = new TH1D("h_rs_data", "h_rs_data", 100, 4000, 8000);
     TH1D* h_rs_data_best = new TH1D("h_rs_data_best", "h_rs_data_best", 100, 4000, 8000);
 
     t_ktautau_rs_data->Draw("df_Bp_M >> h_rs_data");
-    // t_ktautau_rs_data->Draw("df_Bp_M >> h_rs_data_best", "(is_best_cand == 1)");
+    t_ktautau_rs_data->Draw("df_Bp_M >> h_rs_data_best", "(is_best_cand == 1)");
 
     h_rs_data->GetXaxis()->SetTitle("m_{B} (MeV)");
     h_rs_data->GetYaxis()->SetTitle("Normalized entries / (40 MeV)");
@@ -487,16 +1051,16 @@ void best_candidate_selection_plots()
     h_rs_data->SetLineColor(kRed);
     h_rs_data->SetFillColorAlpha(kRed, 0.25);
 
-    // h_rs_data_best->SetLineColor(kBlack);
-    // h_rs_data_best->SetFillColorAlpha(kBlack, 0.25);
+    h_rs_data_best->SetLineColor(kBlack);
+    h_rs_data_best->SetFillColorAlpha(kBlack, 0.25);
 
     TCanvas c6;
     c6.cd();
     h_rs_data->DrawNormalized();
-    // h_rs_data_best->DrawNormalized("same");
+    h_rs_data_best->DrawNormalized("same");
     TLegend* leg2 = new TLegend(0.7,0.7,0.9,0.9);
     leg2->AddEntry(h_rs_data, "All candidates");
-    // leg2->AddEntry(h_rs_data_best, "Best candidate");
+    leg2->AddEntry(h_rs_data_best, "Best candidate");
     leg2->Draw("same");
     c6.SaveAs("/panfs/felician/B2Ktautau/workflow/best_candidate_selection_plots/rs_data_multiple_vs_best.pdf");
 
@@ -505,7 +1069,7 @@ void best_candidate_selection_plots()
     TH1D* h_ws_data_best = new TH1D("h_ws_data_best", "h_ws_data_best", 100, 4000, 8000);
 
     t_ktautau_ws_data->Draw("df_Bp_M >> h_ws_data");
-    // t_ktautau_ws_data->Draw("df_Bp_M >> h_ws_data_best", "(is_best_cand == 1)");
+    t_ktautau_ws_data->Draw("df_Bp_M >> h_ws_data_best", "(is_best_cand == 1)");
 
     h_ws_data->GetXaxis()->SetTitle("m_{B} (MeV)");
     h_ws_data->GetYaxis()->SetTitle("Normalized entries / (40 MeV)");
@@ -514,16 +1078,15 @@ void best_candidate_selection_plots()
     h_ws_data->SetLineColor(kRed);
     h_ws_data->SetFillColorAlpha(kRed, 0.25);
 
-    // h_ws_data_best->SetLineColor(kBlack);
-    // h_ws_data_best->SetFillColorAlpha(kBlack, 0.25);
+    h_ws_data_best->SetLineColor(kBlack);
+    h_ws_data_best->SetFillColorAlpha(kBlack, 0.25);
 
     TCanvas c7;
     c7.cd();
     h_ws_data->DrawNormalized();
-    // h_ws_data_best->DrawNormalized("same");
+    h_ws_data_best->DrawNormalized("same");
     leg2->Draw("same");
     c7.SaveAs("/panfs/felician/B2Ktautau/workflow/best_candidate_selection_plots/ws_data_multiple_vs_best.pdf");
-    */
 
     // DDs data
     TH1D* h_dds_data = new TH1D("h_dds_data", "h_dds_data", 100, 5235, 5355);
@@ -546,10 +1109,10 @@ void best_candidate_selection_plots()
     c8.cd();
     h_dds_data->DrawNormalized();
     h_dds_data_best->DrawNormalized("same");
-    TLegend* leg2 = new TLegend(0.7,0.7,0.9,0.9);
-    leg2->AddEntry(h_dds_data, "All candidates");
-    leg2->AddEntry(h_dds_data_best, "Best candidate");
-    leg2->Draw("same");
+    TLegend* leg22 = new TLegend(0.7,0.7,0.9,0.9);
+    leg22->AddEntry(h_dds_data, "All candidates");
+    leg22->AddEntry(h_dds_data_best, "Best candidate");
+    leg22->Draw("same");
     c8.SaveAs("/panfs/felician/B2Ktautau/workflow/best_candidate_selection_plots/dds_data_multiple_vs_best.pdf");
 
     // Cocktail MCs
@@ -1199,43 +1762,6 @@ void best_candidate_selection_plots()
     leg11->AddEntry(h_BuD0Dp_iso, "B^{+} #rightarrow #bar{D}^{0} D^{+}");
     leg11->Draw("same");
     SixPads->SaveAs("/panfs/felician/B2Ktautau/workflow/best_candidate_selection_plots/cocktail_mcs_BDT1.pdf");
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     auto a1 = new TCanvas(); 
     auto a2 = new TCanvas(); 
