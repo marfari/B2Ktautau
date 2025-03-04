@@ -799,7 +799,7 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t is_cocktailMC
         }
         else
         {
-            file << Form("Trigger & %.2lf $\\pm$ %.2lf \\%% ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ \\hline " << std::endl; 
+            file << Form("Trigger & %.2lf $\\pm$ %.2lf \\%% ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ " << std::endl; 
             file << Form("Rectangular cuts & %.2lf $\\pm$ %.2lf \\%% ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\ " << std::endl;
         }
     }

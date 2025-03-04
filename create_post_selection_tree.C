@@ -573,8 +573,8 @@ void create_table(Int_t species, TCut pass_fitter, TCut fit_region, TCut bdt_cut
         }
         else if((species == 2) || (species == 3))
         {
-            file << Form("Pass GSL & %.2lf $\\pm$ %.2lf \\%% ", eps_gsl*100,  eps_error(N_gsl,N_presel) ) << " \\\\ \\hline " << std::endl;
-            file << Form("Fit region & %.2lf $\\pm$ %.2lf \\%% ", eps_fit_region*100,  eps_error(N_fit_region,N_gsl) ) << " \\\\ \\hline " << std::endl;
+            file << Form("Pass GSL & %.2lf $\\pm$ %.2lf \\%% ", eps_gsl*100,  eps_error(N_gsl,N_presel) ) << " \\\\  " << std::endl;
+            file << Form("Fit region & %.2lf $\\pm$ %.2lf \\%% ", eps_fit_region*100,  eps_error(N_fit_region,N_gsl) ) << " \\\\ " << std::endl;
             file << Form("Mass vetoes & %.2lf $\\pm$ %.2lf \\%% ", eps_mass*100, eps_error(N_mass_vetoes, N_fit_region) ) << " \\\\" << std::endl;
             // file << "BDTs & " << Form("%.6lf $\\pm$ %.6lf \\% & ", eps_bdt*100, eps_error(N_bdt,N_mass_vetoes) ) << " \\\\ " << std::endl;
         }
