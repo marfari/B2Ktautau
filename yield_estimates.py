@@ -21,7 +21,7 @@ def norm_channel_input():
 
     # Post-acc efficiency
     # Numerator of eps_norm: MC w/o TM cuts, after all selections and best candidate selection
-    f_norm_num = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/multiple_events/Species_72/single_candidate_post_sel.root")
+    f_norm_num = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_72/post_sel_tree_bdt1_0_bdt2_0.root")
     t_norm_num = f_norm_num.Get("DecayTree")
 
     # Denominator of eps_norm: gen level MC
@@ -52,7 +52,7 @@ def norm_channel_input():
     eps_norm_error = np.sqrt( (eps_acc_norm**2)*(eps_norm_post_acc_error**2) + (eps_acc_norm_error**2)*(eps_norm_post_acc**2) )
 
     # Number of signal events in data : NEEDS TO BE UPDATED WITH THE BEST CANDIDATE SELECTION
-    N_norm = 32857
+    N_norm = 32858
     N_norm_error = 195
 
     return N_norm, N_norm_error, eps_norm, eps_norm_error
@@ -101,7 +101,7 @@ def background_efficiency(species, component, bdt1, bdt2):
     else:
         the_species = species
 
-    f_num = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/multiple_events/Species_{0}/single_candidate_post_sel.root".format(the_species))
+    f_num = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_{0}/post_sel_tree_bdt1_0_bdt2_0.root".format(the_species))
     t_num = f_num.Get("DecayTree")
 
     if(the_species == 100):
@@ -486,11 +486,17 @@ def main(argv):
     # Normalisation channel inputs: N_norm, eps_norm (fixed)
     N_norm, N_norm_error, eps_norm, eps_norm_error =  norm_channel_input()
 
+    # RS data yield (for relative yield)
+    f_rs = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_2/post_sel_tree_bdt1_0_bdt2_0.root")
+    t_rs = f_rs.Get("DecayTree")    
+    N_rs = t_rs.GetEntries()
+
     species_name = ["$B^+ \\to \\bar{D}^0 D^0 K^+$", "$B^+ \\to D^+ D^- K^+$", "$B^+ \\to D^+_s D^-_s K^+$", "$B^0 \\to D^- D^0 K^+$", "$B^0_s \\to D^-_s D^0 K^+$", "$B^+ \\to \\bar{D}^0 D^+ K^0$", "$B^+ \\to \\bar{D}^0 D^+_s$", "$B^+ \\to \\bar{D}^0 D^+$"]
     component_name = ["$DD$", "$D^*D$", "$DD^*$", "$D^*D^*$"]
     all_species = [100, 101, 102, 110, 120, 130, 150, 151]
 
     all_yields = pd.DataFrame(index=species_name, columns=component_name)
+    B_BF = pd.DataFrame(index=species_name, columns=component_name)
     all_BF = pd.DataFrame(index=species_name, columns=component_name)
     all_eps_b = pd.DataFrame(index=species_name, columns=component_name)
     all_ratio = pd.DataFrame(index=species_name, columns=component_name)
@@ -515,16 +521,22 @@ def main(argv):
             BF_term_err = BF_term*np.sqrt( (BF_DD_error/BF_DD_value)**2 + (BF_B_error/BF_B_value)**2 + (B_D0Dps_error/B_D0Dsp)**2 + (B_D0Kp_error/B_D0Kp)**2 + (B_DsKKpi_error/B_DsKKpi)**2  )
             all_BF.loc[species_name[i], component_name[j]] = "${0} \\pm {1}$".format( round(BF_term,1), round(BF_term_err,1) )  
 
+            # B level branching fraction
+            B_BF.loc[species_name[i], component_name[j]] = "${0} \\pm {1}$".format( round(BF_B_value*100,3), round(BF_B_error*100,3) ) 
+
             # Total background efficiency
             eps_b, eps_b_err = background_efficiency(species, j, bdt1, bdt2)
-            all_eps_b.loc[species_name[i], component_name[j]] = "(${0} \\pm {1}$) E-5".format( round(eps_b*100000,3), round(eps_b_err*100000,3) )  
+            all_eps_b.loc[species_name[i], component_name[j]] = "${0} \\pm {1}$".format( round(eps_b*100000,3), round(eps_b_err*100000,3) )   # x10-5
 
             # Absolute yield
             the_yield = ((BF_B_value*BF_DD_value)/(B_D0Dsp*B_D0Kp*B_DsKKpi))*(eps_b/eps_norm)*frag_ratio*N_norm
             the_yield_error = the_yield*np.sqrt( (BF_term_err/BF_term)**2 + (eps_b_err/eps_b)**2 + (eps_norm_error/eps_norm)**2 + (frag_ratio_error/frag_ratio)**2 + (N_norm_error/N_norm)**2 )
-            all_yields.loc[species_name[i], component_name[j]] = "${0} \\pm {1}$".format( round(the_yield,1), round(the_yield_error,1) )  
+            all_yields.loc[species_name[i], component_name[j]] = "${0} \\pm {1}$".format( int(the_yield), int(the_yield_error) )  
 
             # Relative yield
+            relative_yield = the_yield/N_rs
+            the_yield_error = eps_error(the_yield,N_rs)
+            all_ratio.loc[species_name[i], component_name[j]] = "${0} \\pm {1}$".format( round(relative_yield*100,4), round(the_yield_error*100,4) )  
 
     with open('/panfs/felician/B2Ktautau/workflow/yield_estimates/all_BF.tex','w') as f:
         f.write(all_BF.to_latex())
@@ -534,6 +546,12 @@ def main(argv):
 
     with open('/panfs/felician/B2Ktautau/workflow/yield_estimates/all_yields.tex','w') as f2:
         f2.write(all_yields.to_latex())
+
+    with open('/panfs/felician/B2Ktautau/workflow/yield_estimates/all_relative_yield.tex','w') as f3:
+        f3.write(all_ratio.to_latex())
+
+    with open('/panfs/felician/B2Ktautau/workflow/yield_estimates/B_branching_fractions.tex','w') as f4:
+        f4.write(B_BF.to_latex())
 
 if __name__ == "__main__":
     main(sys.argv)
