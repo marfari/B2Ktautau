@@ -2,7 +2,7 @@ localrules: exact_constraints, comparisons, fit_mass, make_sPlot_histos, compare
 
 rule all:
     input:
-        expand('/panfs/felician/B2Ktautau/workflow/rough_sensitivity_2D/BR_vs_bdt1_bdt2_{the_case}.pdf', the_case='comb_bkg_all_mc')
+        expand('/panfs/felician/B2Ktautau/workflow/config_yaml_files/config_histograms_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.yml', BDT1=0.0, BDT2=0.0, seed=range(0,100)) 
 
 # Every time grid files are updated need to:
 # - run pidgen for ktautau / DDs over the pre-selection files (signal + normalisation channel)
@@ -539,3 +539,25 @@ rule generate_fit_templates:
         '/panfs/felician/B2Ktautau/workflow/create_fit_templates/out_bdt1_{BDT1}_bdt2_{BDT2}.log'   
     shell:
         'python -u Final_fit/create_fit_templates.py {wildcards.BDT1} {wildcards.BDT2} &> {log}'
+
+rule generate_toy_data:
+    ''' Generates toy data for the final fit '''    
+    input: 
+        'Final_fit/generate_toy_data.py'
+    output:
+        '/panfs/felician/B2Ktautau/workflow/generate_toy_data/toy_data_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.root'
+    log:
+        '/panfs/felician/B2Ktautau/workflow/generate_toy_data/out_{BDT1}_bdt2_{BDT2}_seed_{seed}.log'   
+    shell:
+        'python -u Final_fit/generate_toy_data.py {wildcards.BDT1} {wildcards.BDT2} {wildcards.seed} &> {log}'
+
+rule write_config_yml_files:
+    ''' Writes the config yml files for cabinetry '''   
+    input:
+        'Final_fit/autoWrite_config_yml_files.py'
+    output:
+        '/panfs/felician/B2Ktautau/workflow/config_yaml_files/config_histograms_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.yml'
+    log:
+        '/panfs/felician/B2Ktautau/workflow/config_yaml_files/out_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.log'
+    shell:
+        'python -u Final_fit/autoWrite_config_yml_files.py {wildcards.BDT1} {wildcards.BDT2} {wildcards.seed} &> {log}'
