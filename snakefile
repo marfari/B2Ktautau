@@ -2,7 +2,7 @@ localrules: exact_constraints, comparisons, fit_mass, make_sPlot_histos, compare
 
 rule all:
     input:
-        # expand('/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_{species}/post_sel_tree.root', species=2),
+        expand('/panfs/felician/B2Ktautau/workflow/rough_sensitivity_2D/BR_vs_bdt1_bdt2_{the_case}.pdf', the_case='comb_bkg_all_mc')
 
 # Every time grid files are updated need to:
 # - run pidgen for ktautau / DDs over the pre-selection files (signal + normalisation channel)
@@ -18,7 +18,7 @@ rule pid_correction:
     log:
         '/panfs/felician/B2Ktautau/workflow/PIDCalib/201{year}/Species_{species}/{line}.log'
     shell:
-        'lb-conda pidgen/2024-05-08 python PIDCalib/pid_resampling.py {wildcards.year} {wildcards.species} {wildcards.line} 2>&1 | tee {log};'
+        'lb-conda pidgen/2024-05-08 python PIDCalib/pid_resampling.py {wildcards.year} {wildcards.species} {wildcards.line} &> {log};'
         'ls /panfs/felician/B2Ktautau/workflow/PIDCalib/201{wildcards.year}/Species_{wildcards.species}/*.root | sort -V > /panfs/felician/B2Ktautau/workflow/PIDCalib/201{wildcards.year}/Species_{wildcards.species}/pid_corr.txt'
 
 rule trigger_correction:
@@ -36,7 +36,8 @@ rule trigger_correction:
 rule separate_reco_mc_components:
     ''' Creates a .root file with 1 branch (component) that allows to separate the 3pi3pi (component = 0), 3pi3pipi0 (component = 1) and 3pi3pi2pi0 (component = 2) components in the reco MC based on the true knowledge from gen MC '''
     input:
-        'create_MC_component_branch.C'
+        'create_MC_component_branch.C',
+        'Files_on_grid/MC_201{year}.txt'
     output:
         '/panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201{year}/{line}.root'
     log:
@@ -45,12 +46,21 @@ rule separate_reco_mc_components:
         'root -l -b -q \'create_MC_component_branch.C( {wildcards.year}, {wildcards.line})\' &> {log};'
         'ls /panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201{wildcards.year}/*.root | sort -V > /panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201{wildcards.year}/mc_components.txt'
 
+rule separate_reco_cocktail_mc_components:
+    ''' Creates a TTree with a component branch specifying wether the decay belongs to DD (0), DstarD (1), DDstar (2) or DstarDstar (3) '''
+    input:
+        'create_cocktail_MC_component_branch.C'
+    output:
+        '/panfs/felician/B2Ktautau/workflow/separate_reco_cocktail_mc_components/201{year}/Species_{species}/{line}.root'
+    log:
+        '/panfs/felician/B2Ktautau/workflow/separate_reco_cocktail_mc_components/201{year}/Species_{species}/{line}.log'
+    shell:
+        'root -l -b -q \'create_cocktail_MC_component_branch.C( {wildcards.year}, {wildcards.species}, {wildcards.line})\' &> {log};'
+        'ls /panfs/felician/B2Ktautau/workflow/separate_reco_cocktail_mc_components/201{wildcards.year}/Species_{wildcards.species}/*.root | sort -V > /panfs/felician/B2Ktautau/workflow/separate_reco_cocktail_mc_components/201{wildcards.year}/Species_{wildcards.species}/cocktail_mc_components.txt'
+
 rule create_pre_selection_tree:
     ''' Creates a tree passing the pre-selections for 1 of the following species:
-        10 - Ktautau MC (3pi3pi component)
-        11 - Ktautau MC (3pi3pi pi0 component)
-        12 - Ktautau MC (3pi3pi 2pi0 component)
-        1 - Ktautau MC (all components)
+        1 - Ktautau MC (component = 0, 1, 2 for 3pi3pi, 3pi3pipi0 and 3pi3pi2pi0)
         2 - Ktautau RS data
         3 - Ktautau WS data 
         4 - DDK MC
@@ -61,7 +71,13 @@ rule create_pre_selection_tree:
         CAREFUL: set to true only for 1 line / set to false by default.
     '''
     input:
-        'create_pre_sel_tree.C'
+        'create_pre_sel_tree.C',
+        '/panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201{year}/mc_components.txt',
+        '/panfs/felician/B2Ktautau/workflow/separate_reco_cocktail_mc_components/201{year}/Species_100/cocktail_mc_components.txt',
+        '/panfs/felician/B2Ktautau/workflow/separate_reco_cocktail_mc_components/201{year}/Species_110/cocktail_mc_components.txt',
+        '/panfs/felician/B2Ktautau/workflow/separate_reco_cocktail_mc_components/201{year}/Species_120/cocktail_mc_components.txt',
+        '/panfs/felician/B2Ktautau/workflow/separate_reco_cocktail_mc_components/201{year}/Species_130/cocktail_mc_components.txt',
+        '/panfs/felician/B2Ktautau/workflow/separate_reco_cocktail_mc_components/201{year}/Species_150/cocktail_mc_components.txt'
     output:
         '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{year}/Species_{species}/{line}.root' 
         # '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{year}/Species_{species}/pre_sel_table.tex' # for efficiency table
@@ -111,7 +127,7 @@ rule run_standalone_fitter:
     resources:
         time = "99:00:00"
     shell:
-        'python -u decay_fit_gsl.py {wildcards.year} {wildcards.species} {wildcards.line} 2>&1 | tee {log};'
+        'python -u decay_fit_gsl.py {wildcards.year} {wildcards.species} {wildcards.line} &> {log};'
         'ls /panfs/felician/B2Ktautau/workflow/standalone_fitter/201{wildcards.year}/Species_{wildcards.species}/*.root | sort -V > /panfs/felician/B2Ktautau/workflow/standalone_fitter/201{wildcards.year}/Species_{wildcards.species}/fit_results.txt'
 
 rule exact_constraints:
@@ -142,12 +158,10 @@ rule comparisons:
 ##############################################################################   MC correction w/ normalisation channel   ####################################################################
 
 rule create_dataset:
-    ''' Saves the mass variable and a colection of variables that are used in sideband subtraction and splot plots + TRatio plots in a RooDataSet called data '''
+    ''' Creates the RooDataSet to make the mass fits for the normalisation channel '''
+    ''' The RooDataSet is also used for sPlot / MC correction'''
     input:
-        'createDataset.C',
-        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{year}/Species_{species}/pre_sel_tree.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_7/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_8/bdt_output.txt'
+        'createDataset.C'
     output:
         '/panfs/felician/B2Ktautau/workflow/create_dataset/201{year}/Species_{species}/mass_dataset.root'
     log:
@@ -156,21 +170,18 @@ rule create_dataset:
         'root -l -b -q \'createDataset.C( {wildcards.year}, {wildcards.species} )\' &> {log}'
     
 rule fit_mass:
-    ''' Makes mass fit with mass stored in RooDataSet data '''
+    ''' Makes mass fit with mass stored in RooDataSet data of normalisation channel after best candidate selection'''
     input:
         'fit_mass.C',
         '/panfs/felician/B2Ktautau/workflow/create_dataset/201{year}/Species_{species}/mass_dataset.root'
     output:
+        '/panfs/felician/B2Ktautau/workflow/fit_mass/201{year}/Species_{species}/mass_fit_result.root',
         '/panfs/felician/B2Ktautau/workflow/fit_mass/201{year}/Species_{species}/mass_fit.pdf',
-        '/panfs/felician/B2Ktautau/workflow/fit_mass/201{year}/Species_{species}/mass_fit_result.root'
-        # '/panfs/felician/B2Ktautau/workflow/fit_mass/Species_{species}/mass_fit.gif',
-        # '/panfs/felician/B2Ktautau/workflow/fit_mass/Species_{species}/mass_fit_result.root'
+        '/panfs/felician/B2Ktautau/workflow/fit_mass/201{year}/Species_{species}/pulls_poisson.pdf'
     log:
         '/panfs/felician/B2Ktautau/workflow/fit_mass/201{year}/Species_{species}/out.log'
-        # '/panfs/felician/B2Ktautau/workflow/fit_mass/Species_{species}/out.log'
     shell:
         'root -l -b -q \'fit_mass.C( {wildcards.year}, {wildcards.species} )\' &> {log}'
-        # 'root -l -b -q \'fit_mass.C( 0, {wildcards.species} )\' &> {log}'
     
 rule make_sPlot_histos:
     ''' Saves RooDataSet with sWeights. Species refers to data. '''
@@ -178,11 +189,10 @@ rule make_sPlot_histos:
         'make_sPlot_histos.C',
         FIT_workspace = '/panfs/felician/B2Ktautau/workflow/fit_mass/201{year}/Species_{species}/mass_fit_result.root',
     output:
-        '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201{year}/Species_{species}/Sideband_plots/var_0.gif',
+        '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201{year}/Species_{species}/Sideband_plots/var_0.pdf',
         '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201{year}/Species_{species}/splot_result.root',
-        '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201{year}/Species_{species}/Splot_plots/Mass_var_plots/var_0.gif',
-        '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201{year}/Species_{species}/Splot_plots/Sig_vs_bkg_plots/var_0.gif',
-        '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201{year}/Species_{species}/Splot_vs_sideband_plots/var_0.gif'
+        '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201{year}/Species_{species}/Splot_plots/var_0.pdf',
+        '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201{year}/Species_{species}/Splot_vs_sideband_plots/var_0.pdf'
     log:
         '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201{year}/Species_{species}/out.log'
     shell:
@@ -194,7 +204,6 @@ rule compare_MC_sWeighted_data:
         'compare_MC_sWeighted_data.C',
         '/panfs/felician/B2Ktautau/workflow/create_dataset/201{year}/Species_{species}/mass_dataset.root',
         '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201{year}/Species_8/splot_result.root'
-        # '/panfs/felician/B2Ktautau/workflow/bdt_reweighter/201{year}/DDs_correction/Species_{species}/tree_with_weights.root'
     output:
         '/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/201{year}/DDs_correction/Species_{species}/MC_unweighted/var_0.pdf'
     log:
@@ -284,7 +293,7 @@ rule sklearn_training:
     log:
         '/panfs/felician/B2Ktautau/workflow/sklearn_training/{species_name}/{setup_name}_{step_name}/out.log'
     shell:
-        'python -u Sklearn/make_sklearn_training.py {wildcards.species_name} {wildcards.step_name} {wildcards.setup_name} False 2>&1 | tee {log}'
+        'python -u Sklearn/make_sklearn_training.py {wildcards.species_name} {wildcards.step_name} {wildcards.setup_name} False &> {log}'
 
 rule sklearn_response:
     ''' Compute sklearn response '''
@@ -299,22 +308,13 @@ rule sklearn_response:
     log:
         '/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.log'
     shell:
-        'python -u Sklearn/compute_sklearn_response.py {wildcards.year} {wildcards.species} {wildcards.line} 2>&1 | tee {log};'
+        'python -u Sklearn/compute_sklearn_response.py {wildcards.year} {wildcards.species} {wildcards.line} &> {log};'
         'ls /panfs/felician/B2Ktautau/workflow/sklearn_response/201{wildcards.year}/Species_{wildcards.species}/*.root | sort -V > /panfs/felician/B2Ktautau/workflow/sklearn_response/201{wildcards.year}/Species_{wildcards.species}/bdt_output.txt'
 
 rule sklearn_bmass_correlation:
     ''' Plots to check if MVA output is correlated with B+ mass '''
     input:
-        'bdt_corr_with_bmass.C',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_10/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_10/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_10/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_11/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_11/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_11/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_12/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_12/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_12/bdt_output.txt',
+        'Sklearn/bdt_corr_with_bmass.C',
         '/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_1/bdt_output.txt',
         '/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_1/bdt_output.txt',
         '/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_1/bdt_output.txt',
@@ -323,19 +323,19 @@ rule sklearn_bmass_correlation:
         '/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_2/bdt_output.txt',
         '/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_3/bdt_output.txt',
         '/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_3/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_3/bdt_output.txt'
-        # '/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_71/bdt_output.txt',
-        # '/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_71/bdt_output.txt',
-        # '/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_71/bdt_output.txt',
-        # '/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_81/bdt_output.txt',
-        # '/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_81/bdt_output.txt',
-        # '/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_81/bdt_output.txt'
+        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_3/bdt_output.txt',
+        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_71/bdt_output.txt',
+        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_71/bdt_output.txt',
+        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_71/bdt_output.txt',
+        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_81/bdt_output.txt',
+        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_81/bdt_output.txt',
+        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_81/bdt_output.txt'
     output:
         '/panfs/felician/B2Ktautau/workflow/sklearn_correlation/Bmass_isolation_bdt_cut_3pi3pi_MC.pdf'
     log:
         '/panfs/felician/B2Ktautau/workflow/sklearn_correlation/out.log'
     shell:
-        'root -b -b -q bdt_corr_with_bmass.C &> {log}'
+        'root -b -b -q Sklearn/bdt_corr_with_bmass.C &> {log}'
 ##############################################################################################################################################################################
 
 # rule get_run_numbers:
@@ -397,22 +397,6 @@ rule sklearn_bmass_correlation:
 #     shell:
 #         'root -l -b -q \'sensitivity_plots.C( {wildcards.year}, {wildcards.nprob} ) \' > {log}'
 
-#########################################################    Rough sensitivity estimate    ######################################################################################################
-
-rule rough_sensitivity_2D:
-    ''' Estimate 95% C.L. sensitivity using the normalisation channel (2D) '''
-    input: 
-        'rough_sensitivity_estimate_2D.C'
-    output:
-        '/panfs/felician/B2Ktautau/workflow/rough_sensitivity_2D/BR_vs_bdt1_bdt2_zero_bkg_3pi3pi.pdf',
-        '/panfs/felician/B2Ktautau/workflow/rough_sensitivity_2D/BR_vs_bdt1_bdt2_zero_bkg_all_mc.pdf',
-        '/panfs/felician/B2Ktautau/workflow/rough_sensitivity_2D/BR_vs_bdt1_bdt2_comb_bkg_3pi3pi.pdf',
-        '/panfs/felician/B2Ktautau/workflow/rough_sensitivity_2D/BR_vs_bdt1_bdt2_comb_bkg_all_mc.pdf'
-    log:
-        '/panfs/felician/B2Ktautau/workflow/rough_sensitivity_2D/out.log'
-    shell:
-        'root -l -b -q \'serough_sensitivity_estimate_2Dsitivity_plots.C( {wildcards.the_case} ) \' > {log}'
-
 #########################################################    Mass vetoes    ######################################################################################################
 
 rule create_invariant_mass_tree:
@@ -431,7 +415,10 @@ rule create_invariant_mass_tree:
 rule mass_vetoe_plots:
     ''' Creates plots for the mass vetoes '''   
     input:
-        'mass_vetoes_plots.C'
+        'mass_vetoes_plots.C',
+        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_1/post_sel_tree_bdt1_0.8_bdt2_0.8.root',
+        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_2/post_sel_tree_bdt1_0.8_bdt2_0.8.root',
+        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_3/post_sel_tree_bdt1_0.8_bdt2_0.8.root'
     output:
         '/panfs/felician/B2Ktautau/workflow/mass_vetoes_plots/2_particles/Bp_M01.pdf',
         '/panfs/felician/B2Ktautau/workflow/mass_vetoes_plots/3_particles/Bp_M012.pdf',
@@ -443,57 +430,112 @@ rule mass_vetoe_plots:
     shell:
         'root -l -b -q mass_vetoes_plots.C &> {log}'
 
+#########################################################    Multiple events    ######################################################################################################
+
+rule multiple_events:
+    ''' Creates a TTree with a branch saying whether the candidate passes the best candidate selection or not '''
+    ''' Before post-selection tree '''
+    input:
+        'multiple_events.py',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{year}/Species_{species}/pre_sel_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_10/bdt_output.txt',
+        '/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_2/bdt_output.txt',
+        '/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_3/bdt_output.txt',
+        '/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_100/bdt_output.txt',
+        '/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_110/bdt_output.txt',
+        '/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_120/bdt_output.txt',
+        '/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_130/bdt_output.txt',
+        '/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_150/bdt_output.txt'
+    output:
+        '/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/{line}.root',
+    log:
+        '/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/{line}.log'
+    shell:
+        'python -u multiple_events.py {wildcards.year} {wildcards.species} {wildcards.line} &> {log};'
+        'ls /panfs/felician/B2Ktautau/workflow/multiple_events/201{wildcards.year}/Species_{wildcards.species}/*.root | sort -V > /panfs/felician/B2Ktautau/workflow/multiple_events/201{wildcards.year}/Species_{wildcards.species}/multiple_events.txt'
+
+rule best_candidate_selection_plots:
+    ''' Makes plots after best candidate selection '''      
+    input:
+        'best_candidate_selection_plots.C'
+    output:
+        '/panfs/felician/B2Ktautau/workflow/best_candidate_selection_plots/ktautau_mc_TM_vs_best.pdf'
+    log:
+        '/panfs/felician/B2Ktautau/workflow/best_candidate_selection_plots/out.log'
+    shell:
+        'root -l -b -q best_candidate_selection_plots.C &> {log}'
+
 #########################################################   Post selections Ktautau trees   ##########################################################################################
 rule create_post_selection_tree:
-    ''' Creates TTree passing GSL, after optimised BDT cuts (BDT1 > 0.968) and (BDT2 > 0.953) '''
+    ''' Creates TTree passing GSL, mass vetoes and best candidate selection (if not TM) '''
     ''' All years and files are merged into a single output .root file '''
-    ''' Also after the mass vetoe cuts '''
     input:
-        'create_post_selection_tree.C',
-        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_{species}/pre_sel_tree.txt',
-        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_{species}/pre_sel_tree.txt',
-        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_{species}/pre_sel_tree.txt',
-        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_{species}/fit_results.txt',
-        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_{species}/fit_results.txt',
-        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_{species}/fit_results.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_{species}/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_{species}/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_{species}/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_{species}/invariant_mass_tree.txt',
-        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_{species}/invariant_mass_tree.txt',
-        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_{species}/invariant_mass_tree.txt'
+        'create_post_selection_tree.C'
     output:
-        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_{species}/post_sel_tree.root' # to create the TTree
+        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_{species}/post_sel_tree_bdt1_{bdt1}_bdt2_{bdt2}.root' # to create the TTree
         # '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_{species}/post_sel_table_2016.tex', # to create the efficiency tables
         # '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_{species}/post_sel_table_2017.tex', # to create the efficiency tables
         # '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_{species}/post_sel_table_2018.tex' # to create the efficiency tables
     log:
-        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_{species}/out.log'
+        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_{species}/out_{bdt1}_{bdt2}.log'
+        # '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_{species}/out.log' # to create the efficiency tables
     shell:  
-        'root -l -b -q \'create_post_selection_tree.C({wildcards.species}, false)\' &> {log}' # to create the TTree
-        # 'root -l -b -q \'create_post_selection_tree.C({wildcards.species}, true)\' &> {log}' # to create the efficiency tables
+        'root -l -b -q \'create_post_selection_tree.C( {wildcards.species}, {wildcards.bdt1}, {wildcards.bdt2}, false)\' &> {log}' # to create the TTree
+        # 'root -l -b -q \'create_post_selection_tree.C( {wildcards.species}, 0, 0, true)\' &> {log}' # to create the efficiency tables
 
-#########################################################    Multiple events    ######################################################################################################
+#########################################################    Rough sensitivity estimate    ######################################################################################################
 
-rule multiple_events:
-    ''' Checks how many multiple candidates per event there are after all the selections '''
-    input:
-        'multiple_events.py',
-        # Ktautau:
-        '/panfs/felician/B2Ktautau/workflow/PIDCalib/201{year}/Species_1/pid_corr.txt',
-        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/201{year}/Species_13/fit_results.txt',
-        '/panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201{year}/mc_components.txt'
-        # Normalisation channel:
-        '/panfs/felician/B2Ktautau/workflow/PIDCalib/201{year}/Species_7/pid_corr.txt',
-        # Cocktail MCs:
-        'Files_on_grid/MC_201{year}_BuDDKp_cocktail.txt',
-        'Files_on_grid/MC_201{year}_BdDDKp_cocktail.txt',
-        'Files_on_grid/MC_201{year}_BsDDKp_cocktail.txt',
-        'Files_on_grid/MC_201{year}_BuDDK0_cocktail.txt',
-        'Files_on_grid/MC_201{year}_BuDD_cocktail.txt'
+rule rough_sensitivity_2D:
+    ''' Estimate 95% C.L. sensitivity using the normalisation channel (2D) '''
+    ''' the_case = "zero_bkg_3pi3pi", "zero_bkg_all_mc", "comb_bkg_3pi3pi", "comb_bkg_all_mc" '''
+    input: 
+        'rough_sensitivity_estimate_2D.C'
     output:
-        '/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/out.log'
+        '/panfs/felician/B2Ktautau/workflow/rough_sensitivity_2D/BR_vs_bdt1_bdt2_{the_case}.pdf'
     log:
-        '/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/out.log'
+        '/panfs/felician/B2Ktautau/workflow/rough_sensitivity_2D/out_{the_case}.log'
     shell:
-        'python -u multiple_events.py {wildcards.year} {wildcards.species} 2>&1 | tee {log}'
+        'root -l -b -q \'rough_sensitivity_estimate_2D.C( \"{wildcards.the_case}\" ) \' &> {log}'
+
+#########################################################    Yield estimates    ######################################################################################################
+
+rule yield_estimates_inputs:
+    ''' Computes the inputs for the yield estimates that are fixed (need only to be computed once) '''
+    input:
+        'yield_estimates_inputs.py'
+    output:
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/eps_norm.csv',
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/eps_b_pre_bdt.csv',
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/eps_b_pre_bdt_error.csv'
+    log:
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/out.log'
+    shell:
+        'python yield_estimates_inputs.py &> {log}'
+
+rule yield_estimates:
+    ''' Estimate yields after all analysis selections using cocktail MC samples '''     
+    input: 
+        'yield_estimates.py'
+    output:
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates/all_BF.tex',
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates/all_eps_b.tex',
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates/all_yields.tex',
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates/all_relative_yield.tex',
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates/B_branching_fractions.tex'
+    log:
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates/out.log'
+    shell:
+        'python -u yield_estimates.py 0 0 &> {log}'
+
+#########################################################   Final fit   ######################################################################################################
+
+rule generate_fit_templates:
+    ''' Generates the signal + background fit templates for the final fit '''  
+    input:
+        'Final_fit/create_fit_templates.py'
+    output:
+        '/panfs/felician/B2Ktautau/workflow/create_fit_templates/fit_template_histograms_bdt1_{BDT1}_bdt2_{BDT2}.pdf'   
+    log:
+        '/panfs/felician/B2Ktautau/workflow/create_fit_templates/out_bdt1_{BDT1}_bdt2_{BDT2}.log'   
+    shell:
+        'python -u Final_fit/create_fit_templates.py {wildcards.BDT1} {wildcards.BDT2} &> {log}'
