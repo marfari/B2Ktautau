@@ -2,7 +2,7 @@ localrules: exact_constraints, comparisons, fit_mass, make_sPlot_histos, compare
 
 rule all:
     input:
-        expand('/panfs/felician/B2Ktautau/workflow/config_yaml_files/config_histograms_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.yml', BDT1=0.0, BDT2=0.0, seed=range(0,100)) 
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/workspace/workspace_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.json', BDT1=0.0, BDT2=0.0, seed=0)
 
 # Every time grid files are updated need to:
 # - run pidgen for ktautau / DDs over the pre-selection files (signal + normalisation channel)
@@ -529,17 +529,6 @@ rule yield_estimates:
 
 #########################################################   Final fit   ######################################################################################################
 
-rule generate_fit_templates:
-    ''' Generates the signal + background fit templates for the final fit '''  
-    input:
-        'Final_fit/create_fit_templates.py'
-    output:
-        '/panfs/felician/B2Ktautau/workflow/create_fit_templates/fit_template_histograms_bdt1_{BDT1}_bdt2_{BDT2}.pdf'   
-    log:
-        '/panfs/felician/B2Ktautau/workflow/create_fit_templates/out_bdt1_{BDT1}_bdt2_{BDT2}.log'   
-    shell:
-        'python -u Final_fit/create_fit_templates.py {wildcards.BDT1} {wildcards.BDT2} &> {log}'
-
 rule generate_toy_data:
     ''' Generates toy data for the final fit '''    
     input: 
@@ -551,13 +540,38 @@ rule generate_toy_data:
     shell:
         'python -u Final_fit/generate_toy_data.py {wildcards.BDT1} {wildcards.BDT2} {wildcards.seed} &> {log}'
 
-rule write_config_yml_files:
-    ''' Writes the config yml files for cabinetry '''   
+rule generate_fit_templates:
+    ''' Returns a .root file with Data, Signal and Background histograms '''
     input:
-        'Final_fit/autoWrite_config_yml_files.py'
+        'Final_fit/generate_fit_templates.py',
+        '/panfs/felician/B2Ktautau/workflow/generate_toy_data/toy_data_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.root'
     output:
-        '/panfs/felician/B2Ktautau/workflow/config_yaml_files/config_histograms_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.yml'
+        '/panfs/felician/B2Ktautau/workflow/generate_fit_templates/fit_templates_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.root'
     log:
-        '/panfs/felician/B2Ktautau/workflow/config_yaml_files/out_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.log'
+        '/panfs/felician/B2Ktautau/workflow/generate_fit_templates/out_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.log'   
     shell:
-        'python -u Final_fit/autoWrite_config_yml_files.py {wildcards.BDT1} {wildcards.BDT2} {wildcards.seed} &> {log}'
+        'python -u Final_fit/generate_fit_templates.py {wildcards.BDT1} {wildcards.BDT2} {wildcards.seed} &> {log}'
+
+rule write_xml_files:
+    ''' Writes the config xml files '''   
+    input:
+        'Final_fit/autoWrite_xml_files.py',
+        '/panfs/felician/B2Ktautau/workflow/generate_fit_templates/fit_templates_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.root'
+    output:
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/config/fit_region_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.xml',
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/config/config_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.xml'
+    log:
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/config/out_{BDT1}_bdt2_{BDT2}_seed_{seed}.log'
+    shell:
+        'python -u Final_fit/autoWrite_xml_files.py {wildcards.BDT1} {wildcards.BDT2} {wildcards.seed} &> {log}'
+
+rule generate_fit_workspaces:
+    ''' Creates the .json files describing the fit workspaces for pyhf '''  
+    input:
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/config/config_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.xml'
+    output:
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/workspace/workspace_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.json'
+    log:
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/workspace/out_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.log'
+    shell:
+        '../.local/bin/pyhf xml2json /panfs/felician/B2Ktautau/workflow/pyhf_fit/config/config_bdt1_{wildcards.BDT1}_bdt2_{wildcards.BDT2}_seed_{wildcards.seed}.xml --basedir /panfs/felician/B2Ktautau/workflow/pyhf_fit 2> {log} 1> {output}'
