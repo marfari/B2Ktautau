@@ -28,12 +28,18 @@ def main(argv):
 
 <Channel Name="channel1" InputFile="/panfs/felician/B2Ktautau/workflow/generate_fit_templates/fit_templates_bdt1_{0}_bdt2_{1}_seed_{2}.root" >
     <Data HistoName="data" HistoPath="Data" />
+    
+    <!-- Set the StatError type to Poisson.  Can also be Gaussian -->
+    <StatErrorConfig RelErrorThreshold="0.05" ConstraintType="Poisson" />
+    
     <Sample Name="Signal" HistoPath="Signal" HistoName="nominal">
-        <ShapeSys Name="staterror_sig" HistoPath="Signal" HistoName="error" ConstraintType="Poisson"/>
-        <NormFactor Name="Nsig" Val="0" Low="-10" High="10."  />
+        <!-- StatError Activate="True" Name="staterror_sig" HistoPath="Signal" HistoName="error" -->
+        <StatError Activate="True" /> <!-- Use Default Histogram Errors as input to StatError -->
+        <NormFactor Name="Nsig" Val="0" Low="-100000." High="100000."  />
     </Sample>
     <Sample Name="Background" HistoPath="Background" HistoName="nominal">
-        <ShapeSys Name="staterror_bkg" HistoPath="Background" HistoName="error" ConstraintType="Poisson"/>
+        <!-- StatError Activate="True" Name="staterror_bkg" HistoPath="Background" HistoName="error" -->
+        <StatError Activate="True" /> <!-- Use Default Histogram Errors as input to StatError -->
         <NormFactor Name="Nbkg" Val=\"{3}\" Low="0" High=\"{4}\"  />
     </Sample>
 </Channel>
@@ -48,8 +54,9 @@ def main(argv):
 
 <Combination OutputFilePrefix="/panfs/felician/B2Ktautau/workflow/pyhf_fit/workspace/workspace_bdt1_{0}_bdt2_{1}_seed_{2}">
 	<Input>/panfs/felician/B2Ktautau/workflow/pyhf_fit/config/fit_region_bdt1_{0}_bdt2_{1}_seed_{2}.xml</Input>
-	<Measurement Name="MinimalConfiguration" Lumi="1." LumiRelErr="0.1" ExportOnly="True">
+	<Measurement Name="MinimalConfiguration" Lumi="1." LumiRelErr="0.1">
 		<POI>Nsig</POI>
+        <ParamSetting Const="True">Lumi</ParamSetting>
 	</Measurement>
 </Combination>
     '''.format( round(bdt1,1), round(bdt2,1), random_seed )

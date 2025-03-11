@@ -2,7 +2,7 @@ localrules: exact_constraints, comparisons, fit_mass, make_sPlot_histos, compare
 
 rule all:
     input:
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/workspace/workspace_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.json', BDT1=0.0, BDT2=0.0, seed=0)
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/toy_studies/toy_nsig_pulls_bdt1_{BDT1}_bdt2_{BDT2}.pdf', BDT1=0.0, BDT2=0.0)
 
 # Every time grid files are updated need to:
 # - run pidgen for ktautau / DDs over the pre-selection files (signal + normalisation channel)
@@ -575,3 +575,28 @@ rule generate_fit_workspaces:
         '/panfs/felician/B2Ktautau/workflow/pyhf_fit/workspace/out_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.log'
     shell:
         '../.local/bin/pyhf xml2json /panfs/felician/B2Ktautau/workflow/pyhf_fit/config/config_bdt1_{wildcards.BDT1}_bdt2_{wildcards.BDT2}_seed_{wildcards.seed}.xml --basedir /panfs/felician/B2Ktautau/workflow/pyhf_fit 2> {log} 1> {output}'
+
+rule fit:
+    ''' Makes the final fit to data  (blinded)'''
+    input:
+        'Final_fit/fit.py',
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/workspace/workspace_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.json'
+    output:
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/results/fit_result_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.npy',
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/plots/fit_plot_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.pdf'
+    log:
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/results/out_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.log'
+    shell:
+        'python -u Final_fit/fit.py {wildcards.BDT1} {wildcards.BDT2} {wildcards.seed} &> {log}'
+    
+rule toy_studies:
+    ''' Nsig distribution of all toys '''
+    input:
+        'Final_fit/toy_studies.py',
+        ['/panfs/felician/B2Ktautau/workflow/pyhf_fit/results/fit_result_bdt1_{{BDT1}}_bdt2_{{BDT2}}_seed_{0}.npy'.format(s) for s in range(100)]
+    output:
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/toy_studies/toy_nsig_pulls_bdt1_{BDT1}_bdt2_{BDT2}.pdf'
+    log:
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/toy_studies/out_bdt1_{BDT1}_bdt2_{BDT2}.log'
+    shell:
+        'python -u Final_fit/toy_studies.py {wildcards.BDT1} {wildcards.BDT2} &> {log}'
