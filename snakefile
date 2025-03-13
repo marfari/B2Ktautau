@@ -2,7 +2,7 @@ localrules: exact_constraints, comparisons, fit_mass, make_sPlot_histos, compare
 
 rule all:
     input:
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/toy_studies/toy_nsig_pulls_bdt1_{BDT1}_bdt2_{BDT2}.pdf', BDT1=0.0, BDT2=0.0)
+        expand('/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs.npy')
 
 # Every time grid files are updated need to:
 # - run pidgen for ktautau / DDs over the pre-selection files (signal + normalisation channel)
@@ -484,6 +484,25 @@ rule create_post_selection_tree:
         # 'root -l -b -q \'create_post_selection_tree.C( {wildcards.species}, 0, 0, true)\' &> {log}' # to create the efficiency tables
 
 #########################################################    Rough sensitivity estimate    ######################################################################################################
+
+rule branching_fraction_inputs:
+    ''' Saves the product of all fixed terms in the B->K tau tau branching fraction '''
+    input:
+        'branching_fraction_inputs.py',
+        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_72/post_sel_tree_bdt1_0_bdt2_0.root',
+        'Files_on_grid/MC_D0Dps_2016.txt',
+        'Files_on_grid/MC_D0Dps_2017.txt',
+        'Files_on_grid/MC_D0Dps_2018.txt',
+        'Files_on_grid/MC_2016.txt',
+        'Files_on_grid/MC_2017.txt',
+        'Files_on_grid/MC_2018.txt'
+    output:
+        '/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs.npy'
+    log:
+        '/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/out.log'
+    shell:
+        'python -u branching_fraction_inputs.py &> {log}'
+
 
 rule rough_sensitivity_2D:
     ''' Estimate 95% C.L. sensitivity using the normalisation channel (2D) '''
