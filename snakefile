@@ -1,8 +1,11 @@
+import numpy as np
+
 localrules: exact_constraints, comparisons, fit_mass, make_sPlot_histos, compare_MC_sWeighted_data, addWeight, make_MLP_regression
 
 rule all:
     input:
-        expand('/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs.npy')
+        expand('/panfs/felician/B2Ktautau/workflow/rough_sensitivity_2D/BF_vs_bdt1_vs_bdt2_bkg_config_{bkg_config}.pdf', bkg_config=1),
+        expand('/panfs/felician/B2Ktautau/workflow/rough_sensitivity_2D/BF_vs_bdt1_vs_bdt2_bkg_config_{bkg_config}.pdf', bkg_config=2)
 
 # Every time grid files are updated need to:
 # - run pidgen for ktautau / DDs over the pre-selection files (signal + normalisation channel)
@@ -133,13 +136,32 @@ rule run_standalone_fitter:
 rule exact_constraints:
     ''' Plots functions in system of equations '''
     input:
-        'exact_constraints.C'
+        'exact_constraints.C',
+        # '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_1/pre_sel_tree.txt',
+        # '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_1/pre_sel_tree.txt',
+        # '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_1/pre_sel_tree.txt',
+        # '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_1/fit_results.txt',
+        # '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_1/fit_results.txt',
+        # '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_1/fit_results.txt',
+        # '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_2/pre_sel_tree.txt',
+        # '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_2/pre_sel_tree.txt',
+        # '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_2/pre_sel_tree.txt',
+        # '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_2/fit_results.txt',
+        # '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_2/fit_results.txt',
+        # '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_2/fit_results.txt',
+        # '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_3/pre_sel_tree.txt',
+        # '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_3/pre_sel_tree.txt',
+        # '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_3/pre_sel_tree.txt',
+        # '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_3/fit_results.txt',
+        # '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_3/fit_results.txt',
+        # '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_3/fit_results.txt'
     output:
-        '/panfs/felician/B2Ktautau/workflow/exact_constraints/Species_{species}/F0.pdf'
+        '/panfs/felician/B2Ktautau/workflow/exact_constraints/bmass_mc_components_2016.pdf',
+        '/panfs/felician/B2Ktautau/workflow/exact_constraints/GSL_pulls/PVx.pdf'
     log:
-        '/panfs/felician/B2Ktautau/workflow/exact_constraints/Species_{species}/out.log'
+        '/panfs/felician/B2Ktautau/workflow/exact_constraints/out.log'
     shell:
-        'root -l -b -q \' exact_constraints.C( {wildcards.species} ) \' &> {log}'
+        'root -l -b -q exact_constraints.C &> {log}'
 
 rule comparisons:
     ''' Compares variables from 2 different files  '''
@@ -160,6 +182,7 @@ rule comparisons:
 rule create_dataset:
     ''' Creates the RooDataSet to make the mass fits for the normalisation channel '''
     ''' The RooDataSet is also used for sPlot / MC correction'''
+    # It needs lb-conda default/2025-02-19 / an older version of ROOT (new ROOT update? RooDataSet constructor used is not supported anymore?)
     input:
         'createDataset.C'
     output:
@@ -497,7 +520,12 @@ rule branching_fraction_inputs:
         'Files_on_grid/MC_2017.txt',
         'Files_on_grid/MC_2018.txt'
     output:
-        '/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs.npy'
+        '/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs.npy',
+        '/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs_error.npy',
+        '/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_norm_value.npy',
+        '/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_norm_error.npy',
+        '/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_ktautau_fixed_value.npy',
+        '/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_ktautau_fixed_error.npy'
     log:
         '/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/out.log'
     shell:
@@ -508,24 +536,50 @@ rule rough_sensitivity_2D:
     ''' Estimate 95% C.L. sensitivity using the normalisation channel (2D) '''
     ''' the_case = "zero_bkg_3pi3pi", "zero_bkg_all_mc", "comb_bkg_3pi3pi", "comb_bkg_all_mc" '''
     input: 
-        'rough_sensitivity_estimate_2D.C'
+        'rough_sensitivity_estimate_2D.py',
+        '/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs.npy',
+        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_10/post_sel_tree_bdt1_0_bdt2_0.root',
+        [ ['/panfs/felician/B2Ktautau/workflow/yield_estimates/yield_values_bdt1_{0}_bdt2_{1}.npy'.format(BDT1,BDT2) for BDT1 in np.linspace(0.9,1,20)] for BDT2 in np.linspace(0.9,1,20) ]
     output:
-        '/panfs/felician/B2Ktautau/workflow/rough_sensitivity_2D/BR_vs_bdt1_bdt2_{the_case}.pdf'
+        '/panfs/felician/B2Ktautau/workflow/rough_sensitivity_2D/BF_vs_bdt1_vs_bdt2_bkg_config_{bkg_config}.pdf'
     log:
-        '/panfs/felician/B2Ktautau/workflow/rough_sensitivity_2D/out_{the_case}.log'
+        '/panfs/felician/B2Ktautau/workflow/rough_sensitivity_2D/out_bkg_config_{bkg_config}.log'
     shell:
-        'root -l -b -q \'rough_sensitivity_estimate_2D.C( \"{wildcards.the_case}\" ) \' &> {log}'
+        'python -u rough_sensitivity_estimate_2D.py {wildcards.bkg_config} &> {log}'
 
 #########################################################    Yield estimates    ######################################################################################################
 
 rule yield_estimates_inputs:
     ''' Computes the inputs for the yield estimates that are fixed (need only to be computed once) '''
     input:
-        'yield_estimates_inputs.py'
+        'yield_estimates_inputs.py',
+        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_72/post_sel_tree_bdt1_0_bdt2_0.root',
+        '/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_norm_value.npy',
+        '/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_norm_error.npy',
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/branching_fractions/B_values.csv',
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/branching_fractions/B_errors.csv',
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/branching_fractions/DD_values.csv',
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/branching_fractions/DD_errors.csv',
+        'Files_on_grid/MC_2016_BuDDKp_cocktail.txt',
+        'Files_on_grid/MC_2017_BuDDKp_cocktail.txt',
+        'Files_on_grid/MC_2018_BuDDKp_cocktail.txt',
+        'Files_on_grid/MC_2016_BdDDKp_cocktail.txt',
+        'Files_on_grid/MC_2017_BdDDKp_cocktail.txt',
+        'Files_on_grid/MC_2018_BdDDKp_cocktail.txt',
+        'Files_on_grid/MC_2016_BsDDKp_cocktail.txt',
+        'Files_on_grid/MC_2017_BsDDKp_cocktail.txt',
+        'Files_on_grid/MC_2018_BsDDKp_cocktail.txt',
+        'Files_on_grid/MC_2016_BuDDK0_cocktail.txt',
+        'Files_on_grid/MC_2017_BuDDK0_cocktail.txt',
+        'Files_on_grid/MC_2018_BuDDK0_cocktail.txt',
+        'Files_on_grid/MC_2016_BuDD_cocktail.txt',
+        'Files_on_grid/MC_2017_BuDD_cocktail.txt',
+        'Files_on_grid/MC_2018_BuDD_cocktail.txt'
     output:
-        '/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/eps_norm.csv',
-        '/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/eps_b_pre_bdt.csv',
-        '/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/eps_b_pre_bdt_error.csv'
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/yield_values_inputs.npy',
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/yield_errors_inputs.npy',
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/eps_bkg_fixed_value.npy',
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/eps_bkg_fixed_error.npy'
     log:
         '/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/out.log'
     shell:
@@ -534,17 +588,39 @@ rule yield_estimates_inputs:
 rule yield_estimates:
     ''' Estimate yields after all analysis selections using cocktail MC samples '''     
     input: 
-        'yield_estimates.py'
+        'yield_estimates.py',
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/yield_values_inputs.npy',
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/yield_errors_inputs.npy',
+        '/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs.npy',
+        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_100/post_sel_tree_bdt1_0_bdt2_0.root',
+        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_110/post_sel_tree_bdt1_0_bdt2_0.root',
+        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_120/post_sel_tree_bdt1_0_bdt2_0.root',
+        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_130/post_sel_tree_bdt1_0_bdt2_0.root',
+        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_150/post_sel_tree_bdt1_0_bdt2_0.root',
+        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_10/post_sel_tree_bdt1_0_bdt2_0.root'
     output:
-        '/panfs/felician/B2Ktautau/workflow/yield_estimates/all_BF.tex',
-        '/panfs/felician/B2Ktautau/workflow/yield_estimates/all_eps_b.tex',
-        '/panfs/felician/B2Ktautau/workflow/yield_estimates/all_yields.tex',
-        '/panfs/felician/B2Ktautau/workflow/yield_estimates/all_relative_yield.tex',
-        '/panfs/felician/B2Ktautau/workflow/yield_estimates/B_branching_fractions.tex'
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates/yield_values_bdt1_{BDT1}_bdt2_{BDT2}.npy',
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates/yield_errors_bdt1_{BDT1}_bdt2_{BDT2}.npy',
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates/yields_table_bdt1_{BDT1}_bdt2_{BDT2}.tex',
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates/relative_yields_table_bdt1_{BDT1}_bdt2_{BDT2}.tex'
     log:
-        '/panfs/felician/B2Ktautau/workflow/yield_estimates/out.log'
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates/out_bdt1_{BDT1}_bdt2_{BDT2}.log'
     shell:
-        'python -u yield_estimates.py 0 0 &> {log}'
+        'python -u yield_estimates.py {wildcards.BDT1} {wildcards.BDT2} &> {log}'
+
+rule yield_estimates_plots:
+    ''' Makes plots normalised to the yield estimates '''
+    input:
+        'yield_estimates_plots.py',
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates/yield_values_bdt1_{BDT1}_bdt2_{BDT2}.npy'
+    output:
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates_plots/yield_plots_bdt1_{BDT1}_bdt2_{BDT2}.pdf',
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates_plots/yield_plots_bdt1_{BDT1}_bdt2_{BDT2}_comb_bkg.pdf'
+    log:
+        '/panfs/felician/B2Ktautau/workflow/yield_estimates_plots/out_bdt1_{BDT1}_bdt2_{BDT2}.log'
+    shell:
+        'python yield_estimates_plots.py {wildcards.BDT1} {wildcards.BDT2} &> {log}'
+
 
 #########################################################   Final fit   ######################################################################################################
 

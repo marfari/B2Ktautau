@@ -1,17 +1,23 @@
 import sys
 import ROOT
 import numpy as np
+from uncertainties import ufloat
+from uncertainties import unumpy
+
+def eps_error(Num, Den):
+    return (Num/Den)*np.sqrt( 1/Num + 1/Den )
 
 def main(argv):
 
     # branching fraction term
-    B_tau_3pi_nu = 9.31/100; # +/- 0.05/100
-    B_tau_3pi_pi0_nu = 4.62/100; # +/- 0.05/100
-    B_Bp_D0bar_Dsp = 9.0/1000; # +/- 0.9/1000
-    B_D0bar_Kp_pi = 3.947/100; # +/- 0.030/100
-    B_Dsp_Kp_Km_pi = 5.37/100; #  +/- 0.10/100
+    B_tau_3pi_nu = ufloat(9.31/100, 0.05/100)
+    B_tau_3pi_pi0_nu = ufloat(4.62/100, 0.05/100)
+    B_Bp_D0bar_Dsp = ufloat(9.0/1000, 0.9/1000)
+    B_D0bar_Kp_pi = ufloat(3.947/100, 0.030/100)
+    B_Dsp_Kp_Km_pi = ufloat(5.37/100, 0.10/100)
 
     branching_fraction_term = (B_Bp_D0bar_Dsp*B_D0bar_Kp_pi*B_Dsp_Kp_Km_pi)/((B_tau_3pi_nu+B_tau_3pi_pi0_nu)**2)
+    print(branching_fraction_term)
 
     # normalisation channel term
     ### Norm MC after all selections (for N_norm_num)
@@ -40,23 +46,31 @@ def main(argv):
     t_norm_gen.Add(t_norm_gen_2018)
 
     ### Norm acceptance
-    eps_acc_norm_2016 = 14.50/100
-    eps_acc_norm_2017 = 14.48/100
-    eps_acc_norm_2018 = 14.58/100
+    eps_acc_norm_2016 = ufloat(14.50/100, 0.10/100)
+    eps_acc_norm_2017 = ufloat(14.48/100, 0.10/100)
+    eps_acc_norm_2018 = ufloat(14.58/100, 0.10/100)
     eps_acc_norm = (10.8/34.2)*eps_acc_norm_2016 + (12./34.2)*eps_acc_norm_2017 + (11.4/34.2)*eps_acc_norm_2018
 
     ### eps_norm
     N_norm_num = t_norm_mc.GetEntries()
+    # N_norm_den_2016 = 5350785
+    # N_norm_den_2017 = 5782016
+    # N_norm_den_2018 = 5763580
+    # N_norm_den = N_norm_den_2016 + N_norm_den_2017 + N_norm_den_2018
     N_norm_den = t_norm_gen.GetEntries()
-    eps_norm = eps_acc_norm*(N_norm_num/N_norm_den)
+    eps_norm_post_acc = ufloat( N_norm_num/N_norm_den, eps_error(N_norm_num,N_norm_den) )
 
+    eps_norm = eps_acc_norm*eps_norm_post_acc
     print(eps_norm*100)
 
+    np.save("/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_norm_value.npy", unumpy.nominal_values(eps_norm))
+    np.save("/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_norm_error.npy", unumpy.std_devs(eps_norm))
+
     ### N_norm
-    N_norm = 32858
+    N_norm = ufloat(33187, 259)
+    # print(N_norm)
 
     normalisation_channel_term = eps_norm/N_norm
-
     print(normalisation_channel_term)
 
     # signal efficiency term (all MC)
@@ -144,27 +158,38 @@ def main(argv):
     t_gen_all.Add(t_gen_all_2018)
 
     ### Ktautau acceptance
-    eps_acc_2016 = (5.318/100)
-    eps_acc_2017 = (5.321/100)
-    eps_acc_2018 = (5.330/100)
+    eps_acc_2016 = ufloat(5.318/100, 0.010/100)
+    eps_acc_2017 = ufloat(5.321/100, 0.011/100)
+    eps_acc_2018 = ufloat(5.330/100, 0.010/100)
     eps_acc = (28.5/165)*eps_acc_2016 + (60.0/165)*eps_acc_2017 + (76.5/165)*eps_acc_2018
 
     ### Ktautau stripping 
-    eps_strip_2016 = (1.028/100)
-    eps_strip_2017 = (1.056/100)
-    eps_strip_2018 = (1.050/100)
+    eps_strip_2016 = ufloat(1.028/100, 0.003/100)
+    eps_strip_2017 = ufloat(1.056/100, 0.003/100)
+    eps_strip_2018 = ufloat(1.050/100, 0.002/100)
     eps_strip = (28.5/165)*eps_strip_2016 + (60.0/165)*eps_strip_2017 + (76.5/165)*eps_strip_2018
 
     ### Ktautua reco1 = 100%
+    # N_den_2016 = 46774+19242+19252+8028
+    # N_den_2017 = 61870+25333+25516+10549
+    # N_den_2018 = 95913+39754+39423+16649
+    # N_den = N_den_2016+N_den_2017+N_den_2018
     N_den = t_gen_all.GetEntries()
+    N_den = ufloat( N_den, np.sqrt(N_den) )
+    # print(N_den)
 
     signal_efficiency_term = N_den/(eps_acc*eps_strip)
-
     print(signal_efficiency_term)
+    
+    np.save("/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_ktautau_fixed_value.npy", unumpy.nominal_values(signal_efficiency_term))
+    np.save("/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_ktautau_fixed_error.npy", unumpy.std_devs(signal_efficiency_term))
 
     fixed_term = branching_fraction_term*normalisation_channel_term*signal_efficiency_term
+    print(fixed_term)
 
-    np.save("/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs.npy", fixed_term)
+    np.save("/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs.npy", unumpy.nominal_values(fixed_term))
+    np.save("/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs_error.npy", unumpy.std_devs(fixed_term))
+
 
 if __name__ == "__main__":
     main(sys.argv)
