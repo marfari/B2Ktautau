@@ -205,7 +205,9 @@ def main(argv):
     n_events = len(nCand)
 
     # Loop over events
-    best_candidates_index = np.zeros(n_events, dtype=int)
+    best_candidates_index = -np.ones(n_events, dtype=int)
+    second_best_candidate_index = -np.ones(n_events, dtype=int)
+
     n_current = 0
     for evt in range(n_events):
         N = nCand[evt]
@@ -228,7 +230,12 @@ def main(argv):
                 dtf_chi2[i] = chi2[0]
 
         if(isKtautau or is_cokctailMC):
-            best_candidates_index[evt] = indices[np.argmax( bdt_sum )]
+            # best_candidates_index[evt] = indices[np.argmax( bdt_sum )]
+
+            bdt_sum_sorted_indices = bdt_sum.argsort()
+            best_candidates_index[evt] = indices[ bdt_sum_sorted_indices[-1] ]
+            if(N > 1):
+                second_best_candidate_index[evt] = indices[ bdt_sum_sorted_indices[-2] ]
         elif((species == 72) or (species == 8)):
             best_candidates_index[evt] = indices[np.argmin( dtf_chi2 )]
         
@@ -239,13 +246,21 @@ def main(argv):
     fout.cd()
     tout = ROOT.TTree("DecayTree", "DecayTree")
     isBest = array('i', [0])
+    isSecondBest = array('i', [0])
     tout.Branch("is_best_cand", isBest, "is_best_cand/O")
+    tout.Branch("is_second_best_cand", isSecondBest, "is_second_best_cand/O")
 
     for i in range(n_entries):
         if(i in best_candidates_index):
             isBest[0] = True
         else:
             isBest[0] = False
+
+        if(i in second_best_candidate_index):
+            isSecondBest[0] = True
+        else:
+            isSecondBest[0] = False
+
         tout.Fill()
 
     print(n_entries)

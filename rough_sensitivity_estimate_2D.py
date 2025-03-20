@@ -69,8 +69,8 @@ def main(argv):
     f_ws = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_3/post_sel_tree_bdt1_0_bdt2_0.root")
     t_ws = f_ws.Get("DecayTree")
 
-    N = 20
-    bdt_cuts = np.linspace(0.9,1,N)
+    N = 30
+    bdt_cuts = np.linspace(0,1,N)
 
     S_values = np.zeros(N*N)
     B_values = np.zeros(N*N)

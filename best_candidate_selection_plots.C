@@ -1,3 +1,4 @@
+Double_t eps_error(Double_t Num, Double_t Den);
 
 void best_candidate_selection_plots()
 {
@@ -80,7 +81,7 @@ void best_candidate_selection_plots()
     t3_ktautau_mc_2017->AddFileInfoList((TCollection*)fc3_mc_2017->GetList());
     t3_ktautau_mc_2018->AddFileInfoList((TCollection*)fc3_mc_2018->GetList());
 
-    cout << "Best candidate" << endl;
+    cout << "Sklearn" << endl;
     cout << t3_ktautau_mc->GetEntries() << endl;
     cout << t3_ktautau_mc_2017->GetEntries() << endl;
     cout << t3_ktautau_mc_2018->GetEntries() << endl;
@@ -88,15 +89,37 @@ void best_candidate_selection_plots()
     t3_ktautau_mc->Add(t3_ktautau_mc_2017);
     t3_ktautau_mc->Add(t3_ktautau_mc_2018);
 
+    TFileCollection *fc4_mc_2016 = new TFileCollection("fc4_mc_2016", "fc4_mc_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_10/invariant_mass_tree.txt");
+    TFileCollection *fc4_mc_2017 = new TFileCollection("fc4_mc_2017", "fc4_mc_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_10/invariant_mass_tree.txt");
+    TFileCollection *fc4_mc_2018 = new TFileCollection("fc4_mc_2018", "fc4_mc_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_10/invariant_mass_tree.txt");
+
+    TChain* t4_ktautau_mc = new TChain("DecayTree");
+    TChain* t4_ktautau_mc_2017 = new TChain("DecayTree");
+    TChain* t4_ktautau_mc_2018 = new TChain("DecayTree");
+
+    t4_ktautau_mc->AddFileInfoList((TCollection*)fc4_mc_2016->GetList());
+    t4_ktautau_mc_2017->AddFileInfoList((TCollection*)fc4_mc_2017->GetList());
+    t4_ktautau_mc_2018->AddFileInfoList((TCollection*)fc4_mc_2018->GetList());
+
+    cout << "Masses" << endl;
+    cout << t4_ktautau_mc->GetEntries() << endl;
+    cout << t4_ktautau_mc_2017->GetEntries() << endl;
+    cout << t4_ktautau_mc_2018->GetEntries() << endl;
+
+    t4_ktautau_mc->Add(t4_ktautau_mc_2017);
+    t4_ktautau_mc->Add(t4_ktautau_mc_2018);
+
     Int_t N_mc = t_ktautau_mc->GetEntries();
     Int_t N1_mc = t1_ktautau_mc->GetEntries();
     Int_t N2_mc = t2_ktautau_mc->GetEntries();
     Int_t N3_mc = t3_ktautau_mc->GetEntries();
-    if((N_mc == N1_mc) && (N_mc == N2_mc) && (N_mc == N3_mc))
+    Int_t N4_mc = t4_ktautau_mc->GetEntries();
+    if((N_mc == N1_mc) && (N_mc == N2_mc) && (N_mc == N3_mc) && (N_mc == N4_mc))
     {
         t_ktautau_mc->AddFriend(t1_ktautau_mc, "gsl");
         t_ktautau_mc->AddFriend(t2_ktautau_mc, "best_cand");
         t_ktautau_mc->AddFriend(t3_ktautau_mc, "sklearn");
+        t_ktautau_mc->AddFriend(t4_ktautau_mc, "mass");
     }
     else
     {
@@ -145,11 +168,33 @@ void best_candidate_selection_plots()
     t1_ktautau_rs->Add(t1_ktautau_rs_2017);
     t1_ktautau_rs->Add(t1_ktautau_rs_2018);
 
+    TFileCollection *fc2_rs_2016 = new TFileCollection("fc2_rs_2016", "fc2_rs_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_2/invariant_mass_tree.txt");
+    TFileCollection *fc2_rs_2017 = new TFileCollection("fc2_rs_2017", "fc2_rs_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_2/invariant_mass_tree.txt");
+    TFileCollection *fc2_rs_2018 = new TFileCollection("fc2_rs_2018", "fc2_rs_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_2/invariant_mass_tree.txt");
+
+    TChain* t2_ktautau_rs = new TChain("DecayTree");
+    TChain* t2_ktautau_rs_2017 = new TChain("DecayTree");
+    TChain* t2_ktautau_rs_2018 = new TChain("DecayTree");
+
+    t2_ktautau_rs->AddFileInfoList((TCollection*)fc2_rs_2016->GetList());
+    t2_ktautau_rs_2017->AddFileInfoList((TCollection*)fc2_rs_2017->GetList());
+    t2_ktautau_rs_2018->AddFileInfoList((TCollection*)fc2_rs_2018->GetList());
+
+    cout << "Masses" << endl;
+    cout << t2_ktautau_rs->GetEntries() << endl;
+    cout << t2_ktautau_rs_2017->GetEntries() << endl;
+    cout << t2_ktautau_rs_2018->GetEntries() << endl;
+
+    t2_ktautau_rs->Add(t2_ktautau_rs_2017);
+    t2_ktautau_rs->Add(t2_ktautau_rs_2018);
+
     Int_t N_rs = t_ktautau_rs_data->GetEntries();
     Int_t N1_rs = t1_ktautau_rs->GetEntries();
-    if(N_rs == N1_rs)
+    Int_t N2_rs = t2_ktautau_rs->GetEntries();
+    if((N_rs == N1_rs) && (N_rs == N2_rs))
     {
         t_ktautau_rs_data->AddFriend(t1_ktautau_rs, "best_cand");
+        t_ktautau_rs_data->AddFriend(t2_ktautau_rs, "mass");
     }
     else
     {
@@ -198,11 +243,33 @@ void best_candidate_selection_plots()
     t1_ktautau_ws->Add(t1_ktautau_ws_2017);
     t1_ktautau_ws->Add(t1_ktautau_ws_2018);
 
+    TFileCollection *fc2_ws_2016 = new TFileCollection("fc2_ws_2016", "fc2_ws_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_3/invariant_mass_tree.txt");
+    TFileCollection *fc2_ws_2017 = new TFileCollection("fc2_ws_2017", "fc2_ws_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_3/invariant_mass_tree.txt");
+    TFileCollection *fc2_ws_2018 = new TFileCollection("fc2_ws_2018", "fc2_ws_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_3/invariant_mass_tree.txt");
+
+    TChain* t2_ktautau_ws = new TChain("DecayTree");
+    TChain* t2_ktautau_ws_2017 = new TChain("DecayTree");
+    TChain* t2_ktautau_ws_2018 = new TChain("DecayTree");
+
+    t2_ktautau_ws->AddFileInfoList((TCollection*)fc2_ws_2016->GetList());
+    t2_ktautau_ws_2017->AddFileInfoList((TCollection*)fc2_ws_2017->GetList());
+    t2_ktautau_ws_2018->AddFileInfoList((TCollection*)fc2_ws_2018->GetList());
+
+    cout << "Masses" << endl;
+    cout << t2_ktautau_ws->GetEntries() << endl;
+    cout << t2_ktautau_ws_2017->GetEntries() << endl;
+    cout << t2_ktautau_ws_2018->GetEntries() << endl;
+
+    t2_ktautau_ws->Add(t1_ktautau_ws_2017);
+    t2_ktautau_ws->Add(t1_ktautau_ws_2018);
+
     Int_t N_ws = t_ktautau_ws_data->GetEntries();
     Int_t N1_ws = t1_ktautau_ws->GetEntries();
-    if(N_ws == N1_ws)
+    Int_t N2_ws = t2_ktautau_ws->GetEntries();
+    if((N_ws == N1_ws) && (N_ws == N2_ws))
     {
         t_ktautau_ws_data->AddFriend(t1_ktautau_ws, "best_cand");
+        t_ktautau_ws_data->AddFriend(t2_ktautau_ws, "mass");
     }
     else
     {
@@ -411,7 +478,7 @@ void best_candidate_selection_plots()
     t3_BuDDKp_2017->AddFileInfoList((TCollection*)fc3_BuDDKp_2017->GetList());
     t3_BuDDKp_2018->AddFileInfoList((TCollection*)fc3_BuDDKp_2018->GetList());
 
-    cout << "Best candidate" << endl;
+    cout << "Sklearn" << endl;
     cout << t3_BuDDKp->GetEntries() << endl;
     cout << t3_BuDDKp_2017->GetEntries() << endl;
     cout << t3_BuDDKp_2018->GetEntries() << endl;
@@ -419,15 +486,37 @@ void best_candidate_selection_plots()
     t3_BuDDKp->Add(t3_BuDDKp_2017);
     t3_BuDDKp->Add(t3_BuDDKp_2018);
 
+    TFileCollection *fc4_BuDDKp_2016 = new TFileCollection("fc4_BuDDKp_2016", "fc4_BuDDKp_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_100/invariant_mass_tree.txt");
+    TFileCollection *fc4_BuDDKp_2017 = new TFileCollection("fc4_BuDDKp_2017", "fc4_BuDDKp_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_100/invariant_mass_tree.txt");
+    TFileCollection *fc4_BuDDKp_2018 = new TFileCollection("fc4_BuDDKp_2018", "fc4_BuDDKp_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_100/invariant_mass_tree.txt");
+
+    TChain* t4_BuDDKp = new TChain("DecayTree");
+    TChain* t4_BuDDKp_2017 = new TChain("DecayTree");
+    TChain* t4_BuDDKp_2018 = new TChain("DecayTree");
+
+    t4_BuDDKp->AddFileInfoList((TCollection*)fc4_BuDDKp_2016->GetList());
+    t4_BuDDKp_2017->AddFileInfoList((TCollection*)fc4_BuDDKp_2017->GetList());
+    t4_BuDDKp_2018->AddFileInfoList((TCollection*)fc4_BuDDKp_2018->GetList());
+
+    cout << "Masses" << endl;
+    cout << t4_BuDDKp->GetEntries() << endl;
+    cout << t4_BuDDKp_2017->GetEntries() << endl;
+    cout << t4_BuDDKp_2018->GetEntries() << endl;
+
+    t4_BuDDKp->Add(t4_BuDDKp_2017);
+    t4_BuDDKp->Add(t4_BuDDKp_2018);
+
     Int_t N_BuDDKp = t_BuDDKp->GetEntries();
     Int_t N1_BuDDKp = t1_BuDDKp->GetEntries();
     Int_t N2_BuDDKp = t2_BuDDKp->GetEntries();
     Int_t N3_BuDDKp = t3_BuDDKp->GetEntries();
-    if((N_BuDDKp == N1_BuDDKp) && (N_BuDDKp == N2_BuDDKp) && (N_BuDDKp == N3_BuDDKp))
+    Int_t N4_BuDDKp = t4_BuDDKp->GetEntries();
+    if((N_BuDDKp == N1_BuDDKp) && (N_BuDDKp == N2_BuDDKp) && (N_BuDDKp == N3_BuDDKp) && (N_BuDDKp == N4_BuDDKp))
     {
         t_BuDDKp->AddFriend(t1_BuDDKp, "gsl");
         t_BuDDKp->AddFriend(t2_BuDDKp, "best_cand");
         t_BuDDKp->AddFriend(t3_BuDDKp, "sklearn");
+        t_BuDDKp->AddFriend(t4_BuDDKp, "mass");
     }
     else
     {
@@ -508,7 +597,7 @@ void best_candidate_selection_plots()
     t3_BdDDKp_2017->AddFileInfoList((TCollection*)fc3_BdDDKp_2017->GetList());
     t3_BdDDKp_2018->AddFileInfoList((TCollection*)fc3_BdDDKp_2018->GetList());
 
-    cout << "Best candidate" << endl;
+    cout << "Sklearn" << endl;
     cout << t3_BdDDKp->GetEntries() << endl;
     cout << t3_BdDDKp_2017->GetEntries() << endl;
     cout << t3_BdDDKp_2018->GetEntries() << endl;
@@ -516,15 +605,37 @@ void best_candidate_selection_plots()
     t3_BdDDKp->Add(t3_BdDDKp_2017);
     t3_BdDDKp->Add(t3_BdDDKp_2018);
 
+    TFileCollection *fc4_BdDDKp_2016 = new TFileCollection("fc4_BdDDKp_2016", "fc4_BdDDKp_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_110/invariant_mass_tree.txt");
+    TFileCollection *fc4_BdDDKp_2017 = new TFileCollection("fc4_BdDDKp_2017", "fc4_BdDDKp_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_110/invariant_mass_tree.txt");
+    TFileCollection *fc4_BdDDKp_2018 = new TFileCollection("fc4_BdDDKp_2018", "fc4_BdDDKp_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_110/invariant_mass_tree.txt");
+
+    TChain* t4_BdDDKp = new TChain("DecayTree");
+    TChain* t4_BdDDKp_2017 = new TChain("DecayTree");
+    TChain* t4_BdDDKp_2018 = new TChain("DecayTree");
+
+    t4_BdDDKp->AddFileInfoList((TCollection*)fc4_BdDDKp_2016->GetList());
+    t4_BdDDKp_2017->AddFileInfoList((TCollection*)fc4_BdDDKp_2017->GetList());
+    t4_BdDDKp_2018->AddFileInfoList((TCollection*)fc4_BdDDKp_2018->GetList());
+
+    cout << "Masses" << endl;
+    cout << t4_BdDDKp->GetEntries() << endl;
+    cout << t4_BdDDKp_2017->GetEntries() << endl;
+    cout << t4_BdDDKp_2018->GetEntries() << endl;
+
+    t4_BdDDKp->Add(t4_BdDDKp_2017);
+    t4_BdDDKp->Add(t4_BdDDKp_2018);
+
     Int_t N_BdDDKp = t_BdDDKp->GetEntries();
     Int_t N1_BdDDKp = t1_BdDDKp->GetEntries();
     Int_t N2_BdDDKp = t2_BdDDKp->GetEntries();
     Int_t N3_BdDDKp = t3_BdDDKp->GetEntries();
-    if((N_BdDDKp == N1_BdDDKp) && (N_BdDDKp == N2_BdDDKp) && (N_BdDDKp == N3_BdDDKp))
+    Int_t N4_BdDDKp = t4_BdDDKp->GetEntries();
+    if((N_BdDDKp == N1_BdDDKp) && (N_BdDDKp == N2_BdDDKp) && (N_BdDDKp == N3_BdDDKp) && (N_BdDDKp == N4_BdDDKp))
     {
         t_BdDDKp->AddFriend(t1_BdDDKp, "gsl");
         t_BdDDKp->AddFriend(t2_BdDDKp, "best_cand");
         t_BdDDKp->AddFriend(t3_BdDDKp, "sklearn");
+        t_BdDDKp->AddFriend(t4_BdDDKp, "mass");
     }
     else
     {
@@ -605,7 +716,7 @@ void best_candidate_selection_plots()
     t3_BsDDKp_2017->AddFileInfoList((TCollection*)fc3_BsDDKp_2017->GetList());
     t3_BsDDKp_2018->AddFileInfoList((TCollection*)fc3_BsDDKp_2018->GetList());
 
-    cout << "Best candidate" << endl;
+    cout << "Sklearn" << endl;
     cout << t3_BsDDKp->GetEntries() << endl;
     cout << t3_BsDDKp_2017->GetEntries() << endl;
     cout << t3_BsDDKp_2018->GetEntries() << endl;
@@ -613,15 +724,37 @@ void best_candidate_selection_plots()
     t3_BsDDKp->Add(t3_BsDDKp_2017);
     t3_BsDDKp->Add(t3_BsDDKp_2018);
 
+    TFileCollection *fc4_BsDDKp_2016 = new TFileCollection("fc4_BsDDKp_2016", "fc4_BsDDKp_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_120/invariant_mass_tree.txt");
+    TFileCollection *fc4_BsDDKp_2017 = new TFileCollection("fc4_BsDDKp_2017", "fc4_BsDDKp_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_120/invariant_mass_tree.txt");
+    TFileCollection *fc4_BsDDKp_2018 = new TFileCollection("fc4_BsDDKp_2018", "fc4_BsDDKp_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_120/invariant_mass_tree.txt");
+
+    TChain* t4_BsDDKp = new TChain("DecayTree");
+    TChain* t4_BsDDKp_2017 = new TChain("DecayTree");
+    TChain* t4_BsDDKp_2018 = new TChain("DecayTree");
+
+    t4_BsDDKp->AddFileInfoList((TCollection*)fc4_BsDDKp_2016->GetList());
+    t4_BsDDKp_2017->AddFileInfoList((TCollection*)fc4_BsDDKp_2017->GetList());
+    t4_BsDDKp_2018->AddFileInfoList((TCollection*)fc4_BsDDKp_2018->GetList());
+
+    cout << "Masses" << endl;
+    cout << t4_BsDDKp->GetEntries() << endl;
+    cout << t4_BsDDKp_2017->GetEntries() << endl;
+    cout << t4_BsDDKp_2018->GetEntries() << endl;
+
+    t4_BsDDKp->Add(t4_BsDDKp_2017);
+    t4_BsDDKp->Add(t4_BsDDKp_2018);
+
     Int_t N_BsDDKp = t_BsDDKp->GetEntries();
     Int_t N1_BsDDKp = t1_BsDDKp->GetEntries();
     Int_t N2_BsDDKp = t2_BsDDKp->GetEntries();
     Int_t N3_BsDDKp = t3_BsDDKp->GetEntries();
-    if((N_BsDDKp == N1_BsDDKp) && (N_BsDDKp == N2_BsDDKp) && (N_BsDDKp == N3_BsDDKp))
+    Int_t N4_BsDDKp = t4_BsDDKp->GetEntries();
+    if((N_BsDDKp == N1_BsDDKp) && (N_BsDDKp == N2_BsDDKp) && (N_BsDDKp == N3_BsDDKp) && (N_BsDDKp == N4_BsDDKp))
     {
         t_BsDDKp->AddFriend(t1_BsDDKp, "gsl");
         t_BsDDKp->AddFriend(t2_BsDDKp, "best_cand");
         t_BsDDKp->AddFriend(t3_BsDDKp, "sklearn");
+        t_BsDDKp->AddFriend(t4_BsDDKp, "mass");
     }
     else
     {
@@ -702,7 +835,7 @@ void best_candidate_selection_plots()
     t3_BuDDK0_2017->AddFileInfoList((TCollection*)fc3_BuDDK0_2017->GetList());
     t3_BuDDK0_2018->AddFileInfoList((TCollection*)fc3_BuDDK0_2018->GetList());
 
-    cout << "Best candidate" << endl;
+    cout << "Sklearn" << endl;
     cout << t3_BuDDK0->GetEntries() << endl;
     cout << t3_BuDDK0_2017->GetEntries() << endl;
     cout << t3_BuDDK0_2018->GetEntries() << endl;
@@ -710,15 +843,37 @@ void best_candidate_selection_plots()
     t3_BuDDK0->Add(t3_BuDDK0_2017);
     t3_BuDDK0->Add(t3_BuDDK0_2018);
 
+    TFileCollection *fc4_BuDDK0_2016 = new TFileCollection("fc4_BuDDK0_2016", "fc4_BuDDK0_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_130/invariant_mass_tree.txt");
+    TFileCollection *fc4_BuDDK0_2017 = new TFileCollection("fc4_BuDDK0_2017", "fc4_BuDDK0_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_130/invariant_mass_tree.txt");
+    TFileCollection *fc4_BuDDK0_2018 = new TFileCollection("fc4_BuDDK0_2018", "fc4_BuDDK0_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_130/invariant_mass_tree.txt");
+
+    TChain* t4_BuDDK0 = new TChain("DecayTree");
+    TChain* t4_BuDDK0_2017 = new TChain("DecayTree");
+    TChain* t4_BuDDK0_2018 = new TChain("DecayTree");
+
+    t4_BuDDK0->AddFileInfoList((TCollection*)fc4_BuDDK0_2016->GetList());
+    t4_BuDDK0_2017->AddFileInfoList((TCollection*)fc4_BuDDK0_2017->GetList());
+    t4_BuDDK0_2018->AddFileInfoList((TCollection*)fc4_BuDDK0_2018->GetList());
+
+    cout << "Masses" << endl;
+    cout << t4_BuDDK0->GetEntries() << endl;
+    cout << t4_BuDDK0_2017->GetEntries() << endl;
+    cout << t4_BuDDK0_2018->GetEntries() << endl;
+
+    t4_BuDDK0->Add(t4_BuDDK0_2017);
+    t4_BuDDK0->Add(t4_BuDDK0_2018);
+
     Int_t N_BuDDK0 = t_BuDDK0->GetEntries();
     Int_t N1_BuDDK0 = t1_BuDDK0->GetEntries();
     Int_t N2_BuDDK0 = t2_BuDDK0->GetEntries();
     Int_t N3_BuDDK0 = t3_BuDDK0->GetEntries();
-    if((N_BuDDK0 == N1_BuDDK0) && (N_BuDDK0 == N2_BuDDK0) && (N_BuDDK0 == N3_BuDDK0))
+    Int_t N4_BuDDK0 = t4_BuDDK0->GetEntries();
+    if((N_BuDDK0 == N1_BuDDK0) && (N_BuDDK0 == N2_BuDDK0) && (N_BuDDK0 == N3_BuDDK0) && (N_BuDDK0 == N4_BuDDK0))
     {
         t_BuDDK0->AddFriend(t1_BuDDK0, "gsl");
         t_BuDDK0->AddFriend(t2_BuDDK0, "best_cand");
         t_BuDDK0->AddFriend(t3_BuDDK0, "sklearn");
+        t_BuDDK0->AddFriend(t4_BuDDK0, "mass");
     }
     else
     {
@@ -799,7 +954,7 @@ void best_candidate_selection_plots()
     t3_BuDD_2017->AddFileInfoList((TCollection*)fc3_BuDD_2017->GetList());
     t3_BuDD_2018->AddFileInfoList((TCollection*)fc3_BuDD_2018->GetList());
 
-    cout << "Best candidate" << endl;
+    cout << "Sklearn" << endl;
     cout << t3_BuDD->GetEntries() << endl;
     cout << t3_BuDD_2017->GetEntries() << endl;
     cout << t3_BuDD_2018->GetEntries() << endl;
@@ -807,15 +962,37 @@ void best_candidate_selection_plots()
     t3_BuDD->Add(t3_BuDD_2017);
     t3_BuDD->Add(t3_BuDD_2018);
 
+    TFileCollection *fc4_BuDD_2016 = new TFileCollection("fc4_BuDD_2016", "fc4_BuDD_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_150/invariant_mass_tree.txt");
+    TFileCollection *fc4_BuDD_2017 = new TFileCollection("fc4_BuDD_2017", "fc4_BuDD_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_150/invariant_mass_tree.txt");
+    TFileCollection *fc4_BuDD_2018 = new TFileCollection("fc4_BuDD_2018", "fc4_BuDD_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_150/invariant_mass_tree.txt");
+
+    TChain* t4_BuDD = new TChain("DecayTree");
+    TChain* t4_BuDD_2017 = new TChain("DecayTree");
+    TChain* t4_BuDD_2018 = new TChain("DecayTree");
+
+    t4_BuDD->AddFileInfoList((TCollection*)fc4_BuDD_2016->GetList());
+    t4_BuDD_2017->AddFileInfoList((TCollection*)fc4_BuDD_2017->GetList());
+    t4_BuDD_2018->AddFileInfoList((TCollection*)fc4_BuDD_2018->GetList());
+
+    cout << "Masses" << endl;
+    cout << t4_BuDD->GetEntries() << endl;
+    cout << t4_BuDD_2017->GetEntries() << endl;
+    cout << t4_BuDD_2018->GetEntries() << endl;
+
+    t4_BuDD->Add(t4_BuDD_2017);
+    t4_BuDD->Add(t4_BuDD_2018);
+
     Int_t N_BuDD = t_BuDD->GetEntries();
     Int_t N1_BuDD = t1_BuDD->GetEntries();
     Int_t N2_BuDD = t2_BuDD->GetEntries();
     Int_t N3_BuDD = t3_BuDD->GetEntries();
-    if((N_BuDD == N1_BuDD) && (N_BuDD == N2_BuDD) && (N_BuDD == N3_BuDD))
+    Int_t N4_BuDD = t4_BuDD->GetEntries();
+    if((N_BuDD == N1_BuDD) && (N_BuDD == N2_BuDD) && (N_BuDD == N3_BuDD) && (N_BuDD == N4_BuDD))
     {
         t_BuDD->AddFriend(t1_BuDD, "gsl");
         t_BuDD->AddFriend(t2_BuDD, "best_cand");
         t_BuDD->AddFriend(t3_BuDD, "sklearn");
+        t_BuDD->AddFriend(t4_BuDD, "mass");
     }
     else
     {
@@ -824,7 +1001,18 @@ void best_candidate_selection_plots()
     }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Ktautau MC: TM vs best candidate selection
+    ////////////////////// Selections
+    TCut pass_fitter = "(df_status==0)";
+    TCut fit_region = "((df_Bp_M > 4000) && (df_Bp_M < 8000))";
+    TCut mass_vetoes = "((TMath::Abs(Bp_M02-1864.84) > 20) && (TMath::Abs(Bp_M04-1864.84) > 20) && (TMath::Abs(Bp_M06-1864.84) > 20) && (TMath::Abs(Bp_M046-1869.66) > 20) && (TMath::Abs(Bp_M0456-1864.84) > 30) && (TMath::Abs(Bp_M02456-2010.26) > 30))";
+    
+    TCut all_cuts = pass_fitter+fit_region+mass_vetoes;
+    ////////////////////////////////
+
+
+
+
+    // Ktautau MC: TM vs best candidate selection vs 2nd best candidate
     TH1D* h_ktautau_mc_3pi3pi_tm = new TH1D("h_ktautau_mc_3pi3pi_tm", "h_ktautau_mc_3pi3pi_tm", 100, 4000, 8000);
     TH1D* h_ktautau_mc_3pi3pipi0_tm = new TH1D("h_ktautau_mc_3pi3pipi0_tm", "h_ktautau_mc_3pi3pipi0_tm", 100, 4000, 8000);
     TH1D* h_ktautau_mc_3pi3pi2pi0_tm = new TH1D("h_ktautau_mc_3pi3pi2pi0_tm", "h_ktautau_mc_3pi3pi2pi0_tm", 100, 4000, 8000);
@@ -835,15 +1023,25 @@ void best_candidate_selection_plots()
     TH1D* h_ktautau_mc_3pi3pi2pi0 = new TH1D("h_ktautau_mc_3pi3pi2pi0", "h_ktautau_mc_3pi3pi2pi0", 100, 4000, 8000);
     TH1D* h_ktautau_mc_all = new TH1D("h_ktautau_mc_all", "h_ktautau_mc_all", 100, 4000, 8000);
 
-    t_ktautau_mc_tm->Draw("df_Bp_M >> h_ktautau_mc_3pi3pi_tm", "component==0");
-    t_ktautau_mc_tm->Draw("df_Bp_M >> h_ktautau_mc_3pi3pipi0_tm", "component==1");
-    t_ktautau_mc_tm->Draw("df_Bp_M >> h_ktautau_mc_3pi3pi2pi0_tm", "component==2");
-    t_ktautau_mc_tm->Draw("df_Bp_M >> h_ktautau_mc_all_tm");
+    TH1D* h_ktautau_mc_3pi3pi_2nd_best = new TH1D("h_ktautau_mc_3pi3pi_2nd_best", "h_ktautau_mc_3pi3pi_2nd_best", 100, 4000, 8000);
+    TH1D* h_ktautau_mc_3pi3pipi0_2nd_best = new TH1D("h_ktautau_mc_3pi3pipi0_2nd_best", "h_ktautau_mc_3pi3pipi0_2nd_best", 100, 4000, 8000);
+    TH1D* h_ktautau_mc_3pi3pi2pi0_2nd_best = new TH1D("h_ktautau_mc_3pi3pi2pi0_2nd_best", "h_ktautau_mc_3pi3pi2pi0_2nd_best", 100, 4000, 8000);
+    TH1D* h_ktautau_mc_all_2nd_best = new TH1D("h_ktautau_mc_all_2nd_best", "h_ktautau_mc_all_2nd_best", 100, 4000, 8000);
 
-    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_3pi3pi", "(is_best_cand == 1) && (component==0)");
-    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_3pi3pipi0", "(is_best_cand == 1) && (component==1)");
-    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_3pi3pi2pi0", "(is_best_cand == 1) && (component==2)");
-    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_all", "(is_best_cand == 1)");
+    t_ktautau_mc_tm->Draw("df_Bp_M >> h_ktautau_mc_3pi3pi_tm", "component==0"+all_cuts);
+    t_ktautau_mc_tm->Draw("df_Bp_M >> h_ktautau_mc_3pi3pipi0_tm", "component==1"+all_cuts);
+    t_ktautau_mc_tm->Draw("df_Bp_M >> h_ktautau_mc_3pi3pi2pi0_tm", "component==2"+all_cuts);
+    t_ktautau_mc_tm->Draw("df_Bp_M >> h_ktautau_mc_all_tm", all_cuts);
+
+    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_3pi3pi", "(is_best_cand == 1) && (component==0)"+all_cuts);
+    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_3pi3pipi0", "(is_best_cand == 1) && (component==1)"+all_cuts);
+    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_3pi3pi2pi0", "(is_best_cand == 1) && (component==2)"+all_cuts);
+    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_all", "(is_best_cand == 1)"+all_cuts);
+
+    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_3pi3pi_2nd_best", "(is_second_best_cand == 1) && (component==0)"+all_cuts);
+    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_3pi3pipi0_2nd_best", "(is_second_best_cand == 1) && (component==1)"+all_cuts);
+    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_3pi3pi2pi0_2nd_best", "(is_second_best_cand == 1) && (component==2)"+all_cuts);
+    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_all_2nd_best", "(is_second_best_cand == 1)"+all_cuts);
 
     auto c1 = new TCanvas();
     auto c2 = new TCanvas(); 
@@ -864,12 +1062,17 @@ void best_candidate_selection_plots()
     h_ktautau_mc_3pi3pi->SetLineColor(kBlack);
     h_ktautau_mc_3pi3pi->SetFillColorAlpha(kBlack, 0.25);
 
+    h_ktautau_mc_3pi3pi_2nd_best->SetLineColor(kGreen+1);
+    h_ktautau_mc_3pi3pi_2nd_best->SetFillColorAlpha(kGreen+1, 0.25);
+
     h_ktautau_mc_3pi3pi_tm->DrawNormalized();
     h_ktautau_mc_3pi3pi->DrawNormalized("same");
+    h_ktautau_mc_3pi3pi_2nd_best->DrawNormalized("same");
 
-    TLegend* leg = new TLegend(0.7,0.7,0.9,0.9);
+    TLegend* leg = new TLegend(0.6,0.6,0.9,0.9);
     leg->AddEntry(h_ktautau_mc_3pi3pi_tm, "Truth-matched", "lf");
     leg->AddEntry(h_ktautau_mc_3pi3pi, "Best candidate", "lf");
+    leg->AddEntry(h_ktautau_mc_3pi3pi_2nd_best, "2nd best candidate");
     leg->Draw("same");
 
     FourPads->cd(2) ; c2->DrawClonePad();
@@ -884,8 +1087,12 @@ void best_candidate_selection_plots()
     h_ktautau_mc_3pi3pipi0->SetLineColor(kBlack);
     h_ktautau_mc_3pi3pipi0->SetFillColorAlpha(kBlack, 0.25);
 
+    h_ktautau_mc_3pi3pipi0_2nd_best->SetLineColor(kGreen+1);
+    h_ktautau_mc_3pi3pipi0_2nd_best->SetFillColorAlpha(kGreen+1, 0.25);
+
     h_ktautau_mc_3pi3pipi0_tm->DrawNormalized();
     h_ktautau_mc_3pi3pipi0->DrawNormalized("same");
+    h_ktautau_mc_3pi3pipi0_2nd_best->DrawNormalized("same");
     leg->Draw("same");
     
     FourPads->cd(3) ; c3->DrawClonePad();
@@ -900,8 +1107,12 @@ void best_candidate_selection_plots()
     h_ktautau_mc_3pi3pi2pi0->SetLineColor(kBlack);
     h_ktautau_mc_3pi3pi2pi0->SetFillColorAlpha(kBlack, 0.25);
 
+    h_ktautau_mc_3pi3pi2pi0_2nd_best->SetLineColor(kGreen+1);
+    h_ktautau_mc_3pi3pi2pi0_2nd_best->SetFillColorAlpha(kGreen+1, 0.25);
+
     h_ktautau_mc_3pi3pi2pi0_tm->DrawNormalized();
     h_ktautau_mc_3pi3pi2pi0->DrawNormalized("same");
+    h_ktautau_mc_3pi3pi2pi0_2nd_best->DrawNormalized("same");
     leg->Draw("same");
 
     FourPads->cd(4) ; c4->DrawClonePad();
@@ -916,12 +1127,88 @@ void best_candidate_selection_plots()
     h_ktautau_mc_all->SetLineColor(kBlack);
     h_ktautau_mc_all->SetFillColorAlpha(kBlack, 0.25);
 
+    h_ktautau_mc_all_2nd_best->SetLineColor(kGreen+1);
+    h_ktautau_mc_all_2nd_best->SetFillColorAlpha(kGreen+1, 0.25);
+
     h_ktautau_mc_all_tm->DrawNormalized();
     h_ktautau_mc_all->DrawNormalized("same");
+    h_ktautau_mc_all_2nd_best->DrawNormalized("same");
     leg->Draw("same");
 
-    FourPads->SaveAs("/panfs/felician/B2Ktautau/workflow/best_candidate_selection_plots/ktautau_mc_TM_vs_best.pdf");
+    FourPads->SaveAs("/panfs/felician/B2Ktautau/workflow/best_candidate_selection_plots/ktautau_mc_TM_vs_best_vs_2nd_best.pdf");
 
+    // Ktautau MC: not best candidate
+    TH1D* h_ktautau_mc_3pi3pi_not_best = new TH1D("h_ktautau_mc_3pi3pi_not_best", "h_ktautau_mc_3pi3pi_not_best", 100, 4000, 8000);
+    TH1D* h_ktautau_mc_3pi3pipi0_not_best = new TH1D("h_ktautau_mc_3pi3pipi0_not_best", "h_ktautau_mc_3pi3pipi0_not_best", 100, 4000, 8000);
+    TH1D* h_ktautau_mc_3pi3pi2pi0_not_best = new TH1D("h_ktautau_mc_3pi3pi2pi0_not_best", "h_ktautau_mc_3pi3pi2pi0_not_best", 100, 4000, 8000);
+    TH1D* h_ktautau_mc_all_not_best = new TH1D("h_ktautau_mc_all_not_best", "h_ktautau_mc_all_not_best", 100, 4000, 8000);
+
+    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_3pi3pi_not_best", "(is_best_cand == 0) && (component==0)"+all_cuts);
+    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_3pi3pipi0_not_best", "(is_best_cand == 0) && (component==1)"+all_cuts);
+    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_3pi3pi2pi0_not_best", "(is_best_cand == 0) && (component==2)"+all_cuts);
+    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_all_not_best", "(is_best_cand == 0)"+all_cuts);
+
+    auto g1 = new TCanvas(); 
+    auto g2 = new TCanvas(); 
+    auto g3 = new TCanvas(); 
+    auto g4 = new TCanvas(); 
+
+    auto FourPads2 = new TCanvas("FourPads2","FourPads2");
+    FourPads2->Divide(2,2);
+    FourPads2->cd(1) ; g1->DrawClonePad();
+
+    h_ktautau_mc_3pi3pi_not_best->GetXaxis()->SetTitle("m_{B} (MeV)");
+    h_ktautau_mc_3pi3pi_not_best->GetYaxis()->SetTitle("Normalized entries / (40 MeV)");
+    h_ktautau_mc_3pi3pi_not_best->SetTitle("3#pi3#pi MC: 2016-2018");
+
+    h_ktautau_mc_3pi3pi_not_best->SetLineColor(kRed);
+    h_ktautau_mc_3pi3pi_not_best->SetFillColorAlpha(kRed, 0.25);
+
+    h_ktautau_mc_3pi3pi_not_best->DrawNormalized();
+
+    TLegend* leg12 = new TLegend(0.5,0.8,0.9,0.9);
+    leg12->AddEntry(h_ktautau_mc_3pi3pi_not_best, "Not best candidate", "lf");
+    leg12->Draw("same");
+
+    FourPads2->cd(2) ; g2->DrawClonePad();
+
+    h_ktautau_mc_3pi3pipi0_not_best->GetXaxis()->SetTitle("m_{B} (MeV)");
+    h_ktautau_mc_3pi3pipi0_not_best->GetYaxis()->SetTitle("Normalized entries / (40 MeV)");
+    h_ktautau_mc_3pi3pipi0_not_best->SetTitle("3#pi3#pi #pi^{0} MC: 2016-2018");
+
+    h_ktautau_mc_3pi3pipi0_not_best->SetLineColor(kRed);
+    h_ktautau_mc_3pi3pipi0_not_best->SetFillColorAlpha(kRed, 0.25);
+
+    h_ktautau_mc_3pi3pipi0_not_best->DrawNormalized();
+    leg12->Draw("same");
+
+    FourPads2->cd(3) ; g3->DrawClonePad();
+
+    h_ktautau_mc_3pi3pi2pi0_not_best->GetXaxis()->SetTitle("m_{B} (MeV)");
+    h_ktautau_mc_3pi3pi2pi0_not_best->GetYaxis()->SetTitle("Normalized entries / (40 MeV)");
+    h_ktautau_mc_3pi3pi2pi0_not_best->SetTitle("3#pi3#pi 2#pi^{0} MC: 2016-2018");
+
+    h_ktautau_mc_3pi3pi2pi0_not_best->SetLineColor(kRed);
+    h_ktautau_mc_3pi3pi2pi0_not_best->SetFillColorAlpha(kRed, 0.25);
+
+    h_ktautau_mc_3pi3pi2pi0_not_best->DrawNormalized();
+    leg12->Draw("same");
+
+    FourPads2->cd(4) ; g4->DrawClonePad();
+
+    h_ktautau_mc_all_not_best->GetXaxis()->SetTitle("m_{B} (MeV)");
+    h_ktautau_mc_all_not_best->GetYaxis()->SetTitle("Normalized entries / (40 MeV)");
+    h_ktautau_mc_all_not_best->SetTitle("All MC: 2016-2018");
+
+    h_ktautau_mc_all_not_best->SetLineColor(kRed);
+    h_ktautau_mc_all_not_best->SetFillColorAlpha(kRed, 0.25);
+
+    h_ktautau_mc_all_not_best->DrawNormalized();
+    leg12->Draw("same");
+
+    FourPads2->SaveAs("/panfs/felician/B2Ktautau/workflow/best_candidate_selection_plots/ktautau_mc_not_best.pdf");
+
+    // Ktautau MC: mis-reconstructed i.e. pass best candidate selection but no truth match cuts
     TCut ktautau_truthMatch = "(abs(Kp_TRUEID) == 321) && (abs(taup_pi1_TRUEID) == 211) && (abs(taup_pi2_TRUEID) == 211) && (abs(taup_pi3_TRUEID) == 211) && (abs(taum_pi1_TRUEID) == 211) && (abs(taum_pi2_TRUEID) == 211) && (abs(taum_pi3_TRUEID) == 211) && (abs(taup_TRUEID) == 15) && (abs(taum_TRUEID) == 15) && (abs(Bp_TRUEID) == 521)";
 
     TH1D* h_ktautau_mc_3pi3pi_not_TM = new TH1D("h_ktautau_mc_3pi3pi_not_TM", "h_ktautau_mc_3pi3pi_not_TM", 100, 4000, 8000);
@@ -929,10 +1216,40 @@ void best_candidate_selection_plots()
     TH1D* h_ktautau_mc_3pi3pi2pi0_not_TM = new TH1D("h_ktautau_mc_3pi3pi2pi0_not_TM", "h_ktautau_mc_3pi3pi2pi0_not_TM", 100, 4000, 8000);
     TH1D* h_ktautau_mc_all_not_TM = new TH1D("h_ktautau_mc_all_not_TM", "h_ktautau_mc_all_not_TM", 100, 4000, 8000);
 
-    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_3pi3pi_not_TM", "(is_best_cand == 1) && (component==0)"+!ktautau_truthMatch);
-    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_3pi3pipi0_not_TM", "(is_best_cand == 1) && (component==1)"+!ktautau_truthMatch);
-    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_3pi3pi2pi0_not_TM", "(is_best_cand == 1) && (component==2)"+!ktautau_truthMatch);
-    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_all_not_TM", "(is_best_cand == 1)"+!ktautau_truthMatch);
+    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_3pi3pi_not_TM", "(is_best_cand == 1) && (component==0)"+!ktautau_truthMatch+all_cuts);
+    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_3pi3pipi0_not_TM", "(is_best_cand == 1) && (component==1)"+!ktautau_truthMatch+all_cuts);
+    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_3pi3pi2pi0_not_TM", "(is_best_cand == 1) && (component==2)"+!ktautau_truthMatch+all_cuts);
+    t_ktautau_mc->Draw("df_Bp_M >> h_ktautau_mc_all_not_TM", "(is_best_cand == 1)"+!ktautau_truthMatch+all_cuts);
+
+    Double_t metric_num = t_ktautau_mc->GetEntries(ktautau_truthMatch+"is_best_cand == 1");
+    Double_t metric_den = t_ktautau_mc->GetEntries(ktautau_truthMatch);
+    Double_t metric = metric_num/metric_den;
+    cout << "Metric (sig) = " << metric*100  << " +/- " << eps_error(metric_num, metric_den)*100 << " \\%" << endl;
+
+    // Double_t metric_num_1 = t_BuDDKp->GetEntries(ktautau_truthMatch+"is_best_cand == 1");
+    // Double_t metric_den_1 = t_BuDDKp->GetEntries(ktautau_truthMatch);
+    // Double_t metric_1 = metric_num_1/metric_den_1;
+    // cout << "Metric (BuDDKp) = " << metric_1*100  << " +/- " << eps_error(metric_num_1, metric_den_1)*100 << " \\%" << endl;
+
+    // Double_t metric_num_2 = t_BdDDKp->GetEntries(ktautau_truthMatch+"is_best_cand == 1");
+    // Double_t metric_den_2 = t_BdDDKp->GetEntries(ktautau_truthMatch);
+    // Double_t metric_2 = metric_num_2/metric_den_2;
+    // cout << "Metric (BdDDKp) = " << metric_2*100  << " +/- " << eps_error(metric_num_2, metric_den_2)*100 << " \\%" << endl;
+
+    // Double_t metric_num_3 = t_BsDDKp->GetEntries(ktautau_truthMatch+"is_best_cand == 1");
+    // Double_t metric_den_3 = t_BsDDKp->GetEntries(ktautau_truthMatch);
+    // Double_t metric_3 = metric_num_3/metric_den_3;
+    // cout << "Metric (BsDDKp) = " << metric_3*100  << " +/- " << eps_error(metric_num_3, metric_den_3)*100 << " \\%" << endl;
+
+    // Double_t metric_num_4 = t_BuDDK0->GetEntries(ktautau_truthMatch+"is_best_cand == 1");
+    // Double_t metric_den_4 = t_BuDDK0->GetEntries(ktautau_truthMatch);
+    // Double_t metric_4 = metric_num_4/metric_den_4;
+    // cout << "Metric (BuDDK0) = " << metric_4*100  << " +/- " << eps_error(metric_num_4, metric_den_4)*100 << " \\%" << endl;
+
+    // Double_t metric_num_5 = t_BuDD->GetEntries(ktautau_truthMatch+"is_best_cand == 1");
+    // Double_t metric_den_5 = t_BuDD->GetEntries(ktautau_truthMatch);
+    // Double_t metric_5 = metric_num_5/metric_den_5;
+    // cout << "Metric (BuDD) = " << metric_5*100  << " +/- " << eps_error(metric_num_5, metric_den_5)*100 << " \\%" << endl;
 
     auto d1 = new TCanvas(); 
     auto d2 = new TCanvas(); 
@@ -1037,12 +1354,37 @@ void best_candidate_selection_plots()
     leg1->Draw("same");
     d5.SaveAs("/panfs/felician/B2Ktautau/workflow/best_candidate_selection_plots/dds_mc_best_notTM.pdf");
 
+    Double_t metric_num_norm = t_dds_mc->GetEntries(dds_truthMatch+"is_best_cand == 1");
+    Double_t metric_den_norm = t_dds_mc->GetEntries(dds_truthMatch);
+    Double_t metric_norm = metric_num_norm/metric_den_norm;
+    cout << "Metric (norm) = " << metric_norm*100 << " +/- " << eps_error(metric_num_norm,metric_den_norm) << " \\%" << endl;
+
+    TH1D* h_dds_mc_not_best = new TH1D("h_dds_mc_not_best", "h_dds_mc_not_best", 100, 5235, 5355);
+
+    t_dds_mc->Draw("Bp_dtf_M[0] >> h_dds_mc_not_best", "(is_best_cand == 0)");
+
+    h_dds_mc_not_best->GetXaxis()->SetTitle("m_{B} (MeV)");
+    h_dds_mc_not_best->GetYaxis()->SetTitle("Normalized entries / (1.2 MeV)");
+    h_dds_mc_not_best->SetTitle("DDs MC");
+
+    h_dds_mc_not_best->SetLineColor(kRed);
+    h_dds_mc_not_best->SetFillColorAlpha(kRed, 0.25);
+
+    TLegend* leg13 = new TLegend(0.5,0.8,0.9,0.9);
+    leg13->AddEntry(h_dds_mc_not_best, "Not best candidate", "lf");
+
+    TCanvas d11;
+    d11.cd();
+    h_dds_mc_not_best->DrawNormalized();
+    leg13->Draw("same");
+    d11.SaveAs("/panfs/felician/B2Ktautau/workflow/best_candidate_selection_plots/dds_mc_best_not_best.pdf");
+
     // Ktautau data
     TH1D* h_rs_data = new TH1D("h_rs_data", "h_rs_data", 100, 4000, 8000);
     TH1D* h_rs_data_best = new TH1D("h_rs_data_best", "h_rs_data_best", 100, 4000, 8000);
 
-    t_ktautau_rs_data->Draw("df_Bp_M >> h_rs_data");
-    t_ktautau_rs_data->Draw("df_Bp_M >> h_rs_data_best", "(is_best_cand == 1)");
+    t_ktautau_rs_data->Draw("df_Bp_M >> h_rs_data", "(is_best_cand == 0)"+all_cuts);
+    t_ktautau_rs_data->Draw("df_Bp_M >> h_rs_data_best", "(is_best_cand == 1)"+all_cuts);
 
     h_rs_data->GetXaxis()->SetTitle("m_{B} (MeV)");
     h_rs_data->GetYaxis()->SetTitle("Normalized entries / (40 MeV)");
@@ -1059,8 +1401,8 @@ void best_candidate_selection_plots()
     h_rs_data->DrawNormalized();
     h_rs_data_best->DrawNormalized("same");
     TLegend* leg2 = new TLegend(0.7,0.7,0.9,0.9);
-    leg2->AddEntry(h_rs_data, "All candidates");
     leg2->AddEntry(h_rs_data_best, "Best candidate");
+    leg2->AddEntry(h_rs_data, "Not best candidate");
     leg2->Draw("same");
     c6.SaveAs("/panfs/felician/B2Ktautau/workflow/best_candidate_selection_plots/rs_data_multiple_vs_best.pdf");
 
@@ -1068,8 +1410,8 @@ void best_candidate_selection_plots()
     TH1D* h_ws_data = new TH1D("h_ws_data", "h_ws_data", 100, 4000, 8000);
     TH1D* h_ws_data_best = new TH1D("h_ws_data_best", "h_ws_data_best", 100, 4000, 8000);
 
-    t_ktautau_ws_data->Draw("df_Bp_M >> h_ws_data");
-    t_ktautau_ws_data->Draw("df_Bp_M >> h_ws_data_best", "(is_best_cand == 1)");
+    t_ktautau_ws_data->Draw("df_Bp_M >> h_ws_data", "(is_best_cand == 0)"+all_cuts);
+    t_ktautau_ws_data->Draw("df_Bp_M >> h_ws_data_best", "(is_best_cand == 1)"+all_cuts);
 
     h_ws_data->GetXaxis()->SetTitle("m_{B} (MeV)");
     h_ws_data->GetYaxis()->SetTitle("Normalized entries / (40 MeV)");
@@ -1092,7 +1434,7 @@ void best_candidate_selection_plots()
     TH1D* h_dds_data = new TH1D("h_dds_data", "h_dds_data", 100, 5235, 5355);
     TH1D* h_dds_data_best = new TH1D("h_dds_data_best", "h_dds_data_best", 100, 5235, 5355);
 
-    t_dds_data->Draw("Bp_dtf_M[0] >> h_dds_data");
+    t_dds_data->Draw("Bp_dtf_M[0] >> h_dds_data", "(is_best_cand == 0)");
     t_dds_data->Draw("Bp_dtf_M[0] >> h_dds_data_best", "(is_best_cand == 1)");
 
     h_dds_data->GetXaxis()->SetTitle("m_{B} (MeV)");
@@ -1110,8 +1452,8 @@ void best_candidate_selection_plots()
     h_dds_data->DrawNormalized();
     h_dds_data_best->DrawNormalized("same");
     TLegend* leg22 = new TLegend(0.7,0.7,0.9,0.9);
-    leg22->AddEntry(h_dds_data, "All candidates");
     leg22->AddEntry(h_dds_data_best, "Best candidate");
+    leg22->AddEntry(h_dds_data, "Not best candidate");
     leg22->Draw("same");
     c8.SaveAs("/panfs/felician/B2Ktautau/workflow/best_candidate_selection_plots/dds_data_multiple_vs_best.pdf");
 
@@ -1125,14 +1467,14 @@ void best_candidate_selection_plots()
     TH1D* h_BuD0Ds_norm_noBDT = new TH1D("h_BuD0Ds_norm_noBDT", "h_BuD0Ds_norm_noBDT", 100, 4000, 8000);
     TH1D* h_BuD0Dp_norm_noBDT = new TH1D("h_BuD0Dp_norm_noBDT", "h_BuD0Dp _norm_noBDT", 100, 4000, 8000);
 
-    t_BuDDKp->Draw("df_Bp_M >> h_BuD0D0Kp_norm_noBDT", "(species == 100) && (is_best_cand == 1)");
-    t_BuDDKp->Draw("df_Bp_M >> h_BuDpDmKp_norm_noBDT", "(species == 101) && (is_best_cand == 1)");
-    t_BuDDKp->Draw("df_Bp_M >> h_BuDsDsKp_norm_noBDT", "(species == 102) && (is_best_cand == 1)");
-    t_BdDDKp->Draw("df_Bp_M >> h_BdDpD0Kp_norm_noBDT", "(species == 110) && (is_best_cand == 1)");  
-    t_BsDDKp->Draw("df_Bp_M >> h_BsDsD0Kp_norm_noBDT", "(species == 120) && (is_best_cand == 1)");
-    t_BuDDK0->Draw("df_Bp_M >> h_BuD0DpK0_norm_noBDT", "(species == 130) && (is_best_cand == 1)");
-    t_BuDD->Draw("df_Bp_M >> h_BuD0Ds_norm_noBDT", "(species == 150) && (is_best_cand == 1)");
-    t_BuDD->Draw("df_Bp_M >> h_BuD0Dp_norm_noBDT", "(species == 151) && (is_best_cand == 1)");
+    t_BuDDKp->Draw("df_Bp_M >> h_BuD0D0Kp_norm_noBDT", "(species == 100) && (is_best_cand == 1)"+all_cuts);
+    t_BuDDKp->Draw("df_Bp_M >> h_BuDpDmKp_norm_noBDT", "(species == 101) && (is_best_cand == 1)"+all_cuts);
+    t_BuDDKp->Draw("df_Bp_M >> h_BuDsDsKp_norm_noBDT", "(species == 102) && (is_best_cand == 1)"+all_cuts);
+    t_BdDDKp->Draw("df_Bp_M >> h_BdDpD0Kp_norm_noBDT", "(species == 110) && (is_best_cand == 1)"+all_cuts);  
+    t_BsDDKp->Draw("df_Bp_M >> h_BsDsD0Kp_norm_noBDT", "(species == 120) && (is_best_cand == 1)"+all_cuts);
+    t_BuDDK0->Draw("df_Bp_M >> h_BuD0DpK0_norm_noBDT", "(species == 130) && (is_best_cand == 1)"+all_cuts);
+    t_BuDD->Draw("df_Bp_M >> h_BuD0Ds_norm_noBDT", "(species == 150) && (is_best_cand == 1)"+all_cuts);
+    t_BuDD->Draw("df_Bp_M >> h_BuD0Dp_norm_noBDT", "(species == 151) && (is_best_cand == 1)"+all_cuts);
 
     h_ktautau_mc_3pi3pi->SetLineColor(kBlue);
     h_ktautau_mc_3pi3pi->SetFillColorAlpha(kBlue, 0.25);
@@ -1204,16 +1546,16 @@ void best_candidate_selection_plots()
     TH1D* h_BuD0Ds_norm_BDTcut = new TH1D("h_BuD0Ds_norm_BDTcut", "h_BuD0Ds_norm_BDTcut", 100, 4000, 8000);
     TH1D* h_BuD0Dp_norm_BDTcut = new TH1D("h_BuD0Dp_norm_BDTcut", "h_BuD0Dp _norm_BDTcut", 100, 4000, 8000);
 
-    t_ktautau_mc->Draw("df_Bp_M >> h_3pi3pi_norm_BDTcut", "(component==0) && (is_best_cand == 1) && (BDT1 > 0.9) && (BDT2 > 0.9)");
-    t_ktautau_mc->Draw("df_Bp_M >> h_all_mc_norm_BDTcut", "(is_best_cand == 1) && (BDT1 > 0.9) && (BDT2 > 0.9)");
-    t_BuDDKp->Draw("df_Bp_M >> h_BuD0D0Kp_norm_BDTcut", "(species == 100) && (is_best_cand == 1) && (BDT1 > 0.9) && (BDT2 > 0.9)");
-    t_BuDDKp->Draw("df_Bp_M >> h_BuDpDmKp_norm_BDTcut", "(species == 101) && (is_best_cand == 1) && (BDT1 > 0.9) && (BDT2 > 0.9)");
-    t_BuDDKp->Draw("df_Bp_M >> h_BuDsDsKp_norm_BDTcut", "(species == 102) && (is_best_cand == 1) && (BDT1 > 0.9) && (BDT2 > 0.9)");
-    t_BdDDKp->Draw("df_Bp_M >> h_BdDpD0Kp_norm_BDTcut", "(species == 110) && (is_best_cand == 1) && (BDT1 > 0.9) && (BDT2 > 0.9)");  
-    t_BsDDKp->Draw("df_Bp_M >> h_BsDsD0Kp_norm_BDTcut", "(species == 120) && (is_best_cand == 1) && (BDT1 > 0.9) && (BDT2 > 0.9)");
-    t_BuDDK0->Draw("df_Bp_M >> h_BuD0DpK0_norm_BDTcut", "(species == 130) && (is_best_cand == 1) && (BDT1 > 0.9) && (BDT2 > 0.9)");
-    t_BuDD->Draw("df_Bp_M >> h_BuD0Ds_norm_BDTcut", "(species == 150) && (is_best_cand == 1) && (BDT1 > 0.9) && (BDT2 > 0.9)");
-    t_BuDD->Draw("df_Bp_M >> h_BuD0Dp_norm_BDTcut", "(species == 151) && (is_best_cand == 1) && (BDT1 > 0.9) && (BDT2 > 0.9)");
+    t_ktautau_mc->Draw("df_Bp_M >> h_3pi3pi_norm_BDTcut", "(component==0) && (is_best_cand == 1) && (BDT1 > 0.9) && (BDT2 > 0.9)"+all_cuts);
+    t_ktautau_mc->Draw("df_Bp_M >> h_all_mc_norm_BDTcut", "(is_best_cand == 1) && (BDT1 > 0.9) && (BDT2 > 0.9)"+all_cuts);
+    t_BuDDKp->Draw("df_Bp_M >> h_BuD0D0Kp_norm_BDTcut", "(species == 100) && (is_best_cand == 1) && (BDT1 > 0.9) && (BDT2 > 0.9)"+all_cuts);
+    t_BuDDKp->Draw("df_Bp_M >> h_BuDpDmKp_norm_BDTcut", "(species == 101) && (is_best_cand == 1) && (BDT1 > 0.9) && (BDT2 > 0.9)"+all_cuts);
+    t_BuDDKp->Draw("df_Bp_M >> h_BuDsDsKp_norm_BDTcut", "(species == 102) && (is_best_cand == 1) && (BDT1 > 0.9) && (BDT2 > 0.9)"+all_cuts);
+    t_BdDDKp->Draw("df_Bp_M >> h_BdDpD0Kp_norm_BDTcut", "(species == 110) && (is_best_cand == 1) && (BDT1 > 0.9) && (BDT2 > 0.9)"+all_cuts);  
+    t_BsDDKp->Draw("df_Bp_M >> h_BsDsD0Kp_norm_BDTcut", "(species == 120) && (is_best_cand == 1) && (BDT1 > 0.9) && (BDT2 > 0.9)"+all_cuts);
+    t_BuDDK0->Draw("df_Bp_M >> h_BuD0DpK0_norm_BDTcut", "(species == 130) && (is_best_cand == 1) && (BDT1 > 0.9) && (BDT2 > 0.9)"+all_cuts);
+    t_BuDD->Draw("df_Bp_M >> h_BuD0Ds_norm_BDTcut", "(species == 150) && (is_best_cand == 1) && (BDT1 > 0.9) && (BDT2 > 0.9)"+all_cuts);
+    t_BuDD->Draw("df_Bp_M >> h_BuD0Dp_norm_BDTcut", "(species == 151) && (is_best_cand == 1) && (BDT1 > 0.9) && (BDT2 > 0.9)"+all_cuts);
 
     h_3pi3pi_norm_BDTcut->SetLineColor(kBlue);
     h_3pi3pi_norm_BDTcut->SetFillColorAlpha(kBlue, 0.25);
@@ -1288,9 +1630,9 @@ void best_candidate_selection_plots()
     TH1D* h_3pi3pipi0_iso = new TH1D("h_3pi3pipi0_iso", "h_3pi3pipi0_iso", 100, 0, 1);
     TH1D* h_3pi3pi2pi0_iso = new TH1D("h_3pi3pi2pi0_iso", "h_3pi3pi2pi0_iso", 100, 0, 1);
 
-    t_ktautau_mc->Draw("BDT1 >> h_3pi3pi_iso", "(component==0) && (is_best_cand == 1)");
-    t_ktautau_mc->Draw("BDT1 >> h_3pi3pipi0_iso", "(component==1) && (is_best_cand == 1)");
-    t_ktautau_mc->Draw("BDT1 >> h_3pi3pi2pi0_iso", "(component==2) && (is_best_cand == 1)");
+    t_ktautau_mc->Draw("BDT1 >> h_3pi3pi_iso", "(component==0) && (is_best_cand == 1)"+all_cuts);
+    t_ktautau_mc->Draw("BDT1 >> h_3pi3pipi0_iso", "(component==1) && (is_best_cand == 1)"+all_cuts);
+    t_ktautau_mc->Draw("BDT1 >> h_3pi3pi2pi0_iso", "(component==2) && (is_best_cand == 1)"+all_cuts);
 
     h_3pi3pi_iso->GetXaxis()->SetTitle("BDT1");
     h_3pi3pi_iso->GetYaxis()->SetTitle("Normalized entries / (0.01)");
@@ -1321,9 +1663,9 @@ void best_candidate_selection_plots()
     TH1D* h_3pi3pipi0_kin = new TH1D("h_3pi3pipi0_kin", "h_3pi3pipi0_kin", 100, 0, 1);
     TH1D* h_3pi3pi2pi0_kin = new TH1D("h_3pi3pi2pi0_kin", "h_3pi3pi2pi0_kin", 100, 0, 1);
 
-    t_ktautau_mc->Draw("BDT2 >> h_3pi3pi_kin", "(component==0) && (is_best_cand == 1)");
-    t_ktautau_mc->Draw("BDT2 >> h_3pi3pipi0_kin", "(component==1) && (is_best_cand == 1)");
-    t_ktautau_mc->Draw("BDT2 >> h_3pi3pi2pi0_kin", "(component==2) && (is_best_cand == 1)");
+    t_ktautau_mc->Draw("BDT2 >> h_3pi3pi_kin", "(component==0) && (is_best_cand == 1)"+all_cuts);
+    t_ktautau_mc->Draw("BDT2 >> h_3pi3pipi0_kin", "(component==1) && (is_best_cand == 1)"+all_cuts);
+    t_ktautau_mc->Draw("BDT2 >> h_3pi3pi2pi0_kin", "(component==2) && (is_best_cand == 1)"+all_cuts);
 
     h_3pi3pi_kin->GetXaxis()->SetTitle("BDT2");
     h_3pi3pi_kin->GetYaxis()->SetTitle("Normalized entries / (0.01)");
@@ -1365,10 +1707,10 @@ void best_candidate_selection_plots()
     TH1D* h_BuD0D0Kp_DDs = new TH1D("h_BuD0D0Kp_DDs", "h_BuD0D0Kp_DDs", 100, 4000, 8000);
     TH1D* h_BuD0D0Kp_DsDs = new TH1D("h_BuD0D0Kp_DsDs", "h_BuD0D0Kp_DsDs", 100, 4000, 8000);
 
-    t_BuDDKp->Draw("df_Bp_M >> h_BuD0D0Kp_DD", "(species==100) && (component==0) && (is_best_cand==1)");
-    t_BuDDKp->Draw("df_Bp_M >> h_BuD0D0Kp_DsD", "(species==100) && (component==1) && (is_best_cand==1)");
-    t_BuDDKp->Draw("df_Bp_M >> h_BuD0D0Kp_DDs", "(species==100) && (component==2) && (is_best_cand==1)");
-    t_BuDDKp->Draw("df_Bp_M >> h_BuD0D0Kp_DsDs", "(species==100) && (component==3) && (is_best_cand==1)");
+    t_BuDDKp->Draw("df_Bp_M >> h_BuD0D0Kp_DD", "(species==100) && (component==0) && (is_best_cand==1)"+all_cuts);
+    t_BuDDKp->Draw("df_Bp_M >> h_BuD0D0Kp_DsD", "(species==100) && (component==1) && (is_best_cand==1)"+all_cuts);
+    t_BuDDKp->Draw("df_Bp_M >> h_BuD0D0Kp_DDs", "(species==100) && (component==2) && (is_best_cand==1)"+all_cuts);
+    t_BuDDKp->Draw("df_Bp_M >> h_BuD0D0Kp_DsDs", "(species==100) && (component==3) && (is_best_cand==1)"+all_cuts);
 
     h_BuD0D0Kp_DsDs->GetXaxis()->SetTitle("m_{B} (MeV)");
     h_BuD0D0Kp_DsDs->GetYaxis()->SetTitle("Normalized entries / (40 MeV)");
@@ -1405,10 +1747,10 @@ void best_candidate_selection_plots()
     TH1D* h_BuDpDmKp_DDs = new TH1D("h_BuDpDmKp_DDs", "h_BuDpDmKp_DDs", 100, 4000, 8000);
     TH1D* h_BuDpDmKp_DsDs = new TH1D("h_BuDpDmKp_DsDs", "h_BuDpDmKp_DsDs", 100, 4000, 8000);
 
-    t_BuDDKp->Draw("df_Bp_M >> h_BuDpDmKp_DD", "(species==101) && (component==0) && (is_best_cand==1)");
-    t_BuDDKp->Draw("df_Bp_M >> h_BuDpDmKp_DsD", "(species==101) && (component==1) && (is_best_cand==1)");
-    t_BuDDKp->Draw("df_Bp_M >> h_BuDpDmKp_DDs", "(species==101) && (component==2) && (is_best_cand==1)");
-    t_BuDDKp->Draw("df_Bp_M >> h_BuDpDmKp_DsDs", "(species==101) && (component==3) && (is_best_cand==1)");
+    t_BuDDKp->Draw("df_Bp_M >> h_BuDpDmKp_DD", "(species==101) && (component==0) && (is_best_cand==1)"+all_cuts);
+    t_BuDDKp->Draw("df_Bp_M >> h_BuDpDmKp_DsD", "(species==101) && (component==1) && (is_best_cand==1)"+all_cuts);
+    t_BuDDKp->Draw("df_Bp_M >> h_BuDpDmKp_DDs", "(species==101) && (component==2) && (is_best_cand==1)"+all_cuts);
+    t_BuDDKp->Draw("df_Bp_M >> h_BuDpDmKp_DsDs", "(species==101) && (component==3) && (is_best_cand==1)"+all_cuts);
 
     h_BuDpDmKp_DsD->GetXaxis()->SetTitle("m_{B} (MeV)");
     h_BuDpDmKp_DsD->GetYaxis()->SetTitle("Normalized entries / (40 MeV)");
@@ -1439,10 +1781,10 @@ void best_candidate_selection_plots()
     TH1D* h_BuDsDsKp_DDs = new TH1D("h_BuDsDsKp_DDs", "h_BuDsDsKp_DDs", 100, 4000, 8000);
     TH1D* h_BuDsDsKp_DsDs = new TH1D("h_BuDsDsKp_DsDs", "h_BuDsDsKp_DsDs", 100, 4000, 8000);
 
-    t_BuDDKp->Draw("df_Bp_M >> h_BuDsDsKp_DD", "(species==102) && (component==0) && (is_best_cand==1)");
-    t_BuDDKp->Draw("df_Bp_M >> h_BuDsDsKp_DsD", "(species==102) && (component==1) && (is_best_cand==1)");
-    t_BuDDKp->Draw("df_Bp_M >> h_BuDsDsKp_DDs", "(species==102) && (component==2) && (is_best_cand==1)");
-    t_BuDDKp->Draw("df_Bp_M >> h_BuDsDsKp_DsDs", "(species==102) && (component==3) && (is_best_cand==1)");
+    t_BuDDKp->Draw("df_Bp_M >> h_BuDsDsKp_DD", "(species==102) && (component==0) && (is_best_cand==1)"+all_cuts);
+    t_BuDDKp->Draw("df_Bp_M >> h_BuDsDsKp_DsD", "(species==102) && (component==1) && (is_best_cand==1)"+all_cuts);
+    t_BuDDKp->Draw("df_Bp_M >> h_BuDsDsKp_DDs", "(species==102) && (component==2) && (is_best_cand==1)"+all_cuts);
+    t_BuDDKp->Draw("df_Bp_M >> h_BuDsDsKp_DsDs", "(species==102) && (component==3) && (is_best_cand==1)"+all_cuts);
 
     h_BuDsDsKp_DDs->GetXaxis()->SetTitle("m_{B} (MeV)");
     h_BuDsDsKp_DDs->GetYaxis()->SetTitle("Normalized entries / (40 MeV)");
@@ -1473,10 +1815,10 @@ void best_candidate_selection_plots()
     TH1D* h_BdDpD0Kp_DDs = new TH1D("h_BdDpD0Kp_DDs", "h_BdDpD0Kp_DDs", 100, 4000, 8000);
     TH1D* h_BdDpD0Kp_DsDs = new TH1D("h_BdDpD0Kp_DsDs", "h_BdDpD0Kp_DsDs", 100, 4000, 8000);
 
-    t_BdDDKp->Draw("df_Bp_M >> h_BdDpD0Kp_DD", "(species==110) && (component==0) && (is_best_cand==1)");
-    t_BdDDKp->Draw("df_Bp_M >> h_BdDpD0Kp_DsD", "(species==110) && (component==1) && (is_best_cand==1)");
-    t_BdDDKp->Draw("df_Bp_M >> h_BdDpD0Kp_DDs", "(species==110) && (component==2) && (is_best_cand==1)");
-    t_BdDDKp->Draw("df_Bp_M >> h_BdDpD0Kp_DsDs", "(species==110) && (component==3) && (is_best_cand==1)");
+    t_BdDDKp->Draw("df_Bp_M >> h_BdDpD0Kp_DD", "(species==110) && (component==0) && (is_best_cand==1)"+all_cuts);
+    t_BdDDKp->Draw("df_Bp_M >> h_BdDpD0Kp_DsD", "(species==110) && (component==1) && (is_best_cand==1)"+all_cuts);
+    t_BdDDKp->Draw("df_Bp_M >> h_BdDpD0Kp_DDs", "(species==110) && (component==2) && (is_best_cand==1)"+all_cuts);
+    t_BdDDKp->Draw("df_Bp_M >> h_BdDpD0Kp_DsDs", "(species==110) && (component==3) && (is_best_cand==1)"+all_cuts);
 
     h_BdDpD0Kp_DD->GetXaxis()->SetTitle("m_{B} (MeV)");
     h_BdDpD0Kp_DD->GetYaxis()->SetTitle("Normalized entries / (40 MeV)");
@@ -1507,10 +1849,10 @@ void best_candidate_selection_plots()
     TH1D* h_BsDpD0Kp_DDs = new TH1D("h_BsDpD0Kp_DDs", "h_BsDpD0Kp_DDs", 100, 4000, 8000);
     TH1D* h_BsDpD0Kp_DsDs = new TH1D("h_BsDpD0Kp_DsDs", "h_BsDpD0Kp_DsDs", 100, 4000, 8000);
 
-    t_BsDDKp->Draw("df_Bp_M >> h_BsDpD0Kp_DD", "(species==120) && (component==0) && (is_best_cand==1)");
-    t_BsDDKp->Draw("df_Bp_M >> h_BsDpD0Kp_DsD", "(species==120) && (component==1) && (is_best_cand==1)");
-    t_BsDDKp->Draw("df_Bp_M >> h_BsDpD0Kp_DDs", "(species==120) && (component==2) && (is_best_cand==1)");
-    t_BsDDKp->Draw("df_Bp_M >> h_BsDpD0Kp_DsDs", "(species==120) && (component==3) && (is_best_cand==1)");
+    t_BsDDKp->Draw("df_Bp_M >> h_BsDpD0Kp_DD", "(species==120) && (component==0) && (is_best_cand==1)"+all_cuts);
+    t_BsDDKp->Draw("df_Bp_M >> h_BsDpD0Kp_DsD", "(species==120) && (component==1) && (is_best_cand==1)"+all_cuts);
+    t_BsDDKp->Draw("df_Bp_M >> h_BsDpD0Kp_DDs", "(species==120) && (component==2) && (is_best_cand==1)"+all_cuts);
+    t_BsDDKp->Draw("df_Bp_M >> h_BsDpD0Kp_DsDs", "(species==120) && (component==3) && (is_best_cand==1)"+all_cuts);
 
     h_BsDpD0Kp_DsDs->GetXaxis()->SetTitle("m_{B} (MeV)");
     h_BsDpD0Kp_DsDs->GetYaxis()->SetTitle("Normalized entries / (40 MeV)");
@@ -1541,10 +1883,10 @@ void best_candidate_selection_plots()
     TH1D* h_BuD0DpK0_DDs = new TH1D("h_BuD0DpK0_DDs", "h_BuD0DpK0_DDs", 100, 4000, 8000);
     TH1D* h_BuD0DpK0_DsDs = new TH1D("h_BuD0DpK0_DsDs", "h_BuD0DpK0_DsDs", 100, 4000, 8000);
 
-    t_BuDDK0->Draw("df_Bp_M >> h_BuD0DpK0_DD", "(species==130) && (component==0) && (is_best_cand==1)");
-    t_BuDDK0->Draw("df_Bp_M >> h_BuD0DpK0_DsD", "(species==130) && (component==1) && (is_best_cand==1)");
-    t_BuDDK0->Draw("df_Bp_M >> h_BuD0DpK0_DDs", "(species==130) && (component==2) && (is_best_cand==1)");
-    t_BuDDK0->Draw("df_Bp_M >> h_BuD0DpK0_DsDs", "(species==130) && (component==3) && (is_best_cand==1)");
+    t_BuDDK0->Draw("df_Bp_M >> h_BuD0DpK0_DD", "(species==130) && (component==0) && (is_best_cand==1)"+all_cuts);
+    t_BuDDK0->Draw("df_Bp_M >> h_BuD0DpK0_DsD", "(species==130) && (component==1) && (is_best_cand==1)"+all_cuts);
+    t_BuDDK0->Draw("df_Bp_M >> h_BuD0DpK0_DDs", "(species==130) && (component==2) && (is_best_cand==1)"+all_cuts);
+    t_BuDDK0->Draw("df_Bp_M >> h_BuD0DpK0_DsDs", "(species==130) && (component==3) && (is_best_cand==1)"+all_cuts);
 
     h_BuD0DpK0_DD->GetXaxis()->SetTitle("m_{B} (MeV)");
     h_BuD0DpK0_DD->GetYaxis()->SetTitle("Normalized entries / (40 MeV)");
@@ -1575,10 +1917,10 @@ void best_candidate_selection_plots()
     TH1D* h_BuD0Ds_DDs = new TH1D("h_BuD0Ds_DDs", "h_BuD0Ds_DDs", 100, 4000, 8000);
     TH1D* h_BuD0Ds_DsDs = new TH1D("h_BuD0Ds_DsDs", "h_BuD0Ds_DsDs", 100, 4000, 8000);
 
-    t_BuDD->Draw("df_Bp_M >> h_BuD0Ds_DD", "(species==150) && (component==0) && (is_best_cand==1)");
-    t_BuDD->Draw("df_Bp_M >> h_BuD0Ds_DsD", "(species==150) && (component==1) && (is_best_cand==1)");
-    t_BuDD->Draw("df_Bp_M >> h_BuD0Ds_DDs", "(species==150) && (component==2) && (is_best_cand==1)");
-    t_BuDD->Draw("df_Bp_M >> h_BuD0Ds_DsDs", "(species==150) && (component==3) && (is_best_cand==1)");
+    t_BuDD->Draw("df_Bp_M >> h_BuD0Ds_DD", "(species==150) && (component==0) && (is_best_cand==1)"+all_cuts);
+    t_BuDD->Draw("df_Bp_M >> h_BuD0Ds_DsD", "(species==150) && (component==1) && (is_best_cand==1)"+all_cuts);
+    t_BuDD->Draw("df_Bp_M >> h_BuD0Ds_DDs", "(species==150) && (component==2) && (is_best_cand==1)"+all_cuts);
+    t_BuDD->Draw("df_Bp_M >> h_BuD0Ds_DsDs", "(species==150) && (component==3) && (is_best_cand==1)"+all_cuts);
 
     h_BuD0Ds_DsD->GetXaxis()->SetTitle("m_{B} (MeV)");
     h_BuD0Ds_DsD->GetYaxis()->SetTitle("Normalized entries / (40 MeV)");
@@ -1609,10 +1951,10 @@ void best_candidate_selection_plots()
     TH1D* h_BuD0Dp_DDs = new TH1D("h_BuD0Dp_DDs", "h_BuD0Dp_DDs", 100, 4000, 8000);
     TH1D* h_BuD0Dp_DsDs = new TH1D("h_BuD0Dp_DsDs", "h_BuD0Dp_DsDs", 100, 4000, 8000);
 
-    t_BuDD->Draw("df_Bp_M >> h_BuD0Dp_DD", "(species==151) && (component==0) && (is_best_cand==1)");
-    t_BuDD->Draw("df_Bp_M >> h_BuD0Dp_DsD", "(species==151) && (component==1) && (is_best_cand==1)");
-    t_BuDD->Draw("df_Bp_M >> h_BuD0Dp_DDs", "(species==151) && (component==2) && (is_best_cand==1)");
-    t_BuDD->Draw("df_Bp_M >> h_BuD0Dp_DsDs", "(species==151) && (component==3) && (is_best_cand==1)");
+    t_BuDD->Draw("df_Bp_M >> h_BuD0Dp_DD", "(species==151) && (component==0) && (is_best_cand==1)"+all_cuts);
+    t_BuDD->Draw("df_Bp_M >> h_BuD0Dp_DsD", "(species==151) && (component==1) && (is_best_cand==1)"+all_cuts);
+    t_BuDD->Draw("df_Bp_M >> h_BuD0Dp_DDs", "(species==151) && (component==2) && (is_best_cand==1)"+all_cuts);
+    t_BuDD->Draw("df_Bp_M >> h_BuD0Dp_DsDs", "(species==151) && (component==3) && (is_best_cand==1)"+all_cuts);
 
     h_BuD0Dp_DD->GetXaxis()->SetTitle("m_{B} (MeV)");
     h_BuD0Dp_DD->GetYaxis()->SetTitle("Normalized entries / (40 MeV)");
@@ -1652,9 +1994,9 @@ void best_candidate_selection_plots()
     TH1D* h_BuDpDmKp_iso = new TH1D("h_BuDpDmKp_iso", "h_BuDpDmKp_iso", 100, 0, 1);
     TH1D* h_BuDsDsKp_iso = new TH1D("h_BuDsDsKp_iso", "h_BuDsDsKp_iso", 100, 0, 1);
 
-    t_BuDDKp->Draw("BDT1 >> h_BuD0D0Kp_iso", "(species==100) && (is_best_cand==1)");
-    t_BuDDKp->Draw("BDT1 >> h_BuDpDmKp_iso", "(species==101) && (is_best_cand==1)");
-    t_BuDDKp->Draw("BDT1 >> h_BuDsDsKp_iso", "(species==102) && (is_best_cand==1)");
+    t_BuDDKp->Draw("BDT1 >> h_BuD0D0Kp_iso", "(species==100) && (is_best_cand==1)"+all_cuts);
+    t_BuDDKp->Draw("BDT1 >> h_BuDpDmKp_iso", "(species==101) && (is_best_cand==1)"+all_cuts);
+    t_BuDDKp->Draw("BDT1 >> h_BuDsDsKp_iso", "(species==102) && (is_best_cand==1)"+all_cuts);
 
     h_BuDpDmKp_iso->GetXaxis()->SetTitle("BDT1");
     h_BuDpDmKp_iso->GetYaxis()->SetTitle("Normalized entries / (0.01 MeV)");
@@ -1683,7 +2025,7 @@ void best_candidate_selection_plots()
 
     TH1D* h_BdDpD0Kp_iso = new TH1D("h_BdDpD0Kp_iso", "h_BdDpD0Kp_iso", 100, 0, 1);
 
-    t_BdDDKp->Draw("BDT1 >> h_BdDpD0Kp_iso", "(species==110) && (is_best_cand==1)");
+    t_BdDDKp->Draw("BDT1 >> h_BdDpD0Kp_iso", "(species==110) && (is_best_cand==1)"+all_cuts);
 
     h_BdDpD0Kp_iso->GetXaxis()->SetTitle("BDT1");
     h_BdDpD0Kp_iso->GetYaxis()->SetTitle("Normalized entries / (0.01 MeV)");
@@ -1702,7 +2044,7 @@ void best_candidate_selection_plots()
 
     TH1D* h_BsDsD0Kp_iso = new TH1D("h_BsDsD0Kp_iso", "h_BsDsD0Kp_iso", 100, 0, 1);
 
-    t_BsDDKp->Draw("BDT1 >> h_BsDsD0Kp_iso", "(species==120) && (is_best_cand==1)");
+    t_BsDDKp->Draw("BDT1 >> h_BsDsD0Kp_iso", "(species==120) && (is_best_cand==1)"+all_cuts);
 
     h_BsDsD0Kp_iso->GetXaxis()->SetTitle("BDT1");
     h_BsDsD0Kp_iso->GetYaxis()->SetTitle("Normalized entries / (0.01 MeV)");
@@ -1721,7 +2063,7 @@ void best_candidate_selection_plots()
 
     TH1D* h_BuD0DpK0_iso = new TH1D("h_BuD0DpK0_iso", "h_BuD0DpK0_iso", 100, 0, 1);
 
-    t_BuDDK0->Draw("BDT1 >> h_BuD0DpK0_iso", "(species==130) && (is_best_cand==1)");
+    t_BuDDK0->Draw("BDT1 >> h_BuD0DpK0_iso", "(species==130) && (is_best_cand==1)"+all_cuts);
 
     h_BuD0DpK0_iso->GetXaxis()->SetTitle("BDT1");
     h_BuD0DpK0_iso->GetYaxis()->SetTitle("Normalized entries / (0.01 MeV)");
@@ -1741,8 +2083,8 @@ void best_candidate_selection_plots()
     TH1D* h_BuD0Ds_iso = new TH1D("h_BuD0Ds_iso", "h_BuD0Ds_iso", 100, 0, 1);
     TH1D* h_BuD0Dp_iso = new TH1D("h_BuD0Dp_iso", "h_BuD0Dp_iso", 100, 0, 1);
 
-    t_BuDD->Draw("BDT1 >> h_BuD0Ds_iso", "(species==150) && (is_best_cand==1)");
-    t_BuDD->Draw("BDT1 >> h_BuD0Dp_iso", "(species==151) && (is_best_cand==1)");
+    t_BuDD->Draw("BDT1 >> h_BuD0Ds_iso", "(species==150) && (is_best_cand==1)"+all_cuts);
+    t_BuDD->Draw("BDT1 >> h_BuD0Dp_iso", "(species==151) && (is_best_cand==1)"+all_cuts);
 
     h_BuD0Dp_iso->GetXaxis()->SetTitle("BDT1");
     h_BuD0Dp_iso->GetYaxis()->SetTitle("Normalized entries / (0.01 MeV)");
@@ -1777,9 +2119,9 @@ void best_candidate_selection_plots()
     TH1D* h_BuDpDmKp_kin = new TH1D("h_BuDpDmKp_kin", "h_BuDpDmKp_kin", 100, 0, 1);
     TH1D* h_BuDsDsKp_kin = new TH1D("h_BuDsDsKp_kin", "h_BuDsDsKp_kin", 100, 0, 1);
 
-    t_BuDDKp->Draw("BDT2 >> h_BuD0D0Kp_kin", "(species==100) && (is_best_cand==1)");
-    t_BuDDKp->Draw("BDT2 >> h_BuDpDmKp_kin", "(species==101) && (is_best_cand==1)");
-    t_BuDDKp->Draw("BDT2 >> h_BuDsDsKp_kin", "(species==102) && (is_best_cand==1)");
+    t_BuDDKp->Draw("BDT2 >> h_BuD0D0Kp_kin", "(species==100) && (is_best_cand==1)"+all_cuts);
+    t_BuDDKp->Draw("BDT2 >> h_BuDpDmKp_kin", "(species==101) && (is_best_cand==1)"+all_cuts);
+    t_BuDDKp->Draw("BDT2 >> h_BuDsDsKp_kin", "(species==102) && (is_best_cand==1)"+all_cuts);
 
     h_BuDsDsKp_kin->GetXaxis()->SetTitle("BDT2");
     h_BuDsDsKp_kin->GetYaxis()->SetTitle("Normalized entries / (0.01 MeV)");
@@ -1803,7 +2145,7 @@ void best_candidate_selection_plots()
 
     TH1D* h_BdDpD0Kp_kin = new TH1D("h_BdDpD0Kp_kin", "h_BdDpD0Kp_kin", 100, 0, 1);
 
-    t_BdDDKp->Draw("BDT2 >> h_BdDpD0Kp_kin", "(species==110) && (is_best_cand==1)");
+    t_BdDDKp->Draw("BDT2 >> h_BdDpD0Kp_kin", "(species==110) && (is_best_cand==1)"+all_cuts);
 
     h_BdDpD0Kp_kin->GetXaxis()->SetTitle("BDT2");
     h_BdDpD0Kp_kin->GetYaxis()->SetTitle("Normalized entries / (0.01 MeV)");
@@ -1819,7 +2161,7 @@ void best_candidate_selection_plots()
 
     TH1D* h_BsDsD0Kp_kin = new TH1D("h_BsDsD0Kp_kin", "h_BsDsD0Kp_kin", 100, 0, 1);
 
-    t_BsDDKp->Draw("BDT2 >> h_BsDsD0Kp_kin", "(species==120) && (is_best_cand==1)");
+    t_BsDDKp->Draw("BDT2 >> h_BsDsD0Kp_kin", "(species==120) && (is_best_cand==1)"+all_cuts);
 
     h_BsDsD0Kp_kin->GetXaxis()->SetTitle("BDT2");
     h_BsDsD0Kp_kin->GetYaxis()->SetTitle("Normalized entries / (0.01 MeV)");
@@ -1835,7 +2177,7 @@ void best_candidate_selection_plots()
 
     TH1D* h_BuD0DpK0_kin = new TH1D("h_BuD0DpK0_kin", "h_BuD0DpK0_kin", 100, 0, 1);
 
-    t_BuDDK0->Draw("BDT2 >> h_BuD0DpK0_kin", "(species==130) && (is_best_cand==1)");
+    t_BuDDK0->Draw("BDT2 >> h_BuD0DpK0_kin", "(species==130) && (is_best_cand==1)"+all_cuts);
 
     h_BuD0DpK0_kin->GetXaxis()->SetTitle("BDT2");
     h_BuD0DpK0_kin->GetYaxis()->SetTitle("Normalized entries / (0.01 MeV)");
@@ -1852,8 +2194,8 @@ void best_candidate_selection_plots()
     TH1D* h_BuD0Ds_kin = new TH1D("h_BuD0Ds_kin", "h_BuD0Ds_kin", 100, 0, 1);
     TH1D* h_BuD0Dp_kin = new TH1D("h_BuD0Dp_kin", "h_BuD0Dp_kin", 100, 0, 1);
 
-    t_BuDD->Draw("BDT2 >> h_BuD0Ds_kin", "(species==150) && (is_best_cand==1)");
-    t_BuDD->Draw("BDT2 >> h_BuD0Dp_kin", "(species==151) && (is_best_cand==1)");
+    t_BuDD->Draw("BDT2 >> h_BuD0Ds_kin", "(species==150) && (is_best_cand==1)"+all_cuts);
+    t_BuDD->Draw("BDT2 >> h_BuD0Dp_kin", "(species==151) && (is_best_cand==1)"+all_cuts);
 
     h_BuD0Ds_kin->GetXaxis()->SetTitle("BDT2");
     h_BuD0Ds_kin->GetYaxis()->SetTitle("Normalized entries / (0.01 MeV)");
@@ -1870,6 +2212,10 @@ void best_candidate_selection_plots()
     leg11->Draw("same");
 
     SixPads1->SaveAs("/panfs/felician/B2Ktautau/workflow/best_candidate_selection_plots/cocktail_mcs_BDT2.pdf");
+
 }
 
-
+Double_t eps_error(Double_t Num, Double_t Den)
+{
+    return (Num/Den)*sqrt( 1./Num + 1./Den );
+}

@@ -4,8 +4,25 @@ localrules: exact_constraints, comparisons, fit_mass, make_sPlot_histos, compare
 
 rule all:
     input:
-        expand('/panfs/felician/B2Ktautau/workflow/rough_sensitivity_2D/BF_vs_bdt1_vs_bdt2_bkg_config_{bkg_config}.pdf', bkg_config=1),
-        expand('/panfs/felician/B2Ktautau/workflow/rough_sensitivity_2D/BF_vs_bdt1_vs_bdt2_bkg_config_{bkg_config}.pdf', bkg_config=2)
+        expand('/panfs/felician/B2Ktautau/workflow/rough_sensitivity_2D/BF_vs_bdt1_vs_bdt2_bkg_config_{bkg_config}.pdf', bkg_config=0)
+        # expand('/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/{line}.root', year=6, species=10, line=range(1,14)),
+        # expand('/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/{line}.root', year=7, species=10, line=range(1,17)),
+        # expand('/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/{line}.root', year=8, species=10, line=range(1,20)),
+        # expand('/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/{line}.root', year=6, species=100, line=range(1,10)),
+        # expand('/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/{line}.root', year=6, species=110, line=range(1,8)),
+        # expand('/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/{line}.root', year=6, species=120, line=range(1,7)),
+        # expand('/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/{line}.root', year=6, species=130, line=range(1,8)),
+        # expand('/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/{line}.root', year=6, species=150, line=range(1,7)),
+        # expand('/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/{line}.root', year=7, species=100, line=range(1,10)),
+        # expand('/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/{line}.root', year=7, species=110, line=range(1,11)),
+        # expand('/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/{line}.root', year=7, species=120, line=range(1,5)),
+        # expand('/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/{line}.root', year=7, species=130, line=range(1,8)),
+        # expand('/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/{line}.root', year=7, species=150, line=range(1,7)),
+        # expand('/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/{line}.root', year=8, species=100, line=range(1,12)),
+        # expand('/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/{line}.root', year=8, species=110, line=range(1,8)),
+        # expand('/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/{line}.root', year=8, species=120, line=range(1,9)),
+        # expand('/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/{line}.root', year=8, species=130, line=range(1,7)),
+        # expand('/panfs/felician/B2Ktautau/workflow/multiple_events/201{year}/Species_{species}/{line}.root', year=8, species=150, line=range(1,7))
 
 # Every time grid files are updated need to:
 # - run pidgen for ktautau / DDs over the pre-selection files (signal + normalisation channel)
@@ -482,7 +499,7 @@ rule best_candidate_selection_plots:
     input:
         'best_candidate_selection_plots.C'
     output:
-        '/panfs/felician/B2Ktautau/workflow/best_candidate_selection_plots/ktautau_mc_TM_vs_best.pdf'
+        '/panfs/felician/B2Ktautau/workflow/best_candidate_selection_plots/ktautau_mc_TM_vs_best_vs_2nd_best.pdf'
     log:
         '/panfs/felician/B2Ktautau/workflow/best_candidate_selection_plots/out.log'
     shell:
