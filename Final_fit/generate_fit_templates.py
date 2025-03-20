@@ -107,13 +107,16 @@ def main(argv):
     h_sig.Scale(1/h_sig.Integral())
     h_bkg.Scale(1/h_bkg.Integral())
 
+    h_sig.Sumw2()
+    h_bkg.Sumw2()
+
     # c = ROOT.TCanvas("c", "c")
     # c.cd()
     # h_sig.SetLineColor(4)
     # h_bkg.SetLineColor(2)
     # h_sig.SetMarkerColor(4)
     # h_bkg.SetMarkerColor(2)
-    # h_sig.SetTitle("BDT1 > {0} and BDT2 > {1}".format( round(bdt1,1), round(bdt2,1) ))
+    # h_sig.SetTitle("BDT1 > {0} and BDT2 > {1}".format( bdt1, bdt2 ))
     # h_sig.GetXaxis().SetTitle("m_{B} (MeV)")
     # h_sig.GetYaxis().SetTitle("Normalized entries / (40 MeV)")
     # h_sig.Draw()
@@ -122,7 +125,7 @@ def main(argv):
     # leg.AddEntry(h_sig, "Signal")
     # leg.AddEntry(h_bkg, "Comb. background")
     # leg.Draw("same")
-    # c.SaveAs("/panfs/felician/B2Ktautau/workflow/generate_fit_templates/fit_template_histograms_bdt1_{0}_bdt2_{1}.pdf".format(round(bdt1,1), round(bdt2,1) ))
+    # c.SaveAs("/panfs/felician/B2Ktautau/workflow/generate_fit_templates/fit_template_histograms_bdt1_{0}_bdt2_{1}.pdf".format(bdt1, bdt2 ))
 
     # Signal + background uncertainties (error)
     h_sig_err = ROOT.TH1D("h_sig_err", "h_sig_err", nbins, 4000, 8000)
@@ -148,10 +151,10 @@ def main(argv):
     h_bkg_err.SetMarkerColor(2)
 
     # Data
-    f_data = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/generate_toy_data/toy_data_bdt1_{0}_bdt2_{1}_seed_{2}.root".format( round(bdt1,1), round(bdt2,1) ,random_seed))
+    f_data = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/generate_toy_data/toy_data_bdt1_{0}_bdt2_{1}_seed_{2}.root".format( bdt1, bdt2 ,random_seed))
     h_data = f_data.Get("h_toy_data")
 
-    fout = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/generate_fit_templates/fit_templates_bdt1_{0}_bdt2_{1}_seed_{2}.root".format(round(bdt1,1), round(bdt2,1), random_seed), "RECREATE")
+    fout = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/generate_fit_templates/fit_templates_bdt1_{0}_bdt2_{1}_seed_{2}.root".format(bdt1, bdt2, random_seed), "RECREATE")
     fout.mkdir("Data")
     fout.mkdir("Signal")
     fout.mkdir("Background")

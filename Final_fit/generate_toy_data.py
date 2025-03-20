@@ -37,7 +37,7 @@ def main(argv):
     rnd.SetSeed(random_seed)
     h_toy_data.FillRandom(h_data, N, rnd)
 
-    fout = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/generate_toy_data/toy_data_bdt1_{0}_bdt2_{1}_seed_{2}.root".format( round(bdt1,1), round(bdt2,1) ,random_seed), "RECREATE")
+    fout = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/generate_toy_data/toy_data_bdt1_{0}_bdt2_{1}_seed_{2}.root".format( bdt1, bdt2 ,random_seed), "RECREATE")
     fout.cd()
     h_toy_data.Write()
     fout.Close()

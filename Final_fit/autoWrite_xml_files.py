@@ -34,18 +34,18 @@ def main(argv):
     
     <Sample Name="Signal" HistoPath="Signal" HistoName="nominal">
         <!-- StatError Activate="True" Name="staterror_sig" HistoPath="Signal" HistoName="error" -->
-        <StatError Activate="True" /> <!-- Use Default Histogram Errors as input to StatError -->
-        <NormFactor Name="Nsig" Val="0" Low="-100000." High="100000."  />
+        <StatError Activate="True" Name="staterror_sig" />
+        <NormFactor Name="Nsig" Val="0" Low="-100000." High="100000." />
     </Sample>
     <Sample Name="Background" HistoPath="Background" HistoName="nominal">
         <!-- StatError Activate="True" Name="staterror_bkg" HistoPath="Background" HistoName="error" -->
-        <StatError Activate="True" /> <!-- Use Default Histogram Errors as input to StatError -->
-        <NormFactor Name="Nbkg" Val=\"{3}\" Low="0" High=\"{4}\"  />
+        <StatError Activate="True" Name="staterror_bkg" />
+        <NormFactor Name="Nbkg" Val=\"{3}\" Low="0" High=\"{4}\" />
     </Sample>
 </Channel>
-    '''.format( round(bdt1,1), round(bdt2,1), random_seed, N_bkg, 2*N_bkg)
+    '''.format( bdt1, bdt2, random_seed, N_bkg, 2*N_bkg)
 
-    file1 = open('/panfs/felician/B2Ktautau/workflow/pyhf_fit/config/fit_region_bdt1_{0}_bdt2_{1}_seed_{2}.xml'.format( round(bdt1,1), round(bdt2,1), random_seed), 'w')
+    file1 = open('/panfs/felician/B2Ktautau/workflow/pyhf_fit/config/fit_region_bdt1_{0}_bdt2_{1}_seed_{2}.xml'.format( bdt1, bdt2, random_seed), 'w')
     file1.write(string1)
     file1.close()
 
@@ -59,9 +59,9 @@ def main(argv):
         <ParamSetting Const="True">Lumi</ParamSetting>
 	</Measurement>
 </Combination>
-    '''.format( round(bdt1,1), round(bdt2,1), random_seed )
+    '''.format( bdt1, bdt2, random_seed )
 
-    file2 = open('/panfs/felician/B2Ktautau/workflow/pyhf_fit/config/config_bdt1_{0}_bdt2_{1}_seed_{2}.xml'.format( round(bdt1,1), round(bdt2,1), random_seed), 'w')
+    file2 = open('/panfs/felician/B2Ktautau/workflow/pyhf_fit/config/config_bdt1_{0}_bdt2_{1}_seed_{2}.xml'.format( bdt1, bdt2, random_seed), 'w')
     file2.write(string2)
     file2.close()
 

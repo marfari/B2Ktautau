@@ -15,7 +15,7 @@ def main(argv):
     bdt2 = float(bdt2)
     random_seed = int(random_seed)
 
-    with open("/panfs/felician/B2Ktautau/workflow/pyhf_fit/workspace/workspace_bdt1_{0}_bdt2_{1}_seed_{2}.json".format( round(bdt1,1), round(bdt2,1), random_seed )) as serialized:
+    with open("/panfs/felician/B2Ktautau/workflow/pyhf_fit/workspace/workspace_bdt1_{0}_bdt2_{1}_seed_{2}.json".format( bdt1, bdt2, random_seed )) as serialized:
         spec = json.load(serialized)
 
     workspace = pyhf.Workspace(spec)
@@ -34,11 +34,12 @@ def main(argv):
     fit_result, twice_nll = pyhf.infer.mle.fit(data, model, return_uncertainties=True, return_fitted_val=True)
     fit_pars, fit_errors = fit_result.T
     # print(fit_pars)
+    # print(fit_errors)
 
     ## fitted POI value
     fit_poi = fit_pars[model.config.poi_index] # I need to save this for each toy (and make a pull plot later)
     fit_poi_error = fit_errors[model.config.poi_index] # I need to save this for each toy (and make a pull plot later)
-    # print(fit_poi, "  ", fit_poi_error)
+    print("POI = ", fit_poi, " +/- ", fit_poi_error)
 
     def get_mc_counts(pars):
         deltas, factors = model._modifications(pars)
@@ -73,10 +74,10 @@ def main(argv):
     plt.xlabel('m_B (MeV)')
     plt.ylabel('Entries / (40 MeV)')
     plt.legend()
-    plt.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit/plots/fit_plot_bdt1_{0}_bdt2_{1}_seed_{2}.pdf'.format( round(bdt1,1), round(bdt2,1), random_seed))
+    plt.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit/plots/fit_plot_bdt1_{0}_bdt2_{1}_seed_{2}.pdf'.format( bdt1, bdt2, random_seed))
 
     # Save fit result
-    np.save('/panfs/felician/B2Ktautau/workflow/pyhf_fit/results/fit_result_bdt1_{0}_bdt2_{1}_seed_{2}.npy'.format( round(bdt1,1), round(bdt2,1), random_seed ), [fit_poi,fit_poi_error])
+    np.save('/panfs/felician/B2Ktautau/workflow/pyhf_fit/results/fit_result_bdt1_{0}_bdt2_{1}_seed_{2}.npy'.format( bdt1, bdt2, random_seed ), [fit_poi,fit_poi_error])
 
     # Make pull plot (for every fit parameter)
     pulls = pyhf.tensorlib.concatenate(
