@@ -84,6 +84,7 @@ def main(argv):
     bdt1 = argv[1]
     bdt2 = argv[2]
     random_seed = argv[3]
+    folder_name = argv[4]
     bdt1 = float(bdt1)
     bdt2 = float(bdt2)
     random_seed = int(random_seed)
@@ -151,10 +152,10 @@ def main(argv):
     h_bkg_err.SetMarkerColor(2)
 
     # Data
-    f_data = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/generate_toy_data/toy_data_bdt1_{0}_bdt2_{1}_seed_{2}.root".format( bdt1, bdt2 ,random_seed))
+    f_data = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/generate_toy_data/{3}/toy_data_bdt1_{0}_bdt2_{1}_seed_{2}.root".format( bdt1, bdt2 ,random_seed, folder_name))
     h_data = f_data.Get("h_toy_data")
 
-    fout = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/generate_fit_templates/fit_templates_bdt1_{0}_bdt2_{1}_seed_{2}.root".format(bdt1, bdt2, random_seed), "RECREATE")
+    fout = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/generate_fit_templates/{3}/fit_templates_bdt1_{0}_bdt2_{1}_seed_{2}.root".format(bdt1, bdt2, random_seed, folder_name), "RECREATE")
     fout.mkdir("Data")
     fout.mkdir("Signal")
     fout.mkdir("Background")

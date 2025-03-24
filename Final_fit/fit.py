@@ -5,17 +5,20 @@ import matplotlib.pyplot as plt
 from IPython.display import display, HTML
 import numpy as np
 import matplotlib.ticker as mticker
+from pyhf.contrib.viz import brazil
+from uncertainties import ufloat
 
 def main(argv):
     bdt1 = argv[1]
     bdt2 = argv[2]
     random_seed = argv[3]
+    folder_name = argv[4]
 
     bdt1 = float(bdt1)
     bdt2 = float(bdt2)
     random_seed = int(random_seed)
 
-    with open("/panfs/felician/B2Ktautau/workflow/pyhf_fit/workspace/workspace_bdt1_{0}_bdt2_{1}_seed_{2}.json".format( bdt1, bdt2, random_seed )) as serialized:
+    with open("/panfs/felician/B2Ktautau/workflow/generate_fit_workspaces/{0}/workspace_bdt1_{1}_bdt2_{2}_seed_{3}.json".format( folder_name, bdt1, bdt2, random_seed )) as serialized:
         spec = json.load(serialized)
 
     workspace = pyhf.Workspace(spec)
@@ -41,6 +44,9 @@ def main(argv):
     fit_poi_error = fit_errors[model.config.poi_index] # I need to save this for each toy (and make a pull plot later)
     print("POI = ", fit_poi, " +/- ", fit_poi_error)
 
+    nbkg = fit_pars[0]
+    nbkg_err = fit_errors[0]
+
     def get_mc_counts(pars):
         deltas, factors = model._modifications(pars)
         allsum = pyhf.tensorlib.concatenate(
@@ -53,31 +59,45 @@ def main(argv):
         allfac = pyhf.tensorlib.concatenate(factors + [nom_plus_delta])
         return pyhf.tensorlib.product(allfac, axis=0)
 
-    def plot(order=[1,0], **par_settings):
+    def plot(**par_settings):
         pars = pyhf.tensorlib.astensor(model.config.suggested_init())
         for k, v in par_settings.items():
             pars[par_name_dict[k]] = v
 
         mc_counts = get_mc_counts(pars)
-        bottom = None
-        names = ['Signal', 'Background']
-        for i, sample_index in enumerate(order):
-            data = mc_counts[sample_index][0]
-            x = np.arange(len(data))
-            plt.bar(x, data, 1, bottom=bottom, alpha=1.0, label=names[i])
-            bottom = data if i == 0 else bottom + data
-        plt.scatter(x, workspace.data(model, include_auxdata=False), c="k", alpha=1.0, zorder=99, label="Toy data (WS)")
+
+        data_sig = mc_counts[1][0]
+        data_bkg = mc_counts[0][0]
+        all_data = data_sig+data_bkg
+
+        x = np.arange(len(data_sig))
+        mass = [ 4000 + 40*x[k] for k in range(len(x)) ]
+
+        plt.step(mass, all_data, where='mid', color='blue', label="Total fit")
+        plt.step(mass, data_sig, where='mid', color='green', label='Signal')
+        plt.step(mass, data_bkg, where='mid', color='red', label='Comb. background')
+
+        the_data = workspace.data(model, include_auxdata=False)
+        the_data_err = np.sqrt(the_data)
+
+        plt.errorbar(mass, the_data, the_data_err, c="k", marker='.', linestyle='', zorder=99, label="Toy data")
 
     par_name_dict = {k: v["slice"].start for k, v in model.config.par_map.items()}
-    plt.title(f'Nsig = {fit_poi:.3g} $\pm$ {fit_poi_error:.3g} \n BDT1 = {bdt1:.1g} | BDT2 = {bdt2:.1g} | seed = {random_seed}')
+    plt.title(f'BDT1 = {bdt1:.3g} | BDT2 = {bdt2:.3g} | seed = {random_seed}')
+    
+    f, ax = plt.subplots()
     plot(**{k: fit_pars[v] for k, v in par_name_dict.items()})
     plt.xlabel('m_B (MeV)')
     plt.ylabel('Entries / (40 MeV)')
+    param1 = ufloat(fit_poi, fit_poi_error)
+    param2 = ufloat(nbkg, nbkg_err) 
+    textstr = "$BF_{{sig}} = $ {0} \n $N_{{bkg}} = $ {1}".format(param1, param2)
+    plt.text(0.55, 0.6, textstr, fontsize=10, transform=ax.transAxes)
     plt.legend()
-    plt.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit/plots/fit_plot_bdt1_{0}_bdt2_{1}_seed_{2}.pdf'.format( bdt1, bdt2, random_seed))
+    plt.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit/plots/{0}/fit_plot_bdt1_{1}_bdt2_{2}_seed_{3}.pdf'.format( folder_name, bdt1, bdt2, random_seed))
 
     # Save fit result
-    np.save('/panfs/felician/B2Ktautau/workflow/pyhf_fit/results/fit_result_bdt1_{0}_bdt2_{1}_seed_{2}.npy'.format( bdt1, bdt2, random_seed ), [fit_poi,fit_poi_error])
+    np.save('/panfs/felician/B2Ktautau/workflow/pyhf_fit/results/{0}/fit_result_bdt1_{1}_bdt2_{2}_seed_{3}.npy'.format( folder_name, bdt1, bdt2, random_seed ), [fit_poi,fit_poi_error])
 
     # Make pull plot (for every fit parameter)
     pulls = pyhf.tensorlib.concatenate(
@@ -130,7 +150,23 @@ def main(argv):
         marker=".",
         fmt="none",
     )
-    fig.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit/plots/fit_pull_plot_bdt1_{0}_bdt2_{1}_seed_{2}.pdf'.format( round(bdt1,1), round(bdt2,1), random_seed))
+    fig.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit/plots/{0}/fit_pull_plot_bdt1_{1}_bdt2_{2}_seed_{3}.pdf'.format( folder_name, bdt1, bdt2, random_seed))
+
+    if(random_seed == 1000):
+        # CLs limit: evaluate upper limit on parameter of interest
+        poi_values = np.linspace(0,0.01,50)
+        obs_limit, exp_limits, (scan, results) = pyhf.infer.intervals.upper_limits.upper_limit(data, model, poi_values, level=0.1, return_results=True)
+        print(f"Upper limit (obs): μ = {obs_limit:.4f}")
+        print(f"Upper limit (exp): μ = {exp_limits[2]:.4f}")
+
+        fig, ax = plt.subplots()
+        fig.set_size_inches(10.5, 7)
+        ax.set_title("Hypothesis Tests")
+        ax.set_xlabel("$BF_{sig}$")
+        ax.set_ylabel(r"$\mathrm{CL}_{s}$")
+
+        brazil.plot_results(poi_values, results, test_size=0.1, ax=ax)
+        fig.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit/plots/{0}/cls_limit_bdt1_{1}_bdt2_{2}_seed_{3}.pdf'.format( folder_name, bdt1, bdt2, random_seed))
 
 if __name__ == "__main__":
     main(sys.argv)
