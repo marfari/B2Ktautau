@@ -105,11 +105,12 @@ def main(argv):
     t_bkg.Draw("df_Bp_M >> h_bkg", "(BDT1 > {0}) && (BDT2 > {1})".format(bdt1,bdt2))
 
     # Scale histograms to unit area
-    h_sig.Scale(1/h_sig.Integral())
-    h_bkg.Scale(1/h_bkg.Integral())
+    if((h_sig.Integral() != 0) and (h_bkg.Integral() != 0)):
+        h_sig.Scale(1/h_sig.Integral())
+        h_bkg.Scale(1/h_bkg.Integral())
 
-    h_sig.Sumw2()
-    h_bkg.Sumw2()
+        h_sig.Sumw2()
+        h_bkg.Sumw2()
 
     # c = ROOT.TCanvas("c", "c")
     # c.cd()
