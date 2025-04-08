@@ -13,6 +13,7 @@ def main(argv):
     bdt2 = float(bdt2)
     random_seed = int(random_seed)
 
+    # WS data
     f_ws = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_3/post_sel_tree_bdt1_0_bdt2_0.root")
     t_ws = f_ws.Get("DecayTree")
 
@@ -27,7 +28,8 @@ def main(argv):
     fixed_value = np.load("/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs.npy")
     fixed_value_error = np.load("/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs_error.npy")
 
-    f_mc = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_1/post_sel_tree_bdt1_0_bdt2_0.root")
+    # MC (w/o TM cuts)
+    f_mc = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_10/post_sel_tree_bdt1_0_bdt2_0.root")
     t_mc = f_mc.Get("DecayTree")
     N_num = t_mc.GetEntries("(BDT1 > {0}) && (BDT2 > {1})".format(bdt1,bdt2))
     
@@ -40,17 +42,16 @@ def main(argv):
     <Data HistoName="data" HistoPath="Data" />
     
     <!-- Set the StatError type to Poisson.  Can also be Gaussian -->
-    <StatErrorConfig RelErrorThreshold="0.05" ConstraintType="Poisson" />
+    <!-- StatErrorConfig RelErrorThreshold="0.05" ConstraintType="Poisson" -->
+    <StatErrorConfig ConstraintType="Poisson" />
     
     <Sample Name="Signal" HistoPath="Signal" HistoName="nominal">
         <StatError Activate="True" Name="staterror_sig" HistoPath="Signal" HistoName="error" />
-        <!-- StatError Activate="True" Name="staterror_sig" -->
         <NormFactor Name="c_bdt1_bdt2" Val=\"{5}\" Low="0" High="1000000000." />
         <NormFactor Name="BF_sig" Val="0" Low="-1." High="1." />
     </Sample>
     <Sample Name="Background" HistoPath="Background" HistoName="nominal">
         <StatError Activate="True" Name="staterror_bkg" HistoPath="Background" HistoName="error" />
-        <!-- StatError Activate="True" Name="staterror_bkg" -->
         <NormFactor Name="Nbkg" Val=\"{3}\" Low="0" High=\"{4}\" />
     </Sample>
 
@@ -68,7 +69,7 @@ def main(argv):
 	<Input>/panfs/felician/B2Ktautau/workflow/write_xml_files/{0}/fit_region_bdt1_{1}_bdt2_{2}_seed_{3}.xml</Input>
 	<Measurement Name="MinimalConfiguration" Lumi="1." LumiRelErr="0.1">
 		<POI>BF_sig</POI>
-        <ParamSetting Const="True">Lumi c_bdt1_bdt2</ParamSetting>
+        <ParamSetting Const="True">Lumi c_bdt1_bdt2 </ParamSetting>
 	</Measurement>
 </Combination>
     '''.format( folder_name, bdt1, bdt2, random_seed )

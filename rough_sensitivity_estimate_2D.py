@@ -28,11 +28,13 @@ def rough_sensitivity(bdt1, bdt2, t_mc, t_ws, fixed_value, bkg_config):
 
     # 95% C.L. (1.64)
     # 90% C.L. (1.28)
-    # S = 0.5*( 1.64**2 + np.sqrt(1.64**4 + 4*(1.64**2)*B) )
-    S = 0.5*( 1.28**2 + np.sqrt(1.28**4 + 4*(1.28**2)*B) )
+    n = 1.28
+    S = 0.5*( n**2 + np.sqrt(n**4 + 4*(n**2)*B) )
 
     branching_fraction = fixed_value*(S/N_num)
-    return S, B, branching_fraction
+    c = N_num/fixed_value
+
+    return S, B, branching_fraction, c
 
 
 def main(argv):
@@ -69,8 +71,9 @@ def main(argv):
     f_ws = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_3/post_sel_tree_bdt1_0_bdt2_0.root")
     t_ws = f_ws.Get("DecayTree")
 
-    N = 30
-    bdt_cuts = np.linspace(0,1,N)
+    bdt_cuts = np.round( np.linspace(0,1,11), 3 )
+    print(bdt_cuts)
+    N = len(bdt_cuts)
 
     S_values = np.zeros(N*N)
     B_values = np.zeros(N*N)
@@ -95,7 +98,7 @@ def main(argv):
             BDT2_values[a] = bdt2
             a += 1
 
-            print("BDT1 = {0} | BDT2 = {1} | S = {2} | B = {3} | BF = {4}".format(bdt1, bdt2, results[0], results[1], results[2]))
+            print("BDT1 = {0} | BDT2 = {1} | S = {2} | B = {3} | c = {4} | BF = {5}".format(bdt1, bdt2, results[0], results[1], results[3], results[2]))
 
     min_index = np.argmin(branching_fraction_values)
 

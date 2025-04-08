@@ -8,6 +8,8 @@ import matplotlib.ticker as mticker
 from pyhf.contrib.viz import brazil
 from uncertainties import ufloat
 import ROOT
+import array
+import pandas as pd
 
 def main(argv):
     bdt1 = argv[1]
@@ -18,6 +20,11 @@ def main(argv):
     bdt1 = float(bdt1)
     bdt2 = float(bdt2)
     random_seed = int(random_seed)
+
+    f_data = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/generate_toy_data/{3}/toy_data_bdt1_{0}_bdt2_{1}_seed_{2}.root".format( bdt1, bdt2 ,random_seed, folder_name))
+    h_data = f_data.Get("h_toy_data")
+    nbins = h_data.GetNbinsX()
+    mass = [h_data.GetBinCenter(i+1) for i in range(nbins)]
 
     with open("/panfs/felician/B2Ktautau/workflow/generate_fit_workspaces/{0}/workspace_bdt1_{1}_bdt2_{2}_seed_{3}.json".format( folder_name, bdt1, bdt2, random_seed )) as serialized:
         spec = json.load(serialized)
@@ -37,17 +44,35 @@ def main(argv):
     h_sig = f_fit_templates.Get("Signal/nominal")
     h_bkg = f_fit_templates.Get("Background/nominal")
 
-    if((h_data.Integral() == 0) or (h_sig.Integral() == 0) or (h_bkg.Integral() == 0)):
+    if((h_data.GetEntries() < 100) or (h_sig.GetEntries() < 100) or (h_bkg.GetEntries() < 100)):
         np.save('/panfs/felician/B2Ktautau/workflow/pyhf_fit/results/{0}/fit_result_bdt1_{1}_bdt2_{2}_seed_{3}.npy'.format( folder_name, bdt1, bdt2, random_seed ), [0,0])
         np.save('/panfs/felician/B2Ktautau/workflow/pyhf_fit/results/{0}/cls_limit_bdt1_{1}_bdt2_{2}_seed_{3}.npy'.format( folder_name, bdt1, bdt2, random_seed ), [np.inf, np.inf])
-
+    
+        fig = plt.figure(figsize=(6,6))
+        fig.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit/plots/{0}/fit_plot_bdt1_{1}_bdt2_{2}_seed_{3}.pdf'.format( folder_name, bdt1, bdt2, random_seed))
+    
+        fig1 = plt.figure(figsize=(6,6))
+        fig1.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit/plots/{0}/cls_limit_bdt1_{1}_bdt2_{2}_seed_{3}.pdf'.format( folder_name, bdt1, bdt2, random_seed))
     else:
         # Fitting
         ## maximum likelihood fit (produces the maximum likelihood = denominator of the likelihood ratio)
-        pyhf.set_backend('numpy', 'minuit') # minuit returns errors and correlation matrix; we ned the errors to make pulls
-        pyhf.set_backend(pyhf.tensorlib, pyhf.optimize.minuit_optimizer(verbose=2))
+        optimizer = pyhf.optimize.minuit_optimizer(verbose=2)
+        pyhf.set_backend('numpy', optimizer) # minuit returns errors and correlation matrix; we ned the errors to make pulls
         
-        fit_result, twice_nll = pyhf.infer.mle.fit(data, model, return_uncertainties=True, return_fitted_val=True)
+        fit_result, res_obj = pyhf.infer.mle.fit(data, model, return_uncertainties=True, return_result_obj=True)
+
+        cov_matrix = res_obj.minuit.covariance
+        num_rows, num_cols = cov_matrix.shape
+        corr_matrix = np.zeros((num_rows,num_cols))
+
+        for i in range(num_rows):
+            for j in range(num_cols):
+                corr_matrix[i][j] = cov_matrix[i][j]/np.sqrt( cov_matrix[i][i] *  cov_matrix[j][j] )
+
+        # df = pd.DataFrame(corr_matrix)
+        correlation_value = corr_matrix[0][1]
+        print("BF_sig and Nbkg correlation = ", correlation_value)
+
         fit_pars, fit_errors = fit_result.T
         # print(fit_pars)
         # print(fit_errors)
@@ -59,6 +84,7 @@ def main(argv):
 
         nbkg = fit_pars[0]
         nbkg_err = fit_errors[0]
+        print("N_bkg = ", nbkg, " +/- ", nbkg_err, " sqrt(N_bkg) = ", np.sqrt(nbkg))
 
         def get_mc_counts(pars):
             deltas, factors = model._modifications(pars)
@@ -84,7 +110,7 @@ def main(argv):
             all_data = data_sig+data_bkg
 
             x = np.arange(len(data_sig))
-            mass = [ 4000 + 40*x[k] for k in range(len(x)) ]
+            # mass = [ bins[i] for i in range(len(x)) ]
 
             plt.step(mass, all_data, where='mid', color='blue', label="Total fit")
             plt.step(mass, data_sig, where='mid', color='green', label='Signal')
@@ -96,7 +122,7 @@ def main(argv):
             plt.errorbar(mass, the_data, the_data_err, c="k", marker='.', linestyle='', zorder=99, label="Toy data")
 
         par_name_dict = {k: v["slice"].start for k, v in model.config.par_map.items()}
-        plt.title(f'BDT1 = {bdt1:.3g} | BDT2 = {bdt2:.3g} | seed = {random_seed}')
+        plt.title(f'BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | seed = {random_seed}')
         
         f, ax = plt.subplots()
         plot(**{k: fit_pars[v] for k, v in par_name_dict.items()})
@@ -111,7 +137,7 @@ def main(argv):
         plt.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit/plots/{0}/fit_plot_bdt1_{1}_bdt2_{2}_seed_{3}.pdf'.format( folder_name, bdt1, bdt2, random_seed))
 
         # Save fit result
-        np.save('/panfs/felician/B2Ktautau/workflow/pyhf_fit/results/{0}/fit_result_bdt1_{1}_bdt2_{2}_seed_{3}.npy'.format( folder_name, bdt1, bdt2, random_seed ), [fit_poi,fit_poi_error])
+        np.save('/panfs/felician/B2Ktautau/workflow/pyhf_fit/results/{0}/fit_result_bdt1_{1}_bdt2_{2}_seed_{3}.npy'.format( folder_name, bdt1, bdt2, random_seed ), [fit_poi, fit_poi_error, nbkg, nbkg_err, correlation_value])
 
         # Make pull plot (for every fit parameter)
         pulls = pyhf.tensorlib.concatenate(

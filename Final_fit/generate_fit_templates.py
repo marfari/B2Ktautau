@@ -2,6 +2,7 @@ import sys
 import ROOT
 import numpy as np
 import matplotlib.pyplot as plt
+import array
 
 def eps_error(Num, Den):
     return (Num/Den)*np.sqrt( 1/Num + 1/Den )
@@ -78,7 +79,6 @@ def draw_rs_ws_bdt_eff():
     plt.clf()
 
 def main(argv):
-    nbins = 100
     # ROOT.gStyle.SetOptStat(0)
 
     bdt1 = argv[1]
@@ -89,8 +89,18 @@ def main(argv):
     bdt2 = float(bdt2)
     random_seed = int(random_seed)
 
-    # Signal 
-    f_sig = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_1/post_sel_tree_bdt1_0_bdt2_0.root")
+    # Data
+    f_data = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/generate_toy_data/{3}/toy_data_bdt1_{0}_bdt2_{1}_seed_{2}.root".format( bdt1, bdt2 ,random_seed, folder_name))
+    h_data = f_data.Get("h_toy_data")
+
+    nbins = h_data.GetNbinsX()
+    # print(nbins)
+    # bins = [h_data.GetBinLowEdge(i+1) for i in range(nbins+1)]
+    # bins = array.array('d', bins)
+    # print(bins)
+
+    # Signal (w/o TM)
+    f_sig = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_10/post_sel_tree_bdt1_0_bdt2_0.root")
     t_sig = f_sig.Get("DecayTree")
 
     # Combinatorial background
@@ -100,7 +110,7 @@ def main(argv):
     # Signal + background templates (nominal)
     h_sig = ROOT.TH1D("h_sig", "h_sig", nbins, 4000, 8000)
     h_bkg = ROOT.TH1D("h_bkg", "h_bkg", nbins, 4000, 8000)
-    
+
     t_sig.Draw("df_Bp_M >> h_sig", "(BDT1 > {0}) && (BDT2 > {1})".format(bdt1,bdt2))
     t_bkg.Draw("df_Bp_M >> h_bkg", "(BDT1 > {0}) && (BDT2 > {1})".format(bdt1,bdt2))
 
@@ -108,26 +118,6 @@ def main(argv):
     if((h_sig.Integral() != 0) and (h_bkg.Integral() != 0)):
         h_sig.Scale(1/h_sig.Integral())
         h_bkg.Scale(1/h_bkg.Integral())
-
-        h_sig.Sumw2()
-        h_bkg.Sumw2()
-
-    # c = ROOT.TCanvas("c", "c")
-    # c.cd()
-    # h_sig.SetLineColor(4)
-    # h_bkg.SetLineColor(2)
-    # h_sig.SetMarkerColor(4)
-    # h_bkg.SetMarkerColor(2)
-    # h_sig.SetTitle("BDT1 > {0} and BDT2 > {1}".format( bdt1, bdt2 ))
-    # h_sig.GetXaxis().SetTitle("m_{B} (MeV)")
-    # h_sig.GetYaxis().SetTitle("Normalized entries / (40 MeV)")
-    # h_sig.Draw()
-    # h_bkg.Draw("same")
-    # leg = ROOT.TLegend(0.7,0.7,0.9,0.9)
-    # leg.AddEntry(h_sig, "Signal")
-    # leg.AddEntry(h_bkg, "Comb. background")
-    # leg.Draw("same")
-    # c.SaveAs("/panfs/felician/B2Ktautau/workflow/generate_fit_templates/fit_template_histograms_bdt1_{0}_bdt2_{1}.pdf".format(bdt1, bdt2 ))
 
     # Signal + background uncertainties (error)
     h_sig_err = ROOT.TH1D("h_sig_err", "h_sig_err", nbins, 4000, 8000)
@@ -151,10 +141,6 @@ def main(argv):
 
     h_sig_err.SetMarkerColor(4)
     h_bkg_err.SetMarkerColor(2)
-
-    # Data
-    f_data = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/generate_toy_data/{3}/toy_data_bdt1_{0}_bdt2_{1}_seed_{2}.root".format( bdt1, bdt2 ,random_seed, folder_name))
-    h_data = f_data.Get("h_toy_data")
 
     fout = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/generate_fit_templates/{3}/fit_templates_bdt1_{0}_bdt2_{1}_seed_{2}.root".format(bdt1, bdt2, random_seed, folder_name), "RECREATE")
     fout.mkdir("Data")
