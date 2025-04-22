@@ -4,6 +4,7 @@ import ROOT
 import numpy as np
 import matplotlib.pyplot as plt
 import array 
+from ROOT import TMath
 
 def main(argv):
     bdt1 = argv[1]
@@ -76,30 +77,111 @@ def main(argv):
 
     # Use optimal number of bins
     h_data = ROOT.TH1D("h_data", "h_data", nbins, 4000, 8000)
-    t_bkg.Draw("df_Bp_M >> h_data", "(BDT1 > {0}) && (BDT2 > {1})".format(bdt1,bdt2))
+    if((bdt1 >= 0.9) and (bdt2 >= 0.9)):
+        t_bkg.Draw("df_Bp_M >> h_data", "(BDT1 > {0}) && (BDT2 > {1})".format(0.9,0.9))
+    else:
+        t_bkg.Draw("df_Bp_M >> h_data", "(BDT1 > {0}) && (BDT2 > {1})".format(bdt1,bdt2))
 
-    # 2) Sample from WS data histogram
+    # # 2) Fit the WS data histogram
+    # def landau(x, par):
+    #     xx = x[0]
+    #     mu = par[0]
+    #     sigma = par[1]
+
+    #     return TMath.Landau(xx, mu, sigma)
+
+    # def chebyshev_pdf(x, par):
+    #     # Normalize x to [-1, 1]
+    #     xx = x[0]
+    #     xmin = 4000
+    #     xmax = 8000
+    #     xnorm = 2 * (xx - xmin) / (xmax - xmin) - 1
+
+    #     # Evaluate the Chebyshev sum
+    #     n = len(par)
+    #     T_prev = 1
+    #     T_curr = xnorm
+    #     result = par[0] * T_prev
+    #     if n > 1:
+    #         result += par[1] * T_curr
+
+    #     for i in range(2, n):
+    #         T_next = 2 * xnorm * T_curr - T_prev
+    #         result += par[i] * T_next
+    #         T_prev, T_curr = T_curr, T_next
+
+    #     return result
+
+    # def landau_plus_chebychev(x, par):
+    #     mu = par[0]
+    #     sigma = par[1]
+    #     a0 = par[2]
+    #     a1 = par[3]
+    #     a2 = par[4]
+    #     a3 = par[5]
+    #     f = par[6]
+    #     N = par[7]
+
+    #     p = [mu, sigma]
+    #     p1 = [a0, a1, a2, a3]
+
+    #     return N*( f*landau(x, p) + (1-f)*chebyshev_pdf(x, p1) )
+
     eps_ws_den = t_bkg.GetEntries()
     eps_ws_num = t_bkg.GetEntries("(BDT1 > {0}) && (BDT2 > {1})".format(bdt1,bdt2))
     eps_ws = eps_ws_num/eps_ws_den
     N_bkg = int(2*19006409*eps_ws)
-    
-    np.random.seed(random_seed)
-    N = np.random.poisson(N_bkg)
+    print("n_ws = ", eps_ws_num)
 
+    if((random_seed < 1000) and (random_seed >= 0)):
+        np.random.seed(random_seed)
+        N_bkg = np.random.poisson(N_bkg)
+
+    # # Landau + chebychev
+    # pdf = ROOT.TF1("pdf", landau_plus_chebychev, 4000, 8000, 8)
+    # pdf.SetParameters(4800, 400, 0.5, 0.5, 0.5, 0.05, 0.5, eps_ws_num)
+    # pdf.SetParNames("mu", "sig", "a0", "a1", "a2", "a3", "f", "N")
+    # pdf.SetParLimits(0, 4500, 5500)
+    # pdf.SetParLimits(1, 50, 1000)
+    # pdf.SetParLimits(2, -1, 10)
+    # pdf.SetParLimits(3, -5, 5)
+    # pdf.SetParLimits(3, -5, 5)
+    # pdf.SetParLimits(4, -2, 2)
+    # pdf.SetParLimits(5, -1, 1)
+    # pdf.FixParameter(6, 0.95)
+    # if((bdt1 >= 0.98) and (bdt2 >= 0.98)):
+    #     pdf.FixParameter(6, 1)
+    # pdf.SetParLimits(7, 0, 2*eps_ws_num)
+
+    # fit_status = int(h_data.Fit("pdf", "LME"))
+    # fit_pdf = h_data.GetFunction("pdf")
+
+    # chi2_bkg = fit_pdf.GetChisquare() / fit_pdf.GetNDF()
+    # print("Background fit status = ", fit_status)
+    # print("Background fit chi2/ndf = ", chi2_bkg)
+
+    # 3) Sample from fit to WS data histogram
     h_toy_data = ROOT.TH1D("h_toy_data", "h_toy_data", nbins, 4000, 8000)
+
+    # # Uniform distribution:
+    # contents = np.array([h_data.GetBinContent(i+1) for i in range(nbins)])
+    # probs = contents/np.sum(contents) # probability per bin
+    # cdf = np.cumsum(probs)
+
+    # for i in range(N):
+    #     r = np.random.uniform()
+    #     bin_index = int(np.searchsorted(cdf, r) + 1)
+    #     h_toy_data.Fill( h_data.GetBinCenter(bin_index), 1)
+
+    # h_toy_data.FillRandom(h_data, N_bkg, rnd)
 
     rnd = ROOT.TRandom()
     rnd.SetSeed(random_seed)
 
-    if(random_seed == 1000):
-        print("Using B")
-        h_toy_data.FillRandom(h_data, N_bkg, rnd)
-    elif((random_seed < 1000) and (random_seed >= 0)):
-        h_toy_data.FillRandom(h_data, N, rnd)
-    else:
-        print("random seed must be [0,1000]")
-        quit()
+    # if(eps_ws_num < 1000):
+    #     h_toy_data.FillRandom("pdf", N_bkg, rnd)
+    # else:
+    h_toy_data.FillRandom(h_data, N_bkg, rnd)
 
     fout = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/generate_toy_data/{3}/toy_data_bdt1_{0}_bdt2_{1}_seed_{2}.root".format( bdt1, bdt2, random_seed, folder_name), "RECREATE")
     fout.cd()

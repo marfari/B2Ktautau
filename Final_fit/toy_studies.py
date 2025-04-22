@@ -32,13 +32,17 @@ def main(argv):
     bias = fit_poi - 0
     (mu_bias, sigma_bias) = norm.fit(bias)
 
-    n, bins, patches = plt.hist(bias, bins=nbins, density=True, label="$\mu = $ {0} \n $\sigma = $ {1}".format( round(mu_bias,5), round(sigma_bias,5) ))
+    n, bins, patches = plt.hist(bias, bins=nbins, label="$\mu = $ {0} \n $\sigma = $ {1}".format( round(mu_bias,5), round(sigma_bias,5) ))
 
-    y_bias = norm.pdf( bins, mu_bias, sigma_bias)
-    plt.plot(bins, y_bias, 'r-', linewidth=2)
+    xcenters = (bins[:-1] + bins[1:]) / 2
+
+    plt.errorbar(xcenters, n, yerr=np.sqrt(n), ecolor='black', fmt='k.')
+    y_bias = sum(n)*(bins[1] - bins[0])*norm.pdf( xcenters, mu_bias, sigma_bias)
+    plt.plot(xcenters, y_bias, 'r-', linewidth=2)
     plt.xlabel("Bias: $BF_{sig}$ - 0")
     plt.ylabel("Normalised entries / {0} bins".format(nbins))
-    plt.title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g}")
+    chi2_2 = np.sum( ((n - y_bias)**2) / y_bias) / (nbins - 2)
+    plt.title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2_2:.3g}")
     plt.legend()
     plt.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{0}/bias_bdt1_{1}_bdt2_{2}.pdf'.format( folder_name, bdt1, bdt2 ))
     plt.clf()
@@ -46,16 +50,19 @@ def main(argv):
     pull = bias/fit_poi_error
     (mu_pull, sigma_pull) = norm.fit(pull)
 
-    n1, bins1, patches1 = plt.hist( pull, bins=nbins, density=True, label="$\mu = $ {0} \n $\sigma = $ {1}".format( round(mu_pull,5), round(sigma_pull,5) ))
+    n1, bins1, patches1 = plt.hist( pull, bins=nbins, label="$\mu = $ {0} \n $\sigma = $ {1}".format( round(mu_pull,5), round(sigma_pull,5) ))
 
-    y_pull = norm.pdf( bins1, mu_pull, sigma_pull)
-    plt.plot(bins1, y_pull, 'r-', linewidth=2)
+    xcenters1 = (bins1[:-1] + bins1[1:]) / 2
+
+    plt.errorbar(xcenters1, n1, yerr=np.sqrt(n1), ecolor='black', fmt='k.')
+    y_pull = sum(n1)*(bins1[1] - bins1[0])*norm.pdf(xcenters1, mu_pull, sigma_pull)
+    plt.plot(xcenters1, y_pull, 'r-', linewidth=2)
     plt.xlabel("Pull: ($BF_{sig}$ - 0)/error")
     plt.ylabel("Normalised entries / {0} bins".format(nbins))
-    plt.title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g}")
+    chi2 = np.sum( ((n - y_pull)**2) / y_pull) / (nbins - 2)
+    plt.title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2:.3g}")
     plt.legend()
     plt.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{0}/pull_bdt1_{1}_bdt2_{2}.pdf'.format( folder_name, bdt1, bdt2 ))
-
 
     f_ws = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_3/post_sel_tree_bdt1_0_bdt2_0.root")
     t_ws = f_ws.Get("DecayTree")
@@ -67,28 +74,35 @@ def main(argv):
     bias1 = nbkg - N_bkg
     (mu_bias1, sigma_bias1) = norm.fit(bias1)
 
-    n2, bins2, patches2 = plt.hist(bias1, bins=nbins, density=True, label="$\mu = $ {0} \n $\sigma = $ {1}".format( round(mu_bias1,5), round(sigma_bias1,5) ))
+    n2, bins2, patches2 = plt.hist(bias1, bins=nbins, label="$\mu = $ {0} \n $\sigma = $ {1}".format( round(mu_bias1,5), round(sigma_bias1,5) ))
 
-    y_bias1 = norm.pdf( bins2, mu_bias1, sigma_bias1)
-    plt.plot(bins2, y_bias1, 'r-', linewidth=2)
+    xcenters2 = (bins2[:-1] + bins2[1:]) / 2
+
+    plt.errorbar(xcenters2, n2, yerr=np.sqrt(n2), ecolor='black', fmt='k.')
+    y_bias1 = sum(n2)*(bins2[1] - bins2[0])*norm.pdf( xcenters2, mu_bias1, sigma_bias1)
+    plt.plot(xcenters2, y_bias1, 'r-', linewidth=2)
     plt.xlabel("Bias: $N_{bkg} - 2*N_{RS}^{pre-BDT}*\epsilon_{WS}$")
     plt.ylabel("Normalised entries / {0} bins".format(nbins))
-    plt.title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g}")
+    chi2_3 = np.sum( ((n - y_bias1)**2) / y_bias1) / (nbins - 2)
+    plt.title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2_3:.3g}")
     plt.legend()
     plt.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{0}/bias_nbkg_bdt1_{1}_bdt2_{2}.pdf'.format( folder_name, bdt1, bdt2 ))
     plt.clf()
 
-
     pull1 = bias1/nbkg_error
     (mu_pull1, sigma_pull1) = norm.fit(pull1)
 
-    n3, bins3, patches3 = plt.hist( pull1, bins=nbins, density=True, label="$\mu = $ {0} \n $\sigma = $ {1}".format( round(mu_pull1,5), round(sigma_pull1,5) ))
+    n3, bins3, patches3 = plt.hist( pull1, bins=nbins, label="$\mu = $ {0} \n $\sigma = $ {1}".format( round(mu_pull1,5), round(sigma_pull1,5) ))
 
-    y_pull1 = norm.pdf( bins3, mu_pull, sigma_pull)
-    plt.plot(bins3, y_pull1, 'r-', linewidth=2)
+    xcenters3 = (bins3[:-1] + bins3[1:]) / 2
+
+    plt.errorbar(xcenters3, n3, yerr=np.sqrt(n3), ecolor='black', fmt='k.')
+    y_pull1 = sum(n3)*(bins3[1] - bins3[0])*norm.pdf( xcenters3, mu_pull1, sigma_pull1)
+    plt.plot(xcenters3, y_pull1, 'r-', linewidth=2)
     plt.xlabel("Pull: ($N_{bkg} - 2*N_{RS}^{pre-BDT}*\epsilon_{WS}$)/error")
     plt.ylabel("Normalised entries / {0} bins".format(nbins))
-    plt.title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g}")
+    chi2_1 = np.sum( ((n3 - y_pull1)**2) / y_pull1) / (nbins - 2)
+    plt.title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2_1:.3g}")
     plt.legend()
     plt.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{0}/pull_nbkg_bdt1_{1}_bdt2_{2}.pdf'.format( folder_name, bdt1, bdt2 ))
 

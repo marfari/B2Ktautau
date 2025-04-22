@@ -11,7 +11,7 @@ def branching_fraction(bdt1,bdt2, folder_name):
 def main(argv):
     folder_name = argv[1]
 
-    bdt_cuts = np.round( np.linspace(0.95,1,21), 6 )
+    bdt_cuts = np.round( np.linspace(0.9,1,21), 3 )
     N = len(bdt_cuts)
 
     BDT1_values = np.zeros(N*N)

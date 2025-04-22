@@ -4,7 +4,21 @@ localrules: exact_constraints, comparisons, fit_mass, make_sPlot_histos, compare
 
 rule all:
     input:
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', BDT1=0.979, BDT2=0.974, folder_name="background_only")
+        expand('/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{folder_name}/BF_vs_bdt1_vs_bdt2.pdf', folder_name="background_only")
+        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.0, BDT2=0.0),
+        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.8, BDT2=0.8),
+        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.9, BDT2=0.9),
+        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.91, BDT2=0.91),
+        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.92, BDT2=0.92),
+        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.93, BDT2=0.93),
+        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.94, BDT2=0.94),
+        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.95, BDT2=0.95),
+        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.96, BDT2=0.96),
+        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.97, BDT2=0.97),
+        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.98, BDT2=0.98),
+        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.985, BDT2=0.985),
+        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.99, BDT2=0.99)
+
 
 # Every time grid files are updated need to:
 # - run pidgen for ktautau / DDs over the pre-selection files (signal + normalisation channel)
@@ -538,7 +552,7 @@ rule rough_sensitivity_2D:
         'rough_sensitivity_estimate_2D.py',
         '/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs.npy',
         '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_10/post_sel_tree_bdt1_0_bdt2_0.root',
-        [ ['/panfs/felician/B2Ktautau/workflow/yield_estimates/yield_values_bdt1_{0}_bdt2_{1}.npy'.format(BDT1,BDT2) for BDT1 in np.linspace(0.9,1,20)] for BDT2 in np.linspace(0.9,1,20) ]
+        # [ ['/panfs/felician/B2Ktautau/workflow/yield_estimates/yield_values_bdt1_{0}_bdt2_{1}.npy'.format(BDT1,BDT2) for BDT1 in np.linspace(0,1,31)] for BDT2 in np.linspace(0,1,31) ]
     output:
         '/panfs/felician/B2Ktautau/workflow/rough_sensitivity_2D/BF_vs_bdt1_vs_bdt2_bkg_config_{bkg_config}.pdf'
     log:
@@ -621,7 +635,7 @@ rule yield_estimates_plots:
         'python yield_estimates_plots.py {wildcards.BDT1} {wildcards.BDT2} &> {log}'
 
 
-#########################################################   Final fit   ######################################################################################################
+#########################################################   Final fit (binned, pyhf)  ######################################################################################################
 
 rule generate_toy_data:
     ''' Generates toy data for the final fit '''   
@@ -631,7 +645,7 @@ rule generate_toy_data:
     output:
         '/panfs/felician/B2Ktautau/workflow/generate_toy_data/{folder_name}/toy_data_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.root'
     log:
-        '/panfs/felician/B2Ktautau/workflow/generate_toy_data/{folder_name}/out_{BDT1}_bdt2_{BDT2}_seed_{seed}.log'   
+        '/panfs/felician/B2Ktautau/workflow/generate_toy_data/{folder_name}/out_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.log'   
     shell:
         'python -u Final_fit/generate_toy_data.py {wildcards.BDT1} {wildcards.BDT2} {wildcards.seed} {wildcards.folder_name} &> {log}'
 
@@ -663,7 +677,10 @@ rule write_xml_files:
 rule generate_fit_workspaces:
     ''' Creates the .json files describing the fit workspaces for pyhf '''  
     input:
-        '/panfs/felician/B2Ktautau/workflow/write_xml_files/{folder_name}/config_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.xml'
+        'Final_fit/autoWrite_xml_files.py',
+        '/panfs/felician/B2Ktautau/workflow/write_xml_files/{folder_name}/config_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.xml',
+        '/panfs/felician/B2Ktautau/workflow/generate_fit_templates/{folder_name}/fit_templates_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.root',
+        '/panfs/felician/B2Ktautau/workflow/generate_toy_data/{folder_name}/toy_data_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.root'
     output:
         '/panfs/felician/B2Ktautau/workflow/generate_fit_workspaces/{folder_name}/workspace_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.json'
     log:
@@ -677,9 +694,10 @@ rule fit:
         'Final_fit/fit.py',
         '/panfs/felician/B2Ktautau/workflow/generate_fit_workspaces/{folder_name}/workspace_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.json'
     output:
-        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/plots/{folder_name}/fit_plot_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.pdf',
         '/panfs/felician/B2Ktautau/workflow/pyhf_fit/results/{folder_name}/fit_result_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.npy',
-        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/plots/{folder_name}/fit_pull_plot_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.pdf'
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/plots/{folder_name}/fit_plot_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.pdf',
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/results/{folder_name}/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.npy',
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/plots/{folder_name}/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.pdf'
     log:
         '/panfs/felician/B2Ktautau/workflow/pyhf_fit/out_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}_{folder_name}.log'
     shell:
@@ -697,3 +715,17 @@ rule toy_studies:
         '/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/out_bdt1_{BDT1}_bdt2_{BDT2}.log'
     shell:
         'python -u Final_fit/toy_studies.py {wildcards.BDT1} {wildcards.BDT2} {wildcards.folder_name} &> {log}'
+    
+rule upper_limit_optimisation:
+    ''' Minimises the 90% C.L. upper limit on the branching fraction '''
+    input:
+        'Final_fit/upper_limit_optimisation.py',
+        fit_results = [ ['/panfs/felician/B2Ktautau/workflow/pyhf_fit/results/{{folder_name}}/cls_limit_bdt1_{0}_bdt2_{1}_seed_1000.npy'.format(BDT1,BDT2) for BDT1 in np.round( np.linspace(0.9,1,21), 3 )] for BDT2 in np.round( np.linspace(0.9,1,21), 3 )]
+    output:
+        '/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{folder_name}/BF_vs_bdt1_vs_bdt2.pdf'
+    log:    
+        '/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{folder_name}/out.log'
+    shell:
+        'python -u Final_fit/upper_limit_optimisation.py {wildcards.folder_name} &> {log}'
+
+#########################################################################################################################################################################################################
