@@ -19,7 +19,6 @@ rule all:
         # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.985, BDT2=0.985),
         # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.99, BDT2=0.99)
 
-
 # Every time grid files are updated need to:
 # - run pidgen for ktautau / DDs over the pre-selection files (signal + normalisation channel)
 # - seperate mc components in Ktautau
@@ -670,7 +669,7 @@ rule write_xml_files:
         '/panfs/felician/B2Ktautau/workflow/write_xml_files/{folder_name}/fit_region_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.xml',
         '/panfs/felician/B2Ktautau/workflow/write_xml_files/{folder_name}/config_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.xml'
     log:
-        '/panfs/felician/B2Ktautau/workflow/write_xml_files/{folder_name}/out_{BDT1}_bdt2_{BDT2}_seed_{seed}.log'
+        '/panfs/felician/B2Ktautau/workflow/write_xml_files/{folder_name}/out_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.log'
     shell:
         'python -u Final_fit/autoWrite_xml_files.py {wildcards.BDT1} {wildcards.BDT2} {wildcards.seed} {wildcards.folder_name} &> {log}'
 

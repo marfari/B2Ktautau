@@ -746,6 +746,9 @@ def main(argv):
     #         h_bkg_err.Fill(h_bkg_err.GetBinCenter(i+1), h_bkg_fit.GetBinError(i+1) )
     #         h_bkg_err.SetBinError(i+1, 0)
 
+    # N_tot = h_sig.GetEntries()
+    # print("N_tot = ", N_tot)
+
     # else:
     # Scale histograms to unit area
     if((h_sig.Integral() != 0) and (h_bkg.Integral() != 0)):
@@ -757,18 +760,32 @@ def main(argv):
     h_bkg_err = ROOT.TH1D("h_bkg_err", "h_bkg_err", nbins, 4000, 8000)
 
     for i in range(nbins):
-        if( h_sig.GetBinContent(i+1) == 0 ):
-            h_sig.SetBinError(i+1, 10**(-6))
-        if( h_bkg.GetBinContent(i+1) == 0 ):
-            h_bkg.SetBinError(i+1, 10**(-6))
+        # if( h_sig.GetBinContent(i+1) == 0 ):
+        #     h_sig.SetBinError(i+1, 10**(-6))
+        # if( h_bkg.GetBinContent(i+1) == 0 ):
+        #     h_bkg.SetBinError(i+1, 10**(-6))
 
-        h_sig_err.Fill(h_sig.GetBinCenter(i+1), h_sig.GetBinError(i+1))
+        # h_sig_err.Fill(h_sig.GetBinCenter(i+1), h_sig.GetBinError(i+1)) # staterror (absolute)
+        if(h_sig.GetBinContent(i+1) == 0):
+            h_sig_err.Fill(h_sig.GetBinCenter(i+1), 0.0 ) # shapesys (relative)
+        else:
+            if(h_sig.GetBinError(i+1)/h_sig.GetBinContent(i+1) < 0.05):
+                h_sig_err.Fill(h_sig.GetBinCenter(i+1), 0.0 ) # shapesys (relative)
+            else:
+                h_sig_err.Fill(h_sig.GetBinCenter(i+1), h_sig.GetBinError(i+1)/h_sig.GetBinContent(i+1)) # shapesys (relative)
         h_sig_err.SetBinError(i+1, 0)
 
-        h_bkg_err.Fill(h_bkg.GetBinCenter(i+1), h_bkg.GetBinError(i+1))
+        # h_bkg_err.Fill(h_bkg.GetBinCenter(i+1), h_bkg.GetBinError(i+1)) # staterror (absolute)
+        if(h_bkg.GetBinContent(i+1) == 0):
+            h_bkg_err.Fill(h_bkg.GetBinCenter(i+1), 0.0) # shapesys (relative)
+        else:
+            if(h_bkg.GetBinError(i+1)/h_bkg.GetBinContent(i+1) < 0.05):
+                h_bkg_err.Fill(h_bkg.GetBinCenter(i+1), 0.0) # shapesys (relative)
+            else:
+                h_bkg_err.Fill(h_bkg.GetBinCenter(i+1), h_bkg.GetBinError(i+1)/h_bkg.GetBinContent(i+1)) # shapesys (relative)
         h_bkg_err.SetBinError(i+1, 0)    
 
-        # print("SIGNAL: ", h_sig.GetBinContent(i+1), " bin error = ", h_sig.GetBinError(i+1), " sqrt(N/Ntot) = ", np.sqrt(h_sig.GetBinContent(i+1)), "  sqrt(N)/Ntot = ", np.sqrt(h_sig_raw.GetBinContent(i+1))/h_sig_raw.GetEntries() )
+        # print("SIGNAL: ", h_sig.GetBinContent(i+1), " bin error = ", h_sig.GetBinError(i+1), " sqrt(N/Ntot) = ", np.sqrt(h_sig.GetBinContent(i+1)), "  sqrt(N)/Ntot = ", np.sqrt(h_sig_raw.GetBinContent(i+1))/N_tot )
 
     fout = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/generate_fit_templates/{3}/fit_templates_bdt1_{0}_bdt2_{1}_seed_{2}.root".format(bdt1, bdt2, random_seed, folder_name), "RECREATE")
     fout.mkdir("Data")

@@ -42,21 +42,19 @@ def main(argv):
     <Data HistoName="data" HistoPath="Data" />
     
     <!-- Set the StatError type to Poisson.  Can also be Gaussian -->
-    <!-- StatErrorConfig RelErrorThreshold="0.05" ConstraintType="Poisson" -->
-    <!-- StatErrorConfig ConstraintType="Poisson" -->
+    <!-- StatErrorConfig RelErrorThreshold="0.1" ConstraintType="Poisson" -->
     
     <Sample Name="Signal" HistoPath="Signal" HistoName="nominal">
-        <!-- StatError Activate="True" HistoPath="Signal" HistoName="error" -->
+        <ShapeSys Activate="True" Name="shapesys_sig" HistoPath="Signal" HistoName="error" />
         <!-- StatError Activate="True" -->
         <NormFactor Name="c_bdt1_bdt2" Val=\"{5}\" Low="0" High="1000000000." />
         <NormFactor Name="BF_sig" Val="0" Low="-100." High="100." />
     </Sample>
     <Sample Name="Background" HistoPath="Background" HistoName="nominal">
-        <!-- StatError Activate="True" HistoPath="Background" HistoName="error" -->
+        <ShapeSys Activate="True" Name="shapesys_bkg" HistoPath="Background" HistoName="error" />
         <!-- StatError Activate="True" -->
         <NormFactor Name="Nbkg" Val=\"{3}\" Low="0" High=\"{4}\" />
     </Sample>
-
 </Channel>
     '''.format( bdt1, bdt2, random_seed, N_bkg, 10*N_bkg, c_bdt1_bdt2, folder_name)
 
