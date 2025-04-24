@@ -4,19 +4,15 @@ localrules: exact_constraints, comparisons, fit_mass, make_sPlot_histos, compare
 
 rule all:
     input:
-        expand('/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{folder_name}/BF_vs_bdt1_vs_bdt2.pdf', folder_name="background_only")
+        expand('/panfs/felician/B2Ktautau/workflow/generate_toy_data/{folder_name}/toy_data_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.root', folder_name="background_only", BDT1=0.0, BDT2=0.0, seed=1000),
+        expand('/panfs/felician/B2Ktautau/workflow/generate_toy_data/{folder_name}/toy_data_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.root', folder_name="background_only", BDT1=0.975, BDT2=0.985, seed=1000)
         # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.0, BDT2=0.0),
         # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.8, BDT2=0.8),
         # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.9, BDT2=0.9),
-        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.91, BDT2=0.91),
-        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.92, BDT2=0.92),
-        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.93, BDT2=0.93),
-        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.94, BDT2=0.94),
         # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.95, BDT2=0.95),
         # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.96, BDT2=0.96),
         # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.97, BDT2=0.97),
         # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.98, BDT2=0.98),
-        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.985, BDT2=0.985),
         # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{folder_name}/bias_bdt1_{BDT1}_bdt2_{BDT2}.pdf', folder_name="background_only", BDT1=0.99, BDT2=0.99)
 
 # Every time grid files are updated need to:
@@ -694,9 +690,9 @@ rule fit:
         '/panfs/felician/B2Ktautau/workflow/generate_fit_workspaces/{folder_name}/workspace_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.json'
     output:
         '/panfs/felician/B2Ktautau/workflow/pyhf_fit/results/{folder_name}/fit_result_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.npy',
-        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/plots/{folder_name}/fit_plot_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.pdf',
-        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/results/{folder_name}/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.npy',
-        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/plots/{folder_name}/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.pdf'
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/plots/{folder_name}/fit_plot_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.pdf'
+        # '/panfs/felician/B2Ktautau/workflow/pyhf_fit/results/{folder_name}/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.npy',
+        # '/panfs/felician/B2Ktautau/workflow/pyhf_fit/plots/{folder_name}/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}.pdf'
     log:
         '/panfs/felician/B2Ktautau/workflow/pyhf_fit/out_bdt1_{BDT1}_bdt2_{BDT2}_seed_{seed}_{folder_name}.log'
     shell:
