@@ -8,10 +8,14 @@ def branching_fraction(bdt1,bdt2, folder_name):
     exp_limit = results[1]
     return exp_limit
 
-def main(argv):
-    folder_name = argv[1]
+def branching_fraction_ch(bdt1,bdt2, folder_name):
+    results = np.load('/panfs/felician/B2Ktautau/workflow/pyhf_fit/results/{0}/cls_limit_bdt1_{1}_bdt2_{2}_seed_1000_ch.npy'.format(folder_name,bdt1,bdt2))
+    exp_limit = results[1]
+    return exp_limit
 
-    bdt_cuts = np.round( np.linspace(0.9,1,21), 3 )
+
+def do_bdt_optimisation(folder_name, ch):
+    bdt_cuts = np.round( np.linspace(0.965,0.985,21), 3 )
     N = len(bdt_cuts)
 
     BDT1_values = np.zeros(N*N)
@@ -24,7 +28,11 @@ def main(argv):
             bdt1 = bdt_cuts[i]
             bdt2 = bdt_cuts[j]
                 
-            branching_fraction_values[a] = branching_fraction(bdt1, bdt2, folder_name)
+            if(ch == 0):
+                branching_fraction_values[a] = branching_fraction(bdt1, bdt2, folder_name)
+            else:
+                branching_fraction_values[a] = branching_fraction_ch(bdt1, bdt2, folder_name)
+
             print("BDT1 = {0} | BDT2 = {1} | BF = {2}".format(bdt1, bdt2, branching_fraction_values[a]))
             
             BDT1_values[a] = bdt1
@@ -45,8 +53,19 @@ def main(argv):
     ax.set_zlabel('B($B^+ \\to K^+ \\tau^+ \\tau^-$)')
     ax.set_box_aspect(None, zoom=0.85)
     plt.tight_layout()
-    plt.savefig("/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{0}/BF_vs_bdt1_vs_bdt2.pdf".format(folder_name))
+    if(ch == 0):
+        plt.savefig("/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{0}/BF_vs_bdt1_vs_bdt2.pdf".format(folder_name))
+    else:
+        plt.savefig("/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{0}/BF_vs_bdt1_vs_bdt2_ch.pdf".format(folder_name))
 
+def main(argv):
+    folder_name = argv[1]
+
+    print("######################## BDT optimisation for all #############################################")
+    do_bdt_optimisation(folder_name, 0)
+
+    print("######################## BDT optimisation for error categories #############################################")
+    do_bdt_optimisation(folder_name, 1)
 
 if __name__ == "__main__":
     main(sys.argv)
