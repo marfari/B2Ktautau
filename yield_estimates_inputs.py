@@ -15,22 +15,19 @@ def main(argv):
     B_D0Dsp = ufloat(9.0/1000, 0.9/1000)
     B_D0Kp = ufloat(3.947/100, 0.030/100)
     B_DsKKpi = ufloat(5.37/100,  0.10/100)
-
     fixed_branching_fraction = B_D0Dsp*B_D0Kp*B_DsKKpi
-    print(fixed_branching_fraction)
+    print("Fixed BF term = ", fixed_branching_fraction)
 
     # Normalisation channel
     eps_norm_value = np.load('/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_norm_value.npy')
     eps_norm_error = np.load('/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_norm_error.npy')
     eps_norm = ufloat(eps_norm_value, eps_norm_error)
-    print(eps_norm)
 
     # Yield
     N_norm = ufloat(33187, 259)
-    print(N_norm)
 
     fixed_normalisation_channel = N_norm/eps_norm
-    print(fixed_normalisation_channel)
+    print("Fixed normalisation channel term = ", fixed_normalisation_channel)
     ##########################################################################################################################################################
 
     ############################################################# Fixed terms, depending on background ###############################################################33
@@ -41,10 +38,9 @@ def main(argv):
     N_components = len(all_components)
 
     # branching fractions
+    # B(B -> Da Db X)
     Bvalues = pd.read_csv('/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/branching_fractions/B_values.csv')
     Berrors = pd.read_csv('/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/branching_fractions/B_errors.csv')
-    DDvalues = pd.read_csv('/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/branching_fractions/DD_values.csv')
-    DDerrors = pd.read_csv('/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/branching_fractions/DD_errors.csv')
 
     Bvalues = Bvalues.transpose()
     Bvalues.reset_index(drop=True, inplace=True)
@@ -60,36 +56,100 @@ def main(argv):
     Berrors = Berrors.reset_index(drop=True)
     Berrors = Berrors.dropna()
 
-    DDvalues = DDvalues.transpose()
-    DDvalues.reset_index(drop=True, inplace=True)
-    DDvalues = DDvalues.rename(columns=DDvalues.iloc[0]).drop(DDvalues.index[0])
-    DDvalues.columns = DDvalues.columns.astype('int')
-    DDvalues = DDvalues.reset_index(drop=True)
-    DDvalues = DDvalues.dropna()
+    B_Dp_3piX = ufloat( 15.25/100, 0.20/100 )
+    B_D0_3piX = ufloat( 17.60/100, 0.25/100 )
+    B_Ds_3piX = ufloat( 32.81/100, 0.72/100 )
 
-    DDerrors = DDerrors.transpose()
-    DDerrors.reset_index(drop=True, inplace=True)
-    DDerrors = DDerrors.rename(columns=DDerrors.iloc[0]).drop(DDerrors.index[0])
-    DDerrors.columns = DDerrors.columns.astype('int')
-    DDerrors = DDerrors.reset_index(drop=True)
-    DDerrors = DDerrors.dropna()
+    B_Dstar0_D0X_1 = ufloat( 64.7/100, 0.9/100 ) # D0* -> D0 pi0
+    B_Dstar0_D0X_2 = ufloat( 35.3/100, 0.9/100 ) # D*0 -> D0 gamma
+    B_Dstar0_D0X = B_Dstar0_D0X_1 + B_Dstar0_D0X_2
+
+    B_DstarP_D0pi = ufloat( 67.7/100, 0.5/100 ) # D*+ -> D0 pi+
+
+    B_DstarP_DpX_1 = ufloat( 30.7/100, 0.5/100 ) # D*+ -> D+ pi0
+    B_DstarP_DpX_2 = ufloat( 1.6/100, 0.4/100 ) # D*+ -> D+ gamma
+    B_DstarP_DpX = B_DstarP_DpX_1 + B_DstarP_DpX_2
+
+    B_DstarS_DsX_1 = ufloat( 93.6/100, 0.4/100 ) # Ds*+ -> Ds+ gamma
+    B_DstarS_DsX_2 = ufloat( 5.77/100, 0.35/100 ) # Ds*+ -> Ds+ pi0
+    B_DstarS_DsX = B_DstarS_DsX_1 + B_DstarS_DsX_2
+
+    # DD -> 3piX branching fractions
+    DD_values = np.zeros((N_species,N_components))
+    DD_errors = np.zeros((N_species,N_components))
+
+    s = 0
+    for i in range(N_species):
+
+        species = all_species[i]
+        for j in range(N_components):
+            component = all_components[j]
+
+            if(species == 100): # B+ -> D0 D0 K+
+                DD_product = B_D0_3piX*B_D0_3piX
+                if((component == 1) or (component == 2)): # D*D
+                    DD_product *= B_Dstar0_D0X
+                elif(component == 2):
+                    DD_product *= B_Dstar0_D0X*B_Dstar0_D0X
+
+            elif(species == 101): # B+ -> D+ D- K+
+                if(component == 0): # D+D-
+                    DD_product = B_Dp_3piX*B_Dp_3piX
+                elif((component == 1) or (component == 2)): # D*+ D-
+                    DD_product = (B_DstarP_D0pi*B_D0_3piX + B_DstarP_DpX*B_Dp_3piX)*B_Dp_3piX
+                elif(component == 3): # D*+ D*-
+                    DD_product = (B_DstarP_D0pi*B_D0_3piX + B_DstarP_DpX*B_Dp_3piX)*(B_DstarP_D0pi*B_D0_3piX + B_DstarP_DpX*B_Dp_3piX)
+
+            elif(species == 102): # B+ -> Ds+ Ds- K+
+                DD_product = B_Ds_3piX*B_Ds_3piX
+                if((component == 1) or (component == 2)): # D*D
+                    DD_product *= B_DstarS_DsX
+                elif(component == 3):
+                    DD_product *= B_DstarS_DsX*B_DstarS_DsX
+
+            elif((species == 110) or (species == 130) or (species == 151)): # B0 -> D- D0 K+ or B+ -> D0 D+ K0 or  B+ -> D0 D+
+                if(component == 0):
+                    DD_product = B_Dp_3piX*B_D0_3piX
+                elif(component == 1): # D*- D0
+                    DD_product = (B_DstarP_D0pi*B_D0_3piX + B_DstarP_DpX*B_Dp_3piX)*B_D0_3piX
+                elif(component == 2): # D- D*0
+                    DD_product = B_Dp_3piX*B_Dstar0_D0X*B_D0_3piX
+                elif(component == 3): # D*- D*+     
+                    DD_product = (B_DstarP_D0pi*B_D0_3piX + B_DstarP_DpX*B_Dp_3piX)*B_Dstar0_D0X*B_D0_3piX
+
+            elif((species == 120) or (species == 150)): # B0s -> Ds- D0 K+ or B+ -> D0 Ds+
+                DD_product = B_Ds_3piX*B_D0_3piX
+                if(component == 1): # Ds*- D0
+                    DD_product *= B_DstarS_DsX
+                elif(component == 2): # Ds- D*0
+                    DD_product *= B_Dstar0_D0X
+                elif(component == 2):
+                    DD_product *= B_DstarS_DsX*B_Dstar0_D0X
+
+            DD_values[s,j] = DD_product.nominal_value
+            DD_errors[s,j] = DD_product.std_dev
+
+        s += 1
 
     variable_branching_fraction = np.zeros((N_species,N_components))
     variable_branching_fraction_err = np.zeros((N_species,N_components))
 
+    s = 0
     for i in range(N_species):
         species = all_species[i]
         for j in range(N_components):
             component = all_components[j] 
 
             B_B_DaDbX = ufloat( Bvalues[species].iloc[component], Berrors[species].iloc[component])
-            B_DaDb_3piX = ufloat( DDvalues[species].iloc[component], DDerrors[species].iloc[component])
+            B_DaDb_3piX = ufloat( DD_values[s,j], DD_errors[s,j])
 
             variable_branching_fraction[i,j] = unumpy.nominal_values(B_B_DaDbX*B_DaDb_3piX)
             variable_branching_fraction_err[i,j] = unumpy.std_devs(B_B_DaDbX*B_DaDb_3piX)
+
+        s += 1
     
     variable_branching_fraction = unumpy.uarray( variable_branching_fraction, variable_branching_fraction_err )
-    # print(variable_branching_fraction)
+    print("Variable branching fraction term = ", variable_branching_fraction)
 
     # fragmentation fraction ratio
     fu_fu = 1
@@ -119,7 +179,7 @@ def main(argv):
             fragmentation_fraction_term_err[i,j] = unumpy.std_devs(frag_ratio)
 
     fragmentation_fraction_term = unumpy.uarray( fragmentation_fraction_term, fragmentation_fraction_term_err )
-    # print(fragmentation_fraction_term)
+    print("Fragmentation fraction term = ", fragmentation_fraction_term)
 
     # eps_bkg term
     bkg_eff = np.zeros((N_species,N_components))
@@ -406,7 +466,7 @@ def main(argv):
             bkg_eff_err[i,j] = unumpy.std_devs((eps_acc*eps_strip*eps_reco)/N_bkg_den)
 
     eps_bkg_term = unumpy.uarray( bkg_eff, bkg_eff_err )
-    print(eps_bkg_term)
+    print("Background efficiency term = ", eps_bkg_term)
 
     np.save('/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/eps_bkg_fixed_value.npy', unumpy.nominal_values(eps_bkg_term))
     np.save('/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/eps_bkg_fixed_error.npy', unumpy.std_devs(eps_bkg_term))
