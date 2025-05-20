@@ -111,199 +111,273 @@ def do_toy_study(folder_name, bdt1, bdt2, ch):
             # c_syst_3[i] = fit_result[18]
             # c_syst_err_3[i] = fit_result[19]
 
-    ###### POI ######
-    bias = fit_poi - 0
-    (mu_bias, sigma_bias) = norm.fit(bias)
+    fig, ax = plt.subplots(3, 3, figsize=(15, 15))
 
-    n, bins, patches = plt.hist(bias, bins=nbins, label="$\mu = $ {0} $\pm$ {1} \n $\sigma = $ {2} $\pm$ {3}".format( round(mu_bias,3), round(sigma_bias/np.sqrt(N),3), round(sigma_bias,3), round(sigma_bias/np.sqrt(2*N),3) ))
+    # BF
+    ax[0,0].hist(fit_poi, bins=nbins)
+    ax[0,0].set_xlabel("$BF_{sig}$")
+    ax[0,0].set_ylabel("Entries / {0} bins".format(nbins))
+    ax[0,0].set_title("Branching fraction")
+    ax[0,0].axvline(0, color='black', linestyle='--', linewidth=2)
+    ax[0,0].text(0.05, 0.95, "From histogram \n $\mu$ = {:.1e} \n $\sigma$ = {:.1e}".format( np.mean(fit_poi), np.std(fit_poi) ),
+            transform=ax[0,0].transAxes,
+            fontsize=12,
+            verticalalignment='top',
+            horizontalalignment='left',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
-    xcenters = (bins[:-1] + bins[1:]) / 2
+    # BF error
+    ax[1,0].hist(fit_poi_error, bins=nbins)
+    ax[1,0].set_xlabel("$BF_{sig}$ error")
+    ax[1,0].set_ylabel("Entries / {0} bins".format(nbins))
+    ax[1,0].set_title("Branching fraction error")
+    ax[1,0].text(0.05, 0.95, "From histogram \n $\mu$ = {:.1e} \n $\sigma$ = {:.1e}".format( np.mean(fit_poi_error), np.std(fit_poi_error) ),
+            transform=ax[1,0].transAxes,
+            fontsize=12,
+            verticalalignment='top',
+            horizontalalignment='left',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
-    plt.errorbar(xcenters, n, yerr=np.sqrt(n), ecolor='black', fmt='k.')
-    y_bias = sum(n)*(bins[1] - bins[0])*norm.pdf( xcenters, mu_bias, sigma_bias)
-    plt.plot(xcenters, y_bias, 'r-', linewidth=2)
-    plt.xlabel("Bias: $BF_{sig}$ - 0")
-    plt.ylabel("Entries / {0} bins".format(nbins))
-    chi2_0 = np.sum( ((n - y_bias)**2) / y_bias) / (nbins - 2)
-    plt.legend()
-    if(ch == 0):
-        plt.title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2_0:.3g} \n All events")
-        plt.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{0}/bias_bdt1_{1}_bdt2_{2}.pdf'.format( folder_name, bdt1, bdt2 ))
-    else:
-        plt.title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2_0:.3g} \n Error categories")
-        plt.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{0}/bias_bdt1_{1}_bdt2_{2}_ch.pdf'.format( folder_name, bdt1, bdt2))
-    plt.clf()
-
-    pull = bias/fit_poi_error
+    # BF pull
+    pull = (fit_poi - 0)/fit_poi_error
     (mu_pull, sigma_pull) = norm.fit(pull)
+    n, bins, patches = ax[2,0].hist( pull, bins=nbins)
+    xcenters = (bins[:-1] + bins[1:]) / 2
+    ax[2,0].errorbar(xcenters, n, yerr=np.sqrt(n), ecolor='black', fmt='k.')
+    y_pull = sum(n)*(bins[1] - bins[0])*norm.pdf(xcenters, mu_pull, sigma_pull)
+    ax[2,0].plot(xcenters, y_pull, 'r-', linewidth=2)
+    ax[2,0].set_xlabel("Pull: ($BF_{sig}$ - 0)/error")
+    ax[2,0].set_ylabel("Entries / {0} bins".format(nbins))
+    chi2 = np.sum( ((n - y_pull)**2) / y_pull) / (nbins - 2)
+    ax[2,0].axvline(0, color='black', linestyle='--', linewidth=2)
+    ax[2,0].text(0.05, 0.95, "From histogram \n $\mu$ = {:.4f} \n $\sigma$ = {:.4f}".format( np.mean(pull), np.std(pull) ),
+            transform=ax[2,0].transAxes,
+            fontsize=12,
+            verticalalignment='top',
+            horizontalalignment='left',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
+    ax[2,0].text(0.05, 0.65, "From fit \n $\mu$ = {:.4f} $\pm$ {:.4f} \n $\sigma$ = {:.4f} $\pm$ {:.4f}".format( mu_pull, sigma_pull/np.sqrt(N), sigma_pull, sigma_pull/np.sqrt(2*N)),
+            transform=ax[2,0].transAxes,
+            fontsize=12,
+            verticalalignment='top',
+            horizontalalignment='left',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
+    ax[2,0].set_title(f"Branching fraction pull: $\chi^2$/ndf = {chi2:.3g}")
 
-    n1, bins1, patches1 = plt.hist( pull, bins=nbins, label="$\mu = $ {0} $\pm$ {1} \n $\sigma = $ {2} $\pm$ {3}".format( round(mu_pull,3), round(sigma_pull/np.sqrt(N), 3), round(sigma_pull,3), round(sigma_pull/np.sqrt(2*N), 3) ))
+    # N_sig
+    ax[0,1].hist(nsig, bins=nbins)
+    ax[0,1].set_xlabel("$N_{sig}$")
+    ax[0,1].set_ylabel("Entries / {0} bins".format(nbins))
+    ax[0,1].set_title("Signal yield")
+    ax[0,1].axvline(0, color='black', linestyle='--', linewidth=2)
+    ax[0,1].text(0.05, 0.95, "From histogram \n $\mu$ = {:.1e} \n $\sigma$ = {:.1e}".format( np.mean(nsig), np.std(nsig) ),
+            transform=ax[0,1].transAxes,
+            fontsize=12,
+            verticalalignment='top',
+            horizontalalignment='left',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
-    xcenters1 = (bins1[:-1] + bins1[1:]) / 2
+    # N_sig error
+    ax[1,1].hist(nsig_error, bins=nbins)
+    ax[1,1].set_xlabel("$N_{sig}$ error")
+    ax[1,1].set_ylabel("Entries / {0} bins".format(nbins))
+    ax[1,1].set_title("Signal yield error")
+    ax[1,1].text(0.05, 0.95, "From histogram \n $\mu$ = {:.1e} \n $\sigma$ = {:.1e}".format( np.mean(nsig_error), np.std(nsig_error) ),
+            transform=ax[1,1].transAxes,
+            fontsize=12,
+            verticalalignment='top',
+            horizontalalignment='left',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
-    plt.errorbar(xcenters1, n1, yerr=np.sqrt(n1), ecolor='black', fmt='k.')
-    y_pull = sum(n1)*(bins1[1] - bins1[0])*norm.pdf(xcenters1, mu_pull, sigma_pull)
-    plt.plot(xcenters1, y_pull, 'r-', linewidth=2)
-    plt.xlabel("Pull: ($BF_{sig}$ - 0)/error")
-    plt.ylabel("Entries / {0} bins".format(nbins))
-    chi2_1 = np.sum( ((n1 - y_pull)**2) / y_pull) / (nbins - 2)
-    plt.legend()
-    if(ch == 0):
-        plt.title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2_1:.3g} \n All events")
-        plt.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{0}/pull_bdt1_{1}_bdt2_{2}.pdf'.format( folder_name, bdt1, bdt2 ))
-    else:
-        plt.title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2_1:.3g} \n Error categories")
-        plt.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{0}/pull_bdt1_{1}_bdt2_{2}_ch.pdf'.format( folder_name, bdt1, bdt2))
+    # N_sig pull
+    pull_1 = (nsig - 0)/nsig_error
+    (mu_pull_1, sigma_pull_1) = norm.fit(pull_1)
+    n_1, bins_1, patches_1 = ax[2,1].hist( pull_1, bins=nbins)
+    xcenters_1 = (bins_1[:-1] + bins_1[1:]) / 2
+    ax[2,1].errorbar(xcenters_1, n_1, yerr=np.sqrt(n_1), ecolor='black', fmt='k.')
+    y_pull_1 = sum(n_1)*(bins_1[1] - bins_1[0])*norm.pdf(xcenters_1, mu_pull_1, sigma_pull_1)
+    ax[2,1].plot(xcenters_1, y_pull_1, 'r-', linewidth=2)
+    ax[2,1].set_xlabel("Pull: ($N_{sig}$ - 0)/error")
+    ax[2,1].set_ylabel("Entries / {0} bins".format(nbins))
+    chi2_1 = np.sum( ((n_1 - y_pull_1)**2) / y_pull_1) / (nbins - 2)
+    ax[2,1].axvline(0, color='black', linestyle='--', linewidth=2)
+    ax[2,1].text(0.05, 0.95, "From histogram \n $\mu$ = {:.4f} \n $\sigma$ = {:.4f}".format( np.mean(pull_1), np.std(pull_1) ),
+            transform=ax[2,1].transAxes,
+            fontsize=12,
+            verticalalignment='top',
+            horizontalalignment='left',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
+    ax[2,1].text(0.05, 0.65, "From fit \n $\mu$ = {:.4f} $\pm$ {:.4f} \n $\sigma$ = {:.4f} $\pm$ {:.4f}".format( mu_pull_1, sigma_pull_1/np.sqrt(N), sigma_pull_1, sigma_pull_1/np.sqrt(2*N)),
+            transform=ax[2,1].transAxes,
+            fontsize=12,
+            verticalalignment='top',
+            horizontalalignment='left',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
+    ax[2,1].set_title(f"Signal yield pull: $\chi^2$/ndf = {chi2_1:.3g}")
 
-
-    ###### N_bkg ######
+    # N_bkg
     f_ws = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_3/post_sel_tree_bdt1_0_bdt2_0.root")
     t_ws = f_ws.Get("DecayTree")
     eps_ws_den = t_ws.GetEntries()
-    if(ch == 0):
-        eps_ws_num = t_ws.GetEntries("(BDT1 > {0}) && (BDT2 > {1})".format(bdt1,bdt2))
+    eps_ws_num = t_ws.GetEntries("(BDT1 > {0}) && (BDT2 > {1})".format(bdt1,bdt2))
 
-        eps_ws = eps_ws_num/eps_ws_den
-        N_bkg = 2*19006409*eps_ws
+    eps_ws = eps_ws_num/eps_ws_den
+    N_bkg = 19006409*eps_ws
 
-        bias1 = nbkg - N_bkg
-        (mu_bias1, sigma_bias1) = norm.fit(bias1)
+    ax[0,2].hist(nbkg, bins=nbins)
+    ax[0,2].set_xlabel("$N_{bkg}$")
+    ax[0,2].set_ylabel("Entries / {0} bins".format(nbins))
+    ax[0,2].set_title("Background yield")
+    ax[0,2].axvline(N_bkg, color='black', linestyle='--', linewidth=2)
+    ax[0,2].text(0.05, 0.95, "From histogram \n $\mu$ = {:.1e} \n $\sigma$ = {:.1e}".format( np.mean(nbkg), np.std(nbkg) ),
+            transform=ax[0,2].transAxes,
+            fontsize=12,
+            verticalalignment='top',
+            horizontalalignment='left',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
-        n2, bins2, patches2 = plt.hist(bias1, bins=nbins, label="$\mu = $ {0} $\pm$ {1} \n $\sigma = $ {2} $\pm$ {3}".format( round(mu_bias1,3), round(sigma_bias1/np.sqrt(N),3), round(sigma_bias1,3), round(sigma_bias1/np.sqrt(2*N),3) ))
+    ax[1,2].hist(nbkg_error, bins=nbins)
+    ax[1,2].set_xlabel("$N_{bkg}$ error")
+    ax[1,2].set_ylabel("Entries / {0} bins".format(nbins))
+    ax[1,2].set_title("Background yield error")
+    ax[1,2].text(0.05, 0.95, "From histogram \n $\mu$ = {:.1e} \n $\sigma$ = {:.1e}".format( np.mean(nbkg_error), np.std(nbkg_error) ),
+            transform=ax[1,2].transAxes,
+            fontsize=12,
+            verticalalignment='top',
+            horizontalalignment='left',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
-        xcenters2 = (bins2[:-1] + bins2[1:]) / 2
+    pull_2 = (nbkg - N_bkg)/nbkg_error
+    (mu_pull_2, sigma_pull_2) = norm.fit(pull_2)
+    n_2, bins_2, patches_2 = ax[2,2].hist( pull_2, bins=nbins)
+    xcenters_2 = (bins_2[:-1] + bins_2[1:]) / 2
+    ax[2,2].errorbar(xcenters_2, n_2, yerr=np.sqrt(n_2), ecolor='black', fmt='k.')
+    y_pull_2 = sum(n_2)*(bins_2[1] - bins_2[0])*norm.pdf( xcenters_2, mu_pull_2, sigma_pull_2)
+    ax[2,2].plot(xcenters_2, y_pull_2, 'r-', linewidth=2)
+    ax[2,2].set_xlabel("Pull: ($N_{bkg} - N_{bkg}^{expected})/error")
+    ax[2,2].set_ylabel("Entries / {0} bins".format(nbins))
+    chi2_2 = np.sum( ((n_2 - y_pull_2)**2) / y_pull_2) / (nbins - 2)
+    ax[2,2].set_title(f"Background yield pull: $\chi^2$/ndf = {chi2_2:.3g}")
+    ax[2,2].axvline(0, color='black', linestyle='--', linewidth=2)
+    ax[2,2].text(0.05, 0.95, "From histogram \n $\mu$ = {:.4f} \n $\sigma$ = {:.4f}".format( np.mean(pull_2), np.std(pull_2) ),
+            transform=ax[2,2].transAxes,
+            fontsize=12,
+            verticalalignment='top',
+            horizontalalignment='left',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
+    ax[2,2].text(0.05, 0.65, "From fit \n $\mu$ = {:.4f} $\pm$ {:.4f} \n $\sigma$ = {:.4f} $\pm$ {:.4f}".format( mu_pull_2, sigma_pull_2/np.sqrt(N), sigma_pull_2, sigma_pull_2/np.sqrt(2*N)),
+            transform=ax[2,2].transAxes,
+            fontsize=12,
+            verticalalignment='top',
+            horizontalalignment='left',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
-        plt.errorbar(xcenters2, n2, yerr=np.sqrt(n2), ecolor='black', fmt='k.')
-        y_bias1 = sum(n2)*(bins2[1] - bins2[0])*norm.pdf( xcenters2, mu_bias1, sigma_bias1)
-        plt.plot(xcenters2, y_bias1, 'r-', linewidth=2)
-        plt.xlabel("Bias: $N_{bkg} - 2*N_{RS}^{pre-BDT}*\epsilon_{WS}$")
-        plt.ylabel("Entries / {0} bins".format(nbins))
-        chi2_2 = np.sum( ((n2 - y_bias1)**2) / y_bias1) / (nbins - 2)
-        plt.title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2_2:.3g} \n All events")
-        plt.legend()
-        plt.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{0}/bias_nbkg_bdt1_{1}_bdt2_{2}.pdf'.format( folder_name, bdt1, bdt2 ))
-        plt.clf()
+    fig.suptitle("Fit to all events \n BDT1 = {0} | BDT2 = {1}".format(bdt1,bdt2), fontsize=24)
+    fig.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{0}/fit_validation_bdt1_{1}_bdt2_{2}.pdf'.format( folder_name, bdt1, bdt2 ))
+    plt.clf()
 
-        pull1 = bias1/nbkg_error
-        (mu_pull1, sigma_pull1) = norm.fit(pull1)
+    # else:
+    #     eps_ws_num_1 = t_ws.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) && (df_Bp_MERR >= 0) && (df_Bp_MERR <= 100)".format(bdt1,bdt2))
+    #     eps_ws_num_2 = t_ws.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) && (df_Bp_MERR > 100) && (df_Bp_MERR <= 250)".format(bdt1,bdt2))
+    #     eps_ws_num_3 = t_ws.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) && (df_Bp_MERR > 250)".format(bdt1,bdt2))
 
-        n3, bins3, patches3 = plt.hist( pull1, bins=nbins, label="$\mu = $ {0} $\pm$ {1} \n $\sigma = $ {2} $\pm$ {3}".format( round(mu_pull1,3), round(sigma_pull1/np.sqrt(N),3), round(sigma_pull1,3), round(sigma_pull1/np.sqrt(2*N),3) ))
+    #     eps_ws_1 = eps_ws_num_1/eps_ws_den
+    #     eps_ws_2 = eps_ws_num_2/eps_ws_den
+    #     eps_ws_3 = eps_ws_num_3/eps_ws_den
 
-        xcenters3 = (bins3[:-1] + bins3[1:]) / 2
+    #     N_bkg_1 = 2*19006409*eps_ws_1
+    #     N_bkg_2 = 2*19006409*eps_ws_2
+    #     N_bkg_3 = 2*19006409*eps_ws_3
 
-        plt.errorbar(xcenters3, n3, yerr=np.sqrt(n3), ecolor='black', fmt='k.')
-        y_pull1 = sum(n3)*(bins3[1] - bins3[0])*norm.pdf( xcenters3, mu_pull1, sigma_pull1)
-        plt.plot(xcenters3, y_pull1, 'r-', linewidth=2)
-        plt.xlabel("Pull: ($N_{bkg} - 2*N_{RS}^{pre-BDT}*\epsilon_{WS}$)/error")
-        plt.ylabel("Entries / {0} bins".format(nbins))
-        chi2_3 = np.sum( ((n3 - y_pull1)**2) / y_pull1) / (nbins - 2)
-        plt.title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2_3:.3g} \n All events")
-        plt.legend()
-        plt.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{0}/pull_nbkg_bdt1_{1}_bdt2_{2}.pdf'.format( folder_name, bdt1, bdt2 ))
-        plt.clf()
+    #     bias1_1 = nbkg_1 - N_bkg_1
+    #     bias1_2 = nbkg_2 - N_bkg_2
+    #     bias1_3 = nbkg_3 - N_bkg_3
 
-    else:
-        eps_ws_num_1 = t_ws.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) && (df_Bp_MERR >= 0) && (df_Bp_MERR <= 100)".format(bdt1,bdt2))
-        eps_ws_num_2 = t_ws.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) && (df_Bp_MERR > 100) && (df_Bp_MERR <= 250)".format(bdt1,bdt2))
-        eps_ws_num_3 = t_ws.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) && (df_Bp_MERR > 250)".format(bdt1,bdt2))
+    #     (mu_bias1_1, sigma_bias1_1) = norm.fit(bias1_1)
+    #     (mu_bias1_2, sigma_bias1_2) = norm.fit(bias1_2)
+    #     (mu_bias1_3, sigma_bias1_3) = norm.fit(bias1_3)
 
-        eps_ws_1 = eps_ws_num_1/eps_ws_den
-        eps_ws_2 = eps_ws_num_2/eps_ws_den
-        eps_ws_3 = eps_ws_num_3/eps_ws_den
+    #     fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 5))
 
-        N_bkg_1 = 2*19006409*eps_ws_1
-        N_bkg_2 = 2*19006409*eps_ws_2
-        N_bkg_3 = 2*19006409*eps_ws_3
+    #     n2_1, bins2_1, patches2_1 = ax1.hist(bias1_1, bins=nbins, label="$\mu = $ {0} $\pm$ {1} \n $\sigma = $ {2} $\pm$ {3}".format( round(mu_bias1_1,3), round(sigma_bias1_1/np.sqrt(N),3), round(sigma_bias1_1,3), round(sigma_bias1_1/np.sqrt(2*N),3) ))
+    #     n2_2, bins2_2, patches2_2 = ax2.hist(bias1_2, bins=nbins, label="$\mu = $ {0} $\pm$ {1} \n $\sigma = $ {2} $\pm$ {3}".format( round(mu_bias1_2,3), round(sigma_bias1_2/np.sqrt(N),3), round(sigma_bias1_2,3), round(sigma_bias1_2/np.sqrt(2*N),3) ))
+    #     n2_3, bins2_3, patches2_3 = ax3.hist(bias1_3, bins=nbins, label="$\mu = $ {0} $\pm$ {1} \n $\sigma = $ {2} $\pm$ {3}".format( round(mu_bias1_3,3), round(sigma_bias1_3/np.sqrt(N),3), round(sigma_bias1_3,3), round(sigma_bias1_3/np.sqrt(2*N),3) ))
 
-        bias1_1 = nbkg_1 - N_bkg_1
-        bias1_2 = nbkg_2 - N_bkg_2
-        bias1_3 = nbkg_3 - N_bkg_3
+    #     xcenters2_1 = (bins2_1[:-1] + bins2_1[1:]) / 2
+    #     xcenters2_2 = (bins2_2[:-1] + bins2_2[1:]) / 2
+    #     xcenters2_3 = (bins2_3[:-1] + bins2_3[1:]) / 2
 
-        (mu_bias1_1, sigma_bias1_1) = norm.fit(bias1_1)
-        (mu_bias1_2, sigma_bias1_2) = norm.fit(bias1_2)
-        (mu_bias1_3, sigma_bias1_3) = norm.fit(bias1_3)
+    #     ax1.errorbar(xcenters2_1, n2_1, yerr=np.sqrt(n2_1), ecolor='black', fmt='k.')
+    #     ax2.errorbar(xcenters2_2, n2_2, yerr=np.sqrt(n2_2), ecolor='black', fmt='k.')
+    #     ax3.errorbar(xcenters2_3, n2_3, yerr=np.sqrt(n2_3), ecolor='black', fmt='k.')
+    #     y_bias1_1 = sum(n2_1)*(bins2_1[1] - bins2_1[0])*norm.pdf( xcenters2_1, mu_bias1_1, sigma_bias1_1)
+    #     y_bias1_2 = sum(n2_2)*(bins2_2[1] - bins2_2[0])*norm.pdf( xcenters2_2, mu_bias1_2, sigma_bias1_2)
+    #     y_bias1_3 = sum(n2_3)*(bins2_3[1] - bins2_3[0])*norm.pdf( xcenters2_3, mu_bias1_3, sigma_bias1_3)
+    #     ax1.plot(xcenters2_1, y_bias1_1, 'r-', linewidth=2)
+    #     ax2.plot(xcenters2_2, y_bias1_2, 'r-', linewidth=2)
+    #     ax3.plot(xcenters2_3, y_bias1_3, 'r-', linewidth=2)
+    #     ax1.set_xlabel("Bias: $N_{bkg} - 2*N_{RS}^{pre-BDT}*\epsilon_{WS}$")
+    #     ax2.set_xlabel("Bias: $N_{bkg} - 2*N_{RS}^{pre-BDT}*\epsilon_{WS}$")
+    #     ax3.set_xlabel("Bias: $N_{bkg} - 2*N_{RS}^{pre-BDT}*\epsilon_{WS}$")
+    #     ax1.set_ylabel("Entries / {0} bins".format(nbins))
+    #     ax2.set_ylabel("Entries / {0} bins".format(nbins))
+    #     ax3.set_ylabel("Entries / {0} bins".format(nbins))
+    #     chi2_2_1 = np.sum( ((n2_1 - y_bias1_1)**2) / y_bias1_1) / (nbins - 2)
+    #     chi2_2_2 = np.sum( ((n2_2 - y_bias1_2)**2) / y_bias1_2) / (nbins - 2)
+    #     chi2_2_3 = np.sum( ((n2_3 - y_bias1_3)**2) / y_bias1_3) / (nbins - 2)
+    #     ax1.set_title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2_2_1:.3g} \n Channel 1")
+    #     ax2.set_title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2_2_2:.3g} \n Channel 2")
+    #     ax3.set_title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2_2_3:.3g} \n Channel 3")
+    #     ax1.legend()
+    #     ax2.legend()
+    #     ax3.legend()
+    #     plt.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{0}/bias_nbkg_bdt1_{1}_bdt2_{2}_ch.pdf'.format( folder_name, bdt1, bdt2 ))
+    #     plt.clf()
 
-        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 5))
+    #     pull1_1 = bias1_1/nbkg_error_1
+    #     pull1_2 = bias1_2/nbkg_error_2
+    #     pull1_3 = bias1_3/nbkg_error_3
 
-        n2_1, bins2_1, patches2_1 = ax1.hist(bias1_1, bins=nbins, label="$\mu = $ {0} $\pm$ {1} \n $\sigma = $ {2} $\pm$ {3}".format( round(mu_bias1_1,3), round(sigma_bias1_1/np.sqrt(N),3), round(sigma_bias1_1,3), round(sigma_bias1_1/np.sqrt(2*N),3) ))
-        n2_2, bins2_2, patches2_2 = ax2.hist(bias1_2, bins=nbins, label="$\mu = $ {0} $\pm$ {1} \n $\sigma = $ {2} $\pm$ {3}".format( round(mu_bias1_2,3), round(sigma_bias1_2/np.sqrt(N),3), round(sigma_bias1_2,3), round(sigma_bias1_2/np.sqrt(2*N),3) ))
-        n2_3, bins2_3, patches2_3 = ax3.hist(bias1_3, bins=nbins, label="$\mu = $ {0} $\pm$ {1} \n $\sigma = $ {2} $\pm$ {3}".format( round(mu_bias1_3,3), round(sigma_bias1_3/np.sqrt(N),3), round(sigma_bias1_3,3), round(sigma_bias1_3/np.sqrt(2*N),3) ))
+    #     (mu_pull1_1, sigma_pull1_1) = norm.fit(pull1_1)
+    #     (mu_pull1_2, sigma_pull1_2) = norm.fit(pull1_2)
+    #     (mu_pull1_3, sigma_pull1_3) = norm.fit(pull1_3)
 
-        xcenters2_1 = (bins2_1[:-1] + bins2_1[1:]) / 2
-        xcenters2_2 = (bins2_2[:-1] + bins2_2[1:]) / 2
-        xcenters2_3 = (bins2_3[:-1] + bins2_3[1:]) / 2
+    #     fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 5))
 
-        ax1.errorbar(xcenters2_1, n2_1, yerr=np.sqrt(n2_1), ecolor='black', fmt='k.')
-        ax2.errorbar(xcenters2_2, n2_2, yerr=np.sqrt(n2_2), ecolor='black', fmt='k.')
-        ax3.errorbar(xcenters2_3, n2_3, yerr=np.sqrt(n2_3), ecolor='black', fmt='k.')
-        y_bias1_1 = sum(n2_1)*(bins2_1[1] - bins2_1[0])*norm.pdf( xcenters2_1, mu_bias1_1, sigma_bias1_1)
-        y_bias1_2 = sum(n2_2)*(bins2_2[1] - bins2_2[0])*norm.pdf( xcenters2_2, mu_bias1_2, sigma_bias1_2)
-        y_bias1_3 = sum(n2_3)*(bins2_3[1] - bins2_3[0])*norm.pdf( xcenters2_3, mu_bias1_3, sigma_bias1_3)
-        ax1.plot(xcenters2_1, y_bias1_1, 'r-', linewidth=2)
-        ax2.plot(xcenters2_2, y_bias1_2, 'r-', linewidth=2)
-        ax3.plot(xcenters2_3, y_bias1_3, 'r-', linewidth=2)
-        ax1.set_xlabel("Bias: $N_{bkg} - 2*N_{RS}^{pre-BDT}*\epsilon_{WS}$")
-        ax2.set_xlabel("Bias: $N_{bkg} - 2*N_{RS}^{pre-BDT}*\epsilon_{WS}$")
-        ax3.set_xlabel("Bias: $N_{bkg} - 2*N_{RS}^{pre-BDT}*\epsilon_{WS}$")
-        ax1.set_ylabel("Entries / {0} bins".format(nbins))
-        ax2.set_ylabel("Entries / {0} bins".format(nbins))
-        ax3.set_ylabel("Entries / {0} bins".format(nbins))
-        chi2_2_1 = np.sum( ((n2_1 - y_bias1_1)**2) / y_bias1_1) / (nbins - 2)
-        chi2_2_2 = np.sum( ((n2_2 - y_bias1_2)**2) / y_bias1_2) / (nbins - 2)
-        chi2_2_3 = np.sum( ((n2_3 - y_bias1_3)**2) / y_bias1_3) / (nbins - 2)
-        ax1.set_title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2_2_1:.3g} \n Channel 1")
-        ax2.set_title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2_2_2:.3g} \n Channel 2")
-        ax3.set_title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2_2_3:.3g} \n Channel 3")
-        ax1.legend()
-        ax2.legend()
-        ax3.legend()
-        plt.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{0}/bias_nbkg_bdt1_{1}_bdt2_{2}_ch.pdf'.format( folder_name, bdt1, bdt2 ))
-        plt.clf()
+    #     n3_1, bins3_1, patches3_1 = ax1.hist( pull1_1, bins=nbins, label="$\mu = $ {0} $\pm$ {1} \n $\sigma = $ {2} $\pm$ {3}".format( round(mu_pull1_1,3), round(sigma_pull1_1/np.sqrt(N),3), round(sigma_pull1_1,3), round(sigma_pull1_1/np.sqrt(2*N),3) ))
+    #     n3_2, bins3_2, patches3_2 = ax2.hist( pull1_2, bins=nbins, label="$\mu = $ {0} $\pm$ {1} \n $\sigma = $ {2} $\pm$ {3}".format( round(mu_pull1_2,3), round(sigma_pull1_2/np.sqrt(N),3), round(sigma_pull1_2,3), round(sigma_pull1_2/np.sqrt(2*N),3) ))
+    #     n3_3, bins3_3, patches3_3 = ax3.hist( pull1_3, bins=nbins, label="$\mu = $ {0} $\pm$ {1} \n $\sigma = $ {2} $\pm$ {3}".format( round(mu_pull1_3,3), round(sigma_pull1_3/np.sqrt(N),3), round(sigma_pull1_3,3), round(sigma_pull1_3/np.sqrt(2*N),3) ))
 
-        pull1_1 = bias1_1/nbkg_error_1
-        pull1_2 = bias1_2/nbkg_error_2
-        pull1_3 = bias1_3/nbkg_error_3
+    #     xcenters3_1 = (bins3_1[:-1] + bins3_1[1:]) / 2
+    #     xcenters3_2 = (bins3_2[:-1] + bins3_2[1:]) / 2
+    #     xcenters3_3 = (bins3_3[:-1] + bins3_3[1:]) / 2
 
-        (mu_pull1_1, sigma_pull1_1) = norm.fit(pull1_1)
-        (mu_pull1_2, sigma_pull1_2) = norm.fit(pull1_2)
-        (mu_pull1_3, sigma_pull1_3) = norm.fit(pull1_3)
-
-        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 5))
-
-        n3_1, bins3_1, patches3_1 = ax1.hist( pull1_1, bins=nbins, label="$\mu = $ {0} $\pm$ {1} \n $\sigma = $ {2} $\pm$ {3}".format( round(mu_pull1_1,3), round(sigma_pull1_1/np.sqrt(N),3), round(sigma_pull1_1,3), round(sigma_pull1_1/np.sqrt(2*N),3) ))
-        n3_2, bins3_2, patches3_2 = ax2.hist( pull1_2, bins=nbins, label="$\mu = $ {0} $\pm$ {1} \n $\sigma = $ {2} $\pm$ {3}".format( round(mu_pull1_2,3), round(sigma_pull1_2/np.sqrt(N),3), round(sigma_pull1_2,3), round(sigma_pull1_2/np.sqrt(2*N),3) ))
-        n3_3, bins3_3, patches3_3 = ax3.hist( pull1_3, bins=nbins, label="$\mu = $ {0} $\pm$ {1} \n $\sigma = $ {2} $\pm$ {3}".format( round(mu_pull1_3,3), round(sigma_pull1_3/np.sqrt(N),3), round(sigma_pull1_3,3), round(sigma_pull1_3/np.sqrt(2*N),3) ))
-
-        xcenters3_1 = (bins3_1[:-1] + bins3_1[1:]) / 2
-        xcenters3_2 = (bins3_2[:-1] + bins3_2[1:]) / 2
-        xcenters3_3 = (bins3_3[:-1] + bins3_3[1:]) / 2
-
-        ax1.errorbar(xcenters3_1, n3_1, yerr=np.sqrt(n3_1), ecolor='black', fmt='k.')
-        ax2.errorbar(xcenters3_2, n3_2, yerr=np.sqrt(n3_2), ecolor='black', fmt='k.')
-        ax3.errorbar(xcenters3_3, n3_3, yerr=np.sqrt(n3_3), ecolor='black', fmt='k.')
-        y_pull1_1 = sum(n3_1)*(bins3_1[1] - bins3_1[0])*norm.pdf( xcenters3_1, mu_pull1_1, sigma_pull1_1)
-        y_pull1_2 = sum(n3_2)*(bins3_2[1] - bins3_2[0])*norm.pdf( xcenters3_2, mu_pull1_2, sigma_pull1_2)
-        y_pull1_3 = sum(n3_3)*(bins3_3[1] - bins3_3[0])*norm.pdf( xcenters3_3, mu_pull1_3, sigma_pull1_3)
-        ax1.plot(xcenters3_1, y_pull1_1, 'r-', linewidth=2)
-        ax2.plot(xcenters3_2, y_pull1_2, 'r-', linewidth=2)
-        ax3.plot(xcenters3_3, y_pull1_3, 'r-', linewidth=2)
-        ax1.set_xlabel("Pull: ($N_{bkg} - 2*N_{RS}^{pre-BDT}*\epsilon_{WS}$)/error")
-        ax2.set_xlabel("Pull: ($N_{bkg} - 2*N_{RS}^{pre-BDT}*\epsilon_{WS}$)/error")
-        ax3.set_xlabel("Pull: ($N_{bkg} - 2*N_{RS}^{pre-BDT}*\epsilon_{WS}$)/error")
-        ax1.set_ylabel("Entries / {0} bins".format(nbins))
-        ax2.set_ylabel("Entries / {0} bins".format(nbins))
-        ax3.set_ylabel("Entries / {0} bins".format(nbins))
-        chi2_3_1 = np.sum( ((n3_1 - y_pull1_1)**2) / y_pull1_1) / (nbins - 2)
-        chi2_3_2 = np.sum( ((n3_2 - y_pull1_2)**2) / y_pull1_2) / (nbins - 2)
-        chi2_3_3 = np.sum( ((n3_3 - y_pull1_3)**2) / y_pull1_3) / (nbins - 2)
-        ax1.set_title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2_3_1:.3g} \n Channel 1")
-        ax2.set_title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2_3_2:.3g} \n Channel 2")
-        ax3.set_title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2_3_3:.3g} \n Channel 3")
-        ax1.legend()
-        ax2.legend()
-        ax3.legend()
-        plt.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{0}/pull_nbkg_bdt1_{1}_bdt2_{2}_ch.pdf'.format( folder_name, bdt1, bdt2 ))
-        plt.clf()
+    #     ax1.errorbar(xcenters3_1, n3_1, yerr=np.sqrt(n3_1), ecolor='black', fmt='k.')
+    #     ax2.errorbar(xcenters3_2, n3_2, yerr=np.sqrt(n3_2), ecolor='black', fmt='k.')
+    #     ax3.errorbar(xcenters3_3, n3_3, yerr=np.sqrt(n3_3), ecolor='black', fmt='k.')
+    #     y_pull1_1 = sum(n3_1)*(bins3_1[1] - bins3_1[0])*norm.pdf( xcenters3_1, mu_pull1_1, sigma_pull1_1)
+    #     y_pull1_2 = sum(n3_2)*(bins3_2[1] - bins3_2[0])*norm.pdf( xcenters3_2, mu_pull1_2, sigma_pull1_2)
+    #     y_pull1_3 = sum(n3_3)*(bins3_3[1] - bins3_3[0])*norm.pdf( xcenters3_3, mu_pull1_3, sigma_pull1_3)
+    #     ax1.plot(xcenters3_1, y_pull1_1, 'r-', linewidth=2)
+    #     ax2.plot(xcenters3_2, y_pull1_2, 'r-', linewidth=2)
+    #     ax3.plot(xcenters3_3, y_pull1_3, 'r-', linewidth=2)
+    #     ax1.set_xlabel("Pull: ($N_{bkg} - 2*N_{RS}^{pre-BDT}*\epsilon_{WS}$)/error")
+    #     ax2.set_xlabel("Pull: ($N_{bkg} - 2*N_{RS}^{pre-BDT}*\epsilon_{WS}$)/error")
+    #     ax3.set_xlabel("Pull: ($N_{bkg} - 2*N_{RS}^{pre-BDT}*\epsilon_{WS}$)/error")
+    #     ax1.set_ylabel("Entries / {0} bins".format(nbins))
+    #     ax2.set_ylabel("Entries / {0} bins".format(nbins))
+    #     ax3.set_ylabel("Entries / {0} bins".format(nbins))
+    #     chi2_3_1 = np.sum( ((n3_1 - y_pull1_1)**2) / y_pull1_1) / (nbins - 2)
+    #     chi2_3_2 = np.sum( ((n3_2 - y_pull1_2)**2) / y_pull1_2) / (nbins - 2)
+    #     chi2_3_3 = np.sum( ((n3_3 - y_pull1_3)**2) / y_pull1_3) / (nbins - 2)
+    #     ax1.set_title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2_3_1:.3g} \n Channel 1")
+    #     ax2.set_title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2_3_2:.3g} \n Channel 2")
+    #     ax3.set_title(f"BDT1 = {bdt1:.4g} | BDT2 = {bdt2:.4g} | chi2/ndf = {chi2_3_3:.3g} \n Channel 3")
+    #     ax1.legend()
+    #     ax2.legend()
+    #     ax3.legend()
+    #     plt.savefig('/panfs/felician/B2Ktautau/workflow/pyhf_fit_validation/{0}/pull_nbkg_bdt1_{1}_bdt2_{2}_ch.pdf'.format( folder_name, bdt1, bdt2 ))
+    #     plt.clf()
 
     # ### Normsys ####
     # if(ch == 0):
@@ -457,8 +531,8 @@ def main(argv):
     print("############################## Toy study for all ##############################################")
     do_toy_study(folder_name, bdt1, bdt2, 0)
 
-    print("############################## Toy study for mass error categories ##############################################")
-    do_toy_study(folder_name, bdt1, bdt2, 1)
+    # print("############################## Toy study for mass error categories ##############################################")
+    # do_toy_study(folder_name, bdt1, bdt2, 1)
 
 if __name__ == "__main__":
     main(sys.argv)
