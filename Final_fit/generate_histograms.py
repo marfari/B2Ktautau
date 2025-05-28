@@ -78,15 +78,6 @@ def create_histograms(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_B
     h_BuDDK0 = ROOT.TH1D(f"h_BuDDK0_{ch}", f"h_BuDDK0_{ch}", nbins, 4000, 8000)
     h_BuDD = ROOT.TH1D(f"h_BuDD_{ch}", f"h_BuDD_{ch}", nbins, 4000, 8000)
 
-    h_sig.Sumw2()
-    h_comb.Sumw2()
-    h_BDDKp.Sumw2()
-    h_BuDDKp.Sumw2()
-    h_BdDDKp.Sumw2()
-    h_BsDDKp.Sumw2()
-    h_BuDDK0.Sumw2()
-    h_BuDD.Sumw2()
-
     cut_string = channel_cut[ch]
 
     bdt_fix = 0.9
@@ -106,6 +97,15 @@ def create_histograms(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_B
         t_BsDDKp.Draw(f"df_Bp_M >> h_BsDDKp_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2)+cut_string)
         t_BuDDK0.Draw(f"df_Bp_M >> h_BuDDK0_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2)+cut_string)
         t_BuDD.Draw(f"df_Bp_M >> h_BuDD_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2)+cut_string)
+
+    h_sig.Sumw2()
+    h_comb.Sumw2()
+    h_BDDKp.Sumw2()
+    h_BuDDKp.Sumw2()
+    h_BdDDKp.Sumw2()
+    h_BsDDKp.Sumw2()
+    h_BuDDK0.Sumw2()
+    h_BuDD.Sumw2()
 
     # Add B -> DD K+ shapes
     h_BDDKp.Add(h_BuDDKp)
@@ -133,12 +133,6 @@ def create_histogram_errors(h_sig, h_comb, h_BDDKp, h_BuDDK0, h_BuDD, ch):
     h_BDDKp_err = ROOT.TH1D(f"h_BDDKp_err_{ch}", f"h_BDDKp_err_{ch}", nbins, 4000, 8000)
     h_BuDDK0_err = ROOT.TH1D(f"h_BuDDK0_err_{ch}", f"h_BuDDK0_err_{ch}", nbins, 4000, 8000)
     h_BuDD_err = ROOT.TH1D(f"h_BuDD_err_{ch}", f"h_BuDD_err_{ch}", nbins, 4000, 8000)
-
-    h_sig_err.Sumw2()
-    h_comb_err.Sumw2()
-    h_BDDKp_err.Sumw2()
-    h_BuDDK0_err.Sumw2()
-    h_BuDD_err.Sumw2()
 
     # All events
     for i in range(nbins):
@@ -186,6 +180,12 @@ def create_histogram_errors(h_sig, h_comb, h_BDDKp, h_BuDDK0, h_BuDD, ch):
         else:
             h_BuDD_err.Fill(h_BuDD.GetBinCenter(i+1), h_BuDD.GetBinError(i+1)) 
         h_BuDD_err.SetBinError(i+1, 0) 
+
+        h_sig_err.Sumw2()
+        h_comb_err.Sumw2()
+        h_BDDKp_err.Sumw2()
+        h_BuDDK0_err.Sumw2()
+        h_BuDD_err.Sumw2()
 
         # print("SIGNAL : ", h_sig.GetBinError(i+1), " | BACKGROUND : ", h_comb.GetBinError(i+1))
     
@@ -242,13 +242,17 @@ def retrieve_yields(t_rs_data, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t
     return [N_comb, N_BDDKp, N_BuDDK0, N_BuDD]
 
 
-def retrieve_constant(t_sig, bdt1, bdt2, ch, channel_cut, bdt_independent_constant):
+def retrieve_constant(t_sig, bdt1, bdt2, ch, channel_cut, bdt_independent_constant, N_den):
 
     N_num = t_sig.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2)+channel_cut[ch])
 
-    numerator = ufloat( N_num, np.sqrt(N_num) )
+    upper = ROOT.TEfficiency.Wilson(N_den, N_num, 0.68, True)
+    lower = ROOT.TEfficiency.Wilson(N_den, N_num, 0.68, False)
+    eps_s_err = 0.5*(upper - lower)
 
-    c = numerator/bdt_independent_constant
+    eps_s = ufloat( N_num/N_den, eps_s_err )
+
+    c = eps_s/bdt_independent_constant
 
     return c
 
@@ -447,11 +451,12 @@ def main(argv):
     fixed_value = np.load("/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs.npy")
     fixed_value_error = np.load("/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs_error.npy")
     bdt_independent_constant = ufloat( fixed_value, fixed_value_error )
+    N_den = np.load('/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_s_den.npy')
 
-    c = retrieve_constant(t_sig, bdt1, bdt2, 0, channel_cut, bdt_independent_constant)
-    c_1 = retrieve_constant(t_sig, bdt1, bdt2, 1, channel_cut, bdt_independent_constant)
-    c_2 = retrieve_constant(t_sig, bdt1, bdt2, 2, channel_cut, bdt_independent_constant)
-    c_3 = retrieve_constant(t_sig, bdt1, bdt2, 3, channel_cut, bdt_independent_constant)
+    c = retrieve_constant(t_sig, bdt1, bdt2, 0, channel_cut, bdt_independent_constant, N_den)
+    c_1 = retrieve_constant(t_sig, bdt1, bdt2, 1, channel_cut, bdt_independent_constant, N_den)
+    c_2 = retrieve_constant(t_sig, bdt1, bdt2, 2, channel_cut, bdt_independent_constant, N_den)
+    c_3 = retrieve_constant(t_sig, bdt1, bdt2, 3, channel_cut, bdt_independent_constant, N_den)
 
     c_values = [c.nominal_value, c_1.nominal_value, c_2.nominal_value, c_3.nominal_value]
     c_errors = [c.std_dev, c_1.std_dev, c_2.std_dev, c_3.std_dev]

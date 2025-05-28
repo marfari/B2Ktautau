@@ -5,9 +5,6 @@ import pandas as pd
 from uncertainties import ufloat
 from uncertainties import unumpy
 
-def eps_error(Num, Den):
-    return (Num/Den)*np.sqrt( 1/Num + 1/Den )
-
 def main(argv):
     bdt1 = argv[1]
     bdt2 = argv[2]
@@ -21,6 +18,9 @@ def main(argv):
     fixed_input_values = unumpy.uarray( fixed_input_values, fixed_input_errors )
     # print(fixed_input_values)
 
+    # Get numerators of the background efficiency
+    N_den_bkg = np.load('/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/eps_bkg_den.npy')
+
     species_name = ["$B^+ \\to \\bar{D}^0 D^0 K^+$", "$B^+ \\to D^+ D^- K^+$", "$B^+ \\to D^+_s D^-_s K^+$", "$B^0 \\to D^- D^0 K^+$", "$B^0_s \\to D^-_s D^0 K^+$", "$B^+ \\to \\bar{D}^0 D^+ K^0$", "$B^+ \\to \\bar{D}^0 D^+_s$", "$B^+ \\to \\bar{D}^0 D^+$"]
     component_name = ["$DD$", "$D^*D$", "$DD^*$", "$D^*D^*$", "Total"]
     all_species = [100, 101, 102, 110, 120, 130, 150, 151]
@@ -33,14 +33,21 @@ def main(argv):
     fixed_value = np.load("/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs.npy")
     fixed_value_err = np.load('/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs_error.npy')
     fixed_value = ufloat( fixed_value, fixed_value_err )
+    N_den = np.load('/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_s_den.npy')
     # print(fixed_value)
 
     f_sig = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_10/post_sel_tree_bdt1_0_bdt2_0.root")
     t_sig = f_sig.Get("DecayTree")
     N_num = t_sig.GetEntries("(BDT1 > {0}) && (BDT2 > {1})".format(bdt1,bdt2))
-    N_num = ufloat( N_num, np.sqrt(N_num) )
-    S = (branching_fraction*N_num)/fixed_value
-    print(S)
+
+    upper = ROOT.TEfficiency.Wilson(N_den, N_num, 0.68, True)
+    lower = ROOT.TEfficiency.Wilson(N_den, N_num, 0.68, False)
+    eps_s_err = 0.5*(upper - lower)
+
+    eps_s = ufloat( N_num/N_den, eps_s_err )
+
+    S = branching_fraction/(fixed_value/eps_s)
+    # print(S)
 
     all_yields = pd.DataFrame(index=species_name, columns=component_name)
     yields = np.zeros((N_species,N_components))
@@ -77,10 +84,17 @@ def main(argv):
         for j in range(N_components):
             if(j < 4):
                 N_num_bkg = t.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) && (species == {2}) && (component == {3})".format(bdt1, bdt2, species, j))
-                N_num_bkg = ufloat( N_num_bkg, np.sqrt(N_num_bkg) )
+                
+                eps_b = N_num_bkg/N_den_bkg[i,j]
+
+                upper_bound = ROOT.TEfficiency.Wilson(N_den_bkg[i,j], N_num_bkg , 0.68, True)
+                lower_bound = ROOT.TEfficiency.Wilson(N_den_bkg[i,j], N_num_bkg, 0.68, False)
+                eps_b_error = 0.5*(upper_bound - lower_bound)
+
+                eps_b_post_acc = ufloat(eps_b, eps_b_error)
                 
                 # Absolute yields
-                ufloat_yields = fixed_input_values[i,j]*N_num_bkg
+                ufloat_yields = fixed_input_values[i,j]*eps_b_post_acc
 
                 yields[i,j] = unumpy.nominal_values(ufloat_yields)
                 yields_errors[i,j] = unumpy.std_devs(ufloat_yields)

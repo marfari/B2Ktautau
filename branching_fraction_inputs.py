@@ -4,9 +4,6 @@ import numpy as np
 from uncertainties import ufloat
 from uncertainties import unumpy
 
-def eps_error(Num, Den):
-    return (Num/Den)*np.sqrt( 1/Num + 1/Den )
-
 def main(argv):
 
     # branching fraction term
@@ -58,7 +55,12 @@ def main(argv):
     # N_norm_den_2018 = 5763580
     # N_norm_den = N_norm_den_2016 + N_norm_den_2017 + N_norm_den_2018
     N_norm_den = t_norm_gen.GetEntries()
-    eps_norm_post_acc = ufloat( N_norm_num/N_norm_den, eps_error(N_norm_num,N_norm_den) )
+
+    upper_bound = ROOT.TEfficiency.Wilson(N_norm_den, N_norm_num, 0.68, True)
+    lower_bound = ROOT.TEfficiency.Wilson(N_norm_den, N_norm_num, 0.68, False)
+    eps_norm_err = 0.5*(upper_bound - lower_bound)
+
+    eps_norm_post_acc = ufloat( N_norm_num/N_norm_den, eps_norm_err )
 
     eps_norm = eps_acc_norm*eps_norm_post_acc
     print(eps_norm*100)
@@ -175,10 +177,11 @@ def main(argv):
     # N_den_2018 = 95913+39754+39423+16649
     # N_den = N_den_2016+N_den_2017+N_den_2018
     N_den = t_gen_all.GetEntries()
-    N_den = ufloat( N_den, np.sqrt(N_den) )
     # print(N_den)
 
-    signal_efficiency_term = N_den/(eps_acc*eps_strip)
+    np.save('/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_s_den.npy', N_den)
+
+    signal_efficiency_term = 1/(eps_acc*eps_strip)
     print(signal_efficiency_term)
     
     np.save("/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_ktautau_fixed_value.npy", unumpy.nominal_values(signal_efficiency_term))

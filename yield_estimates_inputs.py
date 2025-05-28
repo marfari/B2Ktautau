@@ -5,9 +5,6 @@ import ROOT
 from uncertainties import ufloat
 from uncertainties import unumpy
 
-def eps_error(Num, Den):
-    return (Num/Den)*np.sqrt( 1/Num + 1/Den )
-
 def main(argv):
 
     ############################################################# Fixed terms, independing of background ###############################################################33
@@ -184,6 +181,7 @@ def main(argv):
     # eps_bkg term
     bkg_eff = np.zeros((N_species,N_components))
     bkg_eff_err = np.zeros((N_species,N_components))
+    eps_b_den = np.zeros((N_species,N_components))
 
     for i in range(N_species):
         species = all_species[i]
@@ -459,17 +457,17 @@ def main(argv):
                 N_bkg_den = t_gen_DDstar_2016.GetEntries() + t_gen_DDstar_2017.GetEntries() + t_gen_DDstar_2018.GetEntries() 
             elif(component == 3):
                 N_bkg_den = t_gen_DstarDstar_2016.GetEntries() + t_gen_DstarDstar_2017.GetEntries() + t_gen_DstarDstar_2018.GetEntries() 
-            N_bkg_den_error = np.sqrt(N_bkg_den)
-            N_bkg_den = ufloat(N_bkg_den, N_bkg_den_error)
 
-            bkg_eff[i,j] = unumpy.nominal_values((eps_acc*eps_strip*eps_reco)/N_bkg_den)
-            bkg_eff_err[i,j] = unumpy.std_devs((eps_acc*eps_strip*eps_reco)/N_bkg_den)
+            bkg_eff[i,j] = unumpy.nominal_values(eps_acc*eps_strip*eps_reco)
+            bkg_eff_err[i,j] = unumpy.std_devs(eps_acc*eps_strip*eps_reco)
+            eps_b_den[i,j] = N_bkg_den
 
     eps_bkg_term = unumpy.uarray( bkg_eff, bkg_eff_err )
     print("Background efficiency term = ", eps_bkg_term)
 
     np.save('/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/eps_bkg_fixed_value.npy', unumpy.nominal_values(eps_bkg_term))
     np.save('/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/eps_bkg_fixed_error.npy', unumpy.std_devs(eps_bkg_term))
+    np.save('/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/eps_bkg_den.npy', eps_b_den)
 
     fixed_term = np.zeros((N_species,N_components))
     fixed_term_err = np.zeros((N_species,N_components))
