@@ -98,7 +98,7 @@ def main(argv):
 
                 yields[i,j] = unumpy.nominal_values(ufloat_yields)
                 yields_errors[i,j] = unumpy.std_devs(ufloat_yields)
-                all_yields.loc[species_name[i], component_name[j]] = "${0} \\pm {1}$".format( int(yields[i,j]), int(yields_errors[i,j]) )  
+                all_yields.loc[species_name[i], component_name[j]] = "${0} \\pm {1}$".format( round(yields[i,j],1), round(yields_errors[i,j],1) )  
 
                 # Relative yields
                 if(S == 0):
@@ -118,7 +118,7 @@ def main(argv):
                 N_tot_relative[i] = unumpy.nominal_values(n_rel)
                 N_tot_err_relative[i] = unumpy.std_devs(n_rel)
                 
-                all_yields.loc[species_name[i], component_name[j]] = "${0} \\pm {1}$".format( int(N_tot[i]), int(N_tot_err[i]) )  
+                all_yields.loc[species_name[i], component_name[j]] = "${0} \\pm {1}$".format( round(N_tot[i],1), round(N_tot_err[i],1) )  
 
                 all_relative_yields.loc[species_name[i], component_name[j]] = "${0} \\pm {1}$ \\%".format( int(N_tot_relative[i]*100), int(N_tot_err_relative[i]*100) )  
 
