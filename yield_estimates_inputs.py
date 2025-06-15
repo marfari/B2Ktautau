@@ -7,26 +7,6 @@ from uncertainties import unumpy
 
 def main(argv):
 
-    ############################################################# Fixed terms, independing of background ###############################################################33
-    # Branching fractions 
-    B_D0Dsp = ufloat(9.0/1000, 0.9/1000)
-    B_D0Kp = ufloat(3.947/100, 0.030/100)
-    B_DsKKpi = ufloat(5.37/100,  0.10/100)
-    fixed_branching_fraction = B_D0Dsp*B_D0Kp*B_DsKKpi
-    print("Fixed BF term = ", fixed_branching_fraction)
-
-    # Normalisation channel
-    eps_norm_value = np.load('/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_norm_value.npy')
-    eps_norm_error = np.load('/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_norm_error.npy')
-    eps_norm = ufloat(eps_norm_value, eps_norm_error)
-
-    # Yield
-    N_norm = ufloat(33187, 259)
-
-    fixed_normalisation_channel = N_norm/eps_norm
-    print("Fixed normalisation channel term = ", fixed_normalisation_channel)
-    ##########################################################################################################################################################
-
     ############################################################# Fixed terms, depending on background ###############################################################33
     all_species = [100, 101, 102, 110, 120, 130, 150, 151]
     all_components = [0, 1, 2, 3]
@@ -463,10 +443,9 @@ def main(argv):
             eps_b_den[i,j] = N_bkg_den
 
     eps_bkg_term = unumpy.uarray( bkg_eff, bkg_eff_err )
-    print("Background efficiency term = ", eps_bkg_term)
+    np.save('/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/eps_bkg_acc_strip_reco.npy', unumpy.nominal_values(eps_bkg_term))
+    np.save('/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/eps_bkg_acc_strip_reco_err.npy', unumpy.std_devs(eps_bkg_term))
 
-    np.save('/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/eps_bkg_fixed_value.npy', unumpy.nominal_values(eps_bkg_term))
-    np.save('/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/eps_bkg_fixed_error.npy', unumpy.std_devs(eps_bkg_term))
     np.save('/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/eps_bkg_den.npy', eps_b_den)
 
     fixed_term = np.zeros((N_species,N_components))
@@ -474,7 +453,7 @@ def main(argv):
 
     for i in range(N_species):
         for j in range(N_components):
-            fixed_value = (variable_branching_fraction[i,j]/fixed_branching_fraction)*fixed_normalisation_channel*fragmentation_fraction_term[i,j]*eps_bkg_term[i,j]
+            fixed_value = variable_branching_fraction[i,j]*fragmentation_fraction_term[i,j]*eps_bkg_term[i,j]
 
             fixed_term[i,j] = unumpy.nominal_values(fixed_value)
             fixed_term_err[i,j] = unumpy.std_devs(fixed_value)
@@ -482,8 +461,9 @@ def main(argv):
     fixed_term = unumpy.uarray( fixed_term, fixed_term_err )
     print(fixed_term)
 
-    np.save('/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/yield_values_inputs.npy', unumpy.nominal_values(fixed_term))
-    np.save('/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/yield_errors_inputs.npy', unumpy.std_devs(fixed_term))
+    np.save('/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/C_const.npy', unumpy.nominal_values(fixed_term))
+    np.save('/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/C_const_err.npy', unumpy.std_devs(fixed_term))
+
 
 if __name__ == "__main__":
     main(sys.argv)

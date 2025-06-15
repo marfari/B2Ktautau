@@ -5,19 +5,17 @@ from uncertainties import ufloat
 import time
 
 channel_cut = {0: "", 1: " && (df_Bp_MERR >= 0) && (df_Bp_MERR <= 100)", 2: " && (df_Bp_MERR > 100) && (df_Bp_MERR <= 250)", 3: " && (df_Bp_MERR > 250)"}
-error_threshold = 0.05
-
-def eps_error(Num, Den):
-    return (Num/Den)*np.sqrt( 1/Num + 1/Den )
+error_threshold = 0
+bdt_fix_sig = 0.985
+bdt_fix = 0.9
 
 def number_of_bins(t_sig, ch, bdt1, bdt2, channel_cut):
     h = ROOT.TH1D(f"h_{ch}", f"h_{ch}", 100, 4000, 8000)
 
     cut_string = channel_cut[ch]
 
-    bdt_fix = 0.9
-    if((bdt1 >= bdt_fix) and (bdt2 >= bdt_fix)):
-        t_sig.Draw(f"df_Bp_M >> h_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt_fix,bdt_fix)+cut_string)
+    if((bdt1 >= bdt_fix_sig) and (bdt2 >= bdt_fix_sig)):
+        t_sig.Draw(f"df_Bp_M >> h_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt_fix_sig,bdt_fix_sig)+cut_string)
     else:
         t_sig.Draw(f"df_Bp_M >> h_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2)+cut_string)
 
@@ -27,14 +25,24 @@ def number_of_bins(t_sig, ch, bdt1, bdt2, channel_cut):
 
     sigma = fwhm/2.4
 
+    if(ch == 1):
+        sigma = min(100, sigma)
+    if(ch == 2):
+        if(sigma < 100):
+            sigma = 100
+        elif(sigma > 250):
+            sigma = 250
+    if(ch == 3):
+        sigma = max(250, sigma)
+
     # h1 = ROOT.TH1D(f"h1_{ch}", f"h1_{ch}", 100, 0, 1000)
-    # if((bdt1 >= bdt_fix) and (bdt2 >= bdt_fix)):
-    #     t_sig.Draw(f"df_Bp_MERR >> h1_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt_fix,bdt_fix)+cut_string)
+    # if((bdt1 >= bdt_fix_sig) and (bdt2 >= bdt_fix_sig)):
+    #     t_sig.Draw(f"df_Bp_MERR >> h1_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt_fix_sig,bdt_fix_sig)+cut_string)
     # else:
     #     t_sig.Draw(f"df_Bp_MERR >> h1_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2)+cut_string)
 
     # mass_resolution = h1.GetMean()
-    # print("ch = ", ch, " | sigma = ", mass_resolution)
+    # print("ch = ", ch, " | sigma (MERR) = ", mass_resolution, " | sigma (FWHM) = ", sigma)
 
     # print("resolution from FWHM = ", fwhm/2.4)
     # print("resolution from MERR = ", mass_resolution)
@@ -71,46 +79,44 @@ def create_histograms(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_B
     # Save histograms after BDT cuts
     h_sig = ROOT.TH1D(f"h_sig_{ch}", f"h_sig_{ch}", nbins, 4000, 8000)
     h_comb = ROOT.TH1D(f"h_comb_{ch}", f"h_comb_{ch}", nbins, 4000, 8000)
-    h_BDDKp = ROOT.TH1D(f"h_BDDKp_{ch}", f"h_BDDKp_{ch}", nbins, 4000, 8000) # the B -> DD K+ backgrounds are merged because they have a similar shape
-    h_BuDDKp = ROOT.TH1D(f"h_BuDDKp_{ch}", f"h_BuDDKp_{ch}", nbins, 4000, 8000)
-    h_BdDDKp = ROOT.TH1D(f"h_BdDDKp_{ch}", f"h_BdDDKp_{ch}", nbins, 4000, 8000)
-    h_BsDDKp = ROOT.TH1D(f"h_BsDDKp_{ch}", f"h_BsDDKp_{ch}", nbins, 4000, 8000)
-    h_BuDDK0 = ROOT.TH1D(f"h_BuDDK0_{ch}", f"h_BuDDK0_{ch}", nbins, 4000, 8000)
-    h_BuDD = ROOT.TH1D(f"h_BuDD_{ch}", f"h_BuDD_{ch}", nbins, 4000, 8000)
+    ## B -> D D K+
+    h_BDDKp = ROOT.TH1D(f"h_BDDKp_{ch}", f"h_BDDKp_{ch}", nbins, 4000, 8000)
+    h_BuD0D0Kp = ROOT.TH1D(f"h_BuD0D0Kp_{ch}", f"h_BuD0D0Kp_{ch}", nbins, 4000, 8000)
+    h_BuDpDmKp = ROOT.TH1D(f"h_BuDpDmKp_{ch}", f"h_BuDpDmKp_{ch}", nbins, 4000, 8000)
+    h_BuDsDsKp = ROOT.TH1D(f"h_BuDsDsKp_{ch}", f"h_BuDsDsKp_{ch}", nbins, 4000, 8000)
+    h_BdD0DmKp = ROOT.TH1D(f"h_BdD0DmKp_{ch}", f"h_BdD0DmKp_{ch}", nbins, 4000, 8000)
+    h_BsD0DsKp = ROOT.TH1D(f"h_BsD0DsKp_{ch}", f"h_BsD0DsKp_{ch}", nbins, 4000, 8000)
 
     cut_string = channel_cut[ch]
 
-    bdt_fix = 0.9
-    if((bdt1 >= bdt_fix) and (bdt2 >= bdt_fix)):
-        t_sig.Draw(f"df_Bp_M >> h_sig_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt_fix,bdt_fix)+cut_string)
-        t_comb.Draw(f"df_Bp_M >> h_comb_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt_fix,bdt_fix)+cut_string)
-        t_BuDDKp.Draw(f"df_Bp_M >> h_BuDDKp_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt_fix,bdt_fix)+cut_string)
-        t_BdDDKp.Draw(f"df_Bp_M >> h_BdDDKp_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt_fix,bdt_fix)+cut_string)
-        t_BsDDKp.Draw(f"df_Bp_M >> h_BsDDKp_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt_fix,bdt_fix)+cut_string)
-        t_BuDDK0.Draw(f"df_Bp_M >> h_BuDDK0_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt_fix,bdt_fix)+cut_string)
-        t_BuDD.Draw(f"df_Bp_M >> h_BuDD_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt_fix,bdt_fix)+cut_string)
+    if((bdt1 >= bdt_fix_sig) and (bdt2 >= bdt_fix_sig)):
+        t_sig.Draw(f"df_Bp_M >> h_sig_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt_fix_sig,bdt_fix_sig)+cut_string)
     else:
         t_sig.Draw(f"df_Bp_M >> h_sig_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2)+cut_string)
+
+    if((bdt1 >= bdt_fix) and (bdt2 >= bdt_fix)):
+        t_comb.Draw(f"df_Bp_M >> h_comb_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt_fix,bdt_fix)+cut_string)
+        t_BuDDKp.Draw(f"df_Bp_M >> h_BuD0D0Kp_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) && (species == 100) ".format(bdt_fix,bdt_fix)+cut_string)
+        t_BuDDKp.Draw(f"df_Bp_M >> h_BuDpDmKp_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) && (species == 101) ".format(bdt_fix,bdt_fix)+cut_string)
+        t_BuDDKp.Draw(f"df_Bp_M >> h_BuDsDsKp_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) && (species == 102) ".format(bdt_fix,bdt_fix)+cut_string)
+        t_BdDDKp.Draw(f"df_Bp_M >> h_BdD0DmKp_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt_fix,bdt_fix)+cut_string)
+        t_BsDDKp.Draw(f"df_Bp_M >> h_BsD0DsKp_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt_fix,bdt_fix)+cut_string)
+    else:
         t_comb.Draw(f"df_Bp_M >> h_comb_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2)+cut_string)
-        t_BuDDKp.Draw(f"df_Bp_M >> h_BuDDKp_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2)+cut_string)
-        t_BdDDKp.Draw(f"df_Bp_M >> h_BdDDKp_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2)+cut_string)
-        t_BsDDKp.Draw(f"df_Bp_M >> h_BsDDKp_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2)+cut_string)
-        t_BuDDK0.Draw(f"df_Bp_M >> h_BuDDK0_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2)+cut_string)
-        t_BuDD.Draw(f"df_Bp_M >> h_BuDD_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2)+cut_string)
+        t_BuDDKp.Draw(f"df_Bp_M >> h_BuD0D0Kp_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) && (species == 100) ".format(bdt1,bdt2)+cut_string)
+        t_BuDDKp.Draw(f"df_Bp_M >> h_BuDpDmKp_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) && (species == 101) ".format(bdt1,bdt2)+cut_string)
+        t_BuDDKp.Draw(f"df_Bp_M >> h_BuDsDsKp_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) && (species == 102) ".format(bdt1,bdt2)+cut_string)
+        t_BdDDKp.Draw(f"df_Bp_M >> h_BdD0DmKp_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2)+cut_string)
+        t_BsDDKp.Draw(f"df_Bp_M >> h_BsD0DsKp_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2)+cut_string)
 
-    h_sig.Sumw2()
-    h_comb.Sumw2()
     h_BDDKp.Sumw2()
-    h_BuDDKp.Sumw2()
-    h_BdDDKp.Sumw2()
-    h_BsDDKp.Sumw2()
-    h_BuDDK0.Sumw2()
-    h_BuDD.Sumw2()
 
-    # Add B -> DD K+ shapes
-    h_BDDKp.Add(h_BuDDKp)
-    h_BDDKp.Add(h_BdDDKp)
-    h_BDDKp.Add(h_BsDDKp)
+    # Add shapes
+    h_BDDKp.Add(h_BuD0D0Kp)
+    h_BDDKp.Add(h_BuDpDmKp)
+    h_BDDKp.Add(h_BuDsDsKp)
+    h_BDDKp.Add(h_BdD0DmKp)
+    h_BDDKp.Add(h_BsD0DsKp)
 
     if(h_sig.Integral() != 0):
         h_sig.Scale(1/h_sig.Integral())
@@ -118,21 +124,16 @@ def create_histograms(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_B
         h_comb.Scale(1/h_comb.Integral())
     if(h_BDDKp.Integral() != 0):
         h_BDDKp.Scale(1/h_BDDKp.Integral())
-    if(h_BuDDK0.Integral() != 0):
-        h_BuDDK0.Scale(1/h_BuDDK0.Integral())
-    if(h_BuDD.Integral() != 0):
-        h_BuDD.Scale(1/h_BuDD.Integral())
 
-    return [h_sig, h_comb, h_BDDKp, h_BuDDK0, h_BuDD]
+    return [h_sig, h_comb, h_BDDKp]
 
-def create_histogram_errors(h_sig, h_comb, h_BDDKp, h_BuDDK0, h_BuDD, ch):
+
+def create_histogram_errors(h_sig, h_comb, h_BDDKp, ch):
     nbins = h_sig.GetNbinsX()
 
     h_sig_err = ROOT.TH1D(f"h_sig_err_{ch}", f"h_sig_err_{ch}", nbins, 4000, 8000)
     h_comb_err = ROOT.TH1D(f"h_comb_err_{ch}", f"h_comb_err_{ch}", nbins, 4000, 8000)
     h_BDDKp_err = ROOT.TH1D(f"h_BDDKp_err_{ch}", f"h_BDDKp_err_{ch}", nbins, 4000, 8000)
-    h_BuDDK0_err = ROOT.TH1D(f"h_BuDDK0_err_{ch}", f"h_BuDDK0_err_{ch}", nbins, 4000, 8000)
-    h_BuDD_err = ROOT.TH1D(f"h_BuDD_err_{ch}", f"h_BuDD_err_{ch}", nbins, 4000, 8000)
 
     # All events
     for i in range(nbins):
@@ -154,7 +155,7 @@ def create_histogram_errors(h_sig, h_comb, h_BDDKp, h_BuDDK0, h_BuDD, ch):
             h_comb_err.Fill(h_comb.GetBinCenter(i+1), h_comb.GetBinError(i+1)) 
         h_comb_err.SetBinError(i+1, 0) 
 
-        # BDDKp
+        # B -> D D K+
         if(h_BDDKp.GetBinContent(i+1) == 0):
             h_BDDKp_err.Fill(h_BDDKp.GetBinCenter(i+1), 0.0) 
         elif(h_BDDKp.GetBinError(i+1)/h_BDDKp.GetBinContent(i+1) < error_threshold):
@@ -163,49 +164,25 @@ def create_histogram_errors(h_sig, h_comb, h_BDDKp, h_BuDDK0, h_BuDD, ch):
             h_BDDKp_err.Fill(h_BDDKp.GetBinCenter(i+1), h_BDDKp.GetBinError(i+1)) 
         h_BDDKp_err.SetBinError(i+1, 0) 
 
-        # BuDDK0
-        if(h_BuDDK0.GetBinContent(i+1) == 0):
-            h_BuDDK0_err.Fill(h_BuDDK0.GetBinCenter(i+1), 0.0)
-        elif(h_BuDDK0.GetBinError(i+1)/h_BuDDK0.GetBinContent(i+1) < error_threshold):
-            h_BuDDK0_err.Fill(h_BuDDK0.GetBinCenter(i+1), 0.0) 
-        else:
-            h_BuDDK0_err.Fill(h_BuDDK0.GetBinCenter(i+1), h_BuDDK0.GetBinError(i+1)) 
-        h_BuDDK0_err.SetBinError(i+1, 0) 
-
-        # BuDD
-        if(h_BuDD.GetBinContent(i+1) == 0):
-            h_BuDD_err.Fill(h_BuDD.GetBinCenter(i+1), 0.0) 
-        elif(h_BuDD.GetBinError(i+1)/h_BuDD.GetBinContent(i+1) < error_threshold):
-            h_BuDD_err.Fill(h_BuDD.GetBinCenter(i+1), 0.0) 
-        else:
-            h_BuDD_err.Fill(h_BuDD.GetBinCenter(i+1), h_BuDD.GetBinError(i+1)) 
-        h_BuDD_err.SetBinError(i+1, 0) 
-
-        h_sig_err.Sumw2()
-        h_comb_err.Sumw2()
-        h_BDDKp_err.Sumw2()
-        h_BuDDK0_err.Sumw2()
-        h_BuDD_err.Sumw2()
-
         # print("SIGNAL : ", h_sig.GetBinError(i+1), " | BACKGROUND : ", h_comb.GetBinError(i+1))
     
-    return [h_sig_err, h_comb_err, h_BDDKp_err, h_BuDDK0_err, h_BuDD_err]
+    return [h_sig_err, h_comb_err, h_BDDKp_err]
 
 
-def retrieve_yields(t_rs_data, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, ch, channel_cut, N_BDDKp, N_BuDDK0, N_BuDD):
+def combinatorial_background_yield(t_rs_data, t_comb, bdt1, bdt2):
     # 2) Estimate and save all needed yields after the BDT cuts
     # Combinatorial background yield
     eps_ws_den = t_comb.GetEntries()
     eps_rs_den = t_rs_data.GetEntries()
 
-    eps_num_bdt = t_comb.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2)+channel_cut[ch])
+    eps_num_bdt = t_comb.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2))
 
     if((bdt1 <= 0.8) and (bdt2 <= 0.8)):
-        eps_ws_num = t_comb.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2)+channel_cut[ch])
-        eps_rs_num = t_rs_data.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2)+channel_cut[ch])
+        eps_ws_num = t_comb.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2))
+        eps_rs_num = t_rs_data.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2))
     else:
-        eps_ws_num = t_comb.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(0.8,0.8)+channel_cut[ch])
-        eps_rs_num = t_rs_data.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(0.8,0.8)+channel_cut[ch])
+        eps_ws_num = t_comb.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(0.8,0.8))
+        eps_rs_num = t_rs_data.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(0.8,0.8))
 
     eps_ws = eps_ws_num/eps_ws_den
     eps_rs = eps_rs_num/eps_rs_den
@@ -215,46 +192,154 @@ def retrieve_yields(t_rs_data, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t
     eps_ws_bdt = eps_num_bdt/eps_ws_den
 
     N_comb = 19006409*eps_ws_bdt*r
-    N_comb = ufloat(N_comb, np.sqrt(N_comb))
 
-    # Physics backgrounds
-    if(ch != 0):
-        cut_string = channel_cut[ch].replace("&&", "", 1)
-
-        N_den_BDDKp = t_BuDDKp.GetEntries() + t_BdDDKp.GetEntries() + t_BsDDKp.GetEntries()
-        N_num_BDDKp = t_BuDDKp.GetEntries(cut_string) + t_BdDDKp.GetEntries(cut_string) + t_BsDDKp.GetEntries(cut_string)
-
-        N_den_BuDDK0 = t_BuDDK0.GetEntries()
-        N_num_BuDDK0 = t_BuDDK0.GetEntries(cut_string) 
-
-        N_den_BuDD = t_BuDD.GetEntries()
-        N_num_BuDD = t_BuDD.GetEntries(cut_string) 
-
-        eps_BDDKp = ufloat( N_num_BDDKp/N_den_BDDKp, eps_error(N_num_BDDKp, N_den_BDDKp) )
-        eps_BuDDK0 = ufloat( N_num_BuDDK0/N_den_BuDDK0, eps_error(N_num_BuDDK0, N_den_BuDDK0) )
-
-        eps_BuDD = ufloat( N_num_BuDD/N_den_BuDD, eps_error(N_num_BuDD, N_den_BuDD) )
-
-        N_BDDKp = N_BDDKp*eps_BDDKp
-        N_BuDDK0 = N_BuDDK0*eps_BuDDK0
-        N_BuDD = N_BuDD*eps_BuDD
-
-    return [N_comb, N_BDDKp, N_BuDDK0, N_BuDD]
+    return N_comb
 
 
-def retrieve_constant(t_sig, bdt1, bdt2, ch, channel_cut, bdt_independent_constant, N_den):
+def error_category_efficiency(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, channel_cut):
+    n = len(channel_cut)-2
 
-    N_num = t_sig.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2)+channel_cut[ch])
+    eps_sig = np.zeros(n)
+    eps_comb = np.zeros(n)
+    eps_BDDKp = np.zeros(n)
+    eps_BuDDK0 = np.zeros(n)
+    eps_BuDD = np.zeros(n)
 
-    upper = ROOT.TEfficiency.Wilson(N_den, N_num, 0.68, True)
-    lower = ROOT.TEfficiency.Wilson(N_den, N_num, 0.68, False)
-    eps_s_err = 0.5*(upper - lower)
+    eps_sig_err = np.zeros(n)
+    eps_comb_err = np.zeros(n)
+    eps_BDDKp_err = np.zeros(n)
+    eps_BuDDK0_err = np.zeros(n)
+    eps_BuDD_err = np.zeros(n)
 
-    eps_s = ufloat( N_num/N_den, eps_s_err )
+    for ch in range(n):
+        cut_string = f"(BDT1 > {bdt1}) && (BDT2 > {bdt2})"
 
-    c = eps_s/bdt_independent_constant
+        # signal
+        N_num_sig = t_sig.GetEntries(cut_string+channel_cut[ch+1])
+        N_den_sig = t_sig.GetEntries(cut_string)
+        up_sig = ROOT.TEfficiency.Wilson(N_den_sig, N_num_sig, 0.68, True)
+        lo_sig = ROOT.TEfficiency.Wilson(N_den_sig, N_num_sig, 0.68, False)
+        if(N_den_sig != 0):
+            eps_sig[ch] = N_num_sig/N_den_sig
+        else:
+            eps_sig[ch] = 0
+        eps_sig_err[ch] = 0.5*(up_sig - lo_sig)
 
-    return c
+        # combinatorial
+        N_num_comb = t_comb.GetEntries(cut_string+channel_cut[ch+1])
+        N_den_comb = t_comb.GetEntries(cut_string)
+        up_comb = ROOT.TEfficiency.Wilson(N_den_comb, N_num_comb, 0.68, True)
+        lo_comb = ROOT.TEfficiency.Wilson(N_den_comb, N_num_comb, 0.68, False)
+        if(N_den_comb != 0):
+            eps_comb[ch] = N_num_comb/N_den_comb
+        else:
+            eps_comb[ch] = 0
+        eps_comb_err[ch] = 0.5*(up_comb - lo_comb)
+
+        # B -> DD K+
+        N_num_BDDKp = t_BuDDKp.GetEntries(cut_string+channel_cut[ch+1]) + t_BdDDKp.GetEntries(cut_string+channel_cut[ch+1]) + t_BsDDKp.GetEntries(cut_string+channel_cut[ch+1])
+        N_den_BDDKp = t_BuDDKp.GetEntries(cut_string) + t_BdDDKp.GetEntries(cut_string) + t_BsDDKp.GetEntries(cut_string)
+        up_BDDKp = ROOT.TEfficiency.Wilson(N_den_BDDKp, N_num_BDDKp, 0.68, True)
+        lo_BDDKp = ROOT.TEfficiency.Wilson(N_den_BDDKp, N_num_BDDKp, 0.68, False)
+        if(N_den_BDDKp != 0):
+            eps_BDDKp[ch] = N_num_BDDKp/N_den_BDDKp
+        else:
+            eps_BDDKp[ch] = 0
+        eps_BDDKp_err[ch] = 0.5*(up_BDDKp - lo_BDDKp)
+
+        # B -> DD K0
+        N_num_BuDDK0 = t_BuDDK0.GetEntries(cut_string+channel_cut[ch+1])
+        N_den_BuDDK0 = t_BuDDK0.GetEntries(cut_string)
+        up_BuDDK0 = ROOT.TEfficiency.Wilson(N_den_BuDDK0, N_num_BuDDK0, 0.68, True)
+        lo_BuDDK0 = ROOT.TEfficiency.Wilson(N_den_BuDDK0, N_num_BuDDK0, 0.68, False)
+        if(N_den_BuDDK0 != 0):
+            eps_BuDDK0[ch] = N_num_BuDDK0/N_den_BuDDK0
+        else:
+            eps_BuDDK0[ch] = 0
+        eps_BuDDK0_err[ch] = 0.5*(up_BuDDK0 - lo_BuDDK0)
+
+        # B -> DD
+        N_num_BuDD = t_BuDD.GetEntries(cut_string+channel_cut[ch+1])
+        N_den_BuDD = t_BuDD.GetEntries(cut_string)
+        up_BuDD = ROOT.TEfficiency.Wilson(N_den_BuDD, N_num_BuDD, 0.68, True)
+        lo_BuDD = ROOT.TEfficiency.Wilson(N_den_BuDD, N_num_BuDD, 0.68, False)
+        if(N_den_BuDD != 0):
+            eps_BuDD[ch] = N_num_BuDD/N_den_BuDD
+        else:
+            eps_BuDD[ch] = 0
+        eps_BuDD_err[ch] = 0.5*(up_BuDD - lo_BuDD)
+
+    return eps_sig, eps_comb, eps_BDDKp, eps_BuDDK0, eps_BuDD, eps_sig_err, eps_comb_err, eps_BDDKp_err, eps_BuDDK0_err, eps_BuDD_err
+
+
+def physics_backgrounds_yields(C_values, C_errors, bdt1, bdt2):
+    all_species = [100, 101, 102, 110, 120, 130, 150, 151]
+
+    #### All events
+    C_BuD0D0Kp = 0 # 100
+    C_BuDpDmKp = 0 # 101
+    C_BuDsDsKp = 0 # 102
+    C_BdDDKp = 0 # 110
+    C_BsDDKp = 0 # 120
+    C_BuDDK0 = 0 # 130
+    C_BuDD = 0 # 150, 151
+
+    C_BuD0D0Kp_err = 0 # 100
+    C_BuDpDmKp_err = 0 # 101
+    C_BuDsDsKp_err = 0 # 102
+    C_BdDDKp_err = 0 # 110
+    C_BsDDKp_err = 0 # 120
+    C_BuDDK0_err = 0 # 130
+    C_BuDD_err = 0 # 150, 151
+
+    s = 0
+    for i in range(len(all_species)):
+        species = all_species[i]
+
+        for j in range(4):
+            if(species == 100):
+                C_BuD0D0Kp += C_values[s,j]
+                C_BuD0D0Kp_err += C_errors[s,j]**2
+            elif(species == 101):
+                C_BuDpDmKp += C_values[s,j]
+                C_BuDpDmKp_err += C_errors[s,j]**2
+            elif(species == 102):
+                C_BuDsDsKp += C_values[s,j]
+                C_BuDsDsKp_err += C_errors[s,j]**2
+            elif(species == 110):
+                C_BdDDKp += C_values[s,j]
+                C_BdDDKp_err += C_errors[s,j]**2
+            elif(species == 120):
+                C_BsDDKp += C_values[s,j]
+                C_BsDDKp_err += C_errors[s,j]**2
+            elif(species == 130):
+                C_BuDDK0 += C_values[s,j]
+                C_BuDDK0_err += C_errors[s,j]**2
+            elif(species == 150):
+                C_BuDD += C_values[s,j]
+                C_BuDD_err += C_errors[s,j]**2
+
+        s += 1
+
+    C_BuD0D0Kp_err = np.sqrt(C_BuD0D0Kp_err)
+    C_BuDpDmKp_err = np.sqrt(C_BuDpDmKp_err)
+    C_BuDsDsKp_err = np.sqrt(C_BuDsDsKp_err)
+    C_BdDDKp_err = np.sqrt(C_BdDDKp_err)
+    C_BsDDKp_err = np.sqrt(C_BsDDKp_err)
+    C_BuDDK0_err = np.sqrt(C_BuDDK0_err)
+    C_BuDD_err = np.sqrt(C_BuDD_err)
+
+    C_BDDKp = C_BuD0D0Kp + C_BuDpDmKp + C_BuDsDsKp + C_BdDDKp + C_BsDDKp
+    C_BDDKp_err = np.sqrt( C_BuD0D0Kp_err**2 + C_BuDpDmKp_err**2 + C_BuDsDsKp_err**2 + C_BdDDKp_err**2 + C_BsDDKp_err**2 )
+
+    C_BDDKp = ufloat(C_BDDKp, C_BDDKp_err)
+    C_BuDDK0 = ufloat(C_BuDDK0, C_BuDDK0_err)
+    C_BuDD = ufloat(C_BuDD, C_BuDD_err)
+
+    c = [C_BDDKp.nominal_value, C_BuDDK0.nominal_value, C_BuDD.nominal_value]
+    c_err = [C_BDDKp.std_dev, C_BuDDK0.std_dev, C_BuDD.std_dev]
+
+    return c, c_err
 
 def main(argv):
     start = time.time()
@@ -298,10 +383,10 @@ def main(argv):
     t_BuDD = f_BuDD.Get("DecayTree")
     
     ###################################################### 1) Retrieve histograms after BDT cuts (all histograms are normalised to unity)
-    [h_sig, h_comb, h_BDDKp, h_BuDDK0, h_BuDD] = create_histograms(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, 0, channel_cut)
-    [h_sig_1, h_comb_1, h_BDDKp_1, h_BuDDK0_1, h_BuDD_1] = create_histograms(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, 1, channel_cut)
-    [h_sig_2, h_comb_2, h_BDDKp_2, h_BuDDK0_2, h_BuDD_2] = create_histograms(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, 2, channel_cut)
-    [h_sig_3, h_comb_3, h_BDDKp_3, h_BuDDK0_3, h_BuDD_3] = create_histograms(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, 3, channel_cut)
+    [h_sig, h_comb, h_BDDKp] = create_histograms(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, 0, channel_cut)
+    [h_sig_1, h_comb_1, h_BDDKp_1] = create_histograms(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, 1, channel_cut)
+    [h_sig_2, h_comb_2, h_BDDKp_2] = create_histograms(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, 2, channel_cut)
+    [h_sig_3, h_comb_3, h_BDDKp_3] = create_histograms(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, 3, channel_cut)
     
     print("Saving histograms into file")
     f = ROOT.TFile(f"/panfs/felician/B2Ktautau/workflow/generate_histograms/histograms_bdt1_{bdt1}_bdt2_{bdt2}.root", "RECREATE")
@@ -314,34 +399,26 @@ def main(argv):
     h_sig.Write()
     h_comb.Write()
     h_BDDKp.Write()
-    h_BuDDK0.Write()
-    h_BuDD.Write()
     f.cd("Channel_1")
     h_sig_1.Write()
     h_comb_1.Write()
     h_BDDKp_1.Write()
-    h_BuDDK0_1.Write()
-    h_BuDD_1.Write()
     f.cd("Channel_2")
     h_sig_2.Write()
     h_comb_2.Write()
     h_BDDKp_2.Write()
-    h_BuDDK0_2.Write()
-    h_BuDD_2.Write()
     f.cd("Channel_3")
     h_sig_3.Write()
     h_comb_3.Write()
     h_BDDKp_3.Write()
-    h_BuDDK0_3.Write()
-    h_BuDD_3.Write()
     f.Close()
     #######################################################################################################################################################33
 
     ###################################################### 2) Retrieve histograms with errors
-    [h_sig_err, h_comb_err, h_BDDKp_err, h_BuDDK0_err, h_BuDD_err] = create_histogram_errors(h_sig, h_comb, h_BDDKp, h_BuDDK0, h_BuDD, 0)
-    [h_sig_err_1, h_comb_err_1, h_BDDKp_err_1, h_BuDDK0_err_1, h_BuDD_err_1] = create_histogram_errors(h_sig_1, h_comb_1, h_BDDKp_1, h_BuDDK0_1, h_BuDD_1, 1)
-    [h_sig_err_2, h_comb_err_2, h_BDDKp_err_2, h_BuDDK0_err_2, h_BuDD_err_2] = create_histogram_errors(h_sig_2, h_comb_2, h_BDDKp_2, h_BuDDK0_2, h_BuDD_2, 2)
-    [h_sig_err_3, h_comb_err_3, h_BDDKp_err_3, h_BuDDK0_err_3, h_BuDD_err_3] = create_histogram_errors(h_sig_3, h_comb_3, h_BDDKp_3, h_BuDDK0_3, h_BuDD_3, 3)
+    [h_sig_err, h_comb_err, h_BDDKp_err] = create_histogram_errors(h_sig, h_comb, h_BDDKp, 0)
+    [h_sig_err_1, h_comb_err_1, h_BDDKp_err_1] = create_histogram_errors(h_sig_1, h_comb_1, h_BDDKp_1, 1)
+    [h_sig_err_2, h_comb_err_2, h_BDDKp_err_2] = create_histogram_errors(h_sig_2, h_comb_2, h_BDDKp_2, 2)
+    [h_sig_err_3, h_comb_err_3, h_BDDKp_err_3] = create_histogram_errors(h_sig_3, h_comb_3, h_BDDKp_3, 3)
 
     print("Saving histograms errors into file")
     f1 = ROOT.TFile(f"/panfs/felician/B2Ktautau/workflow/generate_histograms/histograms_errors_bdt1_{bdt1}_bdt2_{bdt2}.root", "RECREATE")
@@ -354,116 +431,39 @@ def main(argv):
     h_sig_err.Write()
     h_comb_err.Write()
     h_BDDKp_err.Write()
-    h_BuDDK0_err.Write()
-    h_BuDD_err.Write()
     f1.cd("Channel_1")
     h_sig_err_1.Write()
     h_comb_err_1.Write()
     h_BDDKp_err_1.Write()
-    h_BuDDK0_err_1.Write()
-    h_BuDD_err_1.Write()
     f1.cd("Channel_2")
     h_sig_err_2.Write()
     h_comb_err_2.Write()
     h_BDDKp_err_2.Write()
-    h_BuDDK0_err_2.Write()
-    h_BuDD_err_2.Write()
     f1.cd("Channel_3")
     h_sig_err_3.Write()
     h_comb_err_3.Write()
     h_BDDKp_err_3.Write()
-    h_BuDDK0_err_3.Write()
-    h_BuDD_err_3.Write()
     f1.Close()
     #######################################################################################################################################################33
 
-    ###################################################### 3) Retrieve yields (ufloats)
-    # Physics backgrounds yields
-    yield_estimates = np.load(f'/panfs/felician/B2Ktautau/workflow/yield_estimates/yield_values_bdt1_{bdt1}_bdt2_{bdt2}.npy')
-    yield_errors = np.load(f'/panfs/felician/B2Ktautau/workflow/yield_estimates/yield_errors_bdt1_{bdt1}_bdt2_{bdt2}.npy')
-    # print(yield_estimates)
+    ### Combinatorial background yield
+    N_comb = combinatorial_background_yield(t_rs_data, t_comb, bdt1, bdt2)
+    np.save(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/N_comb_bdt1_{bdt1}_bdt2_{bdt2}.npy', N_comb)
 
-    all_species = [100, 101, 102, 110, 120, 130, 150, 151]
+    ### Error category efficiency (eps1, eps2)
+    eps_sig, eps_comb, eps_BDDKp, eps_BuDDK0, eps_BuDD, eps_sig_err, eps_comb_err, eps_BDDKp_err, eps_BuDDK0_err, eps_BuDD_err = error_category_efficiency(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, channel_cut)
 
-    #### All events
-    N_BuDDKp = 0
-    N_BdDDKp = 0
-    N_BsDDKp = 0
-    N_BuDDK0 = 0
-    N_BuDD = 0
+    np.save(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/eff_category_value_bdt1_{bdt1}_bdt2_{bdt2}.npy', [eps_sig, eps_comb, eps_BDDKp, eps_BuDDK0, eps_BuDD])
+    np.save(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/eff_category_error_bdt1_{bdt1}_bdt2_{bdt2}.npy', [eps_sig_err, eps_comb_err, eps_BDDKp_err, eps_BuDDK0_err, eps_BuDD_err])
 
-    N_BuDDKp_err = 0
-    N_BdDDKp_err = 0
-    N_BsDDKp_err = 0
-    N_BuDDK0_err = 0
-    N_BuDD_err = 0
+    ### Physics backgrounds C values
+    C_values = np.load(f'/panfs/felician/B2Ktautau/workflow/fit_inputs/C_bdt1_{bdt1}_bdt2_{bdt2}.npy')
+    C_errors = np.load(f'/panfs/felician/B2Ktautau/workflow/fit_inputs/C_err_bdt1_{bdt1}_bdt2_{bdt2}.npy')
 
-    s = 0
-    for i in range(len(all_species)):
-        species = all_species[i]
+    c, c_err = physics_backgrounds_yields(C_values, C_errors, bdt1, bdt2)
 
-        for j in range(4):
-            if((species == 100) or (species == 101) or (species == 102)):
-                N_BuDDKp += yield_estimates[s,j]
-                N_BuDDKp_err += yield_errors[s,j]**2
-            elif(species == 110):
-                N_BdDDKp += yield_estimates[s,j]
-                N_BdDDKp_err += yield_errors[s,j]**2
-            elif(species == 120):
-                N_BsDDKp += yield_estimates[s,j]
-                N_BsDDKp_err += yield_errors[s,j]**2
-            elif(species == 130):
-                N_BuDDK0 += yield_estimates[s,j]
-                N_BuDDK0_err += yield_errors[s,j]**2
-            elif(species == 150):
-                N_BuDD += yield_estimates[s,j]
-                N_BuDD_err += yield_errors[s,j]**2
-
-        s += 1
-
-    N_BuDDKp_err = np.sqrt(N_BuDDKp_err)
-    N_BdDDKp_err = np.sqrt(N_BdDDKp_err)
-    N_BsDDKp_err = np.sqrt(N_BsDDKp_err)
-    N_BuDDK0_err = np.sqrt(N_BuDDK0_err)
-    N_BuDD_err = np.sqrt(N_BuDD_err)
-
-    N_BDDKp = N_BuDDKp+N_BdDDKp+N_BsDDKp
-    N_BDDKp_err = np.sqrt( N_BuDDKp_err**2 + N_BdDDKp_err**2 + N_BsDDKp_err**2 )
-
-    N_BDDKp = ufloat( N_BDDKp, N_BDDKp_err )
-    N_BuDDK0 = ufloat( N_BuDDK0, N_BuDDK0_err )
-    N_BuDD = ufloat( N_BuDD, N_BuDD_err )
-
-    [N_comb, N_BDDKp, N_BuDDK0, N_BuDD] = retrieve_yields(t_rs_data, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, 0, channel_cut, N_BDDKp, N_BuDDK0, N_BuDD)
-    [N_comb_1, N_BDDKp_1, N_BuDDK0_1, N_BuDD_1] = retrieve_yields(t_rs_data, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, 1, channel_cut, N_BDDKp, N_BuDDK0, N_BuDD)
-    [N_comb_2, N_BDDKp_2, N_BuDDK0_2, N_BuDD_2] = retrieve_yields(t_rs_data, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, 2, channel_cut, N_BDDKp, N_BuDDK0, N_BuDD)
-    [N_comb_3, N_BDDKp_3, N_BuDDK0_3, N_BuDD_3] = retrieve_yields(t_rs_data, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, 3, channel_cut, N_BDDKp, N_BuDDK0, N_BuDD)
-
-    yields_all_events = [ [N_comb.nominal_value, N_BDDKp.nominal_value, N_BuDDK0.nominal_value, N_BuDD.nominal_value], [N_comb_1.nominal_value, N_BDDKp_1.nominal_value, N_BuDDK0_1.nominal_value, N_BuDD_1.nominal_value], [N_comb_2.nominal_value, N_BDDKp_2.nominal_value, N_BuDDK0_2.nominal_value, N_BuDD_2.nominal_value], [N_comb_3.nominal_value, N_BDDKp_3.nominal_value, N_BuDDK0_3.nominal_value, N_BuDD_3.nominal_value] ]
-    yield_errors_all_events = [ [N_BDDKp.std_dev, N_BuDDK0.std_dev, N_BuDD.std_dev], [N_BDDKp_1.std_dev, N_BuDDK0_1.std_dev, N_BuDD_1.std_dev], [N_BDDKp_2.std_dev, N_BuDDK0_2.std_dev, N_BuDD_2.std_dev], [N_BDDKp_3.std_dev, N_BuDDK0_3.std_dev, N_BuDD_3.std_dev] ] 
-
-    print("Saving yield values and errors into files")
-    np.save(f"/panfs/felician/B2Ktautau/workflow/generate_histograms/yield_values_bdt1_{bdt1}_bdt2_{bdt2}.npy", yields_all_events)
-    np.save(f"/panfs/felician/B2Ktautau/workflow/generate_histograms/yield_errors_bdt1_{bdt1}_bdt2_{bdt2}.npy", yield_errors_all_events)
-    #######################################################################################################################################################33
-
-    ###################################################### 4) Retrieve constant term in branching fraction (ufloat)
-    fixed_value = np.load("/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs.npy")
-    fixed_value_error = np.load("/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs_error.npy")
-    bdt_independent_constant = ufloat( fixed_value, fixed_value_error )
-    N_den = np.load('/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_s_den.npy')
-
-    c = retrieve_constant(t_sig, bdt1, bdt2, 0, channel_cut, bdt_independent_constant, N_den)
-    c_1 = retrieve_constant(t_sig, bdt1, bdt2, 1, channel_cut, bdt_independent_constant, N_den)
-    c_2 = retrieve_constant(t_sig, bdt1, bdt2, 2, channel_cut, bdt_independent_constant, N_den)
-    c_3 = retrieve_constant(t_sig, bdt1, bdt2, 3, channel_cut, bdt_independent_constant, N_den)
-
-    c_values = [c.nominal_value, c_1.nominal_value, c_2.nominal_value, c_3.nominal_value]
-    c_errors = [c.std_dev, c_1.std_dev, c_2.std_dev, c_3.std_dev]
-
-    print("Saving constant value in the branching fraction")
-    np.save(f"/panfs/felician/B2Ktautau/workflow/generate_histograms/c_value_bdt1_{bdt1}_bdt2_{bdt2}.npy", c_values)
-    np.save(f"/panfs/felician/B2Ktautau/workflow/generate_histograms/c_error_bdt1_{bdt1}_bdt2_{bdt2}.npy", c_errors)
+    np.save(f"/panfs/felician/B2Ktautau/workflow/generate_histograms/C_bdt1_{bdt1}_bdt2_{bdt2}.npy", c)
+    np.save(f"/panfs/felician/B2Ktautau/workflow/generate_histograms/C_err_bdt1_{bdt1}_bdt2_{bdt2}.npy", c_err)
 
     end = time.time()
     print(f"Elapsed time: {end - start:.2f} seconds")

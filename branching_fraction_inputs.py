@@ -13,9 +13,6 @@ def main(argv):
     B_D0bar_Kp_pi = ufloat(3.947/100, 0.030/100)
     B_Dsp_Kp_Km_pi = ufloat(5.37/100, 0.10/100)
 
-    branching_fraction_term = (B_Bp_D0bar_Dsp*B_D0bar_Kp_pi*B_Dsp_Kp_Km_pi)/((B_tau_3pi_nu+B_tau_3pi_pi0_nu)**2)
-    print(branching_fraction_term)
-
     # normalisation channel term
     ### Norm MC after all selections (for N_norm_num)
     f_norm_mc = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_72/post_sel_tree_bdt1_0_bdt2_0.root")
@@ -63,17 +60,10 @@ def main(argv):
     eps_norm_post_acc = ufloat( N_norm_num/N_norm_den, eps_norm_err )
 
     eps_norm = eps_acc_norm*eps_norm_post_acc
-    print(eps_norm*100)
-
-    np.save("/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_norm_value.npy", unumpy.nominal_values(eps_norm))
-    np.save("/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_norm_error.npy", unumpy.std_devs(eps_norm))
 
     ### N_norm
     N_norm = ufloat(33187, 259)
     # print(N_norm)
-
-    normalisation_channel_term = eps_norm/N_norm
-    print(normalisation_channel_term)
 
     # signal efficiency term (all MC)
     ### Ktautau gen MC
@@ -181,17 +171,19 @@ def main(argv):
 
     np.save('/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_s_den.npy', N_den)
 
-    signal_efficiency_term = 1/(eps_acc*eps_strip)
-    print(signal_efficiency_term)
-    
-    np.save("/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_ktautau_fixed_value.npy", unumpy.nominal_values(signal_efficiency_term))
-    np.save("/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/eps_ktautau_fixed_error.npy", unumpy.std_devs(signal_efficiency_term))
+    # signal_efficiency_term = 1/(eps_acc*eps_strip)
+    # print(signal_efficiency_term)
 
-    fixed_term = branching_fraction_term*normalisation_channel_term*signal_efficiency_term
-    print(fixed_term)
+    A = (1/((B_tau_3pi_nu+B_tau_3pi_pi0_nu)**2))*(1/(eps_acc*eps_strip))
+    B = (B_Bp_D0bar_Dsp*B_D0bar_Kp_pi*B_Dsp_Kp_Km_pi)*(eps_norm/N_norm)
 
-    np.save("/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs.npy", unumpy.nominal_values(fixed_term))
-    np.save("/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/BF_inputs_error.npy", unumpy.std_devs(fixed_term))
+    print("B = ", B.nominal_value, " +/- ", B.std_dev)
+
+    np.save('/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/A_const.npy', A.nominal_value)
+    np.save('/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/A_const_err.npy', A.std_dev)
+
+    np.save('/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/B.npy', B.nominal_value)
+    np.save('/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/B_err.npy', B.std_dev)
 
 
 if __name__ == "__main__":
