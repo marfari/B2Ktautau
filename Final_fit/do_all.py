@@ -10,13 +10,15 @@ from scipy.stats import norm
 from uncertainties import ufloat
 from pyhf.contrib.viz import brazil
 from scipy.interpolate import griddata
+import warnings
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-add_physics_backgrounds = True
+add_physics_backgrounds = False
 add_statistical_error = True
-apply_gaussian_constraints = True
+apply_Gaussian_constraints = False
 validate_fit = True
 
-n_toys = 1
+n_toys = 1000
 if(n_toys > 1000):
     validate_fit = False
 
@@ -65,149 +67,161 @@ def error_category_efficiency(epsilon, epsilon_error, ch):
     return eps, eps_err
 
 
-def generate_toy_data(fit_name, histograms, norm_parameters, norm_parameters_errors, seed, BF_sig, add_physics_backgrounds, ch):
-    ######################### Fit templates
-    h_sig = histograms[0]  
-    h_comb = histograms[1]  
-    h_BDDKp = histograms[2]
+def generate_toy_data(fit_name, BF_sig, seed, nominal_templates, norm_parameters, norm_parameters_errors, add_physics_backgrounds):
     ######################### Fit normalisations
-    A = norm_parameters[1] # A
-    B = norm_parameters[2] # B
-    C_BDDKp = norm_parameters[3][0] # [C_BDDKp, C_BuDDK0, C_BuDD]
+    N_comb = float(norm_parameters[0]) # N_comb
+    A = float(norm_parameters[1]) # A
+    B = float(norm_parameters[2]) # B
+    C_BDDKp = float(norm_parameters[3][0]) # [C_BDDKp, C_BuDDK0, C_BuDD]
 
-    A_err = norm_parameters_errors[1]
-    B_err = norm_parameters_errors[2]
-    C_BDDKp_err = norm_parameters_errors[3][0]
+    A_err = float(norm_parameters_errors[1])
+    B_err = float(norm_parameters_errors[2])
+    C_BDDKp_err = float(norm_parameters_errors[3][0])
 
-    a_ufloat = 1/ufloat(A, A_err)
+    A_ufloat = ufloat(A, A_err)
+    a_ufloat = 1/A_ufloat
     a = a_ufloat.nominal_value
     a_err = a_ufloat.std_dev
 
-    b_ufloat = 1/ufloat(B, B_err)
+    B_ufloat = ufloat(B, B_err)
+    b_ufloat = 1/B_ufloat
     b = b_ufloat.nominal_value
     b_err = b_ufloat.std_dev
 
-    # [eps_sig, eps_comb, eps_BDDKp, eps_BuDDK0, eps_BuDD]
-    eps_sig, eps_sig_err = error_category_efficiency(norm_parameters[4][0], norm_parameters_errors[4][0], ch)
-    eps_comb, eps_comb_err = error_category_efficiency(norm_parameters[4][1], norm_parameters_errors[4][1], ch)
-    eps_BDDKp, eps_BDDKp_err = error_category_efficiency(norm_parameters[4][2], norm_parameters_errors[4][2], ch)
-    #####################################
-
-    nbins = h_sig.GetNbinsX()
-
-    # varied templates
-    h_comb_varied = ROOT.TH1D(f"h_comb_varied_{seed}_{ch}", f"h_comb_varied_{seed}_{ch}", nbins, 4000, 8000)
-    if(BF_sig != 0):
-        h_sig_varied = ROOT.TH1D(f"h_sig_varied_{seed}_{ch}", f"h_sig_varied_{seed}_{ch}", nbins, 4000, 8000)
-    if(add_physics_backgrounds):
-        h_BDDKp_varied = ROOT.TH1D(f"h_BDDKp_varied_{seed}_{ch}", f"h_BDDKp_varied_{seed}_{ch}", nbins, 4000, 8000)
-
-    # data
-    h_data = ROOT.TH1D(f"h_data_{seed}_{ch}", f"h_data_{seed}_{ch}", nbins, 4000, 8000)
-    h_data_comb = ROOT.TH1D(f"h_data_comb_{seed}_{ch}", f"h_data_comb_{seed}_{ch}", nbins, 4000, 8000)
-    if(BF_sig != 0):
-        h_data_sig = ROOT.TH1D(f"h_data_sig_{seed}_{ch}", f"h_data_sig_{seed}_{ch}", nbins, 4000, 8000)
-    if(add_physics_backgrounds):
-        h_data_BDDKp = ROOT.TH1D(f"h_data_BDDKp_{seed}_{ch}", f"h_data_BDDKp_{seed}_{ch}", nbins, 4000, 8000)
-
     np.random.seed(seed)
-    if(validate_fit):
-        # Vary the templates within their statistical uncertainties
-        toy_counts = np.array([np.random.poisson( h_comb.GetBinContent(i+1)*h_comb.GetEntries() ) for i in range(nbins)])
-        for i, count in enumerate(toy_counts):
-            h_comb_varied.SetBinContent(i+1, count)
-        h_comb_varied.Sumw2()
+    if(apply_Gaussian_constraints):
+        a = max(0, np.random.normal(a, a_err))
+        b = max(0, np.random.normal(b, b_err))
+        C_BDDKp = max(0, np.random.normal(C_BDDKp, C_BDDKp_err))
 
-        if(BF_sig != 0):
-            toy_counts_sig = np.array([np.random.poisson( h_sig.GetBinContent(i+1)*h_sig.GetEntries() ) for i in range(nbins)])
-            for i, count in enumerate(toy_counts_sig):
-                h_sig_varied.SetBinContent(i+1, count)
-            h_sig_varied.Sumw2()
-
-        if(add_physics_backgrounds):
-            toy_counts_BDDKp = np.array([np.random.poisson( h_BDDKp.GetBinContent(i+1)*h_BDDKp.GetEntries() ) for i in range(nbins)])
-            for i, count in enumerate(toy_counts_BDDKp):
-                h_BDDKp_varied.SetBinContent(i+1, count)
-            h_BDDKp_varied.Sumw2()
-
-        # Generate toy data from the varied templates
-        # Combinatorial
-        if(fit_name == "all_events"):
-            N_comb = norm_parameters[0]
-        else:
-            eps_comb = max(0, np.random.normal(eps_comb, eps_comb_err))
-            N_comb = norm_parameters[0]*eps_comb
-
-        toy_counts_1 = np.array([np.random.poisson( h_comb_varied.GetBinContent(i+1)*(N_comb/h_comb_varied.Integral()) ) for i in range(nbins)])
-        for i, count in enumerate(toy_counts_1):
-            h_data_comb.SetBinContent(i+1, count)
-        h_data_comb.Sumw2()
-
-        # Physics backgrounds
-        if(add_physics_backgrounds):
-            C_BDDKp = max(0, np.random.normal(C_BDDKp, C_BDDKp_err))
-            b = max(0, np.random.normal(b, b_err))
-
-            if(fit_name == "all_events"):
-                N_BDDKp = C_BDDKp*b
-            else:
-                eps_BDDKp = max(0, np.random.normal(eps_BDDKp, eps_BDDKp_err))   
-                N_BDDKp = C_BDDKp*b*eps_BDDKp
-
-            toy_counts_BDDKp_1 = np.array([np.random.poisson( h_BDDKp_varied.GetBinContent(i+1)*( N_BDDKp/h_BDDKp_varied.Integral()) ) for i in range(nbins)])
-            for i, count in enumerate(toy_counts_BDDKp_1):
-                h_data_BDDKp.SetBinContent(i+1, count)
-            h_data_BDDKp.Sumw2()
-
-        # Signal
-        if(BF_sig != 0):
-            a = max(0, np.random.normal(a, a_err))
-            if(not add_physics_backgrounds):
-                b = max(0, np.random.normal(b, b_err))
-
-            if(fit_name == "all_events"):
-                nsig = BF_sig*a*b
-            else:
-                eps_sig = max(0, np.random.normal(eps_sig, eps_sig_err))
-                nsig = BF_sig*a*b*eps_sig
-
-            toy_counts_sig_1 = np.array([np.random.poisson( h_sig_varied.GetBinContent(i+1)*(nsig/h_sig_varied.Integral()) ) for i in range(nbins)])
-            for i, count in enumerate(toy_counts_sig_1):
-                h_data_sig.SetBinContent(i+1, count)
-            h_data_sig.Sumw2()
-
+    if(fit_name == "all_events"):
+        n_channels = 1
     else:
-        h_data_comb = h_comb.Clone("h_data_comb")
+        n_channels = 3
+
+    histo_data = []
+    for i in range(n_channels):
         if(fit_name == "all_events"):
-            N_comb = norm_parameters[0]
+            ch = i
         else:
-            N_comb = norm_parameters[0]*eps_comb
-        h_data_comb.Scale(N_comb)
+            ch = i+1
 
+        h_sig = nominal_templates[i][0]  
+        h_comb = nominal_templates[i][1]  
+        h_BDDKp = nominal_templates[i][2]
+        nbins = h_sig.GetNbinsX()
+
+        # [eps_sig, eps_comb, eps_BDDKp, eps_BuDDK0, eps_BuDD]
+        eps_sig, eps_sig_err = error_category_efficiency(norm_parameters[4][0], norm_parameters_errors[4][0], ch)
+        eps_comb, eps_comb_err = error_category_efficiency(norm_parameters[4][1], norm_parameters_errors[4][1], ch)
+        eps_BDDKp, eps_BDDKp_err = error_category_efficiency(norm_parameters[4][2], norm_parameters_errors[4][2], ch)
+
+        # varied templates
+        h_comb_varied = ROOT.TH1D(f"h_comb_varied_{seed}_{ch}", f"h_comb_varied_{seed}_{ch}", nbins, 4000, 8000)
         if(BF_sig != 0):
-            h_data_sig = h_sig.Clone("h_data_sig")
-            if(fit_name == "all_events"):
-                nsig = BF_sig*a*b
-            else:
-                nsig = BF_sig*a*b*eps_sig
-            h_data_sig.Scale(nsig)
-
+            h_sig_varied = ROOT.TH1D(f"h_sig_varied_{seed}_{ch}", f"h_sig_varied_{seed}_{ch}", nbins, 4000, 8000)
         if(add_physics_backgrounds):
-            h_data_BDDKp = h_BDDKp.Clone("h_data_BDDKp")
-            if(fit_name == "all_events"):
-                N_BDDKp = C_BDDKp*b
-            else:
-                N_BDDKp = C_BDDKp*b*eps_BDDKp
-            h_data_BDDKp.Scale(N_BDDKp)
+            h_BDDKp_varied = ROOT.TH1D(f"h_BDDKp_varied_{seed}_{ch}", f"h_BDDKp_varied_{seed}_{ch}", nbins, 4000, 8000)
 
-    h_data.Sumw2()
-    h_data.Add(h_data_comb)
-    if(BF_sig != 0):
-        h_data.Add(h_data_sig)
-    if(add_physics_backgrounds):
-        h_data.Add(h_data_BDDKp)
+        # data
+        h_data = ROOT.TH1D(f"h_data_{seed}_{ch}", f"h_data_{seed}_{ch}", nbins, 4000, 8000)
+        h_data_comb = ROOT.TH1D(f"h_data_comb_{seed}_{ch}", f"h_data_comb_{seed}_{ch}", nbins, 4000, 8000)
+        if(BF_sig != 0):
+            h_data_sig = ROOT.TH1D(f"h_data_sig_{seed}_{ch}", f"h_data_sig_{seed}_{ch}", nbins, 4000, 8000)
+        if(add_physics_backgrounds):
+            h_data_BDDKp = ROOT.TH1D(f"h_data_BDDKp_{seed}_{ch}", f"h_data_BDDKp_{seed}_{ch}", nbins, 4000, 8000)
 
-    return h_data
+        if(validate_fit):
+            # Vary the templates within their statistical uncertainties
+            toy_counts = np.array([np.random.poisson( h_comb.GetBinContent(i+1)*h_comb.GetEntries() ) for i in range(nbins)])
+            for i, count in enumerate(toy_counts):
+                h_comb_varied.SetBinContent(i+1, count)
+            h_comb_varied.Sumw2()
+
+            if(BF_sig != 0):
+                toy_counts_sig = np.array([np.random.poisson( h_sig.GetBinContent(i+1)*h_sig.GetEntries() ) for i in range(nbins)])
+                for i, count in enumerate(toy_counts_sig):
+                    h_sig_varied.SetBinContent(i+1, count)
+                h_sig_varied.Sumw2()
+
+            if(add_physics_backgrounds):
+                toy_counts_BDDKp = np.array([np.random.poisson( h_BDDKp.GetBinContent(i+1)*h_BDDKp.GetEntries() ) for i in range(nbins)])
+                for i, count in enumerate(toy_counts_BDDKp):
+                    h_BDDKp_varied.SetBinContent(i+1, count)
+                h_BDDKp_varied.Sumw2()
+
+            # Generate toy data from the varied templates
+            # Combinatorial
+            if(fit_name == "error_categories"):
+                if(apply_Gaussian_constraints):
+                    eps_comb = max(0, np.random.normal(eps_comb, eps_comb_err))
+                N_comb_varied = N_comb*eps_comb
+
+            toy_counts_1 = np.array([np.random.poisson( h_comb_varied.GetBinContent(i+1)*(N_comb_varied/h_comb_varied.Integral()) ) for i in range(nbins)])
+            for i, count in enumerate(toy_counts_1):
+                h_data_comb.SetBinContent(i+1, count)
+            h_data_comb.Sumw2()
+
+            # Physics backgrounds
+            if(add_physics_backgrounds):
+                if(fit_name == "all_events"):
+                    N_BDDKp_varied = C_BDDKp*b
+                else:
+                    if(apply_Gaussian_constraints):
+                        eps_BDDKp = max(0, np.random.normal(eps_BDDKp, eps_BDDKp_err))   
+                    N_BDDKp_varied = C_BDDKp*b*eps_BDDKp
+
+                toy_counts_BDDKp_1 = np.array([np.random.poisson( h_BDDKp_varied.GetBinContent(i+1)*(N_BDDKp_varied/h_BDDKp_varied.Integral())) for i in range(nbins)])
+                for i, count in enumerate(toy_counts_BDDKp_1):
+                    h_data_BDDKp.SetBinContent(i+1, count)
+                h_data_BDDKp.Sumw2()
+
+            # Signal
+            if(BF_sig != 0):
+                if(fit_name == "all_events"):
+                    nsig_varied = BF_sig*a*b
+                else:
+                    if(apply_Gaussian_constraints):
+                        eps_sig = max(0, np.random.normal(eps_sig, eps_sig_err))
+                    nsig_varied = BF_sig*a*b*eps_sig
+
+                toy_counts_sig_1 = np.array([np.random.poisson( h_sig_varied.GetBinContent(i+1)*(nsig_varied/h_sig_varied.Integral()) ) for i in range(nbins)])
+                for i, count in enumerate(toy_counts_sig_1):
+                    h_data_sig.SetBinContent(i+1, count)
+                h_data_sig.Sumw2()
+
+        else:
+            h_data_comb = h_comb.Clone("h_data_comb")
+            if(fit_name == "error_categories"):
+                N_comb_varied = N_comb*eps_comb
+            h_data_comb.Scale(N_comb_varied)
+
+            if(BF_sig != 0):
+                h_data_sig = h_sig.Clone("h_data_sig")
+                if(fit_name == "all_events"):
+                    nsig_varied = BF_sig*a*b
+                else:
+                    nsig_varied = BF_sig*a*b*eps_sig
+                h_data_sig.Scale(nsig_varied)
+
+            if(add_physics_backgrounds):
+                h_data_BDDKp = h_BDDKp.Clone("h_data_BDDKp")
+                if(fit_name == "all_events"):
+                    N_BDDKp_varied = C_BDDKp*b
+                else:
+                    N_BDDKp_varied = C_BDDKp*b*eps_BDDKp
+                h_data_BDDKp.Scale(N_BDDKp_varied)
+
+        h_data.Sumw2()
+        h_data.Add(h_data_comb)
+        if(BF_sig != 0):
+            h_data.Add(h_data_sig)
+        if(add_physics_backgrounds):
+            h_data.Add(h_data_BDDKp)
+
+        histo_data.append(h_data)
+
+    return histo_data
 
 
 def convert_histogram_to_array(histograms, histogram_errors):
@@ -234,12 +248,11 @@ def convert_histogram_to_array(histograms, histogram_errors):
     return data, data_err
 
 
-def convert_toy_data_histogram_to_array(histo):
-    nbins = histo.GetNbinsX()
-    return [histo.GetBinContent(i+1) for i in range(nbins)]
+def convert_toy_data_histogram_to_array(h_toy_data):
+    nbins = h_toy_data.GetNbinsX()
+    return [h_toy_data.GetBinContent(i+1) for i in range(nbins)]
 
-
-def write_json_file(fit_name, BF_sig, histo_toy_data, histo_data, histo_data_err, norm_parameters, norm_parameters_errors, add_physics_backgrounds):
+def write_json_file(fit_name, BF_sig, nominal_templates, error_templates, h_toy_data, norm_parameters, norm_parameters_errors, add_physics_backgrounds):
     ### Input values
     N_comb = float(norm_parameters[0]) # N_comb
     A = float(norm_parameters[1]) # A
@@ -307,13 +320,16 @@ def write_json_file(fit_name, BF_sig, histo_toy_data, histo_data, histo_data_err
         else:
             ch = i+1
 
-        data_sig = histo_data[i][0]
-        data_comb = histo_data[i][1]
-        data_BDDKp = histo_data[i][2]
+        # Templates
+        template_data, template_error = convert_histogram_to_array(nominal_templates[i], error_templates[i])
 
-        data_sig_err = histo_data_err[i][0]
-        data_comb_err = histo_data_err[i][1]
-        data_BDDKp_err = histo_data_err[i][2]
+        data_sig = template_data[0]
+        data_comb = template_data[1]
+        data_BDDKp = template_data[2]
+
+        data_sig_err = template_error[0]
+        data_comb_err = template_error[1]
+        data_BDDKp_err = template_error[2]
 
         if(fit_name == "error_categories"):
             eps_sig, eps_sig_err = error_category_efficiency(norm_parameters[4][0], norm_parameters_errors[4][0],ch)
@@ -345,17 +361,25 @@ def write_json_file(fit_name, BF_sig, histo_toy_data, histo_data, histo_data_err
                 add_BDDKp = True
 
         # Modifiers 
-        sig_modifiers = [{"data": None, "name": "BF_sig", "type": "normfactor"}, {"data": None, "name": "a", "type": "normfactor"}, {"data": None, "name": "b", "type": "normfactor"}, {"data": {"hi": upward_a, "lo": downward_a}, "name": "a_syst", "type": "normsys"}, {"data": {"hi": upward_b, "lo": downward_b}, "name": "b_syst", "type": "normsys"}]
+        sig_modifiers = [{"data": None, "name": "BF_sig", "type": "normfactor"}, {"data": None, "name": "a", "type": "normfactor"}, {"data": None, "name": "b", "type": "normfactor"}]
         comb_modifiers = [{"data": None, "name": "N_comb", "type": "normfactor"}]   
-        BDDKp_modifiers = [{"data": None, "name": "C_BDDKp", "type": "normfactor"}, {"data": None, "name": "b", "type": "normfactor"}, {"data": {"hi": upward_BDDKp, "lo": downward_BDDKp}, "name": "C_BDDKp_syst", "type": "normsys"}, {"data": {"hi": upward_b, "lo": downward_b}, "name": "b_syst", "type": "normsys"}]                 
+        BDDKp_modifiers = [{"data": None, "name": "C_BDDKp", "type": "normfactor"}, {"data": None, "name": "b", "type": "normfactor"}]
         
+        if(apply_Gaussian_constraints):
+            sig_modifiers.append({"data": {"hi": upward_a, "lo": downward_a}, "name": "a_syst", "type": "normsys"})    
+            sig_modifiers.append({"data": {"hi": upward_b, "lo": downward_b}, "name": "b_syst", "type": "normsys"})
+            BDDKp_modifiers.append({"data": {"hi": upward_BDDKp, "lo": downward_BDDKp}, "name": "C_BDDKp_syst", "type": "normsys"})
+            BDDKp_modifiers.append({"data": {"hi": upward_b, "lo": downward_b}, "name": "b_syst", "type": "normsys"})
+
         if(fit_name == "error_categories"):
             sig_modifiers.append({"data": None, "name": f"eps_sig_{ch}", "type": "normfactor"}) 
-            sig_modifiers.append({"data": {"hi": upward_eps_sig, "lo": downward_eps_sig}, "name": f"eps_sig_{ch}_syst", "type": "normsys"})
             comb_modifiers.append({"data": None, "name": f"eps_comb_{ch}", "type": "normfactor"})
-            comb_modifiers.append({"data": {"hi": upward_eps_comb, "lo": downward_eps_comb}, "name": f"eps_comb_{ch}_syst", "type": "normsys"})
             BDDKp_modifiers.append({"data": None, "name": f"eps_BDDKp_{ch}", "type": "normfactor"})
-            BDDKp_modifiers.append({"data": {"hi": upward_eps_BDDKp, "lo": downward_eps_BDDKp}, "name": f"eps_BDDKp_{ch}_syst", "type": "normsys"})
+
+            if(apply_Gaussian_constraints):
+                sig_modifiers.append({"data": {"hi": upward_eps_sig, "lo": downward_eps_sig}, "name": f"eps_sig_{ch}_syst", "type": "normsys"})
+                comb_modifiers.append({"data": {"hi": upward_eps_comb, "lo": downward_eps_comb}, "name": f"eps_comb_{ch}_syst", "type": "normsys"})
+                BDDKp_modifiers.append({"data": {"hi": upward_eps_BDDKp, "lo": downward_eps_BDDKp}, "name": f"eps_BDDKp_{ch}_syst", "type": "normsys"})
 
         if(add_statistical_error):
             sig_modifiers.append({"name": f"shapesys_sig_{ch}", "data": data_sig_err, "type": "shapesys"})
@@ -379,10 +403,10 @@ def write_json_file(fit_name, BF_sig, histo_toy_data, histo_data, histo_data_err
 
     if(fit_name == "all_events"):
         channels = [{"name": "AllEvents", "samples": channel_samples[0]}]
-        observations = [{"name": "AllEvents", "data": histo_toy_data[0]}]
+        observations = [{"name": "AllEvents", "data": convert_toy_data_histogram_to_array(h_toy_data[0])}]
     else:
         channels = [{"name": "Channel_1", "samples": channel_samples[0]}, {"name": "Channel_2", "samples": channel_samples[1]}, {"name": "Channel_3", "samples": channel_samples[2]}]
-        observations = [{"name": "Channel_1", "data": histo_toy_data[0]}, {"name": "Channel_2", "data": histo_toy_data[1]}, {"name": "Channel_3", "data": histo_toy_data[2]}]
+        observations = [{"name": "Channel_1", "data": convert_toy_data_histogram_to_array(h_toy_data[0])}, {"name": "Channel_2", "data": convert_toy_data_histogram_to_array(h_toy_data[1])}, {"name": "Channel_3", "data": convert_toy_data_histogram_to_array(h_toy_data[2])}]
 
     spec = {
         "channels": channels,
@@ -775,9 +799,6 @@ def toy_studies(fit_name, BF_sig, bdt1, bdt2, model, N_fail, toy_fit_values, toy
 
     N_comb = expected_values[comb_index]
 
-    print("BF_sig toys ", BF_sig)
-    print("N_comb toys ", N_comb)
-
     # BF pull
     pull = (BF_toys - BF_sig)/BF_toys_err
     (mu_pull, sigma_pull) = norm.fit(pull)
@@ -917,23 +938,18 @@ def main(argv):
     norm_parameters = [N_comb, A, B, C, eps_category]
     norm_parameters_errors = [0, A_err, B_err, C_err, eps_category_err]
 
+    # Retrieve template histograms
     if(fit_name == "all_events"):
         histograms, histogram_errors = retrieve_histograms(f,f1,0)
-        histo_data, histo_data_err = convert_histogram_to_array(histograms, histogram_errors)
-
-        histo_data = [histo_data]
-        histo_data_err = [histo_data_err]
+        nominal_templates  = [histograms]
+        error_templates    = [histogram_errors]
     else:
         histograms_1, histogram_errors_1 = retrieve_histograms(f,f1,1)
         histograms_2, histogram_errors_2 = retrieve_histograms(f,f1,2)
         histograms_3, histogram_errors_3 = retrieve_histograms(f,f1,3)
 
-        histo_data_1, histo_data_err_1 = convert_histogram_to_array(histograms_1, histogram_errors_1)
-        histo_data_2, histo_data_err_2 = convert_histogram_to_array(histograms_2, histogram_errors_2)
-        histo_data_3, histo_data_err_3 = convert_histogram_to_array(histograms_3, histogram_errors_3)
-
-        histo_data = [histo_data_1, histo_data_2, histo_data_3]
-        histo_data_err = [histo_data_err_1, histo_data_err_2, histo_data_err_3]
+        nominal_templates = [histograms_1, histograms_2, histograms_3]
+        error_templates = [histogram_errors_1, histogram_errors_2, histogram_errors_3]
 
     end = time.time()
     print(f"Elapsed time (retrieving files): {end - start:.2f} seconds")
@@ -954,28 +970,11 @@ def main(argv):
                 save_plot = False
 
             # Generate toy data
-            if(fit_name == "all_events"):
-                h_data = generate_toy_data(fit_name, histograms, norm_parameters, norm_parameters_errors, seed, BF_sig, add_physics_backgrounds, 0)
-                histo_toy_data = convert_toy_data_histogram_to_array(h_data)
-
-                h_data = [h_data]
-                histo_toy_data = [histo_toy_data]
-            else:
-                h_data_1 = generate_toy_data(fit_name, histograms_1, norm_parameters, norm_parameters_errors, seed, BF_sig, add_physics_backgrounds, 1)
-                h_data_2 = generate_toy_data(fit_name, histograms_2, norm_parameters, norm_parameters_errors, seed, BF_sig, add_physics_backgrounds, 2)
-                h_data_3 = generate_toy_data(fit_name, histograms_3, norm_parameters, norm_parameters_errors, seed, BF_sig, add_physics_backgrounds, 3)
-
-                histo_toy_data_1 = convert_toy_data_histogram_to_array(h_data_1)
-                histo_toy_data_2 = convert_toy_data_histogram_to_array(h_data_2)
-                histo_toy_data_3 = convert_toy_data_histogram_to_array(h_data_3)
-
-                h_data = [h_data_1, h_data_2, h_data_3]
-                histo_toy_data = [histo_toy_data_1, histo_toy_data_2, histo_toy_data_3]
-            
-            spec = write_json_file(fit_name, BF_sig, histo_toy_data, histo_data, histo_data_err, norm_parameters, norm_parameters_errors, add_physics_backgrounds)
+            h_toy_data = generate_toy_data(fit_name, BF_sig, seed, nominal_templates, norm_parameters, norm_parameters_errors, add_physics_backgrounds)
+            spec = write_json_file(fit_name, BF_sig, nominal_templates, error_templates, h_toy_data, norm_parameters, norm_parameters_errors, add_physics_backgrounds)
 
             try:
-                fit_pars, fit_errors = fit(fit_name, BF_sig, bdt1, bdt2, h_data, spec, seed, save_plot, False)
+                fit_pars, fit_errors = fit(fit_name, BF_sig, bdt1, bdt2, h_toy_data, spec, seed, save_plot, False)
 
                 toy_fit_values.append(fit_pars)
                 toy_fit_errors.append(fit_errors)
@@ -990,27 +989,10 @@ def main(argv):
 
     else: # do not vary the data, run the CLs calculation
         # Generate toy data
-        if(fit_name == "all_events"):
-            h_data = generate_toy_data(fit_name, histograms, norm_parameters, norm_parameters_errors, 1000, BF_sig, add_physics_backgrounds, 0)
-            histo_toy_data = convert_toy_data_histogram_to_array(h_data)
+        h_toy_data = generate_toy_data(fit_name, BF_sig, 1000, nominal_templates, norm_parameters, norm_parameters_errors, add_physics_backgrounds)
+        spec = write_json_file(fit_name, BF_sig, nominal_templates, error_templates, h_toy_data, norm_parameters, norm_parameters_errors, add_physics_backgrounds)
 
-            h_data = [h_data]
-            histo_toy_data = [histo_toy_data]
-        else:
-            h_data_1 = generate_toy_data(fit_name, histograms_1, norm_parameters, norm_parameters_errors, 1000, BF_sig, add_physics_backgrounds, 1)
-            h_data_2 = generate_toy_data(fit_name, histograms_2, norm_parameters, norm_parameters_errors, 1000, BF_sig, add_physics_backgrounds, 2)
-            h_data_3 = generate_toy_data(fit_name, histograms_3, norm_parameters, norm_parameters_errors, 1000, BF_sig, add_physics_backgrounds, 3)
-
-            histo_toy_data_1 = convert_toy_data_histogram_to_array(h_data_1)
-            histo_toy_data_2 = convert_toy_data_histogram_to_array(h_data_2)
-            histo_toy_data_3 = convert_toy_data_histogram_to_array(h_data_3)
-
-            h_data = [h_data_1, h_data_2, h_data_3]
-            histo_toy_data = [histo_toy_data_1, histo_toy_data_2, histo_toy_data_3]
-        
-        spec = write_json_file(fit_name, BF_sig, histo_toy_data, histo_data, histo_data_err, norm_parameters, norm_parameters_errors, add_physics_backgrounds)
-
-        exp_limit = fit(fit_name, BF_sig, bdt1, bdt2, h_data, spec, 1000, True, True)
+        exp_limit = fit(fit_name, BF_sig, bdt1, bdt2, h_toy_data, spec, 1000, True, True)
         np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig:.1g}/fit_results/cls_limit_bdt1_{bdt1}_bdt2_{bdt2}.npy', exp_limit)
 
     end1 = time.time()
