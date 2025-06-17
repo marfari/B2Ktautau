@@ -13,9 +13,10 @@ from scipy.interpolate import griddata
 
 add_physics_backgrounds = True
 add_statistical_error = True
+apply_gaussian_constraints = True
 validate_fit = True
 
-n_toys = 1000
+n_toys = 1
 if(n_toys > 1000):
     validate_fit = False
 
@@ -53,7 +54,7 @@ def error_category_efficiency(epsilon, epsilon_error, ch):
         eps_1 = ufloat(eps_1, eps_err_1)
         eps_2 = ufloat(eps_2, eps_err_2)
 
-        eps_ufloat = 1 - eps_1 - eps_2
+        eps_ufloat = ufloat(1,0) - eps_1 - eps_2
 
         eps = eps_ufloat.nominal_value
         eps_err = eps_ufloat.std_dev
@@ -190,6 +191,7 @@ def generate_toy_data(fit_name, histograms, norm_parameters, norm_parameters_err
             else:
                 nsig = BF_sig*a*b*eps_sig
             h_data_sig.Scale(nsig)
+
         if(add_physics_backgrounds):
             h_data_BDDKp = h_BDDKp.Clone("h_data_BDDKp")
             if(fit_name == "all_events"):
@@ -238,7 +240,7 @@ def convert_toy_data_histogram_to_array(histo):
 
 
 def write_json_file(fit_name, BF_sig, histo_toy_data, histo_data, histo_data_err, norm_parameters, norm_parameters_errors, add_physics_backgrounds):
-    ### Inpute values
+    ### Input values
     N_comb = float(norm_parameters[0]) # N_comb
     A = float(norm_parameters[1]) # A
     B = float(norm_parameters[2]) # B
@@ -339,7 +341,7 @@ def write_json_file(fit_name, BF_sig, histo_toy_data, histo_data, histo_data_err
                 upward_eps_BDDKp = 1+(eps_BDDKp_err/eps_BDDKp)
                 downward_eps_BDDKp = 1-(eps_BDDKp_err/eps_BDDKp)
 
-            if(add_physics_backgrounds and (eps_BDDKp != 0) and (upward_eps_BDDKp < 2) and (downward_eps_BDDKp > 0) and (C_BDDKp != 0) and (upward_BDDKp < 2) and (downward_BDDKp > 0)):
+            if((fit_name == "error_categories") and add_physics_backgrounds and (eps_BDDKp != 0) and (upward_eps_BDDKp < 2) and (downward_eps_BDDKp > 0) and (C_BDDKp != 0) and (upward_BDDKp < 2) and (downward_BDDKp > 0)):
                 add_BDDKp = True
 
         # Modifiers 
@@ -821,48 +823,50 @@ def toy_studies(fit_name, BF_sig, bdt1, bdt2, model, N_fail, toy_fit_values, toy
             horizontalalignment='left',
             bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
-    if(fit_name == "all_events"):
-        pull_2 = (Nbkg_toys - N_comb)/Nbkg_toys_err
-        (mu_pull_2, sigma_pull_2) = norm.fit(pull_2)
-        n_2, bins_2, patches_2 = ax[0,1].hist( pull_2, bins=nbins)
-        xcenters_2 = (bins_2[:-1] + bins_2[1:]) / 2
-        ax[0,1].errorbar(xcenters_2, n_2, yerr=np.sqrt(n_2), ecolor='black', fmt='k.')
-        y_pull_2 = sum(n_2)*(bins_2[1] - bins_2[0])*norm.pdf( xcenters_2, mu_pull_2, sigma_pull_2)
-        ax[0,1].plot(xcenters_2, y_pull_2, 'r-', linewidth=2)
-        ax[0,1].set_xlabel("Pull: ($N_{bkg} - N_{bkg}^{expected}$)/error")
-        ax[0,1].set_ylabel(f"Entries / {nbins} bins")
-        chi2_2 = np.sum( ((n_2 - y_pull_2)**2) / y_pull_2) / (nbins - 2)
-        ax[0,1].set_title(f"Background yield pull: $\chi^2$/ndf = {chi2_2:.3g}")
-        ax[0,1].axvline(0, color='black', linestyle='--', linewidth=2)
-        ax[0,1].text(0.05, 0.95, "From fit \n $\mu$ = {:.4f} $\pm$ {:.4f} \n $\sigma$ = {:.4f} $\pm$ {:.4f}".format( mu_pull_2, sigma_pull_2/np.sqrt(N), sigma_pull_2, sigma_pull_2/np.sqrt(2*N)),
-                transform=ax[0,1].transAxes,
-                fontsize=12,
-                verticalalignment='top',
-                horizontalalignment='left',
-                bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
+    # N_comb pull
+    pull_2 = (Nbkg_toys - N_comb)/Nbkg_toys_err
+    (mu_pull_2, sigma_pull_2) = norm.fit(pull_2)
+    n_2, bins_2, patches_2 = ax[0,1].hist( pull_2, bins=nbins)
+    xcenters_2 = (bins_2[:-1] + bins_2[1:]) / 2
+    ax[0,1].errorbar(xcenters_2, n_2, yerr=np.sqrt(n_2), ecolor='black', fmt='k.')
+    y_pull_2 = sum(n_2)*(bins_2[1] - bins_2[0])*norm.pdf( xcenters_2, mu_pull_2, sigma_pull_2)
+    ax[0,1].plot(xcenters_2, y_pull_2, 'r-', linewidth=2)
+    ax[0,1].set_xlabel("Pull: ($N_{bkg} - N_{bkg}^{expected}$)/error")
+    ax[0,1].set_ylabel(f"Entries / {nbins} bins")
+    chi2_2 = np.sum( ((n_2 - y_pull_2)**2) / y_pull_2) / (nbins - 2)
+    ax[0,1].set_title(f"Background yield pull: $\chi^2$/ndf = {chi2_2:.3g}")
+    ax[0,1].axvline(0, color='black', linestyle='--', linewidth=2)
+    ax[0,1].text(0.05, 0.95, "From fit \n $\mu$ = {:.4f} $\pm$ {:.4f} \n $\sigma$ = {:.4f} $\pm$ {:.4f}".format( mu_pull_2, sigma_pull_2/np.sqrt(N), sigma_pull_2, sigma_pull_2/np.sqrt(2*N)),
+            transform=ax[0,1].transAxes,
+            fontsize=12,
+            verticalalignment='top',
+            horizontalalignment='left',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
-        ax[1,1].hist(Nbkg_toys, bins=nbins)
-        ax[1,1].set_xlabel("$N_{bkg}$")
-        ax[1,1].set_ylabel(f"Entries / {nbins} bins")
-        ax[1,1].set_title("Background yield")
-        ax[1,1].axvline(N_comb, color='black', linestyle='--', linewidth=2)
-        ax[1,1].text(0.05, 0.95, "From histogram \n $\mu$ = {:.1e} \n $\sigma$ = {:.1e}".format( np.mean(Nbkg_toys), np.std(Nbkg_toys) ),
-                transform=ax[1,1].transAxes,
-                fontsize=12,
-                verticalalignment='top',
-                horizontalalignment='left',
-                bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
+    # N_comb
+    ax[1,1].hist(Nbkg_toys, bins=nbins)
+    ax[1,1].set_xlabel("$N_{bkg}$")
+    ax[1,1].set_ylabel(f"Entries / {nbins} bins")
+    ax[1,1].set_title("Background yield")
+    ax[1,1].axvline(N_comb, color='black', linestyle='--', linewidth=2)
+    ax[1,1].text(0.05, 0.95, "From histogram \n $\mu$ = {:.1e} \n $\sigma$ = {:.1e}".format( np.mean(Nbkg_toys), np.std(Nbkg_toys) ),
+            transform=ax[1,1].transAxes,
+            fontsize=12,
+            verticalalignment='top',
+            horizontalalignment='left',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
-        ax[2,1].hist(Nbkg_toys_err, bins=nbins)
-        ax[2,1].set_xlabel("$N_{bkg}$ error")
-        ax[2,1].set_ylabel(f"Entries / {nbins} bins")
-        ax[2,1].set_title("Background yield error")
-        ax[2,1].text(0.05, 0.95, "From histogram \n $\mu$ = {:.1e} \n $\sigma$ = {:.1e}".format( np.mean(Nbkg_toys_err), np.std(Nbkg_toys_err) ),
-                transform=ax[2,1].transAxes,
-                fontsize=12,
-                verticalalignment='top',
-                horizontalalignment='left',
-                bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
+    # N_comb error
+    ax[2,1].hist(Nbkg_toys_err, bins=nbins)
+    ax[2,1].set_xlabel("$N_{bkg}$ error")
+    ax[2,1].set_ylabel(f"Entries / {nbins} bins")
+    ax[2,1].set_title("Background yield error")
+    ax[2,1].text(0.05, 0.95, "From histogram \n $\mu$ = {:.1e} \n $\sigma$ = {:.1e}".format( np.mean(Nbkg_toys_err), np.std(Nbkg_toys_err) ),
+            transform=ax[2,1].transAxes,
+            fontsize=12,
+            verticalalignment='top',
+            horizontalalignment='left',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
     if(fit_name == "all_events"):
         fig.suptitle(f"Fit to all events ({N_fail}/{n_toys} fits fail) \n BDT1 = {bdt1} | BDT2 = {bdt2}", fontsize=24)
