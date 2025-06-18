@@ -10,15 +10,17 @@ from scipy.stats import norm
 from uncertainties import ufloat
 from pyhf.contrib.viz import brazil
 from scipy.interpolate import griddata
+import re
 import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-add_physics_backgrounds = False
+add_physics_backgrounds = True
 add_statistical_error = True
-apply_Gaussian_constraints = False
-validate_fit = True
+apply_gaussian_constraints = True
+toy_data_generation_approach = 2
+validate_fit = False
 
-n_toys = 1000
+n_toys = 1
 if(n_toys > 1000):
     validate_fit = False
 
@@ -67,6 +69,31 @@ def error_category_efficiency(epsilon, epsilon_error, ch):
     return eps, eps_err
 
 
+def convert_histogram_to_array(histograms, histogram_errors):
+    h_sig = histograms[0]  
+    h_comb = histograms[1]  
+    h_BDDKp = histograms[2]
+
+    h_sig_err = histogram_errors[0]  
+    h_comb_err = histogram_errors[1]  
+    h_BDDKp_err = histogram_errors[2]
+
+    nbins = h_sig.GetNbinsX()
+    data_sig = [h_sig.GetBinContent(i+1) for i in range(nbins)]
+    data_comb = [h_comb.GetBinContent(i+1) for i in range(nbins)]
+    data_BDDKp = [h_BDDKp.GetBinContent(i+1) for i in range(nbins)]
+
+    data_sig_err = [h_sig_err.GetBinContent(i+1) for i in range(nbins)]
+    data_comb_err = [h_comb_err.GetBinContent(i+1) for i in range(nbins)]
+    data_BDDKp_err = [h_BDDKp_err.GetBinContent(i+1) for i in range(nbins)]
+
+    data = [data_sig, data_comb, data_BDDKp]
+    data_err = [data_sig_err, data_comb_err, data_BDDKp_err]
+
+    return data, data_err
+
+
+############################################################################ FOR APPROACH I ##############################################################################################################
 def generate_toy_data(fit_name, BF_sig, seed, nominal_templates, norm_parameters, norm_parameters_errors, add_physics_backgrounds):
     ######################### Fit normalisations
     N_comb = float(norm_parameters[0]) # N_comb
@@ -89,7 +116,7 @@ def generate_toy_data(fit_name, BF_sig, seed, nominal_templates, norm_parameters
     b_err = b_ufloat.std_dev
 
     np.random.seed(seed)
-    if(apply_Gaussian_constraints):
+    if(apply_gaussian_constraints):
         a = max(0, np.random.normal(a, a_err))
         b = max(0, np.random.normal(b, b_err))
         C_BDDKp = max(0, np.random.normal(C_BDDKp, C_BDDKp_err))
@@ -152,8 +179,10 @@ def generate_toy_data(fit_name, BF_sig, seed, nominal_templates, norm_parameters
 
             # Generate toy data from the varied templates
             # Combinatorial
-            if(fit_name == "error_categories"):
-                if(apply_Gaussian_constraints):
+            if(fit_name == "all_events"):
+                N_comb_varied = N_comb
+            else:
+                if(apply_gaussian_constraints):
                     eps_comb = max(0, np.random.normal(eps_comb, eps_comb_err))
                 N_comb_varied = N_comb*eps_comb
 
@@ -167,7 +196,7 @@ def generate_toy_data(fit_name, BF_sig, seed, nominal_templates, norm_parameters
                 if(fit_name == "all_events"):
                     N_BDDKp_varied = C_BDDKp*b
                 else:
-                    if(apply_Gaussian_constraints):
+                    if(apply_gaussian_constraints):
                         eps_BDDKp = max(0, np.random.normal(eps_BDDKp, eps_BDDKp_err))   
                     N_BDDKp_varied = C_BDDKp*b*eps_BDDKp
 
@@ -181,7 +210,7 @@ def generate_toy_data(fit_name, BF_sig, seed, nominal_templates, norm_parameters
                 if(fit_name == "all_events"):
                     nsig_varied = BF_sig*a*b
                 else:
-                    if(apply_Gaussian_constraints):
+                    if(apply_gaussian_constraints):
                         eps_sig = max(0, np.random.normal(eps_sig, eps_sig_err))
                     nsig_varied = BF_sig*a*b*eps_sig
 
@@ -192,7 +221,9 @@ def generate_toy_data(fit_name, BF_sig, seed, nominal_templates, norm_parameters
 
         else:
             h_data_comb = h_comb.Clone("h_data_comb")
-            if(fit_name == "error_categories"):
+            if(fit_name == "all_events"):
+                N_comb_varied = N_comb
+            else:
                 N_comb_varied = N_comb*eps_comb
             h_data_comb.Scale(N_comb_varied)
 
@@ -224,36 +255,20 @@ def generate_toy_data(fit_name, BF_sig, seed, nominal_templates, norm_parameters
     return histo_data
 
 
-def convert_histogram_to_array(histograms, histogram_errors):
-    h_sig = histograms[0]  
-    h_comb = histograms[1]  
-    h_BDDKp = histograms[2]
-
-    h_sig_err = histogram_errors[0]  
-    h_comb_err = histogram_errors[1]  
-    h_BDDKp_err = histogram_errors[2]
-
-    nbins = h_sig.GetNbinsX()
-    data_sig = [h_sig.GetBinContent(i+1) for i in range(nbins)]
-    data_comb = [h_comb.GetBinContent(i+1) for i in range(nbins)]
-    data_BDDKp = [h_BDDKp.GetBinContent(i+1) for i in range(nbins)]
-
-    data_sig_err = [h_sig_err.GetBinContent(i+1) for i in range(nbins)]
-    data_comb_err = [h_comb_err.GetBinContent(i+1) for i in range(nbins)]
-    data_BDDKp_err = [h_BDDKp_err.GetBinContent(i+1) for i in range(nbins)]
-
-    data = [data_sig, data_comb, data_BDDKp]
-    data_err = [data_sig_err, data_comb_err, data_BDDKp_err]
-
-    return data, data_err
-
-
 def convert_toy_data_histogram_to_array(h_toy_data):
     nbins = h_toy_data.GetNbinsX()
     return [h_toy_data.GetBinContent(i+1) for i in range(nbins)]
 
-def write_json_file(fit_name, BF_sig, nominal_templates, error_templates, h_toy_data, norm_parameters, norm_parameters_errors, add_physics_backgrounds):
-    ### Input values
+
+##########################################################################################################################################################################################################
+
+
+############################################################################ FOR APPROACH II ##############################################################################################################
+# This function builds the pyhf model; it defines the samples w/ modifiers and parameters used
+# Model changes depending on whether we want to add cocktail MCs or apply Gaussian constraints on some parameters
+# It retunrs also dummy observations filled with zeros but with the correct shape to build the spec to use for the toy data generation 
+def build_model(fit_name, BF_sig, nominal_templates, error_templates, norm_parameters, norm_parameters_errors, add_physics_backgrounds, apply_gaussian_constraints, seed, toy_data_generation_approach):
+    ### NormFactor expected values
     N_comb = float(norm_parameters[0]) # N_comb
     A = float(norm_parameters[1]) # A
     B = float(norm_parameters[2]) # B
@@ -272,12 +287,6 @@ def write_json_file(fit_name, BF_sig, nominal_templates, error_templates, h_toy_
     b_ufloat = 1/B_ufloat
     b = b_ufloat.nominal_value
     b_err = b_ufloat.std_dev
-
-    # print("a = ", a, " +/- ", a_err)
-    # print("b = ", b, " +/- ", b_err)
-    # print("C = ", C_BDDKp, " +/- ", C_BDDKp_err)
-    # print("N_BDDKp = ", C_BDDKp*b)
-    # print("c = ", a*b)
 
     ### Values for Gaussian constraints
     if(a == 0):
@@ -365,21 +374,21 @@ def write_json_file(fit_name, BF_sig, nominal_templates, error_templates, h_toy_
         comb_modifiers = [{"data": None, "name": "N_comb", "type": "normfactor"}]   
         BDDKp_modifiers = [{"data": None, "name": "C_BDDKp", "type": "normfactor"}, {"data": None, "name": "b", "type": "normfactor"}]
         
-        if(apply_Gaussian_constraints):
-            sig_modifiers.append({"data": {"hi": upward_a, "lo": downward_a}, "name": "a_syst", "type": "normsys"})    
-            sig_modifiers.append({"data": {"hi": upward_b, "lo": downward_b}, "name": "b_syst", "type": "normsys"})
-            BDDKp_modifiers.append({"data": {"hi": upward_BDDKp, "lo": downward_BDDKp}, "name": "C_BDDKp_syst", "type": "normsys"})
-            BDDKp_modifiers.append({"data": {"hi": upward_b, "lo": downward_b}, "name": "b_syst", "type": "normsys"})
+        if(apply_gaussian_constraints):
+            sig_modifiers.append({"data": {"hi": upward_a, "lo": downward_a}, "name": "alpha_a", "type": "normsys"})    
+            sig_modifiers.append({"data": {"hi": upward_b, "lo": downward_b}, "name": "alpha_b", "type": "normsys"})
+            BDDKp_modifiers.append({"data": {"hi": upward_BDDKp, "lo": downward_BDDKp}, "name": "alpha_C", "type": "normsys"})
+            BDDKp_modifiers.append({"data": {"hi": upward_b, "lo": downward_b}, "name": "alpha_b", "type": "normsys"})
 
         if(fit_name == "error_categories"):
             sig_modifiers.append({"data": None, "name": f"eps_sig_{ch}", "type": "normfactor"}) 
             comb_modifiers.append({"data": None, "name": f"eps_comb_{ch}", "type": "normfactor"})
             BDDKp_modifiers.append({"data": None, "name": f"eps_BDDKp_{ch}", "type": "normfactor"})
 
-            if(apply_Gaussian_constraints):
-                sig_modifiers.append({"data": {"hi": upward_eps_sig, "lo": downward_eps_sig}, "name": f"eps_sig_{ch}_syst", "type": "normsys"})
-                comb_modifiers.append({"data": {"hi": upward_eps_comb, "lo": downward_eps_comb}, "name": f"eps_comb_{ch}_syst", "type": "normsys"})
-                BDDKp_modifiers.append({"data": {"hi": upward_eps_BDDKp, "lo": downward_eps_BDDKp}, "name": f"eps_BDDKp_{ch}_syst", "type": "normsys"})
+            if(apply_gaussian_constraints):
+                sig_modifiers.append({"data": {"hi": upward_eps_sig, "lo": downward_eps_sig}, "name": f"alpha_eps_sig_{ch}", "type": "normsys"})
+                comb_modifiers.append({"data": {"hi": upward_eps_comb, "lo": downward_eps_comb}, "name": f"alpha_eps_comb_{ch}", "type": "normsys"})
+                BDDKp_modifiers.append({"data": {"hi": upward_eps_BDDKp, "lo": downward_eps_BDDKp}, "name": f"alpha_eps_BDDKp_{ch}", "type": "normsys"})
 
         if(add_statistical_error):
             sig_modifiers.append({"name": f"shapesys_sig_{ch}", "data": data_sig_err, "type": "shapesys"})
@@ -401,50 +410,330 @@ def write_json_file(fit_name, BF_sig, nominal_templates, error_templates, h_toy_
     if(add_BDDKp):
         parameters.append({"bounds": [[-2*(C_BDDKp+1),2*(C_BDDKp+1)]], "fixed": True, "inits": [C_BDDKp], "name": "C_BDDKp"})
 
-    if(fit_name == "all_events"):
-        channels = [{"name": "AllEvents", "samples": channel_samples[0]}]
-        observations = [{"name": "AllEvents", "data": convert_toy_data_histogram_to_array(h_toy_data[0])}]
+    if(toy_data_generation_approach == 1):
+        h_toy_data = generate_toy_data(fit_name, BF_sig, seed, nominal_templates, norm_parameters, norm_parameters_errors, add_physics_backgrounds)
+
+        if(fit_name == "all_events"):
+            channels = [{"name": "AllEvents", "samples": channel_samples[0]}]
+            observations = [{"name": "AllEvents", "data": convert_toy_data_histogram_to_array(h_toy_data[0])}]
+        else:
+            channels = [{"name": "Channel_1", "samples": channel_samples[0]}, {"name": "Channel_2", "samples": channel_samples[1]}, {"name": "Channel_3", "samples": channel_samples[2]}]
+            observations = [{"name": "Channel_1", "data": convert_toy_data_histogram_to_array(h_toy_data[0])}, {"name": "Channel_2", "data": convert_toy_data_histogram_to_array(h_toy_data[1])}, {"name": "Channel_3", "data": convert_toy_data_histogram_to_array(h_toy_data[2])}]
+
+        spec = {
+            "channels": channels,
+            "measurements": [
+                {
+                    "config": {
+                        "parameters": parameters,
+                        "poi": "BF_sig"
+                    },
+                    "name": "MinimalConfiguration"
+                }
+            ],
+            "observations": observations,
+            "version": "1.0.0"}
+        
+        return spec
     else:
-        channels = [{"name": "Channel_1", "samples": channel_samples[0]}, {"name": "Channel_2", "samples": channel_samples[1]}, {"name": "Channel_3", "samples": channel_samples[2]}]
-        observations = [{"name": "Channel_1", "data": convert_toy_data_histogram_to_array(h_toy_data[0])}, {"name": "Channel_2", "data": convert_toy_data_histogram_to_array(h_toy_data[1])}, {"name": "Channel_3", "data": convert_toy_data_histogram_to_array(h_toy_data[2])}]
+        if(fit_name == "all_events"):
+            channels = [{"name": "AllEvents", "samples": channel_samples[0]}]
+            dummy_observations = [{"name": "AllEvents", "data": np.zeros(len(channel_samples[0]))}]
+        else:
+            channels = [{"name": "Channel_1", "samples": channel_samples[0]}, {"name": "Channel_2", "samples": channel_samples[1]}, {"name": "Channel_3", "samples": channel_samples[2]}]
+            dummy_observations = [{"name": "Channel_1", "data": np.zeros(len(channel_samples[0]))}, {"name": "Channel_2", "data": np.zeros(len(channel_samples[1]))}, {"name": "Channel_3", "data": np.zeros(len(channel_samples[2]))}]
+
+        return channels, parameters, dummy_observations
+
+
+# This functions generates the toy data for fit validation using the pyhf built in functions
+# It samples data from the pyhf mode built with the function 'build_model' (using dummy observations)
+# The numpy seed is set to 0 so that the results are reproducible 
+# The number of entries changes for each toy
+# This function returns also the number of bins in each channel which will useful later
+# CAREFUL: toy data contains both the measurements + auxiliary data 
+def make_toy_data(fit_name, channels, parameters, dummy_observations, nominal_templates, error_templates, seed):
+    np.random.seed(seed)
+
+    # observations is just a dummy filled with zeros
+    spec = {
+    "channels": channels,
+    "measurements": [
+        {
+            "config": {
+                "parameters": parameters,
+                "poi": "BF_sig"
+            },
+            "name": "MinimalConfiguration"
+        }
+    ],
+    "observations": dummy_observations,
+    "version": "1.0.0"}
+
+    workspace = pyhf.Workspace(spec)
+    model = workspace.model()
+
+    channel_nbins = model.config.channel_nbins
+    if(fit_name == "all_events"):
+        nbins = channel_nbins["AllEvents"]
+
+        template_data, template_error = convert_histogram_to_array(nominal_templates[0], error_templates[0])
+
+        data_sig = template_data[0]
+        data_comb = template_data[1]
+        data_BDDK = template_data[2]
+
+        data_sig_err = template_error[0]
+        data_comb_err = template_error[1]
+        data_BDDK_err = template_error[2]
+
+        sigma_rel_sig = np.array(data_sig_err)/np.array(data_sig)
+        sigma_rel_comb = np.array(data_comb_err)/np.array(data_comb)
+        sigma_rel_BDDK = np.array(data_BDDK_err)/np.array(data_BDDK)
+
+    else:
+        nbins_1 = channel_nbins["Channel_1"]
+        nbins_2 = channel_nbins["Channel_2"]
+        nbins_3 = channel_nbins["Channel_3"]
+        nbins = [nbins_1, nbins_2, nbins_3]
+
+        template_data_1, template_error_1 = convert_histogram_to_array(nominal_templates[0], error_templates[0])
+        template_data_2, template_error_2 = convert_histogram_to_array(nominal_templates[1], error_templates[1])
+        template_data_3, template_error_3 = convert_histogram_to_array(nominal_templates[2], error_templates[2])
+
+        data_sig_1 = template_data_1[0]
+        data_sig_2 = template_data_2[0]
+        data_sig_3 = template_data_3[0]
+
+        data_comb_1 = template_data_1[1]
+        data_comb_2 = template_data_2[1]
+        data_comb_3 = template_data_3[1]
+
+        data_BDDK_1 = template_data_1[2]
+        data_BDDK_2 = template_data_2[2]
+        data_BDDK_3 = template_data_3[2]
+
+        data_sig_err_1 = template_error_1[0]
+        data_sig_err_2 = template_error_2[0]
+        data_sig_err_3 = template_error_3[0]
+
+        data_comb_err_1 = template_error_1[1]
+        data_comb_err_2 = template_error_2[1]
+        data_comb_err_3 = template_error_3[1]
+
+        data_BDDK_err_1 = template_error_1[2]
+        data_BDDK_err_2 = template_error_2[2]
+        data_BDDK_err_3 = template_error_3[2]
+
+        sigma_rel_sig_1 = np.array(data_sig_err_1)/np.array(data_sig_1)
+        sigma_rel_sig_2 = np.array(data_sig_err_2)/np.array(data_sig_2)
+        sigma_rel_sig_3 = np.array(data_sig_err_3)/np.array(data_sig_3)
+
+        sigma_rel_comb_1 = np.array(data_comb_err_1)/np.array(data_comb_1)
+        sigma_rel_comb_2 = np.array(data_comb_err_2)/np.array(data_comb_2)
+        sigma_rel_comb_3 = np.array(data_comb_err_3)/np.array(data_comb_3)
+
+        sigma_rel_BDDK_1 = np.array(data_BDDK_err_1)/np.array(data_BDDK_1)
+        sigma_rel_BDDK_2 = np.array(data_BDDK_err_2)/np.array(data_BDDK_2)
+        sigma_rel_BDDK_3 = np.array(data_BDDK_err_3)/np.array(data_BDDK_3)
+
+
+    pars = model.config.suggested_init()
+    nominal_pars = pyhf.tensorlib.astensor(pars)
+
+    # Sample parameters from their prior constraints in the likelihood
+    parameter_names = model.config.par_names
+    npars = model.config.npars
+    pars_varied = np.zeros(npars)
+
+    # normsys parameters (alpha) are sampled from a unit Gaussian ~ N(0,1)
+    for i in range(npars):
+        if 'alpha' in parameter_names[i]: # normsys
+            pars_varied[i] = np.random.normal(0,1)
+            # print(parameter_names[i], " | ", pars_varied[i])
+        elif 'shapesys' in parameter_names[i]: # shapesys
+            bin_number = int(re.findall(r'\d+', parameter_names[i])[1])
+            if(('sig_0' in parameter_names[i]) and (data_sig[bin_number] != 0)):
+                pars_varied[i] = np.random.gamma(1/(sigma_rel_sig[bin_number]**2), sigma_rel_sig[bin_number]**2)
+                # print("ch = 0", parameter_names[i], " | ", pars_varied[i])
+            elif(('sig_1' in parameter_names[i]) and (data_sig_1[bin_number] != 0)):
+                pars_varied[i] = np.random.gamma(1/(sigma_rel_sig_1[bin_number]**2), sigma_rel_sig_1[bin_number]**2)
+                # print("ch = 1", parameter_names[i], " | ", pars_varied[i])
+            elif(('sig_2' in parameter_names[i]) and (data_sig_2[bin_number] != 0)):
+                pars_varied[i] = np.random.gamma(1/(sigma_rel_sig_2[bin_number]**2), sigma_rel_sig_2[bin_number]**2)
+                # print("ch = 2", parameter_names[i], " | ", pars_varied[i])
+            elif(('sig_3' in parameter_names[i]) and (data_sig_3[bin_number] != 0)):
+                pars_varied[i] = np.random.gamma(1/(sigma_rel_sig_3[bin_number]**2), sigma_rel_sig_3[bin_number]**2)
+                # print("ch = 3", parameter_names[i], " | ", pars_varied[i])
+            elif(('comb_0' in parameter_names[i]) and (data_comb[bin_number] != 0)):
+                pars_varied[i] = np.random.gamma(1/(sigma_rel_comb[bin_number]**2), sigma_rel_comb[bin_number]**2)
+            elif(('comb_1' in parameter_names[i]) and (data_comb_1[bin_number] != 0)):
+                pars_varied[i] = np.random.gamma(1/(sigma_rel_comb_1[bin_number]**2), sigma_rel_comb_1[bin_number]**2)
+            elif(('comb_2' in parameter_names[i]) and (data_comb_2[bin_number] != 0)):
+                pars_varied[i] = np.random.gamma(1/(sigma_rel_comb_2[bin_number]**2), sigma_rel_comb_2[bin_number]**2)
+            elif(('comb_3' in parameter_names[i]) and (data_comb_3[bin_number] != 0)):
+                pars_varied[i] = np.random.gamma(1/(sigma_rel_comb_3[bin_number]**2), sigma_rel_comb_3[bin_number]**2)
+            elif(('BDDKp_0' in parameter_names[i]) and (data_BDDK[bin_number] != 0)):
+                pars_varied[i] = np.random.gamma(1/(sigma_rel_BDDK[bin_number]**2), sigma_rel_BDDK[bin_number]**2)  
+            elif(('BDDKp_1' in parameter_names[i]) and (data_BDDK_1[bin_number] != 0)):
+                pars_varied[i] = np.random.gamma(1/(sigma_rel_BDDK_1[bin_number]**2), sigma_rel_BDDK_1[bin_number]**2)  
+            elif(('BDDKp_2' in parameter_names[i]) and (data_BDDK_2[bin_number] != 0)):
+                pars_varied[i] = np.random.gamma(1/(sigma_rel_BDDK_2[bin_number]**2), sigma_rel_BDDK_2[bin_number]**2)
+            elif(('BDDKp_3' in parameter_names[i]) and (data_BDDK_3[bin_number] != 0)):
+                pars_varied[i] = np.random.gamma(1/(sigma_rel_BDDK_3[bin_number]**2), sigma_rel_BDDK_3[bin_number]**2)  
+            else:
+                pars_varied[i] = nominal_pars[i] # empty bins
+        else: # normfactor
+            pars_varied[i] = nominal_pars[i]
+            # print(parameter_names[i], " | ", pars_varied[i])
+
+    pdf = model.make_pdf(pyhf.tensorlib.astensor(pars_varied))
+    toy_data = pdf.sample((1,))
+
+    return toy_data[0], nbins
+
+
+
+def cls_data(fit_name, BF_sig, seed, nominal_templates, norm_parameters, norm_parameters_errors, add_physics_backgrounds):
+    ######################### Fit normalisations
+    N_comb = float(norm_parameters[0]) # N_comb
+    A = float(norm_parameters[1]) # A
+    B = float(norm_parameters[2]) # B
+    C_BDDKp = float(norm_parameters[3][0]) # [C_BDDKp, C_BuDDK0, C_BuDD]
+
+    A_err = float(norm_parameters_errors[1])
+    B_err = float(norm_parameters_errors[2])
+    C_BDDKp_err = float(norm_parameters_errors[3][0])
+
+    A_ufloat = ufloat(A, A_err)
+    a_ufloat = 1/A_ufloat
+    a = a_ufloat.nominal_value
+    a_err = a_ufloat.std_dev
+
+    B_ufloat = ufloat(B, B_err)
+    b_ufloat = 1/B_ufloat
+    b = b_ufloat.nominal_value
+    b_err = b_ufloat.std_dev
+
+    if(fit_name == "all_events"):
+        n_channels = 1
+    else:
+        n_channels = 3
+           
+    for i in range(n_channels):
+        if(fit_name == "all_events"):
+            ch = i
+        else:
+            ch = i+1 
+
+        h_sig = nominal_templates[i][0]  
+        h_comb = nominal_templates[i][1]  
+        h_BDDKp = nominal_templates[i][2]
+        nbins = h_sig.GetNbinsX()
+
+        # [eps_sig, eps_comb, eps_BDDKp, eps_BuDDK0, eps_BuDD]
+        eps_sig, eps_sig_err = error_category_efficiency(norm_parameters[4][0], norm_parameters_errors[4][0], ch)
+        eps_comb, eps_comb_err = error_category_efficiency(norm_parameters[4][1], norm_parameters_errors[4][1], ch)
+        eps_BDDKp, eps_BDDKp_err = error_category_efficiency(norm_parameters[4][2], norm_parameters_errors[4][2], ch)
+
+        # data
+        h_data = ROOT.TH1D(f"h_data_{seed}_{ch}", f"h_data_{seed}_{ch}", nbins, 4000, 8000)
+        h_data_comb = ROOT.TH1D(f"h_data_comb_{seed}_{ch}", f"h_data_comb_{seed}_{ch}", nbins, 4000, 8000)
+        if(BF_sig != 0):
+            h_data_sig = ROOT.TH1D(f"h_data_sig_{seed}_{ch}", f"h_data_sig_{seed}_{ch}", nbins, 4000, 8000)
+        if(add_physics_backgrounds):
+            h_data_BDDKp = ROOT.TH1D(f"h_data_BDDKp_{seed}_{ch}", f"h_data_BDDKp_{seed}_{ch}", nbins, 4000, 8000)
+            
+        h_data_comb = h_comb.Clone("h_data_comb")
+        if(fit_name == "error_categories"):
+            N_comb_varied = N_comb*eps_comb
+        h_data_comb.Scale(N_comb_varied)
+
+        if(BF_sig != 0):
+            h_data_sig = h_sig.Clone("h_data_sig")
+            if(fit_name == "all_events"):
+                nsig_varied = BF_sig*a*b
+            else:
+                nsig_varied = BF_sig*a*b*eps_sig
+            h_data_sig.Scale(nsig_varied)
+
+        if(add_physics_backgrounds):
+            h_data_BDDKp = h_BDDKp.Clone("h_data_BDDKp")
+            if(fit_name == "all_events"):
+                N_BDDKp_varied = C_BDDKp*b
+            else:
+                N_BDDKp_varied = C_BDDKp*b*eps_BDDKp
+            h_data_BDDKp.Scale(N_BDDKp_varied)
+
+        h_data.Sumw2()
+        h_data.Add(h_data_comb)
+        if(BF_sig != 0):
+            h_data.Add(h_data_sig)
+        if(add_physics_backgrounds):
+            h_data.Add(h_data_BDDKp)    
+
+
+# This function builds the spec to be used for the fit
+# It uses the same channels and parameters defined by the function 'build_model'
+# Instead of using dummy observations, here we use the actual observations (either the toy date from 'make_toy_data' or the histograms scaled to the expected yields if we just want to run the CLs calculation)
+def build_fit_spec(fit_name, toy_data, channels, parameters, nbins):
+    toy_data = [float(toy_data[i]) for i in range(len(toy_data))]
+
+    if(fit_name == "all_events"):
+        real_observations = [{"name": "AllEvents", "data": toy_data[0:nbins]}]
+    else:
+        nbins_1 = nbins[0]
+        nbins_2 = nbins[1]
+        nbins_3 = nbins[2]
+
+        toy_data_1 = toy_data[0:nbins_1]
+        toy_data_2 = toy_data[nbins_1:nbins_1+nbins_2]
+        toy_data_3 = toy_data[nbins_1+nbins_2:nbins_1+nbins_2+nbins_3]
+    
+        real_observations = [{"name": "Channel_1", "data": toy_data_1}, {"name": "Channel_2", "data": toy_data_2}, {"name": "Channel_3", "data": toy_data_3}]
 
     spec = {
-        "channels": channels,
-        "measurements": [
-            {
-                "config": {
-                    "parameters": parameters,
-                    "poi": "BF_sig"
-                },
-                "name": "MinimalConfiguration"
-            }
-        ],
-        "observations": observations,
-        "version": "1.0.0"}
+    "channels": channels,
+    "measurements": [
+        {
+            "config": {
+                "parameters": parameters,
+                "poi": "BF_sig"
+            },
+            "name": "MinimalConfiguration"
+        }
+    ],
+    "observations": real_observations,
+    "version": "1.0.0"}
 
     return spec
 
 
+##########################################################################################################################################################################################################
+
+
+# This function just plots the fit result
+# It only needs h_data to retrieve the mass values for the x axis (probably could retrieve this in a more elegant way)
 def plot(fit_name, h_data, workspace, fit_pars, fit_errors, BF_sig, bdt1, bdt2, seed):
     model = workspace.model()
 
     channel_nbins = model.config.channel_nbins
     if(fit_name == "all_events"):
         nbins = channel_nbins["AllEvents"]
-        mass = [h_data[0].GetBinCenter(i+1) for i in range(nbins)] 
-        edges = [h_data[0].GetBinLowEdge(i+1) for i in range(nbins+1)] 
+        mass = [h_data[0][0].GetBinCenter(i+1) for i in range(nbins)] 
+        edges = [h_data[0][0].GetBinLowEdge(i+1) for i in range(nbins+1)] 
     else:
         nbins_1 = channel_nbins["Channel_1"]
         nbins_2 = channel_nbins["Channel_2"]
         nbins_3 = channel_nbins["Channel_3"]
 
-        mass_1 = [h_data[0].GetBinCenter(i+1) for i in range(nbins_1)] 
-        mass_2 = [h_data[1].GetBinCenter(i+1) for i in range(nbins_2)] 
-        mass_3 = [h_data[2].GetBinCenter(i+1) for i in range(nbins_3)] 
+        mass_1 = [h_data[0][0].GetBinCenter(i+1) for i in range(nbins_1)] 
+        mass_2 = [h_data[1][0].GetBinCenter(i+1) for i in range(nbins_2)] 
+        mass_3 = [h_data[2][0].GetBinCenter(i+1) for i in range(nbins_3)] 
 
-        edges_1 = [h_data[0].GetBinLowEdge(i+1) for i in range(nbins_1+1)] 
-        edges_2 = [h_data[1].GetBinLowEdge(i+1) for i in range(nbins_2+1)] 
-        edges_3 = [h_data[2].GetBinLowEdge(i+1) for i in range(nbins_3+1)] 
+        edges_1 = [h_data[0][0].GetBinLowEdge(i+1) for i in range(nbins_1+1)] 
+        edges_2 = [h_data[1][0].GetBinLowEdge(i+1) for i in range(nbins_2+1)] 
+        edges_3 = [h_data[2][0].GetBinLowEdge(i+1) for i in range(nbins_3+1)] 
 
     sig_index = model.config.par_names.index("BF_sig")
     fit_poi = fit_pars[sig_index] 
@@ -666,6 +955,7 @@ def plot(fit_name, h_data, workspace, fit_pars, fit_errors, BF_sig, bdt1, bdt2, 
     plt.clf()
 
 
+# This functions runs the CLs calculation and produces the brazil plot
 def run_cls_limit(fit_poi, fit_poi_error, data, model, fit_name, BF_sig, bdt1, bdt2):
     print("### CLS LIMIT CALCULATION")
     # CLs limit: evaluate upper limit on parameter of interest
@@ -689,8 +979,8 @@ def run_cls_limit(fit_poi, fit_poi_error, data, model, fit_name, BF_sig, bdt1, b
     return exp_limits[2]
 
 
-def fit(fit_name, BF_sig, bdt1, bdt2, h_data, spec, seed, save_plot, run_cls):
-
+# This is where the fit happens
+def do_fit(fit_name, BF_sig, bdt1, bdt2, spec, h_templates, toy, save_plot, run_cls):        
     workspace = pyhf.Workspace(spec)
     model = workspace.model()
     data = workspace.data(model)
@@ -719,7 +1009,7 @@ def fit(fit_name, BF_sig, bdt1, bdt2, h_data, spec, seed, save_plot, run_cls):
 
     if(save_plot):
         print(res_obj)
-        plot(fit_name, h_data, workspace, fit_pars, fit_errors, BF_sig, bdt1, bdt2, seed)
+        plot(fit_name, h_templates, workspace, fit_pars, fit_errors, BF_sig, bdt1, bdt2, toy)
     if(run_cls):
         sig_index = model.config.par_names.index("BF_sig")
         fit_poi = fit_pars[sig_index]
@@ -733,6 +1023,8 @@ def fit(fit_name, BF_sig, bdt1, bdt2, h_data, spec, seed, save_plot, run_cls):
         return exp_limit
 
 
+# This function makes plots for fit validation
+# The pulls / bias of each fit parameter are saved
 def toy_studies(fit_name, BF_sig, bdt1, bdt2, model, N_fail, toy_fit_values, toy_fit_errors, nbins=30):
     sig_index = model.config.par_names.index("BF_sig")
     comb_index = model.config.par_names.index("N_comb")
@@ -928,15 +1220,15 @@ def main(argv):
     C_err = np.load(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/C_err_bdt1_{bdt1}_bdt2_{bdt2}.npy')
 
     # N_comb
-    N_comb = np.load(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/N_comb_bdt1_{bdt1}_bdt2_{bdt2}.npy')
+    combinatoria_yield = np.load(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/N_comb_bdt1_{bdt1}_bdt2_{bdt2}.npy')
 
     # eps_category = [eps_sig, eps_comb, eps_BDDKp, eps_BuDDK0, eps_BuDD]
     # eps_sig = [eps_1, eps_2]
     eps_category = np.load(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/eff_category_value_bdt1_{bdt1}_bdt2_{bdt2}.npy')
     eps_category_err = np.load(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/eff_category_error_bdt1_{bdt1}_bdt2_{bdt2}.npy')
     
-    norm_parameters = [N_comb, A, B, C, eps_category]
-    norm_parameters_errors = [0, A_err, B_err, C_err, eps_category_err]
+    norm_parameters = [combinatoria_yield[0], A, B, C, eps_category]
+    norm_parameters_errors = [combinatoria_yield[1], A_err, B_err, C_err, eps_category_err]
 
     # Retrieve template histograms
     if(fit_name == "all_events"):
@@ -958,6 +1250,10 @@ def main(argv):
     toy_fit_errors = []
     N_fail = 0
 
+    # Build model
+    if(toy_data_generation_approach == 2):
+        channels, parameters, dummy_observations = build_model(fit_name, BF_sig, nominal_templates, error_templates, norm_parameters, norm_parameters_errors, add_physics_backgrounds, apply_gaussian_constraints, -1, toy_data_generation_approach)
+
     if(validate_fit):
         for seed in range(n_toys):
             if(n_toys > 10):
@@ -969,12 +1265,14 @@ def main(argv):
             else:
                 save_plot = False
 
-            # Generate toy data
-            h_toy_data = generate_toy_data(fit_name, BF_sig, seed, nominal_templates, norm_parameters, norm_parameters_errors, add_physics_backgrounds)
-            spec = write_json_file(fit_name, BF_sig, nominal_templates, error_templates, h_toy_data, norm_parameters, norm_parameters_errors, add_physics_backgrounds)
+            if(toy_data_generation_approach == 1):
+                spec = build_model(fit_name, BF_sig, nominal_templates, error_templates, norm_parameters, norm_parameters_errors, add_physics_backgrounds, apply_gaussian_constraints, seed, toy_data_generation_approach)
+            else:
+                toy_data, nbins = make_toy_data(fit_name, channels, parameters, dummy_observations, nominal_templates, error_templates, seed)
+                spec = build_fit_spec(fit_name, toy_data, channels, parameters, nbins)
 
             try:
-                fit_pars, fit_errors = fit(fit_name, BF_sig, bdt1, bdt2, h_toy_data, spec, seed, save_plot, False)
+                fit_pars, fit_errors = do_fit(fit_name, BF_sig, bdt1, bdt2, spec, nominal_templates, seed, save_plot, False)
 
                 toy_fit_values.append(fit_pars)
                 toy_fit_errors.append(fit_errors)
@@ -988,15 +1286,13 @@ def main(argv):
         print(f"{N_fail}/{n_toys} toys fail")
 
     else: # do not vary the data, run the CLs calculation
-        # Generate toy data
-        h_toy_data = generate_toy_data(fit_name, BF_sig, 1000, nominal_templates, norm_parameters, norm_parameters_errors, add_physics_backgrounds)
-        spec = write_json_file(fit_name, BF_sig, nominal_templates, error_templates, h_toy_data, norm_parameters, norm_parameters_errors, add_physics_backgrounds)
+        spec = build_model(fit_name, BF_sig, nominal_templates, error_templates, norm_parameters, norm_parameters_errors, add_physics_backgrounds, apply_gaussian_constraints, 1000, 1) # this is independent of the toy data generation approach (seed=100 does not vary the parameters, only scales the templates)
 
-        exp_limit = fit(fit_name, BF_sig, bdt1, bdt2, h_toy_data, spec, 1000, True, True)
+        exp_limit = do_fit(fit_name, BF_sig, bdt1, bdt2, spec, nominal_templates, 1000, True, True)
         np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig:.1g}/fit_results/cls_limit_bdt1_{bdt1}_bdt2_{bdt2}.npy', exp_limit)
 
     end1 = time.time()
-    print(f"Elapsed time (toy data generation): {end1 - end:.2f} seconds")
+    print(f"Elapsed time : {end1 - end:.2f} seconds")
 
 
 if __name__ == "__main__":

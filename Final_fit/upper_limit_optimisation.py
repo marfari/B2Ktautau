@@ -6,7 +6,7 @@ from scipy.interpolate import griddata
 
 def main(argv):
     fit_name = argv[1]
-    nsig = argv[2]
+    BF_sig = argv[2]
 
     bdt_cuts = np.round( np.linspace(0.965,0.985,21), 3 )
     N = len(bdt_cuts)
@@ -21,7 +21,7 @@ def main(argv):
             bdt1 = bdt_cuts[i]
             bdt2 = bdt_cuts[j]
                 
-            branching_fraction_values[a] = np.load(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/N_sig_{nsig}/fit_results/cls_limit_bdt1_{bdt1}_bdt2_{bdt2}.npy')
+            branching_fraction_values[a] = np.load(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{bdt1}_bdt2_{bdt2}.npy')
 
             print(f"BDT1 = {bdt1} | BDT2 = {bdt2} | BF = {branching_fraction_values[a]}")
             
@@ -43,7 +43,7 @@ def main(argv):
     ax.set_zlabel('B($B^+ \\to K^+ \\tau^+ \\tau^-$)')
     ax.set_box_aspect(None, zoom=0.85)
     plt.tight_layout()
-    fig.savefig(f"/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{fit_name}/N_sig_{nsig}/BF_vs_bdt1_vs_bdt2.pdf")
+    fig.savefig(f"/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{fit_name}/BF_sig_{BF_sig}/BF_vs_bdt1_vs_bdt2.pdf")
     plt.clf()
 
     BDT1_grid = BDT1_values.reshape(N,N)
@@ -60,7 +60,7 @@ def main(argv):
     plt.title('Branching fraction vs BDT cuts')
     plt.legend()
     plt.tight_layout()
-    fig1.savefig(f"/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{fit_name}/N_sig_{nsig}/BF_vs_bdt1_vs_bdt2_1.pdf")
+    fig1.savefig(f"/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{fit_name}/BF_sig_{BF_sig}/BF_vs_bdt1_vs_bdt2_1.pdf")
 
 if __name__ == "__main__":
     main(sys.argv)
