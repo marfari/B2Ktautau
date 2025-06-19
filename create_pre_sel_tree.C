@@ -8,26 +8,8 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
 {   
     // TString path = Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/Species_%i/Num_entries/%i.txt",year,species,line);
     // std::ofstream file(path);
-    Bool_t isBuDDKp_cocktail = false;
-    Bool_t isBdDDKp_cocktail = false;
-    Bool_t isBsDDKp_cocktail = false;
-    Bool_t isBuDDK0_cocktail = false;
-    Bool_t isBdDDK0_cocktail = false;
-    Bool_t isBuDD_cocktail = false;
-    Bool_t isBdDD_cocktail = false;
-    Bool_t isBsDD_cocktail = false;
-
-    if(species == 100){isBuDDKp_cocktail = true;}
-    if(species == 110){isBdDDKp_cocktail = true;}
-    if(species == 120){isBsDDKp_cocktail = true;}
-    if(species == 130){isBuDDK0_cocktail = true;}
-    if(species == 140){isBdDDK0_cocktail = true;}
-    if(species == 150){isBuDD_cocktail = true;}
-    if(species == 160){isBdDD_cocktail = true;}
-    if(species == 170){isBsDD_cocktail = true;}
-
     Bool_t is_cocktailMC = false;
-    if(isBuDDKp_cocktail || isBdDDKp_cocktail || isBsDDKp_cocktail || isBuDDK0_cocktail || isBdDDK0_cocktail || isBuDD_cocktail || isBdDD_cocktail || isBsDD_cocktail){is_cocktailMC = true;}
+    if((species == 100) || (species == 110) || (species == 120) || (species == 130) || (species == 140) || (species == 150) || (species == 160) || (species == 170)){is_cocktailMC = true;}
 
     TString FILES;
     if((species == 1) || (species == 10)) // Ktautau MC
@@ -66,45 +48,17 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     {
         FILES = Form("Files_on_grid/data_D0D0K_201%i.txt",year);
     }
-    else if(isBuDDKp_cocktail)
+    else if(is_cocktailMC)
     {
-        FILES = Form("Files_on_grid/MC_201%i_BuDDKp_cocktail.txt",year);
-    }
-    else if(isBdDDKp_cocktail)
-    {
-        FILES = Form("Files_on_grid/MC_201%i_BdDDKp_cocktail.txt",year);   
-    }
-    else if(isBsDDKp_cocktail)
-    {
-        FILES = Form("Files_on_grid/MC_201%i_BsDDKp_cocktail.txt",year);  
-    }
-    else if(isBuDDK0_cocktail)
-    {
-        FILES = Form("Files_on_grid/MC_201%i_BuDDK0_cocktail.txt",year);  
-    }
-    else if(isBdDDK0_cocktail)
-    {
-        FILES = Form("/panfs/felician/BdDDK0_cocktail/root_files_201%i.txt",year); 
-    }
-    else if(isBuDD_cocktail)
-    {
-        FILES = Form("Files_on_grid/MC_201%i_BuDD_cocktail.txt",year);
-    }
-    else if(isBdDD_cocktail)
-    {
-        FILES = Form("/panfs/felician/BdDD_cocktail/root_files_201%i.txt",year);
-    }
-    else if(isBsDD_cocktail)
-    {
-        FILES = Form("/panfs/felician/BsDD_cocktail/root_files_201%i.txt",year);
+        FILES = Form("/panfs/felician/B2Ktautau/workflow/PIDCalib/201%i/Species_%i/pid_corr.txt",year,species);
     }
 
-    TString MC_component_file;
+    TString MC_component_file = "";
     if((species == 1) || (species == 10))
     {
         MC_component_file = Form("/panfs/felician/B2Ktautau/workflow/separate_reco_mc_components/201%i/mc_components.txt",year);
     }
-    else
+    else if(is_cocktailMC)
     {
         MC_component_file = Form("/panfs/felician/B2Ktautau/workflow/separate_reco_cocktail_mc_components/201%i/Species_%i/cocktail_mc_components.txt",year,species);
     }
@@ -251,7 +205,7 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
 
     TFileCollection* fc = new TFileCollection("fc", "fc", FILES, 1, line);
     TChain* t;
-    if((species == 1) || (species == 10) || (species == 7) || (species == 71) || (species == 72) ) // Ktautau MC + normalisation channel (PID corrected)
+    if((species == 1) || (species == 10) || (species == 7) || (species == 71) || (species == 72) || is_cocktailMC ) // Ktautau MC + normalisation channel (PID corrected)
     {
         t = new TChain("DecayTree");
     }
