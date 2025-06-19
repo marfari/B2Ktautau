@@ -42,6 +42,10 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     {
         FILES = Form("Files_on_grid/data_201%i.txt",year);
     }
+    else if((species == 20) || (species == 30)) // Ktautau data with DTF
+    {
+        FILES = Form("Files_on_grid/data_201%i_noSel_DTF.txt",year);
+    }
     else if((species == 5) || (species == 6)) // D+D-K data
     {
         FILES = Form("Files_on_grid/data_DDK_201%i.txt",year);
@@ -134,7 +138,7 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     ///////////////////////////////////////////////////////// Rectangular cuts /////////////////////////////////////////////////////////////////////////////////
     TCut others;
     std::vector<TCut> other_cuts;
-    if((species == 1) || (species == 2) || (species == 3) || is_cocktailMC || (species == 10) )
+    if((species == 1) || (species == 2) || (species == 3) || is_cocktailMC || (species == 10) || (species == 20) || (species == 30) )
     {
         other_cuts.push_back("(taup_M > 750) && (taup_M < 1650)");
         other_cuts.push_back("(taum_M > 750) && (taum_M < 1650)");
@@ -142,6 +146,12 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
         other_cuts.push_back("(Bp_VTXISOBDTHARDFIRSTVALUE_B < 0)");
         other_cuts.push_back("(Bp_BPVVD > 4)");
         other_cuts.push_back("(TMath::Max(Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup,Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum) > -0.1)");
+        if((species == 1) || (species == 10) || is_cocktailMC) 
+        {
+            // stripping PID cuts (re-applied)
+            other_cuts.push_back("(Kp_ProbNNk_pidgen_default > 0.2)");
+            other_cuts.push_back("(taup_pi1_ProbNNpi_pidgen_default > 0.55) && (taup_pi2_ProbNNpi_pidgen_default > 0.55) && (taup_pi3_ProbNNpi_pidgen_default > 0.55) && (taum_pi1_ProbNNpi_pidgen_default > 0.55) && (taum_pi2_ProbNNpi_pidgen_default > 0.55) && (taum_pi3_ProbNNpi_pidgen_default > 0.55)");
+        }
     }
     if((species == 4) || (species == 5) || (species == 6)) // D+D-K+
     {   
@@ -159,6 +169,11 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
         other_cuts.push_back("(Dsp_M > 1930) && (Dsp_M < 2000)");
         if((species == 7) || (species == 72))
         {
+            // stripping PID cuts (re-applied)
+            other_cuts.push_back("D0bar_pi_ProbNNpi_pidgen_default > 0.55");
+            other_cuts.push_back("Dsp_pi_ProbNNpi_pidgen_default > 0.55");
+
+            // offline cuts
             other_cuts.push_back("D0bar_K_ProbNNk_pidgen_default > 0.55");
             other_cuts.push_back("Dsp_K1_ProbNNk_pidgen_default > 0.55");
             other_cuts.push_back("Dsp_K2_ProbNNk_pidgen_default > 0.55");
@@ -192,7 +207,7 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     {
         pre_selections = truthMatch+trigger+others;
     }
-    else if((species == 2) || (species == 3) || (species == 10) || is_cocktailMC) // Ktautau data,  Ktautau MC w/o TM, cocktail MCs w/o TM
+    else if((species == 2) || (species == 3) || (species == 10) || (species == 20) || (species == 30) || is_cocktailMC) // Ktautau data,  Ktautau MC w/o TM, cocktail MCs w/o TM
     {
         pre_selections = trigger+others;
     }
@@ -223,7 +238,7 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
 
     if(createTable)
     {
-        if((species == 2) || (species == 3))
+        if((species == 2) || (species == 3) || (species == 20) || (species == 30))
         {
             create_table(year, species, Form("Files_on_grid/data_201%i_noSel_DTF.txt",year), is_cocktailMC, truthMatch, trigger, others);
         }
@@ -727,21 +742,21 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t is_cocktailMC
         {            
             if(species == 7) // For the normalisation channel all the selections are applied here
             { 
-                file << Form("Truth-match &  %.3lf $\\pm$ %.3lf \\%% ", eps_tm*100,  eps_error(N_TM,N_gen) ) << " \\\\ \\hline " << std::endl;
-                file << Form("Trigger & %.2lf $\\pm$ %.2lf \\%% ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ \\hline " << std::endl;
-                file << Form("Rectangular cuts & %.2lf $\\pm$ %.2lf \\%% ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\ \\hline" << std::endl;
+                file << Form("Reconstruction &  %.3lf $\\pm$ %.3lf \\%% ", eps_tm*100,  eps_error(N_TM,N_gen) ) << " \\\\ " << std::endl;
+                file << Form("Trigger & %.2lf $\\pm$ %.2lf \\%% ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ " << std::endl;
+                file << Form("Rectangular cuts & %.2lf $\\pm$ %.2lf \\%% ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\" << std::endl;
 
                 cout << "Pass DTF efficiency" << endl;
                 Double_t N_pass_DTF = t_reco->GetEntries(truthMatch+trigger+others+"Bp_dtf_status[0] == 0");
                 Double_t eps_pass_DTF =  N_pass_DTF/N_others;
 
-                file << Form("Pass DTF &  %.2lf $\\pm$ %.2lf \\%% ", eps_pass_DTF*100, eps_error(N_pass_DTF, N_others) ) << " \\\\ \\hline" << std::endl;
+                file << Form("Pass DTF &  %.2lf $\\pm$ %.2lf \\%% ", eps_pass_DTF*100, eps_error(N_pass_DTF, N_others) ) << " \\\\ " << std::endl;
 
                 cout << "Fit region" << endl;
                 Double_t N_fit_region = t_reco->GetEntries(truthMatch+trigger+others+"(Bp_dtf_status[0] == 0) && (Bp_dtf_M[0] > 5235) && (Bp_dtf_M[0] < 5355)");
                 Double_t eps_fit_region = N_fit_region/N_pass_DTF;
 
-                file << Form("Fit region & %.2lf $\\pm$ %.2lf \\%% ", eps_fit_region*100, eps_error(N_fit_region, N_pass_DTF) ) << " \\\\ \\hline" << std::endl;
+                file << Form("Fit region & %.2lf $\\pm$ %.2lf \\%% ", eps_fit_region*100, eps_error(N_fit_region, N_pass_DTF) ) << " \\\\ " << std::endl;
 
                 cout << "Total efficiency" << endl;
                 Double_t eps_post_acc = N_fit_region/N_gen;
@@ -771,8 +786,8 @@ void create_table(Int_t year, Int_t species, TString FILES, Bool_t is_cocktailMC
             }
             else
             {
-                file << Form("Truth-match & %.2lf $\\pm$ %.2lf \\%% ", eps_tm*100,  eps_error(N_TM,N_gen) ) << " \\\\ \\hline " << std::endl;
-                file << Form("Trigger & %.2lf $\\pm$ %.2lf \\%% ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\ \\hline " << std::endl;
+                file << Form("Truth-match & %.2lf $\\pm$ %.2lf \\%% ", eps_tm*100,  eps_error(N_TM,N_gen) ) << " \\\\  " << std::endl;
+                file << Form("Trigger & %.2lf $\\pm$ %.2lf \\%% ", eps_trigger*100, eps_error(N_trigger,N_TM) ) << " \\\\  " << std::endl;
                 file << Form("Rectangular cuts & %.2lf $\\pm$ %.2lf \\%% ", eps_others*100, eps_error(N_others, N_trigger) ) << " \\\\ " << std::endl;
             }
         }

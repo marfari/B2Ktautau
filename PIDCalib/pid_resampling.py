@@ -17,38 +17,49 @@ import sys
 def main(argv):
   year = argv[1]
   species = argv[2]
+  line = argv[3]
 
   year = int(year)
   species = int(species)
+  line = int(line)
 
-  if((year == 6) and (species == 1)):
-    N = 12
-  elif((year == 7) and (species == 1)):
-    N = 7
-  elif((year == 8) and (species == 1)):
-    N = 13
-  elif((year == 6) and (species == 7)):
-    N = 90
-  elif((year == 7) and (species == 7)):
-    N = 98
-  elif((year == 8) and (species == 7)):
-    N = 94
+  # if((year == 6) and (species == 1)):
+  #   N = 12
+  # elif((year == 7) and (species == 1)):
+  #   N = 7
+  # elif((year == 8) and (species == 1)):
+  #   N = 13
+  # elif((year == 6) and (species == 7)):
+  #   N = 90
+  # elif((year == 7) and (species == 7)):
+  #   N = 98
+  # elif((year == 8) and (species == 7)):
+  #   N = 94
 
-  for line in range(1,N):
-    run_pid_resampling(year, species, line)
+  # for line in range(1,N):
+  #   run_pid_resampling(year, species, line)
 
-def run_pid_resampling(year, species, line):
+  # def run_pid_resampling(year, species, line):
+
   if(species == 1):
     txt_file = open("Files_on_grid/MC_201{0}.txt".format(year), 'r')
   elif(species == 7):
     txt_file = open("Files_on_grid/MC_D0Dps_201{0}.txt".format(year), 'r')
+  elif(species == 100):
+    txt_file = open("Files_on_grid/MC_201{0}_BuDDKp_cocktail.txt".format(year), 'r')
+  elif(species == 110):
+    txt_file = open("Files_on_grid/MC_201{0}_BdDDKp_cocktail.txt".format(year), 'r')
+  elif(species == 120):
+    txt_file = open("Files_on_grid/MC_201{0}_BsDDKp_cocktail.txt".format(year), 'r')
+  elif(species == 130):
+    txt_file = open("Files_on_grid/MC_201{0}_BuDDK0_cocktail.txt".format(year), 'r')
+  elif(species == 150):
+    txt_file = open("Files_on_grid/MC_201{0}_BuDD_cocktail.txt".format(year), 'r')
 
   lines = txt_file.readlines()
   for i in range(len(lines)):
     lines[i] = lines[i].replace('\n', '')
   file_name = lines[line-1]
-
-  print(file_name)
 
   # Read comments and check vars at least until the end of config section
 
@@ -108,7 +119,7 @@ def run_pid_resampling(year, species, line):
   # Run pidgen2.list_variables to get the full list of PID variables
   # Run pidgen2.list_samples to get the full list of calibration samples
 
-  if(species == 1): # Ktautau MC
+  if((species == 1) or (species == 100) or (species == 110) or (species == 120) or (species == 130) or (species == 150)): # Ktautau MC and cocktail MCs
     config = {
       'Kp' :    {
                 "ProbNNk"    : ("K_Dstar2Dpi", "MC15TuneV1_ProbNNK", kernels),
