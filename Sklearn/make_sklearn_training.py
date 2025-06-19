@@ -75,6 +75,7 @@ def draw_variables(sig_data, bkg_data, mc_weights, columns, setup_name, step_nam
         plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/{1}_{2}/'.format(species_name,setup_name,step_name)+column+'.pdf')
         plt.clf()
 
+
 def draw_scatter_plots(data, columns, setup_name, step_name, species_name):
     fig = sb.pairplot(data, hue="y", corner=True)
     fig._legend.set_title("")
@@ -85,6 +86,7 @@ def draw_scatter_plots(data, columns, setup_name, step_name, species_name):
 
     fig.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/{1}_{2}/scatter_plot.pdf'.format(species_name,setup_name,step_name)) 
     plt.clf()    
+
 
 def correlation_matrix(data, name, setup_name, step_name, species_name, **kwds):
     """Calculate pairwise correlation between features.
@@ -118,6 +120,7 @@ def correlation_matrix(data, name, setup_name, step_name, species_name, **kwds):
     plt.tight_layout()
     fig1.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/{1}_{2}/correlation_matrix_'.format(species_name,setup_name,step_name)+name+'.pdf') 
     fig1.clf()
+
 
 def do_cross_validation(name, clf, X_train, y_train, X_test, y_test):
     # Optimise hyper-parameters
@@ -173,6 +176,7 @@ def do_cross_validation(name, clf, X_train, y_train, X_test, y_test):
     print( "It scores {0} on the evaluation set".format(  round( roc_auc_score(y_true, y_pred), 4 ) ) )
 
     return grid_result.best_estimator_
+
 
 def roc_curve_plot(names, classifiers, X_test, y_test, setup_name, step_name, species_name):
     clf_fpr = []
@@ -242,6 +246,7 @@ def roc_curve_plot(names, classifiers, X_test, y_test, setup_name, step_name, sp
 #     #     signal = pd.concat([signal,bdt_output_values_signal], axis=1)
 #     #     background = pd.concat([background,bdt_output_values_background], axis=1)
 
+
 def draw_signal_significance_vs_bdt_cut(name, fpr, tpr, thresholds, N_bkg, setup_name, step_name, species_name):
     eps_s = tpr
     B = fpr*N_bkg
@@ -267,6 +272,7 @@ def draw_signal_significance_vs_bdt_cut(name, fpr, tpr, thresholds, N_bkg, setup
     print('For this BDT cut, signal eff. = {0} and background eff. = {1}'.format(tpr[optimal_index], fpr[optimal_index]))
 
     return optimal_cut, optimal_metric
+
 
 def compare_train_test(name, clf, X_train, y_train, X_test, y_test, setup_name, step_name, species_name, bins=30):
     decisions = []
@@ -323,10 +329,12 @@ def compare_train_test(name, clf, X_train, y_train, X_test, y_test, setup_name, 
     plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/{1}_{2}/classifier_output_'.format(species_name,setup_name,step_name)+name+'.pdf')
     plt.clf()
 
+
 def confusion_matrix(name, clf, X_test, y_test, setup_name, step_name, species_name):
     fig = ConfusionMatrixDisplay.from_estimator(clf, X_test, y_test)
     lt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/{1}_{2}/confusion_matrix_'.format(species_name,setup_name,step_name)+name+'.pdf')
     plt.clf()
+
 
 def draw_feature_importance(name, clf, columns, setup_name, step_name, species_name):
     if(name == 'XGBoost'): 
@@ -349,6 +357,7 @@ def draw_feature_importance(name, clf, columns, setup_name, step_name, species_n
 
     plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/{1}_{2}/feature_importance_'.format(species_name,setup_name,step_name)+name+'.pdf')
     plt.clf()
+
 
 def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cross_validation):
     signal = pd.DataFrame()
@@ -827,23 +836,21 @@ def main(argv):
 
     if(species_name == "Ktautau"):
         # Prepare datasets
-        # Signal proxy: 3pi3pi MC (fit region) (2016+2017+2018)
+        # Signal proxy: All MC (fit region) (2016+2017+2018) (truth-matched - species 1)
+        # pre-sel branches
         fc_sig_2016 = ROOT.TFileCollection("fc_sig_2016", "fc_sig_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_1/pre_sel_tree.txt")
         fc_sig_2017 = ROOT.TFileCollection("fc_sig_2017", "fc_sig_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_1/pre_sel_tree.txt")
         fc_sig_2018 = ROOT.TFileCollection("fc_sig_2018", "fc_sig_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_1/pre_sel_tree.txt")
 
+        # gsl branches
         fc_sig1_2016 = ROOT.TFileCollection("fc_sig1_2016", "fc_sig1_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_1/fit_results.txt")
         fc_sig1_2017 = ROOT.TFileCollection("fc_sig1_2017", "fc_sig1_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_1/fit_results.txt")
         fc_sig1_2018 = ROOT.TFileCollection("fc_sig1_2018", "fc_sig1_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_1/fit_results.txt")
 
+        # invariant mass branches
         fc_sig2_2016 = ROOT.TFileCollection("fc_sig2_2016", "fc_sig2_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_1/invariant_mass_tree.txt")
         fc_sig2_2017 = ROOT.TFileCollection("fc_sig2_2017", "fc_sig2_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_1/invariant_mass_tree.txt")
         fc_sig2_2018 = ROOT.TFileCollection("fc_sig2_2018", "fc_sig2_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_1/invariant_mass_tree.txt")
-
-        # t_sig = ROOT.TChain()
-        # t_sig.Add("/panfs/felician/B2Ktautau/workflow/bdt_reweighter/2016/DDs_correction/Species_10/tree_with_weights.root/DecayTree")
-        # t_sig.Add("/panfs/felician/B2Ktautau/workflow/bdt_reweighter/2017/DDs_correction/Species_10/tree_with_weights.root/DecayTree")
-        # t_sig.Add("/panfs/felician/B2Ktautau/workflow/bdt_reweighter/2018/DDs_correction/Species_10/tree_with_weights.root/DecayTree")
 
         t_sig_2016 = ROOT.TChain("DecayTree")
         t_sig_2017 = ROOT.TChain("DecayTree")
@@ -890,107 +897,67 @@ def main(argv):
         t_sig_2016.AddFriend(t_sig1_2016)
         t_sig_2016.AddFriend(t_sig2_2016)
 
-        # if(step_name == "topology"):
-        # Background proxy: WS data (fit region) (100 files of 2016, 2017 and 2018
-        fc_bkg_2016 = ROOT.TFileCollection("fc_bkg_2016", "fc_bkg_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_3/pre_sel_tree.txt", 100) 
-        fc_bkg_2017 = ROOT.TFileCollection("fc_bkg_2017", "fc_bkg_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_3/pre_sel_tree.txt", 100) 
-        fc_bkg_2018 = ROOT.TFileCollection("fc_bkg_2018", "fc_bkg_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_3/pre_sel_tree.txt", 100) 
-        
-        fc_bkg1_2016 = ROOT.TFileCollection("fc_bkg1_2016", "fc_bkg1_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_3/fit_results.txt", 100) 
-        fc_bkg1_2017 = ROOT.TFileCollection("fc_bkg1_2017", "fc_bkg1_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_3/fit_results.txt", 100) 
-        fc_bkg1_2018 = ROOT.TFileCollection("fc_bkg1_2018", "fc_bkg1_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_3/fit_results.txt", 100) 
-
-        fc_bkg2_2016 = ROOT.TFileCollection("fc_bkg2_2016", "fc_bkg2_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_3/invariant_mass_tree.txt", 100) 
-        fc_bkg2_2017 = ROOT.TFileCollection("fc_bkg2_2017", "fc_bkg2_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_3/invariant_mass_tree.txt", 100) 
-        fc_bkg2_2018 = ROOT.TFileCollection("fc_bkg2_2018", "fc_bkg2_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_3/invariant_mass_tree.txt", 100) 
-
-        t_bkg_2016 = ROOT.TChain("DecayTree")
-        t_bkg_2017 = ROOT.TChain("DecayTree")
-        t_bkg_2018 = ROOT.TChain("DecayTree")
-
-        t_bkg1_2016 = ROOT.TChain("DecayTree")
-        t_bkg1_2017 = ROOT.TChain("DecayTree")
-        t_bkg1_2018 = ROOT.TChain("DecayTree")
-
-        t_bkg2_2016 = ROOT.TChain("DecayTree")
-        t_bkg2_2017 = ROOT.TChain("DecayTree")
-        t_bkg2_2018 = ROOT.TChain("DecayTree")
-
-        t_bkg_2016.AddFileInfoList(fc_bkg_2016.GetList())
-        t_bkg_2017.AddFileInfoList(fc_bkg_2017.GetList())
-        t_bkg_2018.AddFileInfoList(fc_bkg_2018.GetList())
-
-        t_bkg1_2016.AddFileInfoList(fc_bkg1_2016.GetList())
-        t_bkg1_2017.AddFileInfoList(fc_bkg1_2017.GetList())
-        t_bkg1_2018.AddFileInfoList(fc_bkg1_2018.GetList())
-
-        t_bkg2_2016.AddFileInfoList(fc_bkg2_2016.GetList())
-        t_bkg2_2017.AddFileInfoList(fc_bkg2_2017.GetList())
-        t_bkg2_2018.AddFileInfoList(fc_bkg2_2018.GetList())
-
-        t_bkg_2016.GetEntries()
-        t_bkg_2017.GetEntries()
-        t_bkg_2018.GetEntries()
-        t_bkg_2016.Add(t_bkg_2017)
-        t_bkg_2016.Add(t_bkg_2018)
-
-        t_bkg1_2016.GetEntries()
-        t_bkg1_2017.GetEntries()
-        t_bkg1_2018.GetEntries()
-        t_bkg1_2016.Add(t_bkg1_2017)
-        t_bkg1_2016.Add(t_bkg1_2018)
-
-        t_bkg2_2016.GetEntries()
-        t_bkg2_2017.GetEntries()
-        t_bkg2_2018.GetEntries()
-        t_bkg2_2016.Add(t_bkg2_2017)
-        t_bkg2_2016.Add(t_bkg2_2018)
-
-        t_bkg_2016.AddFriend(t_bkg1_2016)
-        t_bkg_2016.AddFriend(t_bkg2_2016)
-
-        # elif(step_name == "isolation"):
-        #     # Isolation MVA: background proxy: RS data (left sideband) (250 files of 2016, 2017 and 2018
-        #     fc_bkg_2016 = ROOT.TFileCollection("fc_bkg_2016", "fc_bkg_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_2/pre_sel_tree.txt", 250) 
-        #     fc_bkg_2017 = ROOT.TFileCollection("fc_bkg_2017", "fc_bkg_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_2/pre_sel_tree.txt", 250) 
-        #     fc_bkg_2018 = ROOT.TFileCollection("fc_bkg_2018", "fc_bkg_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_2/pre_sel_tree.txt", 250) 
+        if(step_name == "isolation"):
+            # Background proxy: WS data (fit region) (100 files of 2016, 2017 and 2018
+            fc_bkg_2016 = ROOT.TFileCollection("fc_bkg_2016", "fc_bkg_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_3/pre_sel_tree.txt", 100) 
+            fc_bkg_2017 = ROOT.TFileCollection("fc_bkg_2017", "fc_bkg_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_3/pre_sel_tree.txt", 100) 
+            fc_bkg_2018 = ROOT.TFileCollection("fc_bkg_2018", "fc_bkg_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_3/pre_sel_tree.txt", 100) 
             
-        #     fc_bkg1_2016 = ROOT.TFileCollection("fc_bkg1_2016", "fc_bkg1_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_2/fit_results.txt", 250) 
-        #     fc_bkg1_2017 = ROOT.TFileCollection("fc_bkg1_2017", "fc_bkg1_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_2/fit_results.txt", 250) 
-        #     fc_bkg1_2018 = ROOT.TFileCollection("fc_bkg1_2018", "fc_bkg1_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_2/fit_results.txt", 250) 
+            fc_bkg1_2016 = ROOT.TFileCollection("fc_bkg1_2016", "fc_bkg1_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_3/fit_results.txt", 100) 
+            fc_bkg1_2017 = ROOT.TFileCollection("fc_bkg1_2017", "fc_bkg1_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_3/fit_results.txt", 100) 
+            fc_bkg1_2018 = ROOT.TFileCollection("fc_bkg1_2018", "fc_bkg1_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_3/fit_results.txt", 100) 
 
-        #     t_bkg_2016 = ROOT.TChain("DecayTree")
-        #     t_bkg_2017 = ROOT.TChain("DecayTree")
-        #     t_bkg_2018 = ROOT.TChain("DecayTree")
+            fc_bkg2_2016 = ROOT.TFileCollection("fc_bkg2_2016", "fc_bkg2_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_3/invariant_mass_tree.txt", 100) 
+            fc_bkg2_2017 = ROOT.TFileCollection("fc_bkg2_2017", "fc_bkg2_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_3/invariant_mass_tree.txt", 100) 
+            fc_bkg2_2018 = ROOT.TFileCollection("fc_bkg2_2018", "fc_bkg2_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_3/invariant_mass_tree.txt", 100) 
 
-        #     t_bkg1_2016 = ROOT.TChain("DecayTree")
-        #     t_bkg1_2017 = ROOT.TChain("DecayTree")
-        #     t_bkg1_2018 = ROOT.TChain("DecayTree")
+            t_bkg_2016 = ROOT.TChain("DecayTree")
+            t_bkg_2017 = ROOT.TChain("DecayTree")
+            t_bkg_2018 = ROOT.TChain("DecayTree")
 
-        #     t_bkg_2016.AddFileInfoList(fc_bkg_2016.GetList())
-        #     t_bkg_2017.AddFileInfoList(fc_bkg_2017.GetList())
-        #     t_bkg_2018.AddFileInfoList(fc_bkg_2018.GetList())
+            t_bkg1_2016 = ROOT.TChain("DecayTree")
+            t_bkg1_2017 = ROOT.TChain("DecayTree")
+            t_bkg1_2018 = ROOT.TChain("DecayTree")
 
-        #     t_bkg1_2016.AddFileInfoList(fc_bkg1_2016.GetList())
-        #     t_bkg1_2017.AddFileInfoList(fc_bkg1_2017.GetList())
-        #     t_bkg1_2018.AddFileInfoList(fc_bkg1_2018.GetList())
+            t_bkg2_2016 = ROOT.TChain("DecayTree")
+            t_bkg2_2017 = ROOT.TChain("DecayTree")
+            t_bkg2_2018 = ROOT.TChain("DecayTree")
 
-        #     t_bkg_2016.GetEntries()
-        #     t_bkg_2017.GetEntries()
-        #     t_bkg_2018.GetEntries()
-        #     t_bkg_2016.Add(t_bkg_2017)
-        #     t_bkg_2016.Add(t_bkg_2018)
+            t_bkg_2016.AddFileInfoList(fc_bkg_2016.GetList())
+            t_bkg_2017.AddFileInfoList(fc_bkg_2017.GetList())
+            t_bkg_2018.AddFileInfoList(fc_bkg_2018.GetList())
 
-        #     t_bkg1_2016.GetEntries()
-        #     t_bkg1_2017.GetEntries()
-        #     t_bkg1_2018.GetEntries()
-        #     t_bkg1_2016.Add(t_bkg1_2017)
-        #     t_bkg1_2016.Add(t_bkg1_2018)
+            t_bkg1_2016.AddFileInfoList(fc_bkg1_2016.GetList())
+            t_bkg1_2017.AddFileInfoList(fc_bkg1_2017.GetList())
+            t_bkg1_2018.AddFileInfoList(fc_bkg1_2018.GetList())
 
-        #     t_bkg_2016.AddFriend(t_bkg1_2016)
-        # else:   
-        #     print("Wrong step name. Try isolation or topology.")
-        #     quit()
+            t_bkg2_2016.AddFileInfoList(fc_bkg2_2016.GetList())
+            t_bkg2_2017.AddFileInfoList(fc_bkg2_2017.GetList())
+            t_bkg2_2018.AddFileInfoList(fc_bkg2_2018.GetList())
+
+            t_bkg_2016.GetEntries()
+            t_bkg_2017.GetEntries()
+            t_bkg_2018.GetEntries()
+            t_bkg_2016.Add(t_bkg_2017)
+            t_bkg_2016.Add(t_bkg_2018)
+
+            t_bkg1_2016.GetEntries()
+            t_bkg1_2017.GetEntries()
+            t_bkg1_2018.GetEntries()
+            t_bkg1_2016.Add(t_bkg1_2017)
+            t_bkg1_2016.Add(t_bkg1_2018)
+
+            t_bkg2_2016.GetEntries()
+            t_bkg2_2017.GetEntries()
+            t_bkg2_2018.GetEntries()
+            t_bkg2_2016.Add(t_bkg2_2017)
+            t_bkg2_2016.Add(t_bkg2_2018)
+
+            t_bkg_2016.AddFriend(t_bkg1_2016)
+            t_bkg_2016.AddFriend(t_bkg2_2016)
+
+
+
 
         # Convert TChain in RDataframe
         sig_df = ROOT.RDataFrame(t_sig_2016)
