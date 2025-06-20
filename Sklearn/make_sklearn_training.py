@@ -5,6 +5,7 @@ import sys
 import pandas as pd
 import numpy as np
 import matplotlib as mpl
+mpl.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sb
 from array import array
@@ -165,7 +166,7 @@ def do_cross_validation(name, clf, X_train, y_train, X_test, y_test):
             else:
                 class_weight[i] = class_weights[0]
 
-        print(class_weight)
+        # print(class_weight)
 
         # grid_result.fit(X_train, y_train, sample_weight=X_dev_weights*class_weight)
         grid_result.fit(X_train, y_train, sample_weight=class_weight)
@@ -381,52 +382,52 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
 
     # Variables needed to build the input features for the 1st and 2nd steps
     if(species_name == "Ktautau"):
-        if(step_name == "isolation"):
-            branch_names = ['Bp_VTXISODCHI2ONETRACK_B', 'Bp_VTXISODCHI2ONETRACK_taup', 'Bp_VTXISODCHI2ONETRACK_taum', 'Bp_VTXISODCHI2TWOTRACK_taup', 'Bp_VTXISODCHI2TWOTRACK_taum', 'Bp_VTXISONUMVTX_taup', 'Bp_VTXISONUMVTX_taum', 
-                            'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum',
-                            'Bp_TRKISOBDTFIRSTVALUE_taup_pi1', 'Bp_TRKISOBDTFIRSTVALUE_taup_pi2', 'Bp_TRKISOBDTFIRSTVALUE_taup_pi3', 
-                            'Bp_TRKISOBDTSECONDVALUE_taup_pi1', 'Bp_TRKISOBDTSECONDVALUE_taup_pi2', 'Bp_TRKISOBDTSECONDVALUE_taup_pi3', 
-                            'Bp_TRKISOBDTTHIRDVALUE_taup_pi1', 'Bp_TRKISOBDTTHIRDVALUE_taup_pi2', 'Bp_TRKISOBDTTHIRDVALUE_taup_pi3', 
-                            'Bp_TRKISOBDTFIRSTVALUE_taum_pi1', 'Bp_TRKISOBDTFIRSTVALUE_taum_pi2', 'Bp_TRKISOBDTFIRSTVALUE_taum_pi3', 
-                            'Bp_TRKISOBDTSECONDVALUE_taum_pi1', 'Bp_TRKISOBDTSECONDVALUE_taum_pi2', 'Bp_TRKISOBDTSECONDVALUE_taum_pi3', 
-                            'Bp_TRKISOBDTTHIRDVALUE_taum_pi1', 'Bp_TRKISOBDTTHIRDVALUE_taum_pi2', 'Bp_TRKISOBDTTHIRDVALUE_taum_pi3',
-                            'Bp_NC_05_PTASYM_taup', 'Bp_NC_05_PTASYM_taum', 'Bp_CCNC_05_IT_B', 'Bp_NC_05_PTASYM_taup', 'Bp_NC_05_PTASYM_taum', 'Bp_CC_05_MULT_B', 'Bp_NC_05_IT_B', 'Bp_NC_05_PTASYM_B']
-            
-        else:
-            branch_names = ['taup_M', 'taup_M12', 'taup_M23', 'taup_M13', 'taup_DIRA_ORIVX', 'taum_M', 'taum_M12', 'taum_M23', 'taum_M13', 'taum_DIRA_ORIVX', 'Bp_DIRA_OWNPV',
-                            'df_BVx', 'df_BVy', 'df_BVz', 'df_DV1x', 'df_DV1y', 'df_DV1z', 'df_DV2x', 'df_DV2y', 'df_DV2z', 'df_PVx', 'df_PVy', 'df_PVz',
-                            'df_BVx_err', 'df_BVy_err', 'df_BVz_err', 'df_DV1x_err', 'df_DV1y_err', 'df_DV1z_err', 'df_DV2x_err', 'df_DV2y_err', 'df_DV2z_err', 'df_PVx_err', 'df_PVy_err', 'df_PVz_err',
-                            'df_Kp_PX', 'df_Kp_PY', 'df_Kp_PZ', 'df_chi2', 
-                            'Kp_IPCHI2_OWNPV', 'taup_pi1_IPCHI2_OWNPV', 'taup_pi2_IPCHI2_OWNPV', 'taup_pi3_IPCHI2_OWNPV', 'taum_pi1_IPCHI2_OWNPV', 'taum_pi2_IPCHI2_OWNPV', 'taum_pi3_IPCHI2_OWNPV',
-                            'taup_AMAXDOCA', 'taup_AMINDOCA', 'taup_DOCACHI2MAX', 'taum_AMAXDOCA', 'taum_AMINDOCA', 'taum_DOCACHI2MAX',
-                            'Bp_M02', 'Bp_M04', 'Bp_M06', 'Bp_M0456']
+        branch_names = ['Bp_VTXISODCHI2ONETRACK_B', 'Bp_VTXISODCHI2ONETRACK_taup', 'Bp_VTXISODCHI2ONETRACK_taum', 'Bp_VTXISODCHI2TWOTRACK_taup', 'Bp_VTXISODCHI2TWOTRACK_taum', 'Bp_VTXISONUMVTX_taup', 'Bp_VTXISONUMVTX_taum', 
+                        'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum',
+                        'Bp_TRKISOBDTFIRSTVALUE_taup_pi1', 'Bp_TRKISOBDTFIRSTVALUE_taup_pi2', 'Bp_TRKISOBDTFIRSTVALUE_taup_pi3', 
+                        'Bp_TRKISOBDTSECONDVALUE_taup_pi1', 'Bp_TRKISOBDTSECONDVALUE_taup_pi2', 'Bp_TRKISOBDTSECONDVALUE_taup_pi3', 
+                        'Bp_TRKISOBDTTHIRDVALUE_taup_pi1', 'Bp_TRKISOBDTTHIRDVALUE_taup_pi2', 'Bp_TRKISOBDTTHIRDVALUE_taup_pi3', 
+                        'Bp_TRKISOBDTFIRSTVALUE_taum_pi1', 'Bp_TRKISOBDTFIRSTVALUE_taum_pi2', 'Bp_TRKISOBDTFIRSTVALUE_taum_pi3', 
+                        'Bp_TRKISOBDTSECONDVALUE_taum_pi1', 'Bp_TRKISOBDTSECONDVALUE_taum_pi2', 'Bp_TRKISOBDTSECONDVALUE_taum_pi3', 
+                        'Bp_TRKISOBDTTHIRDVALUE_taum_pi1', 'Bp_TRKISOBDTTHIRDVALUE_taum_pi2', 'Bp_TRKISOBDTTHIRDVALUE_taum_pi3',
+                        'Bp_NC_05_PTASYM_taup', 'Bp_NC_05_PTASYM_taum', 'Bp_CCNC_05_IT_B', 'Bp_NC_05_PTASYM_taup', 'Bp_NC_05_PTASYM_taum', 'Bp_CC_05_MULT_B', 'Bp_NC_05_IT_B', 'Bp_NC_05_PTASYM_B',
+                        'taup_M', 'taup_M12', 'taup_M23', 'taup_M13', 'taup_DIRA_ORIVX', 'taum_M', 'taum_M12', 'taum_M23', 'taum_M13', 'taum_DIRA_ORIVX', 'Bp_DIRA_OWNPV',
+                        'df_BVx', 'df_BVy', 'df_BVz', 'df_DV1x', 'df_DV1y', 'df_DV1z', 'df_DV2x', 'df_DV2y', 'df_DV2z', 'df_PVx', 'df_PVy', 'df_PVz',
+                        'df_BVx_err', 'df_BVy_err', 'df_BVz_err', 'df_DV1x_err', 'df_DV1y_err', 'df_DV1z_err', 'df_DV2x_err', 'df_DV2y_err', 'df_DV2z_err', 'df_PVx_err', 'df_PVy_err', 'df_PVz_err',
+                        'df_Kp_PX', 'df_Kp_PY', 'df_Kp_PZ', 'df_chi2', 
+                        'Kp_IPCHI2_OWNPV', 'taup_pi1_IPCHI2_OWNPV', 'taup_pi2_IPCHI2_OWNPV', 'taup_pi3_IPCHI2_OWNPV', 'taum_pi1_IPCHI2_OWNPV', 'taum_pi2_IPCHI2_OWNPV', 'taum_pi3_IPCHI2_OWNPV',
+                        'taup_AMAXDOCA', 'taup_AMINDOCA', 'taup_DOCACHI2MAX', 'taum_AMAXDOCA', 'taum_AMINDOCA', 'taum_DOCACHI2MAX',
+                        'Bp_M02', 'Bp_M04', 'Bp_M06']
+    
     else:
-        if(step_name == "isolation"):
-            branch_names = ['Bp_CC_05_IT_B',  'Bp_VTXISONUMVTX_B', 'Bp_VTXISODCHI2ONETRACK_B', 'Bp_VTXISODCHI2MASSONETRACK_B', 'Bp_VTXISODCHI2TWOTRACK_B', 'Bp_VTXISODCHI2MASSTWOTRACK_B', 
-                            'Bp_VTXISONUMVTX_D0bar', 'Bp_VTXISODCHI2ONETRACK_D0bar', 'Bp_VTXISODCHI2MASSONETRACK_D0bar', 'Bp_VTXISODCHI2TWOTRACK_D0bar', 'Bp_VTXISODCHI2MASSTWOTRACK_D0bar', 
-                            'Bp_VTXISONUMVTX_Dsp', 'Bp_VTXISODCHI2ONETRACK_Dsp', 'Bp_VTXISODCHI2MASSONETRACK_Dsp', 'Bp_VTXISODCHI2TWOTRACK_Dsp', 'Bp_VTXISODCHI2MASSTWOTRACK_Dsp',
-                            'Bp_CC_05_DELTAPHI_B', 'Bp_NC_05_IT_B', 'Bp_CC_05_PTASYM_B', 'Bp_CC_05_PX_B', 'Bp_CC_05_PZASYM_B', 'Bp_CC_05_DELTAETA_B', 'Bp_NC_05_MULT_B', 'Bp_NC_05_VPT_B', 'Bp_NC_05_PTASYM_B', 'Bp_CCNC_05_IT_B', 'Bp_CC_05_MULT_B',
-                            'Bp_CC_05_PASYM_D0bar', 'Bp_CC_05_DELTAETA_D0bar', 'Bp_NC_05_MULT_D0bar', 'Bp_NC_05_SPT_D0bar', 'Bp_CCNC_05_IT_D0bar', 'Bp_NC_05_PTASYM_D0bar', 'Bp_CC_05_PTASYM_D0bar', 'Bp_CC_05_IT_D0bar', 'Bp_TRKISOBDTSECONDVALUE_D0bar_K', 'Bp_TRKISOBDTSECONDVALUE_D0bar_pi', 'Bp_TRKISOBDTFIRSTVALUE_D0bar_K', 'Bp_TRKISOBDTFIRSTVALUE_D0bar_pi', 'Bp_TRKISOBDTTHIRDVALUE_D0bar_K', 'Bp_TRKISOBDTTHIRDVALUE_D0bar_pi',
-                            'Bp_CC_05_PASYM_Dsp', 'Bp_CC_05_DELTAETA_Dsp', 'Bp_NC_05_MULT_Dsp', 'Bp_NC_05_SPT_Dsp', 'Bp_CCNC_05_IT_Dsp', 'Bp_NC_05_PTASYM_Dsp', 'Bp_CC_05_PTASYM_Dsp', 'Bp_CC_05_IT_Dsp', 'Bp_TRKISOBDTSECONDVALUE_Dsp_K1', 'Bp_TRKISOBDTSECONDVALUE_Dsp_K2', 'Bp_TRKISOBDTSECONDVALUE_Dsp_pi', 'Bp_TRKISOBDTFIRSTVALUE_Dsp_K1', 'Bp_TRKISOBDTFIRSTVALUE_Dsp_K2', 'Bp_TRKISOBDTFIRSTVALUE_Dsp_pi', 'Bp_TRKISOBDTTHIRDVALUE_Dsp_K1', 'Bp_TRKISOBDTTHIRDVALUE_Dsp_K2', 'Bp_TRKISOBDTTHIRDVALUE_Dsp_pi',
-                            'Bp_Bstautau_ISOBDTFIRSTVALUE_taup', 'Bp_Bstautau_ISOBDTSECONDVALUE_taup', 'Bp_Bstautau_ISOBDTTHIRDVALUE_taup', 'Bp_Bstautau_ISOBDTFIRSTVALUE_taum', 
-                            'Bp_Bstautau_ISOBDTSECONDVALUE_taum', 'Bp_Bstautau_ISOBDTTHIRDVALUE_taum'] 
-        else:
-            branch_names = ['D0bar_M', 'D0bar_DIRA_ORIVX', 'Dsp_M', 'Dsp_M12', 'Dsp_M23', 'Dsp_M13', 'Dsp_DIRA_ORIVX', 'Bp_DIRA_OWNPV',
-                    'Bp_ENDVERTEX_X', 'Bp_ENDVERTEX_Y', 'Bp_ENDVERTEX_Z', 'D0bar_ENDVERTEX_X', 'D0bar_ENDVERTEX_Y', 'D0bar_ENDVERTEX_Z', 'Dsp_ENDVERTEX_X', 'Dsp_ENDVERTEX_Y', 'Dsp_ENDVERTEX_Z', 'Bp_OWNPV_X', 'Bp_OWNPV_Y', 'Bp_OWNPV_Z',
-                    'Bp_ENDVERTEX_XERR', 'Bp_ENDVERTEX_YERR', 'Bp_ENDVERTEX_ZERR', 'D0bar_ENDVERTEX_XERR', 'D0bar_ENDVERTEX_YERR', 'D0bar_ENDVERTEX_ZERR', 'Dsp_ENDVERTEX_XERR', 'Dsp_ENDVERTEX_YERR', 'Dsp_ENDVERTEX_ZERR', 'Bp_OWNPV_XERR', 'Bp_OWNPV_YERR', 'Bp_OWNPV_ZERR', 'Bp_dtf_chi2', 
-                    'D0bar_AMAXDOCA', 'D0bar_AMINDOCA', 'D0bar_DOCACHI2MAX', 'Dsp_AMAXDOCA', 'Dsp_AMINDOCA', 'Dsp_DOCACHI2MAX', 'Bp_FDCHI2_OWNPV', 'D0bar_FD_ORIVX', 'Dsp_FD_ORIVX']
+        branch_names = ['Bp_CC_05_IT_B',  'Bp_VTXISONUMVTX_B', 'Bp_VTXISODCHI2ONETRACK_B', 'Bp_VTXISODCHI2MASSONETRACK_B', 'Bp_VTXISODCHI2TWOTRACK_B', 'Bp_VTXISODCHI2MASSTWOTRACK_B', 
+                        'Bp_VTXISONUMVTX_D0bar', 'Bp_VTXISODCHI2ONETRACK_D0bar', 'Bp_VTXISODCHI2MASSONETRACK_D0bar', 'Bp_VTXISODCHI2TWOTRACK_D0bar', 'Bp_VTXISODCHI2MASSTWOTRACK_D0bar', 
+                        'Bp_VTXISONUMVTX_Dsp', 'Bp_VTXISODCHI2ONETRACK_Dsp', 'Bp_VTXISODCHI2MASSONETRACK_Dsp', 'Bp_VTXISODCHI2TWOTRACK_Dsp', 'Bp_VTXISODCHI2MASSTWOTRACK_Dsp',
+                        'Bp_CC_05_DELTAPHI_B', 'Bp_NC_05_IT_B', 'Bp_CC_05_PTASYM_B', 'Bp_CC_05_PX_B', 'Bp_CC_05_PZASYM_B', 'Bp_CC_05_DELTAETA_B', 'Bp_NC_05_MULT_B', 'Bp_NC_05_VPT_B', 'Bp_NC_05_PTASYM_B', 'Bp_CCNC_05_IT_B', 'Bp_CC_05_MULT_B',
+                        'Bp_CC_05_PASYM_D0bar', 'Bp_CC_05_DELTAETA_D0bar', 'Bp_NC_05_MULT_D0bar', 'Bp_NC_05_SPT_D0bar', 'Bp_CCNC_05_IT_D0bar', 'Bp_NC_05_PTASYM_D0bar', 'Bp_CC_05_PTASYM_D0bar', 'Bp_CC_05_IT_D0bar', 'Bp_TRKISOBDTSECONDVALUE_D0bar_K', 'Bp_TRKISOBDTSECONDVALUE_D0bar_pi', 'Bp_TRKISOBDTFIRSTVALUE_D0bar_K', 'Bp_TRKISOBDTFIRSTVALUE_D0bar_pi', 'Bp_TRKISOBDTTHIRDVALUE_D0bar_K', 'Bp_TRKISOBDTTHIRDVALUE_D0bar_pi',
+                        'Bp_CC_05_PASYM_Dsp', 'Bp_CC_05_DELTAETA_Dsp', 'Bp_NC_05_MULT_Dsp', 'Bp_NC_05_SPT_Dsp', 'Bp_CCNC_05_IT_Dsp', 'Bp_NC_05_PTASYM_Dsp', 'Bp_CC_05_PTASYM_Dsp', 'Bp_CC_05_IT_Dsp', 'Bp_TRKISOBDTSECONDVALUE_Dsp_K1', 'Bp_TRKISOBDTSECONDVALUE_Dsp_K2', 'Bp_TRKISOBDTSECONDVALUE_Dsp_pi', 'Bp_TRKISOBDTFIRSTVALUE_Dsp_K1', 'Bp_TRKISOBDTFIRSTVALUE_Dsp_K2', 'Bp_TRKISOBDTFIRSTVALUE_Dsp_pi', 'Bp_TRKISOBDTTHIRDVALUE_Dsp_K1', 'Bp_TRKISOBDTTHIRDVALUE_Dsp_K2', 'Bp_TRKISOBDTTHIRDVALUE_Dsp_pi',
+                        'Bp_Bstautau_ISOBDTFIRSTVALUE_taup', 'Bp_Bstautau_ISOBDTSECONDVALUE_taup', 'Bp_Bstautau_ISOBDTTHIRDVALUE_taup', 'Bp_Bstautau_ISOBDTFIRSTVALUE_taum', 
+                        'Bp_Bstautau_ISOBDTSECONDVALUE_taum', 'Bp_Bstautau_ISOBDTTHIRDVALUE_taum',
+                        'D0bar_M', 'D0bar_DIRA_ORIVX', 'Dsp_M', 'Dsp_M12', 'Dsp_M23', 'Dsp_M13', 'Dsp_DIRA_ORIVX', 'Bp_DIRA_OWNPV',
+                        'Bp_ENDVERTEX_X', 'Bp_ENDVERTEX_Y', 'Bp_ENDVERTEX_Z', 'D0bar_ENDVERTEX_X', 'D0bar_ENDVERTEX_Y', 'D0bar_ENDVERTEX_Z', 'Dsp_ENDVERTEX_X', 'Dsp_ENDVERTEX_Y', 'Dsp_ENDVERTEX_Z', 'Bp_OWNPV_X', 'Bp_OWNPV_Y', 'Bp_OWNPV_Z',
+                        'Bp_ENDVERTEX_XERR', 'Bp_ENDVERTEX_YERR', 'Bp_ENDVERTEX_ZERR', 'D0bar_ENDVERTEX_XERR', 'D0bar_ENDVERTEX_YERR', 'D0bar_ENDVERTEX_ZERR', 'Dsp_ENDVERTEX_XERR', 'Dsp_ENDVERTEX_YERR', 'Dsp_ENDVERTEX_ZERR', 'Bp_OWNPV_XERR', 'Bp_OWNPV_YERR', 'Bp_OWNPV_ZERR', 'Bp_dtf_chi2', 
+                        'D0bar_AMAXDOCA', 'D0bar_AMINDOCA', 'D0bar_DOCACHI2MAX', 'Dsp_AMAXDOCA', 'Dsp_AMINDOCA', 'Dsp_DOCACHI2MAX', 'Bp_FDCHI2_OWNPV', 'D0bar_FD_ORIVX', 'Dsp_FD_ORIVX']
 
     if(species_name == "Ktautau"):
         branch_names += ['df_Bp_M']
     else:
         branch_names += ['Bp_dtf_M']
 
-    sig = sig_df.AsNumpy(branch_names)
-    bkg = bkg_df.AsNumpy(branch_names) 
+    print("Loading signal")
+    sig = sig_df.AsNumpy(branch_names+['Kp_ProbNNk_pidgen_default', 'taum_pi1_ProbNNpi_pidgen_default', 'taum_pi2_ProbNNpi_pidgen_default', 'taum_pi3_ProbNNpi_pidgen_default', 'taup_pi1_ProbNNpi_pidgen_default', 'taup_pi2_ProbNNpi_pidgen_default', 'taup_pi3_ProbNNpi_pidgen_default'])
+    if(step_name == "combinatorial"):
+        bkg = bkg_df.AsNumpy(branch_names+['Kp_ProbNNk', 'taum_pi1_ProbNNpi', 'taum_pi2_ProbNNpi', 'taum_pi3_ProbNNpi', 'taup_pi1_ProbNNpi', 'taup_pi2_ProbNNpi', 'taup_pi3_ProbNNpi']) 
+    else:
+        bkg = bkg_df.AsNumpy(branch_names)
 
     # Define the input feature
     if(species_name == "Ktautau"):
-        if(step_name == "isolation_phys"):
+        if(step_name == "physics"):
             # SIGNAL
             signal['Bp_VTXISONUMVTX_taup'] = sig['Bp_VTXISONUMVTX_taup']
             signal['Bp_VTXISONUMVTX_taum'] = sig['Bp_VTXISONUMVTX_taum']
@@ -434,17 +435,24 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
             signal['Bp_VTXISODCHI2ONETRACK_taum'] = sig['Bp_VTXISODCHI2ONETRACK_taum']
             signal['Bp_VTXISODCHI2TWOTRACK_taum'] = sig['Bp_VTXISODCHI2TWOTRACK_taum']
             signal['Bp_VTXISODCHI2ONETRACK_B'] = sig['Bp_VTXISODCHI2ONETRACK_B']
-            signal['taup_iso_second_value'] = sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup']
-            signal['taum_iso_second_value'] = sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum']
-            signal['taup_iso_third_value'] = sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup']
-            signal['taum_iso_third_value'] = sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum']
-            signal['TRKISOBDTFIRSTVALUE_taup_pi_min'] = np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] )
-            signal['TRKISOBDTTHIRDVALUE_taum_pi_min'] = np.minimum( sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi1'], sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi2'], sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi3'] ) 
+            # signal['taup_iso_second_value'] = sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup']
+            # signal['taum_iso_second_value'] = sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum']
+            # signal['taup_iso_third_value'] = sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup']
+            # signal['taum_iso_third_value'] = sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum']
+            # signal['TRKISOBDTFIRSTVALUE_taup_pi_min'] = np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] )
+            # signal['TRKISOBDTTHIRDVALUE_taum_pi_min'] = np.minimum( sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi1'], sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi2'], sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi3'] ) 
+            signal['tau_iso_second_value_max'] = np.maximum( sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] )
+            signal['tau_iso_third_value_max'] = np.maximum( sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] ) 
+            signal['tau_iso_second_value_min'] = np.minimum( sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] )
+            signal['tau_iso_third_value_min'] = np.minimum( sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] ) 
             signal['Bp_NC_05_PTASYM_taum'] = sig['Bp_NC_05_PTASYM_taum']
             signal['Bp_CCNC_05_IT_B'] = sig['Bp_CCNC_05_IT_B']
             signal['Bp_CC_05_MULT_B'] = sig['Bp_CC_05_MULT_B']
             signal['Bp_NC_05_IT_B'] = sig['Bp_NC_05_IT_B']
             signal['Bp_NC_05_PTASYM_B'] = sig['Bp_NC_05_PTASYM_B']
+            signal['Bp_M02'] = sig['Bp_M02']
+            signal['Bp_M04'] = sig['Bp_M04']
+            signal['Bp_M06'] = sig['Bp_M06']
 
             # BACKGROUND
             background['Bp_VTXISONUMVTX_taup'] = bkg['Bp_VTXISONUMVTX_taup']
@@ -453,118 +461,30 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
             background['Bp_VTXISODCHI2ONETRACK_taum'] = bkg['Bp_VTXISODCHI2ONETRACK_taum']
             background['Bp_VTXISODCHI2TWOTRACK_taum'] = bkg['Bp_VTXISODCHI2TWOTRACK_taum']
             background['Bp_VTXISODCHI2ONETRACK_B'] = bkg['Bp_VTXISODCHI2ONETRACK_B']
-            background['taup_iso_second_value'] = bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup']
-            background['taum_iso_second_value'] = bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum']
-            background['taup_iso_third_value'] = bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup']
-            background['taum_iso_third_value'] = bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum']
-            background['TRKISOBDTFIRSTVALUE_taup_pi_min'] = np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] )
-            background['TRKISOBDTTHIRDVALUE_taum_pi_min'] = np.minimum( bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi1'], bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi2'], bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi3'] ) 
+            # background['taup_iso_second_value'] = bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup']
+            # background['taum_iso_second_value'] = bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum']
+            # background['taup_iso_third_value'] = bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup']
+            # background['taum_iso_third_value'] = bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum']
+            # background['TRKISOBDTFIRSTVALUE_taup_pi_min'] = np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] )
+            # background['TRKISOBDTTHIRDVALUE_taum_pi_min'] = np.minimum( bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi1'], bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi2'], bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi3'] )
+            background['tau_iso_second_value_max'] = np.maximum( bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] )
+            background['tau_iso_third_value_max'] = np.maximum( bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] ) 
+            background['tau_iso_second_value_min'] = np.minimum( bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] )
+            background['tau_iso_third_value_min'] = np.minimum( bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] ) 
             background['Bp_NC_05_PTASYM_taum'] = bkg['Bp_NC_05_PTASYM_taum']
             background['Bp_CCNC_05_IT_B'] = bkg['Bp_CCNC_05_IT_B']
             background['Bp_CC_05_MULT_B'] = bkg['Bp_CC_05_MULT_B']
             background['Bp_NC_05_IT_B'] = bkg['Bp_NC_05_IT_B']
             background['Bp_NC_05_PTASYM_B'] = bkg['Bp_NC_05_PTASYM_B']
-
-        elif(step_name == "isolation_comb"):
-            # SIGNAL
-            signal['Bp_VTXISONUMVTX_tau_max'] = np.maximum( sig['Bp_VTXISONUMVTX_taup'], sig['Bp_VTXISONUMVTX_taum'])
-            signal['Bp_VTXISONUMVTX_tau_min'] = np.minimum( sig['Bp_VTXISONUMVTX_taup'], sig['Bp_VTXISONUMVTX_taum'])
-            signal['Bp_VTXISODCHI2ONETRACK_tau_max'] = np.maximum( sig['Bp_VTXISODCHI2ONETRACK_taup'], sig['Bp_VTXISODCHI2ONETRACK_taum'])
-            signal['Bp_VTXISODCHI2ONETRACK_tau_min'] = np.minimum( sig['Bp_VTXISODCHI2ONETRACK_taup'], sig['Bp_VTXISODCHI2ONETRACK_taum'])
-            signal['Bp_VTXISODCHI2TWOTRACK_tau_min'] = np.minimum( sig['Bp_VTXISODCHI2TWOTRACK_taup'], sig['Bp_VTXISODCHI2TWOTRACK_taum'] )
-            signal['Bp_VTXISODCHI2ONETRACK_B'] = sig['Bp_VTXISODCHI2ONETRACK_B']
-            signal['tau_iso_second_value_min'] = np.minimum( sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] )
-            signal['tau_iso_third_value_min'] = np.minimum( sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] ) 
-            signal['TRKISOBDTFIRSTVALUE_tau_pi_min_min'] = np.minimum( np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] ), np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi1'], sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi2'], sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi3'] ) )
-            signal['TRKISOBDTTHIRDVALUE_tau_pi_min_min'] = np.minimum( np.minimum( sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi1'], sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi2'], sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi3'] ), np.minimum( sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi1'], sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi2'], sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi3'] ) )
-            signal['Bp_NC_05_PTASYM_tau_min'] = np.minimum( sig['Bp_NC_05_PTASYM_taup'], sig['Bp_NC_05_PTASYM_taum'] )
-            signal['Bp_CCNC_05_IT_B'] = sig['Bp_CCNC_05_IT_B']
-            signal['Bp_CC_05_MULT_B'] = sig['Bp_CC_05_MULT_B']
-            signal['Bp_NC_05_IT_B'] = sig['Bp_NC_05_IT_B']
-            signal['Bp_NC_05_PTASYM_B'] = sig['Bp_NC_05_PTASYM_B']
-
-            # BACKGROUND
-            background['Bp_VTXISONUMVTX_tau_max'] = np.maximum( bkg['Bp_VTXISONUMVTX_taup'], bkg['Bp_VTXISONUMVTX_taum'])
-            background['Bp_VTXISONUMVTX_tau_min'] = np.minimum( bkg['Bp_VTXISONUMVTX_taup'], bkg['Bp_VTXISONUMVTX_taum'])
-            background['Bp_VTXISODCHI2ONETRACK_tau_max'] = np.maximum( bkg['Bp_VTXISODCHI2ONETRACK_taup'], bkg['Bp_VTXISODCHI2ONETRACK_taum'])
-            background['Bp_VTXISODCHI2ONETRACK_tau_min'] = np.minimum( bkg['Bp_VTXISODCHI2ONETRACK_taup'], bkg['Bp_VTXISODCHI2ONETRACK_taum'])
-            background['Bp_VTXISODCHI2TWOTRACK_tau_min'] = np.minimum( bkg['Bp_VTXISODCHI2TWOTRACK_taup'], bkg['Bp_VTXISODCHI2TWOTRACK_taum'] )
-            background['Bp_VTXISODCHI2ONETRACK_B'] = bkg['Bp_VTXISODCHI2ONETRACK_B']
-            background['tau_iso_second_value_min'] = np.minimum( bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] )
-            background['tau_iso_third_value_min'] = np.minimum( bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] ) 
-            background['TRKISOBDTFIRSTVALUE_tau_pi_min_min'] = np.minimum( np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] ), np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi1'], bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi2'], bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi3'] ) )
-            background['TRKISOBDTTHIRDVALUE_tau_pi_min_min'] = np.minimum( np.minimum( bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi1'], bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi2'], bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi3'] ), np.minimum( bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi1'], bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi2'], bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi3'] ) )
-            background['Bp_NC_05_PTASYM_tau_min'] = np.minimum( bkg['Bp_NC_05_PTASYM_taup'], bkg['Bp_NC_05_PTASYM_taum'] )
-            background['Bp_CCNC_05_IT_B'] = bkg['Bp_CCNC_05_IT_B']
-            background['Bp_CC_05_MULT_B'] = bkg['Bp_CC_05_MULT_B']
-            background['Bp_NC_05_IT_B'] = bkg['Bp_NC_05_IT_B']
-            background['Bp_NC_05_PTASYM_B'] = bkg['Bp_NC_05_PTASYM_B']
-
-        elif(step_name == "topology_phys"):
-            # SIGNAL
-            signal['taup_M'] = sig['taup_M']
-            signal['taum_M'] = sig['taum_M']
-            signal['taup_M12'] = sig['taup_M12']
-            signal['taum_M12'] = sig['taum_M12']
-            signal['taup_M23'] = sig['taup_M23']
-            signal['taum_M23'] = sig['taum_M23']
-            signal['log10_1_minus_taup_DIRA_BV'] = np.log10(1 - np.abs(sig['taup_DIRA_ORIVX'] ))*np.sign( sig['taup_DIRA_ORIVX'])
-            signal['log10_1_minus_taum_DIRA_BV'] = np.log10(1 - np.abs(sig['taum_DIRA_ORIVX'] ))*np.sign( sig['taum_DIRA_ORIVX'])
-            signal['log10_df_chi2'] = np.log10( sig['df_chi2'] )
-
-            Cx_taup_sig =  (sig['df_DV1y'] - sig['df_BVy'])*sig['df_Kp_PZ']  - ( sig['df_DV1z'] - sig['df_BVz'])*sig['df_Kp_PY']
-            Cy_taup_sig =  (sig['df_DV1z'] - sig['df_BVz'])*sig['df_Kp_PX']  - ( sig['df_DV1x'] - sig['df_BVx'])*sig['df_Kp_PZ']
-            Cz_taup_sig =  (sig['df_DV1x'] - sig['df_BVx'])*sig['df_Kp_PY']  - ( sig['df_DV1y'] - sig['df_BVy'])*sig['df_Kp_PX']
-            C_taup_sig = np.sqrt( Cx_taup_sig**2 + Cy_taup_sig**2 + Cz_taup_sig**2  )
-            IP_taup_Kp_sig = (2*C_taup_sig)/( np.sqrt( sig['df_Kp_PX']**2 + sig['df_Kp_PY']**2 + sig['df_Kp_PZ']**2 ) )
-
-            Cx_taum_sig =  (sig['df_DV2y'] - sig['df_BVy'])*sig['df_Kp_PZ']  - ( sig['df_DV2z'] - sig['df_BVz'])*sig['df_Kp_PY']
-            Cy_taum_sig =  (sig['df_DV2z'] - sig['df_BVz'])*sig['df_Kp_PX']  - ( sig['df_DV2x'] - sig['df_BVx'])*sig['df_Kp_PZ']
-            Cz_taum_sig =  (sig['df_DV2x'] - sig['df_BVx'])*sig['df_Kp_PY']  - ( sig['df_DV2y'] - sig['df_BVy'])*sig['df_Kp_PX']
-            C_taum_sig = np.sqrt( Cx_taum_sig**2 + Cy_taum_sig**2 + Cz_taum_sig**2  )
-            IP_taum_Kp_sig = (2*C_taum_sig)/( np.sqrt( sig['df_Kp_PX']**2 + sig['df_Kp_PY']**2 + sig['df_Kp_PZ']**2 ) )
-
-            signal['IP_taup_Kp'] = IP_taup_Kp_sig
-            signal['IP_taum_Kp'] = IP_taum_Kp_sig 
-
-            signal['Bp_M02'] = sig['Bp_M02']
-            signal['Bp_M04'] = sig['Bp_M04']
-            signal['Bp_M06'] = sig['Bp_M06']
-            signal['Bp_M0456'] = sig['Bp_M0456']
-
-            # BACKGROUND
-            background['taup_M'] = bkg['taup_M']
-            background['taum_M'] = bkg['taum_M']
-            background['taup_M12'] = bkg['taup_M12']
-            background['taum_M12'] = bkg['taum_M12']
-            background['taup_M23'] = bkg['taup_M23']
-            background['taum_M23'] = bkg['taum_M23']
-            background['log10_1_minus_taup_DIRA_BV'] = np.log10(1 - np.abs(bkg['taup_DIRA_ORIVX'] ))*np.sign( bkg['taup_DIRA_ORIVX'])
-            background['log10_1_minus_taum_DIRA_BV'] = np.log10(1 - np.abs(bkg['taum_DIRA_ORIVX'] ))*np.sign( bkg['taum_DIRA_ORIVX'])
-            background['log10_df_chi2'] = np.log10( bkg['df_chi2'] )
-
-            Cx_taup_bkg =  (bkg['df_DV1y'] - bkg['df_BVy'])*bkg['df_Kp_PZ']  - ( bkg['df_DV1z'] - bkg['df_BVz'])*bkg['df_Kp_PY']
-            Cy_taup_bkg =  (bkg['df_DV1z'] - bkg['df_BVz'])*bkg['df_Kp_PX']  - ( bkg['df_DV1x'] - bkg['df_BVx'])*bkg['df_Kp_PZ']
-            Cz_taup_bkg =  (bkg['df_DV1x'] - bkg['df_BVx'])*bkg['df_Kp_PY']  - ( bkg['df_DV1y'] - bkg['df_BVy'])*bkg['df_Kp_PX']
-            C_taup_bkg = np.sqrt( Cx_taup_bkg**2 + Cy_taup_bkg**2 + Cz_taup_bkg**2  )
-            IP_taup_Kp_bkg = (2*C_taup_bkg)/( np.sqrt( bkg['df_Kp_PX']**2 + bkg['df_Kp_PY']**2 + bkg['df_Kp_PZ']**2 ) )
-
-            Cx_taum_bkg =  (bkg['df_DV2y'] - bkg['df_BVy'])*bkg['df_Kp_PZ']  - ( bkg['df_DV2z'] - bkg['df_BVz'])*bkg['df_Kp_PY']
-            Cy_taum_bkg =  (bkg['df_DV2z'] - bkg['df_BVz'])*bkg['df_Kp_PX']  - ( bkg['df_DV2x'] - bkg['df_BVx'])*bkg['df_Kp_PZ']
-            Cz_taum_bkg =  (bkg['df_DV2x'] - bkg['df_BVx'])*bkg['df_Kp_PY']  - ( bkg['df_DV2y'] - bkg['df_BVy'])*bkg['df_Kp_PX']
-            C_taum_bkg = np.sqrt( Cx_taum_bkg**2 + Cy_taum_bkg**2 + Cz_taum_bkg**2  )
-            IP_taum_Kp_bkg = (2*C_taum_bkg)/( np.sqrt( bkg['df_Kp_PX']**2 + bkg['df_Kp_PY']**2 + bkg['df_Kp_PZ']**2 ) )
-
-            background['IP_taup_Kp'] = IP_taup_Kp_bkg
-            background['IP_taum_Kp'] = IP_taum_Kp_bkg 
-
             background['Bp_M02'] = bkg['Bp_M02']
             background['Bp_M04'] = bkg['Bp_M04']
             background['Bp_M06'] = bkg['Bp_M06']
-            background['Bp_M0456'] = bkg['Bp_M0456']
 
-        elif(step_name == "topology_comb"):
+
+        else:
             # SIGNAL:
+            signal['TRKISOBDTFIRSTVALUE_tau_pi_min_min'] = np.minimum( np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] ), np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi1'], sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi2'], sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi3'] ) )
+            signal['TRKISOBDTTHIRDVALUE_tau_pi_min_min'] = np.minimum( np.minimum( sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi1'], sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi2'], sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi3'] ), np.minimum( sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi1'], sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi2'], sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi3'] ) )
             signal['tau_M_max'] = np.maximum( sig['taup_M'], sig['taum_M'] )
             signal['tau_M12_M23_max_max'] = np.maximum( np.maximum( sig['taup_M12'], sig['taup_M23'] ), np.maximum( sig['taum_M12'], sig['taum_M23'] ) )
             signal['tau_M12_M23_min_max'] = np.minimum( np.maximum( sig['taup_M12'], sig['taup_M23'] ), np.maximum( sig['taum_M12'], sig['taum_M23'] ) )
@@ -586,8 +506,13 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
 
             signal['IP_tau_Kp_max'] = np.maximum( IP_taup_Kp_sig, IP_taum_Kp_sig ) 
             signal['IP_tau_Kp_min'] = np.minimum( IP_taup_Kp_sig, IP_taum_Kp_sig ) 
-    
+
+            signal['Kp_ProbNNk'] = sig['Kp_ProbNNk_pidgen_default']
+            signal['tau_prod_pi_min'] = np.minimum(sig['taum_pi1_ProbNNpi_pidgen_default']*sig['taum_pi2_ProbNNpi_pidgen_default']*sig['taum_pi3_ProbNNpi_pidgen_default'], sig['taup_pi1_ProbNNpi_pidgen_default']*sig['taup_pi2_ProbNNpi_pidgen_default']*sig['taup_pi3_ProbNNpi_pidgen_default'])
+
             # BACKGROUND:
+            background['TRKISOBDTFIRSTVALUE_tau_pi_min_min'] = np.minimum( np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] ), np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi1'], bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi2'], bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi3'] ) )
+            background['TRKISOBDTTHIRDVALUE_tau_pi_min_min'] = np.minimum( np.minimum( bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi1'], bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi2'], bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi3'] ), np.minimum( bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi1'], bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi2'], bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi3'] ) ) 
             background['tau_M_max'] = np.maximum( bkg['taup_M'], bkg['taum_M'] )
             background['tau_M12_M23_max_max'] = np.maximum( np.maximum( bkg['taup_M12'], bkg['taup_M23'] ), np.maximum( bkg['taum_M12'], bkg['taum_M23'] ) )
             background['tau_M12_M23_min_max'] = np.minimum( np.maximum( bkg['taup_M12'], bkg['taup_M23'] ), np.maximum( bkg['taum_M12'], bkg['taum_M23'] ) )
@@ -610,8 +535,49 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
             background['IP_tau_Kp_max'] = np.maximum( IP_taup_Kp_bkg, IP_taum_Kp_bkg ) 
             background['IP_tau_Kp_min'] = np.minimum( IP_taup_Kp_bkg, IP_taum_Kp_bkg ) 
 
+            background['Kp_ProbNNk'] = bkg['Kp_ProbNNk']
+            background['tau_prod_pi_min'] = np.minimum(bkg['taum_pi1_ProbNNpi']*bkg['taum_pi2_ProbNNpi']*bkg['taum_pi3_ProbNNpi'], bkg['taup_pi1_ProbNNpi']*bkg['taup_pi2_ProbNNpi']*bkg['taup_pi3_ProbNNpi'])
+
+
+
+        # elif(step_name == "isolation_comb"):
+        #     # SIGNAL
+        #     signal['Bp_VTXISONUMVTX_tau_max'] = np.maximum( sig['Bp_VTXISONUMVTX_taup'], sig['Bp_VTXISONUMVTX_taum'])
+        #     signal['Bp_VTXISONUMVTX_tau_min'] = np.minimum( sig['Bp_VTXISONUMVTX_taup'], sig['Bp_VTXISONUMVTX_taum'])
+        #     signal['Bp_VTXISODCHI2ONETRACK_tau_max'] = np.maximum( sig['Bp_VTXISODCHI2ONETRACK_taup'], sig['Bp_VTXISODCHI2ONETRACK_taum'])
+        #     signal['Bp_VTXISODCHI2ONETRACK_tau_min'] = np.minimum( sig['Bp_VTXISODCHI2ONETRACK_taup'], sig['Bp_VTXISODCHI2ONETRACK_taum'])
+        #     signal['Bp_VTXISODCHI2TWOTRACK_tau_min'] = np.minimum( sig['Bp_VTXISODCHI2TWOTRACK_taup'], sig['Bp_VTXISODCHI2TWOTRACK_taum'] )
+        #     signal['Bp_VTXISODCHI2ONETRACK_B'] = sig['Bp_VTXISODCHI2ONETRACK_B']
+        #     signal['tau_iso_second_value_max'] = np.maximum( sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] )
+        #     signal['tau_iso_third_value_max'] = np.maximum( sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] ) 
+        #     signal['TRKISOBDTFIRSTVALUE_tau_pi_min_min'] = np.minimum( np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], sig['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] ), np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi1'], sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi2'], sig['Bp_TRKISOBDTFIRSTVALUE_taum_pi3'] ) )
+        #     signal['TRKISOBDTTHIRDVALUE_tau_pi_min_min'] = np.minimum( np.minimum( sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi1'], sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi2'], sig['Bp_TRKISOBDTTHIRDVALUE_taup_pi3'] ), np.minimum( sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi1'], sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi2'], sig['Bp_TRKISOBDTTHIRDVALUE_taum_pi3'] ) )
+        #     signal['Bp_NC_05_PTASYM_tau_min'] = np.minimum( sig['Bp_NC_05_PTASYM_taup'], sig['Bp_NC_05_PTASYM_taum'] )
+        #     signal['Bp_CCNC_05_IT_B'] = sig['Bp_CCNC_05_IT_B']
+        #     signal['Bp_CC_05_MULT_B'] = sig['Bp_CC_05_MULT_B']
+        #     signal['Bp_NC_05_IT_B'] = sig['Bp_NC_05_IT_B']
+        #     signal['Bp_NC_05_PTASYM_B'] = sig['Bp_NC_05_PTASYM_B']
+
+        #     # BACKGROUND
+        #     background['Bp_VTXISONUMVTX_tau_max'] = np.maximum( bkg['Bp_VTXISONUMVTX_taup'], bkg['Bp_VTXISONUMVTX_taum'])
+        #     background['Bp_VTXISONUMVTX_tau_min'] = np.minimum( bkg['Bp_VTXISONUMVTX_taup'], bkg['Bp_VTXISONUMVTX_taum'])
+        #     background['Bp_VTXISODCHI2ONETRACK_tau_max'] = np.maximum( bkg['Bp_VTXISODCHI2ONETRACK_taup'], bkg['Bp_VTXISODCHI2ONETRACK_taum'])
+        #     background['Bp_VTXISODCHI2ONETRACK_tau_min'] = np.minimum( bkg['Bp_VTXISODCHI2ONETRACK_taup'], bkg['Bp_VTXISODCHI2ONETRACK_taum'])
+        #     background['Bp_VTXISODCHI2TWOTRACK_tau_min'] = np.minimum( bkg['Bp_VTXISODCHI2TWOTRACK_taup'], bkg['Bp_VTXISODCHI2TWOTRACK_taum'] )
+        #     background['Bp_VTXISODCHI2ONETRACK_B'] = bkg['Bp_VTXISODCHI2ONETRACK_B']
+        #     background['tau_iso_second_value_max'] = np.maximum( bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] )
+        #     background['tau_iso_third_value_max'] = np.maximum( bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] ) 
+        #     background['TRKISOBDTFIRSTVALUE_tau_pi_min_min'] = np.minimum( np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], bkg['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] ), np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi1'], bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi2'], bkg['Bp_TRKISOBDTFIRSTVALUE_taum_pi3'] ) )
+        #     background['TRKISOBDTTHIRDVALUE_tau_pi_min_min'] = np.minimum( np.minimum( bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi1'], bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi2'], bkg['Bp_TRKISOBDTTHIRDVALUE_taup_pi3'] ), np.minimum( bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi1'], bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi2'], bkg['Bp_TRKISOBDTTHIRDVALUE_taum_pi3'] ) )
+        #     background['Bp_NC_05_PTASYM_tau_min'] = np.minimum( bkg['Bp_NC_05_PTASYM_taup'], bkg['Bp_NC_05_PTASYM_taum'] )
+        #     background['Bp_CCNC_05_IT_B'] = bkg['Bp_CCNC_05_IT_B']
+        #     background['Bp_CC_05_MULT_B'] = bkg['Bp_CC_05_MULT_B']
+        #     background['Bp_NC_05_IT_B'] = bkg['Bp_NC_05_IT_B']
+        #     background['Bp_NC_05_PTASYM_B'] = bkg['Bp_NC_05_PTASYM_B']
+
+
     else:
-        if(step_name == "isolation_comb"):
+        if(step_name == "physics"):
             # SIGNAL
             signal['VTXISODCHI2ONETRACK_D_min'] = np.minimum( sig['Bp_VTXISODCHI2ONETRACK_D0bar'], sig['Bp_VTXISODCHI2ONETRACK_Dsp'] )
             signal['VTXISODCHI2TWOTRACK_D_max'] = np.maximum( sig['Bp_VTXISODCHI2TWOTRACK_D0bar'], sig['Bp_VTXISODCHI2TWOTRACK_Dsp'] ) 
@@ -632,8 +598,8 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
             background['TRKISOBDTFIRSTVALUE_D_pi_min_min'] = np.minimum( np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_D0bar_K'], bkg['Bp_TRKISOBDTFIRSTVALUE_D0bar_pi'] ), np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_Dsp_K1'], bkg['Bp_TRKISOBDTFIRSTVALUE_Dsp_K2'], bkg['Bp_TRKISOBDTFIRSTVALUE_Dsp_pi'] ) )
             background['TRKISOBDTTHIRDVALUE_D_pi_min_min'] = np.minimum( np.minimum( bkg['Bp_TRKISOBDTTHIRDVALUE_D0bar_K'], bkg['Bp_TRKISOBDTTHIRDVALUE_D0bar_pi'] ), np.minimum( bkg['Bp_TRKISOBDTTHIRDVALUE_Dsp_K1'], bkg['Bp_TRKISOBDTTHIRDVALUE_Dsp_K2'], bkg['Bp_TRKISOBDTTHIRDVALUE_Dsp_pi'] ) )
 
-        elif(step_name == "topology_comb"):
-                # SIGNAL:
+        else:
+            # SIGNAL:
             signal['log10_1_minus_D_DIRA_BV_min'] = np.minimum( np.log10(1 - np.abs(sig['D0bar_DIRA_ORIVX'] ))*np.sign( sig['D0bar_DIRA_ORIVX']),  np.log10(1 - np.abs(sig['Dsp_DIRA_ORIVX'] ))*np.sign( sig['Dsp_DIRA_ORIVX'] ) )
 
             dtf_chi2_sig = sig['Bp_dtf_chi2']
@@ -675,6 +641,7 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
     # Plotting variables and correlations
     if(setup_name == "input_features"):
         # Draw plots of the variables (signal vs background)
+        print("Plotting input features")
         draw_variables(signal, background, mc_weights, input_features, setup_name, step_name, species_name)
 
         # data_scatter = data.drop('weight', axis=1)
@@ -699,6 +666,7 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
             sig_corr['Bp_M'] = dtf_M_sig
             bkg_corr['Bp_M'] = dtf_M_bkg
 
+        print("Plotting correlation matrix")
         correlation_matrix(signal, "sig", setup_name, step_name, species_name)
         correlation_matrix(background, "bkg", setup_name, step_name, species_name)
 
@@ -726,26 +694,16 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
     # classifiers = best_classifiers
     # names = ["AdaBDT", "GradBDT", "RForest", "XGBoost"]
     names = ["XGBoost"]
-    if(step_name == "isolation_phys"):
+    if(step_name == "physics"):
         classifiers = [ # AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.05, n_estimators=800, random_state=42),
                         # GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=800, random_state=42), 
                         # RandomForestClassifier(class_weight='balanced', max_depth=9, n_estimators=800, random_state=42),
-                        xgb.XGBClassifier(tree_method="hist", early_stopping_rounds=2, n_estimators=80, max_depth=4, learning_rate=0.1, random_state=42, importance_type='weight') ] # hist is the fastest tree method
-    elif(step_name == "isolation_comb"):
-        classifiers = [ # AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.05, n_estimators=800, random_state=42),
-                        # GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=800, random_state=42), 
-                        # RandomForestClassifier(class_weight='balanced', max_depth=9, n_estimators=800, random_state=42),
-                        xgb.XGBClassifier(tree_method="hist", early_stopping_rounds=2, n_estimators=80, max_depth=4, learning_rate=0.1, random_state=42, importance_type='weight') ] # hist is the fastest tree method
-    elif(step_name == "topology_phys"):
+                        xgb.XGBClassifier(tree_method="hist", n_estimators=500, max_depth=3, learning_rate=0.1, random_state=42, importance_type='weight') ] # hist is the fastest tree method
+    else:
         classifiers = [ # AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.1, n_estimators=800, random_state=42),
                         # GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=500, random_state=42),
                         # RandomForestClassifier(class_weight='balanced', max_depth=9, n_estimators=800, random_state=42),
-                        xgb.XGBClassifier(tree_method="hist", early_stopping_rounds=2, n_estimators=100, max_depth=6, learning_rate=0.1, random_state=42, importance_type='weight') ] # hist is the fastest tree method
-    elif(step_name == "topology_comb"):
-        classifiers = [ # AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.1, n_estimators=800, random_state=42),
-                        # GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=500, random_state=42),
-                        # RandomForestClassifier(class_weight='balanced', max_depth=9, n_estimators=800, random_state=42),
-                        xgb.XGBClassifier(tree_method="hist", early_stopping_rounds=2, n_estimators=100, max_depth=6, learning_rate=0.1, random_state=42, importance_type='weight') ] # hist is the fastest tree method
+                        xgb.XGBClassifier(tree_method="hist", n_estimators=500, max_depth=3, learning_rate=0.1, random_state=42, importance_type='weight') ] # hist is the fastest tree method
 
     for i in range(len(names)):
         name = names[i]
@@ -821,53 +779,52 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
         for i in range(len(classifiers)):
             pickle.dump(classifiers[i], f)
 
-    if((step_name == "topology_phys") or (step_name == "topology_comb")):
-        # Save signal and background training samples in a root file
-        for i in range(len(names)):
-            if(names[i] == "XGBoost"):
-                # Signal test sample
-                out_file_sig = ROOT.TFile.Open("/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/{1}_test_dataset_sig.root".format(species_name,step_name), "RECREATE")
-                out_file_sig.mkdir(names[i])
-                out_tree_sig = ROOT.TTree("DecayTree", "DecayTree")
-                bdt_var_sig = array('d', [0])
-                
-                if(step_name == "isolation"):
-                    out_tree_sig.Branch('BDT1', bdt_var_sig, "BDT1/D")
-                else:
-                    out_tree_sig.Branch('BDT2', bdt_var_sig, "BDT2/D")
+    # Save signal and background training samples in a root file -> UNCOMMENT IN THE END
+    for i in range(len(names)):
+        if(names[i] == "XGBoost"):
+            # Signal test sample
+            out_file_sig = ROOT.TFile.Open("/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/{1}_test_dataset_sig.root".format(species_name,step_name), "RECREATE")
+            out_file_sig.mkdir(names[i])
+            out_tree_sig = ROOT.TTree("DecayTree", "DecayTree")
+            bdt_var_sig = array('d', [0])
+            
+            if(step_name == "physics"):
+                out_tree_sig.Branch('BDT1', bdt_var_sig, "BDT1/D")
+            else:
+                out_tree_sig.Branch('BDT2', bdt_var_sig, "BDT2/D")
 
-                X_test_sig = X_test[y_test>0.5]
-                decisions_sig = classifiers[i].predict_proba(X_test_sig)[:, 1] 
+            X_test_sig = X_test[y_test>0.5]
+            decisions_sig = classifiers[i].predict_proba(X_test_sig)[:, 1] 
 
-                for j in range(len(decisions_sig)):
-                    bdt_var_sig[0] = decisions_sig[j]
-                    out_tree_sig.Fill()
+            for j in range(len(decisions_sig)):
+                bdt_var_sig[0] = decisions_sig[j]
+                out_tree_sig.Fill()
 
-                out_file_sig.cd(names[i])    
-                out_tree_sig.Write()
-                out_file_sig.Close()
+            out_file_sig.cd(names[i])    
+            out_tree_sig.Write()
+            out_file_sig.Close()
 
-                # Background test sample
-                out_file_bkg = ROOT.TFile.Open("/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/{1}_test_dataset_bkg.root".format(species_name,step_name), "RECREATE")
-                out_file_bkg.mkdir(names[i])
-                out_tree_bkg = ROOT.TTree("DecayTree", "DecayTree")
-                bdt_var_bkg = array('d', [0])
+            # Background test sample
+            out_file_bkg = ROOT.TFile.Open("/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/{1}_test_dataset_bkg.root".format(species_name,step_name), "RECREATE")
+            out_file_bkg.mkdir(names[i])
+            out_tree_bkg = ROOT.TTree("DecayTree", "DecayTree")
+            bdt_var_bkg = array('d', [0])
 
-                if(step_name == "topology_phys"):
-                    out_tree_bkg.Branch('BDT1', bdt_var_bkg, "BDT1/D")
-                elif(step_name == "topology_comb"):
-                    out_tree_bkg.Branch('BDT2', bdt_var_bkg, "BDT2/D")
+            if(step_name == "topology_phys"):
+                out_tree_bkg.Branch('BDT1', bdt_var_bkg, "BDT1/D")
+            elif(step_name == "topology_comb"):
+                out_tree_bkg.Branch('BDT2', bdt_var_bkg, "BDT2/D")
 
-                X_test_bkg = X_test[y_test<0.5]
-                decisions_bkg = classifiers[i].predict_proba(X_test_bkg)[:, 1] 
+            X_test_bkg = X_test[y_test<0.5]
+            decisions_bkg = classifiers[i].predict_proba(X_test_bkg)[:, 1] 
 
-                for k in range(len(decisions_bkg)):
-                    bdt_var_bkg[0] = decisions_bkg[k]
-                    out_tree_bkg.Fill()
+            for k in range(len(decisions_bkg)):
+                bdt_var_bkg[0] = decisions_bkg[k]
+                out_tree_bkg.Fill()
 
-                out_file_bkg.cd(names[i])    
-                out_tree_bkg.Write()
-                out_file_bkg.Close()
+            out_file_bkg.cd(names[i])    
+            out_tree_bkg.Write()
+            out_file_bkg.Close()
 
     # with open('/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/clf_isolation.pkl', 'rb') as f:
     #     while True:
@@ -958,7 +915,7 @@ def main(argv):
         t_sig_2016.AddFriend(t_sig1_2016)
         t_sig_2016.AddFriend(t_sig2_2016)
 
-        if((step_name == "isolation_phys") or (step_name == "isolation_comb")):
+        if(step_name == "physics"):
             # Background proxy 1: B -> DD K+ (fit region) (2016+2017+2018) (B and final state particles truth-matched)
             # pre-sel branches
             fc_BuDDKp_2016 = ROOT.TFileCollection("fc_BuDDKp_2016", "fc_BuDDKp_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_100/pre_sel_tree.txt")
@@ -1213,7 +1170,7 @@ def main(argv):
             t_BuDDKp2_2016.Add(t_BuDDK02_2016)
             t_BuDDKp2_2016.Add(t_BuDD2_2016)
 
-            print("BACKGROUND")
+            print("BACKGROUND : cocktail MCs")
             print("pre sel entries = ", t_BuDDKp_2016.GetEntries())
             print("gsl entries = ", t_BuDDKp1_2016.GetEntries())
             print("inv mass entries = ", t_BuDDKp2_2016.GetEntries())
@@ -1222,19 +1179,19 @@ def main(argv):
             t_BuDDKp_2016.AddFriend(t_BuDDKp2_2016)
         
         
-        elif((step_name == "topology_phys") or (step_name == "topology_comb")):
+        elif(step_name == "combinatorial"):
             # Background proxy: WS data (K- tau+ tau+) (fit region) (100 files of 2016, 2017 and 2018)
-            fc_ws_data_2016 = ROOT.TFileCollection("fc_ws_data_2016", "fc_ws_data_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_3/pre_sel_tree.txt", 100) 
-            fc_ws_data_2017 = ROOT.TFileCollection("fc_ws_data_2017", "fc_ws_data_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_3/pre_sel_tree.txt", 100) 
-            fc_ws_data_2018 = ROOT.TFileCollection("fc_ws_data_2018", "fc_ws_data_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_3/pre_sel_tree.txt", 100) 
+            fc_ws_data_2016 = ROOT.TFileCollection("fc_ws_data_2016", "fc_ws_data_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_3/pre_sel_tree.txt", 10) 
+            fc_ws_data_2017 = ROOT.TFileCollection("fc_ws_data_2017", "fc_ws_data_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_3/pre_sel_tree.txt", 10) 
+            fc_ws_data_2018 = ROOT.TFileCollection("fc_ws_data_2018", "fc_ws_data_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_3/pre_sel_tree.txt", 10) 
             
-            fc_ws_data1_2016 = ROOT.TFileCollection("fc_ws_data1_2016", "fc_ws_data1_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_3/fit_results.txt", 100) 
-            fc_ws_data1_2017 = ROOT.TFileCollection("fc_ws_data1_2017", "fc_ws_data1_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_3/fit_results.txt", 100) 
-            fc_ws_data1_2018 = ROOT.TFileCollection("fc_ws_data1_2018", "fc_ws_data1_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_3/fit_results.txt", 100) 
+            fc_ws_data1_2016 = ROOT.TFileCollection("fc_ws_data1_2016", "fc_ws_data1_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_3/fit_results.txt", 10) 
+            fc_ws_data1_2017 = ROOT.TFileCollection("fc_ws_data1_2017", "fc_ws_data1_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_3/fit_results.txt", 10) 
+            fc_ws_data1_2018 = ROOT.TFileCollection("fc_ws_data1_2018", "fc_ws_data1_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_3/fit_results.txt", 10) 
 
-            fc_ws_data2_2016 = ROOT.TFileCollection("fc_ws_data2_2016", "fc_ws_data2_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_3/invariant_mass_tree.txt", 100) 
-            fc_ws_data2_2017 = ROOT.TFileCollection("fc_ws_data2_2017", "fc_ws_data2_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_3/invariant_mass_tree.txt", 100) 
-            fc_ws_data2_2018 = ROOT.TFileCollection("fc_ws_data2_2018", "fc_ws_data2_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_3/invariant_mass_tree.txt", 100) 
+            fc_ws_data2_2016 = ROOT.TFileCollection("fc_ws_data2_2016", "fc_ws_data2_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_3/invariant_mass_tree.txt", 10) 
+            fc_ws_data2_2017 = ROOT.TFileCollection("fc_ws_data2_2017", "fc_ws_data2_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_3/invariant_mass_tree.txt", 10) 
+            fc_ws_data2_2018 = ROOT.TFileCollection("fc_ws_data2_2018", "fc_ws_data2_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_3/invariant_mass_tree.txt", 10) 
 
             t_ws_data_2016 = ROOT.TChain("DecayTree")
             t_ws_data_2017 = ROOT.TChain("DecayTree")
@@ -1281,6 +1238,10 @@ def main(argv):
             t_ws_data_2016.AddFriend(t_ws_data1_2016)
             t_ws_data_2016.AddFriend(t_ws_data2_2016)
 
+            print("BACKGROUND : WS data")
+            print("pre sel entries = ", t_ws_data_2016.GetEntries())
+            print("gsl entries = ", t_ws_data1_2016.GetEntries())
+            print("inv mass entries = ", t_ws_data1_2016.GetEntries())
         
         else:
             print("Wrong step name")
@@ -1290,10 +1251,9 @@ def main(argv):
         sig_df = ROOT.RDataFrame(t_sig_2016)
         sig_df = sig_df.Filter('(df_status==0) && (df_Bp_M > 4000) && (df_Bp_M < 8000)')
 
-        if((step_name == "isolation_phys" or (step_name == "isolation_comb"))):
+        if(step_name == "physics"):
             bkg_df = ROOT.RDataFrame(t_BuDDKp_2016) # B+ -> DD K+, B0 -> DD K+, B0s -> DD K+, B+ -> DD K0 and B+ -> DD
             bkg_df = bkg_df.Filter('(df_status==0) && (df_Bp_M > 4000) && (df_Bp_M < 8000) && (taup_BKGCAT <= 60) && (taum_BKGCAT <= 60) && (Bp_BKGCAT <= 60)')
-
         else:
             bkg_df = ROOT.RDataFrame(t_ws_data_2016) # WS data
             bkg_df = bkg_df.Filter('(df_status==0) && (df_Bp_M > 4000) && (df_Bp_M < 8000)')
