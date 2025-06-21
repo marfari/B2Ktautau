@@ -274,6 +274,30 @@ def main(argv):
     t2_BuDD_mc_2016.Add(t2_BuDD_mc_2017)
     t2_BuDD_mc_2016.Add(t2_BuDD_mc_2018)
 
+    t_cocktail_mc = ROOT.TChain("DecayTree")
+    t1_cocktail_mc = ROOT.TChain("DecayTree")
+    t2_cocktail_mc = ROOT.TChain("DecayTree")
+
+    t_cocktail_mc.Add(t_BuDDKp_mc_2016)
+    t_cocktail_mc.Add(t_BdDDKp_mc_2016)
+    t_cocktail_mc.Add(t_BsDDKp_mc_2016)
+    t_cocktail_mc.Add(t_BuDDK0_mc_2016)
+    t_cocktail_mc.Add(t_BuDD_mc_2016)
+
+    t1_cocktail_mc.Add(t1_BuDDKp_mc_2016)
+    t1_cocktail_mc.Add(t1_BdDDKp_mc_2016)
+    t1_cocktail_mc.Add(t1_BsDDKp_mc_2016)
+    t1_cocktail_mc.Add(t1_BuDDK0_mc_2016)
+    t1_cocktail_mc.Add(t1_BuDD_mc_2016)
+
+    t2_cocktail_mc.Add(t2_BuDDKp_mc_2016)
+    t2_cocktail_mc.Add(t2_BdDDKp_mc_2016)
+    t2_cocktail_mc.Add(t2_BsDDKp_mc_2016)
+    t2_cocktail_mc.Add(t2_BuDDK0_mc_2016)
+    t2_cocktail_mc.Add(t2_BuDD_mc_2016)
+
+    t_cocktail_mc.AddFriend(t1_cocktail_mc)
+    t_cocktail_mc.AddFriend(t2_cocktail_mc)
 
     t_BuDDKp_mc_2016.AddFriend(t1_BuDDKp_mc_2016)
     t_BuDDKp_mc_2016.AddFriend(t2_BuDDKp_mc_2016)
@@ -289,6 +313,7 @@ def main(argv):
 
     t_BuDD_mc_2016.AddFriend(t1_BuDD_mc_2016)
     t_BuDD_mc_2016.AddFriend(t2_BuDD_mc_2016)
+
     ######################################################################################################################################################
 
     ###################################################### RS and WS data #####################################################################    
@@ -395,9 +420,9 @@ def main(argv):
 
     ### PLOTS: 3 MC components
     # Physics BDT
-    h_3pi3pi_mc_phys = ROOT.TH1D("h_3pi3pi_mc_phys", "h_3pi3pi_mc_phys", 100, 0, 1)
-    h_3pi3pipi0_mc_phys = ROOT.TH1D("h_3pi3pipi0_mc_phys", "h_3pi3pipi0_mc_phys", 100, 0, 1)
-    h_3pi3pi2pi0_mc_phys = ROOT.TH1D("h_3pi3pi2pi0_mc_phys", "h_3pi3pi2pi0_mc_phys", 100, 0, 1)
+    h_3pi3pi_mc_phys = ROOT.TH1D("h_3pi3pi_mc_phys", "h_3pi3pi_mc_phys", 30, 0, 1)
+    h_3pi3pipi0_mc_phys = ROOT.TH1D("h_3pi3pipi0_mc_phys", "h_3pi3pipi0_mc_phys", 30, 0, 1)
+    h_3pi3pi2pi0_mc_phys = ROOT.TH1D("h_3pi3pi2pi0_mc_phys", "h_3pi3pi2pi0_mc_phys", 30, 0, 1)
 
     t_BuKtautau_mc_2016.Draw("BDT1 >> h_3pi3pi_mc_phys", cut_Ktautau+" && (component==0)")
     t_BuKtautau_mc_2016.Draw("BDT1 >> h_3pi3pipi0_mc_phys", cut_Ktautau+" && (component==1)")
@@ -406,7 +431,7 @@ def main(argv):
     c = ROOT.TCanvas()
     c.cd()
     h_3pi3pi_mc_phys.GetXaxis().SetTitle("BDT1")
-    h_3pi3pi_mc_phys.GetYaxis().SetTitle("Normalized entries / (0.01)")
+    h_3pi3pi_mc_phys.GetYaxis().SetTitle("Normalized entries / (0.03)")
     h_3pi3pi_mc_phys.SetTitle("Physics BDT")
     h_3pi3pi_mc_phys.SetLineColor(4)
     h_3pi3pipi0_mc_phys.SetLineColor(8)
@@ -423,9 +448,9 @@ def main(argv):
     c.SaveAs(f"/panfs/felician/B2Ktautau/workflow/sklearn_plots/phys_ktautau_mc_components.pdf")
 
     # Combinatorial BDT
-    h_3pi3pi_mc_comb = ROOT.TH1D("h_3pi3pi_mc_comb", "h_3pi3pi_mc_comb", 100, 0, 1)
-    h_3pi3pipi0_mc_comb = ROOT.TH1D("h_3pi3pipi0_mc_comb", "h_3pi3pipi0_mc_comb", 100, 0, 1)
-    h_3pi3pi2pi0_mc_comb = ROOT.TH1D("h_3pi3pi2pi0_mc_comb", "h_3pi3pi2pi0_mc_comb", 100, 0, 1)
+    h_3pi3pi_mc_comb = ROOT.TH1D("h_3pi3pi_mc_comb", "h_3pi3pi_mc_comb", 30, 0, 1)
+    h_3pi3pipi0_mc_comb = ROOT.TH1D("h_3pi3pipi0_mc_comb", "h_3pi3pipi0_mc_comb", 30, 0, 1)
+    h_3pi3pi2pi0_mc_comb = ROOT.TH1D("h_3pi3pi2pi0_mc_comb", "h_3pi3pi2pi0_mc_comb", 30, 0, 1)
 
     t_BuKtautau_mc_2016.Draw("BDT2 >> h_3pi3pi_mc_comb", cut_Ktautau+" && (component==0)")
     t_BuKtautau_mc_2016.Draw("BDT2 >> h_3pi3pipi0_mc_comb", cut_Ktautau+" && (component==1)")
@@ -434,7 +459,7 @@ def main(argv):
     c1 = ROOT.TCanvas()
     c1.cd()
     h_3pi3pi_mc_comb.GetXaxis().SetTitle("BDT2")
-    h_3pi3pi_mc_comb.GetYaxis().SetTitle("Normalized entries / (0.01)")
+    h_3pi3pi_mc_comb.GetYaxis().SetTitle("Normalized entries / (0.03)")
     h_3pi3pi_mc_comb.SetTitle("Combinatorial BDT")
     h_3pi3pi_mc_comb.SetLineColor(4)
     h_3pi3pipi0_mc_comb.SetLineColor(8)
@@ -452,11 +477,11 @@ def main(argv):
 
     ### PLOTS: cocktail MCs
     # Physics BDT
-    h_BuDDKp_mc_phys = ROOT.TH1D("h_BuDDKp_mc_phys", "h_BuDDKp_mc_phys", 100, 0, 1)
-    h_BdDDKp_mc_phys = ROOT.TH1D("h_BdDDKp_mc_phys", "h_BdDDKp_mc_phys", 100, 0, 1)
-    h_BsDDKp_mc_phys = ROOT.TH1D("h_BsDDKp_mc_phys", "h_BsDDKp_mc_phys", 100, 0, 1)
-    h_BuDDK0_mc_phys = ROOT.TH1D("h_BuDDK0_mc_phys", "h_BuDDK0_mc_phys", 100, 0, 1)
-    h_BuDD_mc_phys = ROOT.TH1D("h_BuDD_mc_phys", "h_BuDD_mc_phys", 100, 0, 1)
+    h_BuDDKp_mc_phys = ROOT.TH1D("h_BuDDKp_mc_phys", "h_BuDDKp_mc_phys", 30, 0, 1)
+    h_BdDDKp_mc_phys = ROOT.TH1D("h_BdDDKp_mc_phys", "h_BdDDKp_mc_phys", 30, 0, 1)
+    h_BsDDKp_mc_phys = ROOT.TH1D("h_BsDDKp_mc_phys", "h_BsDDKp_mc_phys", 30, 0, 1)
+    h_BuDDK0_mc_phys = ROOT.TH1D("h_BuDDK0_mc_phys", "h_BuDDK0_mc_phys", 30, 0, 1)
+    h_BuDD_mc_phys = ROOT.TH1D("h_BuDD_mc_phys", "h_BuDD_mc_phys", 30, 0, 1)
 
     t_BuDDKp_mc_2016.Draw("BDT1 >> h_BuDDKp_mc_phys", cut_cocktail_mc)
     t_BdDDKp_mc_2016.Draw("BDT1 >> h_BdDDKp_mc_phys", cut_cocktail_mc)
@@ -467,7 +492,7 @@ def main(argv):
     c2 = ROOT.TCanvas()
     c2.cd()
     h_BsDDKp_mc_phys.GetXaxis().SetTitle("BDT1")
-    h_BsDDKp_mc_phys.GetYaxis().SetTitle("Normalized entries / (0.01)")
+    h_BsDDKp_mc_phys.GetYaxis().SetTitle("Normalized entries / (0.03)")
     h_BsDDKp_mc_phys.SetTitle("Physics BDT")
     h_BuDDKp_mc_phys.SetLineColor(4)
     h_BdDDKp_mc_phys.SetLineColor(8)
@@ -490,11 +515,11 @@ def main(argv):
     c2.SaveAs(f"/panfs/felician/B2Ktautau/workflow/sklearn_plots/phys_cocktail_mcs.pdf")
 
     # Combinatorial BDT
-    h_BuDDKp_mc_comb = ROOT.TH1D("h_BuDDKp_mc_comb", "h_BuDDKp_mc_comb", 100, 0, 1)
-    h_BdDDKp_mc_comb = ROOT.TH1D("h_BdDDKp_mc_comb", "h_BdDDKp_mc_comb", 100, 0, 1)
-    h_BsDDKp_mc_comb = ROOT.TH1D("h_BsDDKp_mc_comb", "h_BsDDKp_mc_comb", 100, 0, 1)
-    h_BuDDK0_mc_comb = ROOT.TH1D("h_BuDDK0_mc_comb", "h_BuDDK0_mc_comb", 100, 0, 1)
-    h_BuDD_mc_comb = ROOT.TH1D("h_BuDD_mc_comb", "h_BuDD_mc_comb", 100, 0, 1)
+    h_BuDDKp_mc_comb = ROOT.TH1D("h_BuDDKp_mc_comb", "h_BuDDKp_mc_comb", 30, 0, 1)
+    h_BdDDKp_mc_comb = ROOT.TH1D("h_BdDDKp_mc_comb", "h_BdDDKp_mc_comb", 30, 0, 1)
+    h_BsDDKp_mc_comb = ROOT.TH1D("h_BsDDKp_mc_comb", "h_BsDDKp_mc_comb", 30, 0, 1)
+    h_BuDDK0_mc_comb = ROOT.TH1D("h_BuDDK0_mc_comb", "h_BuDDK0_mc_comb", 30, 0, 1)
+    h_BuDD_mc_comb = ROOT.TH1D("h_BuDD_mc_comb", "h_BuDD_mc_comb", 30, 0, 1)
 
     t_BuDDKp_mc_2016.Draw("BDT2 >> h_BuDDKp_mc_comb", cut_cocktail_mc)
     t_BdDDKp_mc_2016.Draw("BDT2 >> h_BdDDKp_mc_comb", cut_cocktail_mc)
@@ -505,7 +530,7 @@ def main(argv):
     c3 = ROOT.TCanvas()
     c3.cd()
     h_BuDD_mc_comb.GetXaxis().SetTitle("BDT2")
-    h_BuDD_mc_comb.GetYaxis().SetTitle("Normalized entries / (0.01)")
+    h_BuDD_mc_comb.GetYaxis().SetTitle("Normalized entries / (0.03)")
     h_BuDD_mc_comb.SetTitle("Combinatorial BDT")
     h_BuDDKp_mc_comb.SetLineColor(4)
     h_BdDDKp_mc_comb.SetLineColor(8)
@@ -529,8 +554,8 @@ def main(argv):
 
     # PLOTS: RS and WS data
     # Physics BDT
-    h_rs_data_phys = ROOT.TH1D("h_rs_data_phys", "h_rs_data_phys", 100, 0, 1)
-    h_ws_data_phys = ROOT.TH1D("h_ws_data_phys", "h_ws_data_phys", 100, 0, 1)
+    h_rs_data_phys = ROOT.TH1D("h_rs_data_phys", "h_rs_data_phys", 30, 0, 1)
+    h_ws_data_phys = ROOT.TH1D("h_ws_data_phys", "h_ws_data_phys", 30, 0, 1)
 
     t_rs_data_2016.Draw("BDT1 >> h_rs_data_phys", cut_Ktautau)
     t_ws_data_2016.Draw("BDT1 >> h_ws_data_phys", cut_Ktautau)
@@ -538,7 +563,7 @@ def main(argv):
     c4 = ROOT.TCanvas()
     c4.cd()
     h_ws_data_phys.GetXaxis().SetTitle("BDT1")
-    h_ws_data_phys.GetYaxis().SetTitle("Normalized entries / (0.01)")
+    h_ws_data_phys.GetYaxis().SetTitle("Normalized entries / (0.03)")
     h_ws_data_phys.SetTitle("Physics BDT")
     h_rs_data_phys.SetLineColor(4)
     h_ws_data_phys.SetLineColor(8)
@@ -552,8 +577,8 @@ def main(argv):
     c4.SaveAs(f"/panfs/felician/B2Ktautau/workflow/sklearn_plots/phys_ktautau_data.pdf")
 
     # Combinatorial BDT
-    h_rs_data_comb = ROOT.TH1D("h_rs_data_comb", "h_rs_data_comb", 100, 0, 1)
-    h_ws_data_comb = ROOT.TH1D("h_ws_data_comb", "h_ws_data_comb", 100, 0, 1)
+    h_rs_data_comb = ROOT.TH1D("h_rs_data_comb", "h_rs_data_comb", 30, 0, 1)
+    h_ws_data_comb = ROOT.TH1D("h_ws_data_comb", "h_ws_data_comb", 30, 0, 1)
 
     t_rs_data_2016.Draw("BDT2 >> h_rs_data_comb", cut_Ktautau)
     t_ws_data_2016.Draw("BDT2 >> h_ws_data_comb", cut_Ktautau)
@@ -561,7 +586,7 @@ def main(argv):
     c5 = ROOT.TCanvas()
     c5.cd()
     h_ws_data_comb.GetXaxis().SetTitle("BDT2")
-    h_ws_data_comb.GetYaxis().SetTitle("Normalized entries / (0.01)")
+    h_ws_data_comb.GetYaxis().SetTitle("Normalized entries / (0.03)")
     h_ws_data_comb.SetTitle("Combinatorial BDT")
     h_rs_data_comb.SetLineColor(4)
     h_ws_data_comb.SetLineColor(8)
@@ -576,10 +601,10 @@ def main(argv):
 
     # PLOTS: Signal vs background
     # Physics BDT
-    h_ktautau_mc_phys = ROOT.TH1D("h_ktautau_mc_phys", "h_ktautau_mc_phys", 100, 0, 1)
+    h_ktautau_mc_phys = ROOT.TH1D("h_ktautau_mc_phys", "h_ktautau_mc_phys", 30, 0, 1)
     t_BuKtautau_mc_2016.Draw("BDT1 >> h_ktautau_mc_phys", cut_Ktautau)
 
-    h_cocktail_mc_phys = ROOT.TH1D("h_cocktail_mc_phys", "h_cocktail_mc_phys", 100, 0, 1)
+    h_cocktail_mc_phys = ROOT.TH1D("h_cocktail_mc_phys", "h_cocktail_mc_phys", 30, 0, 1)
     h_cocktail_mc_phys.Sumw2()
     h_cocktail_mc_phys.Add(h_BuDDKp_mc_phys)
     h_cocktail_mc_phys.Add(h_BdDDKp_mc_phys)
@@ -590,7 +615,7 @@ def main(argv):
     c5 = ROOT.TCanvas()
     c5.cd()
     h_cocktail_mc_phys.GetXaxis().SetTitle("BDT1")
-    h_cocktail_mc_phys.GetYaxis().SetTitle("Normalized entries / (0.01)")
+    h_cocktail_mc_phys.GetYaxis().SetTitle("Normalized entries / (0.03)")
     h_cocktail_mc_phys.SetTitle("Physics BDT")
     h_ktautau_mc_phys.SetLineColor(4)
     h_cocktail_mc_phys.SetLineColor(2)
@@ -605,13 +630,13 @@ def main(argv):
     c5.SaveAs(f"/panfs/felician/B2Ktautau/workflow/sklearn_plots/phys_sig_vs_bkg.pdf")
 
     # Combinatorial BDT
-    h_ktautau_mc_comb = ROOT.TH1D("h_ktautau_mc_comb", "h_ktautau_mc_comb", 100, 0, 1)
+    h_ktautau_mc_comb = ROOT.TH1D("h_ktautau_mc_comb", "h_ktautau_mc_comb", 30, 0, 1)
     t_BuKtautau_mc_2016.Draw("BDT2 >> h_ktautau_mc_comb", cut_Ktautau)
 
     c6 = ROOT.TCanvas()
     c6.cd()
     h_ws_data_comb.GetXaxis().SetTitle("BDT2")
-    h_ws_data_comb.GetYaxis().SetTitle("Normalized entries / (0.01)")
+    h_ws_data_comb.GetYaxis().SetTitle("Normalized entries / (0.03)")
     h_ws_data_comb.SetTitle("Combinatorial BDT")
     h_ktautau_mc_comb.SetLineColor(4)
     h_ws_data_comb.SetLineColor(2)
@@ -622,9 +647,153 @@ def main(argv):
     comb_leg_3.AddEntry(h_ws_data_comb, "Background", "lp")
     comb_leg_3.SetBorderSize(0)
     comb_leg_3.Draw("same")
-    c6.SaveAs(f"/panfs/felician/B2Ktautau/workflow/sklearn_plots/comb_sig_vs_bkg.pdf")
+    c6.SaveAs("/panfs/felician/B2Ktautau/workflow/sklearn_plots/comb_sig_vs_bkg.pdf")
 
-    ### B+ mass evolution w/ BDT cut
+    # PLOTS: BDT1 vs BDT2
+    h_bdt1_bdt2_Ktautau_mc = ROOT.TH2D("h_bdt1_bdt2_Ktautau_mc", "h_bdt1_bdt2_Ktautau_mc", 30, 0, 1, 30, 0, 1)
+    h_bdt1_bdt2_cocktail_mc = ROOT.TH2D("h_bdt1_bdt2_cocktail_mc", "h_bdt1_bdt2_cocktail_mc", 30, 0, 1, 30, 0, 1)
+    h_bdt1_bdt2_ws_data = ROOT.TH2D("h_bdt1_bdt2_ws_data", "h_bdt1_bdt2_ws_data", 30, 0, 1, 30, 0, 1)
+    h_bdt1_bdt2_rs_data = ROOT.TH2D("h_bdt1_bdt2_rs_data", "h_bdt1_bdt2_rs_data", 30, 0, 0.7, 30, 0, 0.7)
+
+    t_BuKtautau_mc_2016.Draw("BDT1 : BDT2 >> h_bdt1_bdt2_Ktautau_mc", cut_Ktautau)
+    t_cocktail_mc.Draw("BDT1 : BDT2 >> h_bdt1_bdt2_cocktail_mc", cut_cocktail_mc)
+    t_ws_data_2016.Draw("BDT1 : BDT2 >> h_bdt1_bdt2_ws_data", cut_Ktautau)
+    t_rs_data_2016.Draw("BDT1 : BDT2 >> h_bdt1_bdt2_rs_data", cut_Ktautau)
+
+    c7 = ROOT.TCanvas()
+    c7.cd()
+    c7.SetLogz()
+    h_bdt1_bdt2_Ktautau_mc.GetXaxis().SetTitle("Combinatorial (BDT2)")
+    h_bdt1_bdt2_Ktautau_mc.GetYaxis().SetTitle("Physics (BDT1)")
+    h_bdt1_bdt2_Ktautau_mc.SetTitle(f"Ktautau MC: physics vs combinatorial BDT (#rho = {h_bdt1_bdt2_Ktautau_mc.GetCorrelationFactor():.2f})")
+    h_bdt1_bdt2_Ktautau_mc.Draw("COLZ")
+    c7.SaveAs("/panfs/felician/B2Ktautau/workflow/sklearn_plots/bdt1_vs_bdt2_ktautau_mc.pdf")
+
+    c8 = ROOT.TCanvas()
+    c8.cd()
+    c8.SetLogz()
+    h_bdt1_bdt2_cocktail_mc.GetXaxis().SetTitle("Combinatorial (BDT2)")
+    h_bdt1_bdt2_cocktail_mc.GetYaxis().SetTitle("Physics (BDT1)")
+    h_bdt1_bdt2_cocktail_mc.SetTitle(f"Cocktail MCs: physics vs combinatorial BDT (#rho = {h_bdt1_bdt2_cocktail_mc.GetCorrelationFactor():.2f})")
+    h_bdt1_bdt2_cocktail_mc.Draw("COLZ")
+    c8.SaveAs("/panfs/felician/B2Ktautau/workflow/sklearn_plots/bdt1_vs_bdt2_cocktail_mc.pdf")
+
+    c9 = ROOT.TCanvas()
+    c9.cd()
+    c9.SetLogz()
+    h_bdt1_bdt2_ws_data.GetXaxis().SetTitle("Combinatorial (BDT2)")
+    h_bdt1_bdt2_ws_data.GetYaxis().SetTitle("Physics (BDT1)")
+    h_bdt1_bdt2_ws_data.SetTitle(f"WS data: physics vs combinatorial BDT (#rho = {h_bdt1_bdt2_ws_data.GetCorrelationFactor():.2f})")
+    h_bdt1_bdt2_ws_data.Draw("COLZ")
+    c9.SaveAs("/panfs/felician/B2Ktautau/workflow/sklearn_plots/bdt1_vs_bdt2_ws_data.pdf")
+
+    c10 = ROOT.TCanvas()
+    c10.cd()
+    c10.SetLogz()
+    h_bdt1_bdt2_rs_data.GetXaxis().SetTitle("Combinatorial (BDT2)")
+    h_bdt1_bdt2_rs_data.GetYaxis().SetTitle("Physics (BDT1)")
+    h_bdt1_bdt2_rs_data.SetTitle(f"RS data: physics vs combinatorial BDT (#rho = {h_bdt1_bdt2_rs_data.GetCorrelationFactor():.2f})")
+    h_bdt1_bdt2_rs_data.Draw("COLZ")
+    c10.SaveAs("/panfs/felician/B2Ktautau/workflow/sklearn_plots/bdt1_vs_bdt2_rs_data.pdf")
+
+    ### PLTOS: B+ mass evolution w/ BDT cut
+    bdt_cuts = [0., 0.1, 0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 0.95]
+    colors = [1, 4, 6, 2, 8, 107, 106, 94, 51]
+    N = len(bdt_cuts)
+
+    histos_ktautau_mc = []
+    histos_cocktail_mc = []
+    histos_rs_data = []
+    histos_ws_data = []
+
+    for i in range(N):
+        h_mass_corr_ktautau_mc = ROOT.TH1D(f"h_mass_corr_ktautau_mc_{i}", f"h_mass_corr_ktautau_mc_{i}", 100, 4000, 8000)
+        h_mass_corr_cocktail_mc = ROOT.TH1D(f"h_mass_corr_cocktail_mc_{i}", f"h_mass_corr_cocktail_mc_{i}", 100, 4000, 8000)
+        h_mass_corr_rs_data = ROOT.TH1D(f"h_mass_corr_rs_data_{i}", f"h_mass_corr_rs_data_{i}", 100, 4000, 8000)
+        h_mass_corr_ws_data = ROOT.TH1D(f"h_mass_corr_ws_data_{i}", f"h_mass_corr_ws_data_{i}", 100, 4000, 8000)
+
+        t_BuKtautau_mc_2016.Draw(f"df_Bp_M >> h_mass_corr_ktautau_mc_{i}", f"(BDT1 > {bdt_cuts[i]}) && (BDT2 > {bdt_cuts[i]})")
+        t_cocktail_mc.Draw(f"df_Bp_M >> h_mass_corr_cocktail_mc_{i}", f"(BDT1 > {bdt_cuts[i]}) && (BDT2 > {bdt_cuts[i]})")
+        t_rs_data_2016.Draw(f"df_Bp_M >> h_mass_corr_rs_data_{i}", f"(BDT1 > {bdt_cuts[i]}) && (BDT2 > {bdt_cuts[i]}) && ((df_Bp_M < 4700) || (df_Bp_M > 5800))")
+        t_ws_data_2016.Draw(f"df_Bp_M >> h_mass_corr_ws_data_{i}", f"(BDT1 > {bdt_cuts[i]}) && (BDT2 > {bdt_cuts[i]})")
+
+        h_mass_corr_ktautau_mc.SetLineColor(colors[i])
+        h_mass_corr_cocktail_mc.SetLineColor(colors[i])
+        h_mass_corr_rs_data.SetLineColor(colors[i])
+        h_mass_corr_ws_data.SetLineColor(colors[i])
+
+        histos_ktautau_mc.append(h_mass_corr_ktautau_mc)
+        histos_cocktail_mc.append(h_mass_corr_cocktail_mc)
+        histos_rs_data.append(h_mass_corr_rs_data)
+        histos_ws_data.append(h_mass_corr_ws_data)
+
+    c11 = ROOT.TCanvas()
+    c11.cd()
+    leg11 = ROOT.TLegend(0.7, 0.5, 0.89, 0.89)
+    for i in range(N):
+        j = N-i-1
+        histos_ktautau_mc[j].GetXaxis().SetTitle("m_{B} (MeV)")
+        histos_ktautau_mc[j].GetYaxis().SetTitle("Normalized entries / (40 MeV)")
+        histos_ktautau_mc[j].SetTitle("Ktautau MC: B mass vs (BDT1,BDT2) cut")
+        leg11.AddEntry(histos_ktautau_mc[j], f"(BDT1,BDT2) > ({bdt_cuts[j]},{bdt_cuts[j]})")
+        if(i == 0):
+            histos_ktautau_mc[j].DrawNormalized()
+        else:
+            histos_ktautau_mc[j].DrawNormalized("same")
+    leg11.SetBorderSize(0)
+    leg11.Draw("same")
+    c11.SaveAs("/panfs/felician/B2Ktautau/workflow/sklearn_plots/bmass_corr_ktautau_mc.pdf")
+
+    c12 = ROOT.TCanvas()
+    c12.cd()
+    leg12 = ROOT.TLegend(0.7, 0.5, 0.89, 0.89)
+    for i in range(N):
+        j = N-i-1
+        histos_cocktail_mc[j].GetXaxis().SetTitle("m_{B} (MeV)")
+        histos_cocktail_mc[j].GetYaxis().SetTitle("Normalized entries / (40 MeV)")
+        histos_cocktail_mc[j].SetTitle("Cocktail MCs: B mass vs (BDT1,BDT2) cut")
+        leg12.AddEntry(histos_cocktail_mc[j], f"(BDT1,BDT2) > ({bdt_cuts[j]},{bdt_cuts[j]})")
+        if(i == 0):
+            histos_cocktail_mc[j].DrawNormalized()
+        else:
+            histos_cocktail_mc[j].DrawNormalized("same")
+    leg12.SetBorderSize(0)
+    leg12.Draw("same")
+    c12.SaveAs("/panfs/felician/B2Ktautau/workflow/sklearn_plots/bmass_corr_cocktail_mc.pdf")
+
+    c13 = ROOT.TCanvas()
+    c13.cd()
+    leg13 = ROOT.TLegend(0.7, 0.5, 0.89, 0.89)
+    for i in range(N-1):
+        j = N-i-2
+        histos_rs_data[j].GetXaxis().SetTitle("m_{B} (MeV)")
+        histos_rs_data[j].GetYaxis().SetTitle("Normalized entries / (40 MeV)")
+        histos_rs_data[j].SetTitle("RS data: B mass vs (BDT1,BDT2) cut")
+        leg13.AddEntry(histos_rs_data[j], f"(BDT1,BDT2) > ({bdt_cuts[j]},{bdt_cuts[j]})")
+        if(i == 0):
+            histos_rs_data[j].DrawNormalized()
+        else:
+            histos_rs_data[j].DrawNormalized("same")
+    leg13.SetBorderSize(0)
+    leg13.Draw("same")
+    c13.SaveAs("/panfs/felician/B2Ktautau/workflow/sklearn_plots/bmass_corr_rs_data.pdf")
+
+    c14 = ROOT.TCanvas()
+    c14.cd()
+    leg14 = ROOT.TLegend(0.7, 0.5, 0.89, 0.89)
+    for i in range(N-2):
+        j = N-i-3
+        histos_ws_data[j].GetXaxis().SetTitle("m_{B} (MeV)")
+        histos_ws_data[j].GetYaxis().SetTitle("Normalized entries / (40 MeV)")
+        histos_ws_data[j].SetTitle("WS data: B mass vs (BDT1,BDT2) cut")
+        leg14.AddEntry(histos_ws_data[j], f"(BDT1,BDT2) > ({bdt_cuts[j]},{bdt_cuts[j]})")
+        if(i == 0):
+            histos_ws_data[j].DrawNormalized()
+        else:
+            histos_ws_data[j].DrawNormalized("same")
+    leg14.SetBorderSize(0)
+    leg14.Draw("same")
+    c14.SaveAs("/panfs/felician/B2Ktautau/workflow/sklearn_plots/bmass_corr_ws_data.pdf")
 
 
 if __name__ == "__main__":
