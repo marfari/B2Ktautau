@@ -175,7 +175,8 @@ void create_pre_sel_tree(int year, int species, int line, bool createTable)
     }
     else if(species == 71) // D0bar Ds+ MC without rectangular cuts for the MVA validation
     {
-        pre_selections = truthMatch+trigger+"(Bp_dtf_status[0]==0)";
+        TCut stripping_cuts = "(D0bar_pi_ProbNNpi_pidgen_default > 0.55) && (Dsp_pi_ProbNNpi_pidgen_default > 0.55)";
+        pre_selections = stripping_cuts+truthMatch+trigger+"(Bp_dtf_status[0]==0)";
     }
     else if((species == 8) || (species == 72)) // DDs data and DDs MC w/o TM cuts
     {
