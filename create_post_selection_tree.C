@@ -19,7 +19,7 @@ void create_post_selection_tree(Int_t species, Double_t BDT1, Double_t BDT2, boo
     TCut pass_fitter = "(df_status==0)";
     TCut fit_region = "(df_Bp_M > 4000) && (df_Bp_M < 8000)";
     TCut mass_vetoes = "";
-    if((BDT1 != 0.8) && (BDT2 != 0.8)) // no BDT cut
+    if((BDT1 == 0) and (BDT2 == 0)) // no BDT cut
     {   
         cout << "Applying mass vetoe cuts" << endl;
         mass_vetoes += "(TMath::Abs(Bp_M02-1864.84) > 20) && (TMath::Abs(Bp_M04-1864.84) > 20) && (TMath::Abs(Bp_M06-1864.84) > 20)"; // 2 particles: D0
@@ -33,8 +33,13 @@ void create_post_selection_tree(Int_t species, Double_t BDT1, Double_t BDT2, boo
     if(isKtautau || is_cocktailMC)
     {
         cuts += pass_fitter+fit_region+mass_vetoes+bdt_cuts;
-    }    
-    if((species != 1) && (species != 7))
+    }
+    else
+    {
+        cuts += bdt_cuts;
+    }
+
+    if((species != 1) && (species != 7) && (BDT1 == 0) && (BDT2 == 0))
     {
         cuts += "is_best_cand == 1";
     }
@@ -142,7 +147,7 @@ void create_post_selection_tree(Int_t species, Double_t BDT1, Double_t BDT2, boo
         t1_2016->AddFriend(t4_2016, "mass");
     }
 
-    if((species != 1) && (species != 7)) // If it is not the truth-match MC
+    if((species != 1) && (species != 7) && (BDT1 == 0) && (BDT2 == 0)) // If it is not the truth-match MC | apply only for the fit (for mass vetoes do not apply)
     {
         // Best candidate 
         TFileCollection *fc5_2016 = new TFileCollection("fc5_2016", "fc5_2016", Form("/panfs/felician/B2Ktautau/workflow/multiple_events/2016/Species_%i/multiple_events.txt",species));
