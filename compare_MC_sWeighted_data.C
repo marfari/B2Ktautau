@@ -17,7 +17,7 @@ void compare_MC_sWeighted_data(Int_t year, Int_t species, Bool_t applyWeight)
     RooDataSet* data_sw = (RooDataSet*)w->data("dataWithSWeights");
     RooDataSet data_signal_sw{data_sw->GetName(), data_sw->GetTitle(), data_sw, *data_sw->get(), nullptr, "n_signal_sw"};
 
-    TFile* f1 = new TFile(Form("/panfs/felician/B2Ktautau/workflow/create_dataset/201%i/Species_7/mass_dataset.root",year));
+    TFile* f1 = new TFile(Form("/panfs/felician/B2Ktautau/workflow/create_dataset/201%i/Species_%i/mass_dataset.root",year,species));
     RooWorkspace* w1 = (RooWorkspace*)f1->Get("w");
     RooDataSet* data_mc = (RooDataSet*)w1->data("data");
 
