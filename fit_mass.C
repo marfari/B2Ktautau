@@ -16,7 +16,7 @@ void fit_mass(Int_t year, Int_t species)
     RooWorkspace* w_out;
     RooFitResult* fit;
     RooFitResult* fit1;    
-    if(species == 7)
+    if(species == 72)
     {
         Double_t nbins = 30;
         mass->setBins(nbins);
@@ -29,7 +29,7 @@ void fit_mass(Int_t year, Int_t species)
 
         RooRealVar alpha("alpha", "#alpha", 2, 0., 20.);
         RooRealVar alpha1("alpha1", "#alpha1", -2, -20., 5.);
-        RooRealVar n("n", "n", 50, 0, 300);
+        RooRealVar n("n", "n", 2, 0, 300);
         RooRealVar frac("frac", "f", 0.5, 0, 1);
         n.setConstant();
 
@@ -153,7 +153,7 @@ void fit_mass(Int_t year, Int_t species)
             validate_fit(model, mass, n_signal, year, species);
         }
     }
-    else if(species == 72)
+    else if(species == 78)
     {
         Double_t nbins = 30;
         mass->setBins(nbins);
@@ -168,7 +168,7 @@ void fit_mass(Int_t year, Int_t species)
         RooRealVar frac("frac", "f", 0.5, 0, 1);
 
         RooRealVar xi("xi", "xi", 0., -1. ,1.);
-        RooRealVar ro1("ro1", "ro1", -0.05, -1., 1.);
+        RooRealVar ro1("ro1", "ro1", -0.1, -0.99, -0.001);
         RooRealVar ro2("ro2", "ro2", 0.05, -1., 1.);
         xi.setConstant();
 
@@ -276,6 +276,7 @@ void fit_mass(Int_t year, Int_t species)
         w_out->import(*model);
 
         Int_t fit_status = fit->status();
+        cout << "Fit status == " << fit_status << endl;
         if(fit_status == 0)
         {
             validate_fit(model, mass, n_signal, year, species);
@@ -286,20 +287,11 @@ void fit_mass(Int_t year, Int_t species)
         Double_t nbins = 30;
         mass->setBins(nbins);
 
-        // Signal PDF
+        // Signal PDF    
         RooRealVar mu("mu", "#mu", 5240., 5310., "MeV");
         RooRealVar sig("sig", "#sigma", 7., 0.5, 100., "MeV");
-        RooRealVar sig1("sig1", "#sigma1", 7., 0.5, 100., "MeV");
-        RooRealVar alpha("alpha", "#alpha", 2, 0., 20.);
-        RooRealVar alpha1("alpha1", "#alpha1", -2, -20., 5.);
-        RooRealVar n("n", "n", 50, 0, 300);
-        RooRealVar n1("n1", "n1", 10, 0, 300);
-        RooRealVar frac("frac", "f", 0.5, 0, 1);
-
-        RooRealVar xi("xi", "xi", 0., -1. ,1.);
-        RooRealVar ro1("ro1", "ro1", -0.05, -1., 1.);
-        RooRealVar ro2("ro2", "ro2", 0.05, -1., 1.);
-        xi.setConstant();
+        RooRealVar n("n", "n", 2, 0, 300);
+        n.setConstant();
 
         TFile* fr;
         if(year != -1)
@@ -312,21 +304,24 @@ void fit_mass(Int_t year, Int_t species)
         }
         RooFitResult* fitres = (RooFitResult*)fr->Get("fitresult_model_data");
         RooRealVar* frac_mc = (RooRealVar*)fitres->floatParsFinal().find(Form("frac"));
-        // RooRealVar* alpha_mc = (RooRealVar*)fitres->floatParsFinal().find(Form("alpha"));
-        // RooRealVar* alpha1_mc = (RooRealVar*)fitres->floatParsFinal().find(Form("alpha1"));
-        RooRealVar* sig_mc = (RooRealVar*)fitres->floatParsFinal().find(Form("sig"));
-        frac_mc->setConstant();
-        // alpha_mc->setConstant();
-        // alpha1_mc->setConstant();
-        sig_mc->setConstant();
+        RooRealVar* sig1_mc = (RooRealVar*)fitres->floatParsFinal().find(Form("sig1"));
+        RooRealVar* alpha_mc = (RooRealVar*)fitres->floatParsFinal().find(Form("alpha"));
+        RooRealVar* alpha1_mc = (RooRealVar*)fitres->floatParsFinal().find(Form("alpha1"));
 
-        RooBukinPdf* bukin = new RooBukinPdf("bukin", "bukin", *mass, mu, *sig_mc, xi, ro1, ro2);
-        RooGaussian* g1 = new RooGaussian("g1", "g1", *mass, mu, sig1);
-        RooAddPdf* sig_pdf = new RooAddPdf("sig_pdf", "sig_pdf", RooArgList(*bukin,*g1), frac);
+        frac_mc->setConstant();
+        sig1_mc->setConstant();
+        alpha_mc->setConstant();
+        alpha1_mc->setConstant();
+
+        RooCBShape* cb1 = new RooCBShape("cb1", "cb1", *mass, mu, sig, *alpha_mc, n);
+        RooCBShape* cb2 = new RooCBShape("cb2", "cb2", *mass, mu, *sig1_mc, *alpha1_mc, n);
+
+        RooAddPdf* sig_pdf = new RooAddPdf("sig_pdf", "sig_pdf", RooArgList(*cb1,*cb2), *frac_mc);
 
         Double_t mass_peak = 5279.34;
         Double_t n_signal_initial = data->sumEntries(TString::Format("(abs(mass-%g)<20)", mass_peak));
         RooRealVar* n_signal = new RooRealVar("n_signal", "n_signal", n_signal_initial, 0.,2*(data->sumEntries()));
+
 
         // Background PDF
         RooRealVar a1("a1", "a1", 0.5, 0, 5);
@@ -384,8 +379,8 @@ void fit_mass(Int_t year, Int_t species)
         data->plotOn(massframe, RooFit::Name("Data"));
         model->plotOn(massframe, RooFit::Name("Fit"), RooFit::LineColor(kRed), RooFit::LineStyle(1), RooFit::LineWidth(2));
         model->plotOn(massframe, RooFit::Name("Signal"),RooFit::Components("sig_pdf"), RooFit::LineColor(kBlue), RooFit::LineStyle(1), RooFit::LineWidth(2));
-        model->plotOn(massframe, RooFit::Name("Bukin"),RooFit::Components("bukin"), RooFit::LineColor(kBlue), RooFit::LineStyle(3), RooFit::LineWidth(2));
-        model->plotOn(massframe, RooFit::Name("Gauss"),RooFit::Components("g1"), RooFit::LineColor(kCyan), RooFit::LineStyle(3), RooFit::LineWidth(2));
+        model->plotOn(massframe, RooFit::Name("CB1"),RooFit::Components("cb1"), RooFit::LineColor(kBlue), RooFit::LineStyle(3), RooFit::LineWidth(2));
+        model->plotOn(massframe, RooFit::Name("CB2"),RooFit::Components("cb2"), RooFit::LineColor(kCyan), RooFit::LineStyle(3), RooFit::LineWidth(2));
         model->plotOn(massframe, RooFit::Name("Comb. bkg."),RooFit::Components("exp"), RooFit::LineColor(kGreen+1), RooFit::LineStyle(1), RooFit::LineWidth(2));
         model->paramOn(massframe, RooFit::Layout(0.6,0.85, 0.9));
         massframe->SetXTitle("m_{B^{+}} (MeV)");
@@ -414,8 +409,8 @@ void fit_mass(Int_t year, Int_t species)
         leg->AddEntry("Fit","Fit");
         leg->AddEntry("Signal","Signal");
         leg->AddEntry("Comb. bkg.","Comb. bkg.");
-        leg->AddEntry("Bukin","Bukin");
-        leg->AddEntry("Gauss","Gauss");
+        leg->AddEntry("CB1","CB1");
+        leg->AddEntry("CB2","CB2");
         leg->Draw("same");
 
         RooHist* pull_hist = massframe->pullHist("Data","Fit");
