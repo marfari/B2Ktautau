@@ -47,7 +47,10 @@ def number_of_bins(t_sig, ch, bdt1, bdt2, channel_cut):
     # print("resolution from FWHM = ", fwhm/2.4)
     # print("resolution from MERR = ", mass_resolution)
 
-    nbins = int(4000/(sigma/2))
+    if(sigma == 0):
+        nbins = 1
+    else:
+        nbins = int(4000/(sigma/2))
     print(nbins)
 
     return nbins
@@ -181,30 +184,31 @@ def combinatorial_background_yield(t_rs_data, t_comb, bdt1, bdt2):
         eps_ws_num = t_comb.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2))
         eps_rs_num = t_rs_data.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2))
     else:
-        eps_ws_num = t_comb.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(0.8,0.8))
-        eps_rs_num = t_rs_data.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(0.8,0.8))
+        eps_ws_num = t_comb.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(0.9,0.9))
+        eps_rs_num = t_rs_data.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(0.9,0.9))
 
     eps_ws = eps_ws_num/eps_ws_den
     eps_ws_up = ROOT.TEfficiency.Wilson(eps_ws_den, eps_ws_num, 0.68, True)
     eps_ws_down = ROOT.TEfficiency.Wilson(eps_ws_den, eps_ws_num, 0.68, False)
     eps_ws_err = 0.5*(eps_ws_up-eps_ws_down)
-    eps_ws = ufloat(eps_ws, eps_ws_err)
 
     eps_rs = eps_rs_num/eps_rs_den
     eps_rs_up = ROOT.TEfficiency.Wilson(eps_rs_den, eps_rs_num, 0.68, True)
     eps_rs_down = ROOT.TEfficiency.Wilson(eps_rs_den, eps_rs_num, 0.68, False)
     eps_rs_err = 0.5*(eps_rs_up-eps_rs_down)
-    eps_rs = ufloat(eps_rs, eps_rs_err)
 
     r = eps_rs/eps_ws
+    print("eps_rs / eps_ws = ", r)
 
     eps_ws_bdt = eps_num_bdt/eps_ws_den
     eps_ws_bdt_up = ROOT.TEfficiency.Wilson(eps_ws_den, eps_num_bdt, 0.68, True)
     eps_ws_bdt_down = ROOT.TEfficiency.Wilson(eps_ws_den, eps_num_bdt, 0.68, False)
     eps_ws_bdt_err = 0.5*(eps_ws_bdt_up-eps_ws_bdt_down)
-    eps_ws_bdt = ufloat(eps_ws_bdt, eps_ws_bdt_err)
 
-    n_rs_prebdt = ufloat(19006409, np.sqrt(19006409))
+    n_rs_prebdt_value = t_rs_data.GetEntries()
+
+    n_rs_prebdt = ufloat(n_rs_prebdt_value, np.sqrt(n_rs_prebdt_value))
+    print("N_rs_prebdt = ", n_rs_prebdt)
 
     N_comb = n_rs_prebdt*eps_ws_bdt*r
 
@@ -355,6 +359,7 @@ def physics_backgrounds_yields(C_values, C_errors, bdt1, bdt2):
     c_err = [C_BDDKp.std_dev, C_BuDDK0.std_dev, C_BuDD.std_dev]
 
     return c, c_err
+
 
 def main(argv):
     start = time.time()

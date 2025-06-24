@@ -60,10 +60,20 @@ def main(argv):
     eps_norm_post_acc = ufloat( N_norm_num/N_norm_den, eps_norm_err )
 
     eps_norm = eps_acc_norm*eps_norm_post_acc
+    print("eps_norm = ", eps_norm)
 
     ### N_norm
-    N_norm = ufloat(33187, 259)
-    # print(N_norm)
+    f_norm_fit = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/fit_mass/201-1/Species_8/mass_fit_result.root")
+    norm_fit_result = f_norm_fit.Get("fitresult_model_data")
+    n_norm_fit_var = norm_fit_result.floatParsFinal().find("n_signal")
+    N_norm_value = n_norm_fit_var.getVal()
+    N_norm_error = n_norm_fit_var.getError()
+
+    print("N_norm_value = ", N_norm_value)
+    print("N_norm_error = ", N_norm_error)
+    
+    N_norm = ufloat(N_norm_value, N_norm_error)
+    print("N_norm = ", N_norm)
 
     # signal efficiency term (all MC)
     ### Ktautau gen MC

@@ -4,33 +4,37 @@ localrules: exact_constraints, comparisons, fit_mass, make_sPlot_histos, compare
 
 rule all:
     input:
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="all_events", BF_sig=0, BDT1=0.0, BDT2=0.0),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="all_events", BF_sig=0, BDT1=0.5, BDT2=0.5),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="all_events", BF_sig=0, BDT1=0.8, BDT2=0.8),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="all_events", BF_sig=0, BDT1=0.9, BDT2=0.9),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="all_events", BF_sig=0, BDT1=0.976, BDT2=0.981),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="all_events", BF_sig=0, BDT1=0.985, BDT2=0.985),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="error_categories", BF_sig=0, BDT1=0.0, BDT2=0.0),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="error_categories", BF_sig=0, BDT1=0.5, BDT2=0.5),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="error_categories", BF_sig=0, BDT1=0.8, BDT2=0.8),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="error_categories", BF_sig=0, BDT1=0.9, BDT2=0.9),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="error_categories", BF_sig=0, BDT1=0.976, BDT2=0.981),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="error_categories", BF_sig=0, BDT1=0.985, BDT2=0.985),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="all_events", BF_sig=0.0000001, BDT1=0.976, BDT2=0.981),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="all_events", BF_sig=0.000001, BDT1=0.976, BDT2=0.981),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="all_events", BF_sig=0.00001, BDT1=0.976, BDT2=0.981),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="all_events", BF_sig=0.0001, BDT1=0.976, BDT2=0.981),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="all_events", BF_sig=0.001, BDT1=0.976, BDT2=0.981),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="all_events", BF_sig=0.01, BDT1=0.976, BDT2=0.981),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="all_events", BF_sig=0.1, BDT1=0.976, BDT2=0.981),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="error_categories", BF_sig=0.0000001, BDT1=0.976, BDT2=0.981),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="error_categories", BF_sig=0.000001, BDT1=0.976, BDT2=0.981),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="error_categories", BF_sig=0.00001, BDT1=0.976, BDT2=0.981),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="error_categories", BF_sig=0.0001, BDT1=0.976, BDT2=0.981),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="error_categories", BF_sig=0.001, BDT1=0.976, BDT2=0.981),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="error_categories", BF_sig=0.01, BDT1=0.976, BDT2=0.981),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf', fit_name="error_categories", BF_sig=0.1, BDT1=0.976, BDT2=0.981)
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.0, BDT2=0.0),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.5, BDT2=0.5),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.8, BDT2=0.8),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.9, BDT2=0.9),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.95, BDT2=0.95),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.97, BDT2=0.97),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.971, BDT2=0.971),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.972, BDT2=0.972),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.973, BDT2=0.973),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.974, BDT2=0.974),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.975, BDT2=0.975),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.976, BDT2=0.976),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.977, BDT2=0.977),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.978, BDT2=0.978),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.0, BDT2=0.0),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.5, BDT2=0.5),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.8, BDT2=0.8),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.9, BDT2=0.9),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.95, BDT2=0.95),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.97, BDT2=0.97),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.971, BDT2=0.971),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.972, BDT2=0.972),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.973, BDT2=0.973),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.974, BDT2=0.974),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.975, BDT2=0.975),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.976, BDT2=0.976),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.977, BDT2=0.977),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.978, BDT2=0.978)
 
+        # expand('/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{fit_name}/BF_sig_{BF_sig}/out.log', fit_name="all_events", BF_sig=0)
+        # expand('/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{fit_name}/BF_sig_{BF_sig}/out.log', fit_name="error_categories", BF_sig=0)
 
 # Every time grid files are updated need to:
 # - run pidgen for ktautau / DDs over the pre-selection files (signal + normalisation channel)
@@ -201,6 +205,19 @@ rule comparisons:
     shell:
         'root -l -b -q \' compare.C( {wildcards.year}, \"{input.FILES1}\", \"{input.FILES2}\" ) \' &> {log}'
 
+rule create_invariant_mass_tree:
+    ''' Creates TTree with invariant mass combination branches for the mass vetoes '''  
+    input:
+        'create_invariant_mass_tree.C',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{year}/Species_{species}/pre_sel_tree.txt'
+    output:
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/201{year}/Species_{species}/{line}.root'
+    log:
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/201{year}/Species_{species}/{line}.log'
+    shell:
+       'root -l -b -q \'create_invariant_mass_tree.C( {wildcards.year}, {wildcards.species}, {wildcards.line})\' &> {log};'
+        'ls /panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/201{wildcards.year}/Species_{wildcards.species}/*.root | sort -V > /panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/201{wildcards.year}/Species_{wildcards.species}/invariant_mass_tree.txt'
+
 ##############################################################################################################################################################################
 ##############################################################################   MC correction w/ normalisation channel   ####################################################################
 
@@ -237,8 +254,8 @@ rule make_sPlot_histos:
         'make_sPlot_histos.C',
         FIT_workspace = '/panfs/felician/B2Ktautau/workflow/fit_mass/201{year}/Species_{species}/mass_fit_result.root',
     output:
-        '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201{year}/Species_{species}/Sideband_plots/var_0.pdf',
         '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201{year}/Species_{species}/splot_result.root',
+        '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201{year}/Species_{species}/Sideband_plots/var_0.pdf',
         '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201{year}/Species_{species}/Splot_plots/var_0.pdf',
         '/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201{year}/Species_{species}/Splot_vs_sideband_plots/var_0.pdf'
     log:
@@ -312,34 +329,74 @@ rule sklearn_training:
     ''' setup_name = (input_features,output_performance) '''
     input:
         'Sklearn/make_sklearn_training.py',
-        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_10/pre_sel_tree.txt',
-        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_10/pre_sel_tree.txt',
-        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_10/pre_sel_tree.txt',
-        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_10/fit_results.txt',
-        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_10/fit_results.txt',
-        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_10/fit_results.txt',
-        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_2/pre_sel_tree.txt',
-        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_2/pre_sel_tree.txt',
-        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_2/pre_sel_tree.txt',
-        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_2/fit_results.txt',
-        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_2/fit_results.txt',
-        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_2/fit_results.txt',
+        # signal proxy - MC truth-matched
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_1/pre_sel_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_1/pre_sel_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_1/pre_sel_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_100/pre_sel_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_110/pre_sel_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_120/pre_sel_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_130/pre_sel_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_150/pre_sel_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_100/pre_sel_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_110/pre_sel_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_120/pre_sel_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_130/pre_sel_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_150/pre_sel_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_100/pre_sel_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_110/pre_sel_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_120/pre_sel_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_130/pre_sel_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_150/pre_sel_tree.txt',
         '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_3/pre_sel_tree.txt',
         '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_3/pre_sel_tree.txt',
         '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_3/pre_sel_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_1/fit_results.txt',
+        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_1/fit_results.txt',
+        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_1/fit_results.txt',
+        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_100/fit_results.txt',
+        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_110/fit_results.txt',
+        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_120/fit_results.txt',
+        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_130/fit_results.txt',
+        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_150/fit_results.txt',
+        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_100/fit_results.txt',
+        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_110/fit_results.txt',
+        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_120/fit_results.txt',
+        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_130/fit_results.txt',
+        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_150/fit_results.txt',
+        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_100/fit_results.txt',
+        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_110/fit_results.txt',
+        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_120/fit_results.txt',
+        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_130/fit_results.txt',
+        '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_150/fit_results.txt',
         '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_3/fit_results.txt',
         '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_3/fit_results.txt',
         '/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_3/fit_results.txt',
-        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_71/pre_sel_tree.txt',
-        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_71/pre_sel_tree.txt',
-        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_71/pre_sel_tree.txt',
-        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_81/pre_sel_tree.txt',
-        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_81/pre_sel_tree.txt',
-        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_81/pre_sel_tree.txt'
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_1/invariant_mass_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_1/invariant_mass_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_1/invariant_mass_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_100/invariant_mass_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_110/invariant_mass_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_120/invariant_mass_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_130/invariant_mass_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_150/invariant_mass_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_100/invariant_mass_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_110/invariant_mass_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_120/invariant_mass_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_130/invariant_mass_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_150/invariant_mass_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_100/invariant_mass_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_110/invariant_mass_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_120/invariant_mass_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_130/invariant_mass_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_150/invariant_mass_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_3/invariant_mass_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_3/invariant_mass_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_3/invariant_mass_tree.txt'
     output:
-        '/panfs/felician/B2Ktautau/workflow/sklearn_training/{species_name}/{setup_name}_{step_name}/out.log',
+        '/panfs/felician/B2Ktautau/workflow/sklearn_training/{species_name}/{setup_name}/{step_name}/out.log',
     log:
-        '/panfs/felician/B2Ktautau/workflow/sklearn_training/{species_name}/{setup_name}_{step_name}/out.log'
+        '/panfs/felician/B2Ktautau/workflow/sklearn_training/{species_name}/{setup_name}/{step_name}/out.log'
     shell:
         'python -u Sklearn/make_sklearn_training.py {wildcards.species_name} {wildcards.step_name} {wildcards.setup_name} False &> {log}'
 
@@ -347,10 +404,8 @@ rule sklearn_response:
     ''' Compute sklearn response '''
     input:
         'Sklearn/compute_sklearn_response.py',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/clf_isolation.pkl',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/clf_topology.pkl',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_training/DDs/clf_isolation.pkl',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_training/DDs/clf_topology.pkl'
+        '/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/clf_physics.pkl',
+        '/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/clf_combinatorial.pkl'
     output:
         '/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root'
     log:
@@ -359,31 +414,17 @@ rule sklearn_response:
         'python -u Sklearn/compute_sklearn_response.py {wildcards.year} {wildcards.species} {wildcards.line} &> {log};'
         'ls /panfs/felician/B2Ktautau/workflow/sklearn_response/201{wildcards.year}/Species_{wildcards.species}/*.root | sort -V > /panfs/felician/B2Ktautau/workflow/sklearn_response/201{wildcards.year}/Species_{wildcards.species}/bdt_output.txt'
 
-rule sklearn_bmass_correlation:
+rule sklearn_plots:
     ''' Plots to check if MVA output is correlated with B+ mass '''
     input:
-        'Sklearn/bdt_corr_with_bmass.C',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_1/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_1/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_1/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_2/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_2/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_2/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_3/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_3/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_3/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_71/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_71/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_71/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_81/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_81/bdt_output.txt',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_81/bdt_output.txt'
+        'Sklearn/sklearn_plots.py'
     output:
-        '/panfs/felician/B2Ktautau/workflow/sklearn_correlation/Bmass_isolation_bdt_cut_3pi3pi_MC.pdf'
+        '/panfs/felician/B2Ktautau/workflow/sklearn_plots/phys_ktautau_mc_components.pdf'
     log:
-        '/panfs/felician/B2Ktautau/workflow/sklearn_correlation/out.log'
+        '/panfs/felician/B2Ktautau/workflow/sklearn_plots/out.log'
     shell:
-        'root -b -b -q Sklearn/bdt_corr_with_bmass.C &> {log}'
+        'python -u Sklearn/sklearn_plots.py &> {log}'
+
 ##############################################################################################################################################################################
 
 # rule get_run_numbers:
@@ -447,26 +488,13 @@ rule sklearn_bmass_correlation:
 
 #########################################################    Mass vetoes    ######################################################################################################
 
-rule create_invariant_mass_tree:
-    ''' Creates TTree with invariant mass combination branches for the mass vetoes '''  
-    input:
-        'create_invariant_mass_tree.C',
-        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201{year}/Species_{species}/pre_sel_tree.txt'
-    output:
-        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/201{year}/Species_{species}/{line}.root'
-    log:
-        '/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/201{year}/Species_{species}/{line}.log'
-    shell:
-       'root -l -b -q \'create_invariant_mass_tree.C( {wildcards.year}, {wildcards.species}, {wildcards.line})\' &> {log};'
-        'ls /panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/201{wildcards.year}/Species_{wildcards.species}/*.root | sort -V > /panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/201{wildcards.year}/Species_{wildcards.species}/invariant_mass_tree.txt'
-
 rule mass_vetoe_plots:
     ''' Creates plots for the mass vetoes '''   
     input:
         'mass_vetoes_plots.C',
-        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_1/post_sel_tree_bdt1_0.8_bdt2_0.8.root',
-        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_2/post_sel_tree_bdt1_0.8_bdt2_0.8.root',
-        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_3/post_sel_tree_bdt1_0.8_bdt2_0.8.root'
+        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_1/post_sel_tree_bdt1_0.6_bdt2_0.6.root',
+        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_2/post_sel_tree_bdt1_0.6_bdt2_0.6.root',
+        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_3/post_sel_tree_bdt1_0.6_bdt2_0.6.root'
     output:
         '/panfs/felician/B2Ktautau/workflow/mass_vetoes_plots/2_particles/Bp_M01.pdf',
         '/panfs/felician/B2Ktautau/workflow/mass_vetoes_plots/3_particles/Bp_M012.pdf',
@@ -518,7 +546,10 @@ rule create_post_selection_tree:
     ''' Creates TTree passing GSL, mass vetoes and best candidate selection (if not TM) '''
     ''' All years and files are merged into a single output .root file '''
     input:
-        'create_post_selection_tree.C'
+        'create_post_selection_tree.C',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_{species}/pre_sel_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_{species}/pre_sel_tree.txt',
+        '/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_{species}/pre_sel_tree.txt'
     output:
         '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_{species}/post_sel_tree_bdt1_{bdt1}_bdt2_{bdt2}.root' # to create the TTree
         # '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_{species}/post_sel_table_2016.tex', # to create the efficiency tables
@@ -538,6 +569,7 @@ rule branching_fraction_inputs:
     input:
         'branching_fraction_inputs.py',
         '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_72/post_sel_tree_bdt1_0_bdt2_0.root',
+        # '/panfs/felician/B2Ktautau/workflow/fit_mass/201-1/Species_8/mass_fit_result.root',
         'Files_on_grid/MC_D0Dps_2016.txt',
         'Files_on_grid/MC_D0Dps_2017.txt',
         'Files_on_grid/MC_D0Dps_2018.txt',
@@ -652,6 +684,19 @@ rule fit_inputs:
 
 
 #########################################################   Final fit (binned, pyhf)  ######################################################################################################
+rule fit_templates_choice:
+    ''' Plots for choosing fit templates '''
+    input:
+        'Final_fit/template_shapes_choice.py'
+    output:
+        '/panfs/felician/B2Ktautau/workflow/templates_choice/signal_template_high_bdt.pdf',
+        '/panfs/felician/B2Ktautau/workflow/templates_choice/rs_vs_ws_bdt_eff.pdf'
+    log:
+        '/panfs/felician/B2Ktautau/workflow/templates_choice/out.log'
+    shell:
+        'python -u Final_fit/template_shapes_choice.py &> {log}'
+
+
 rule generate_histograms:
     ''' Generates fit histograms after the BDT cuts '''
     input:
@@ -687,12 +732,14 @@ rule pyhf_fit:
         '/panfs/felician/B2Ktautau/workflow/generate_histograms/eff_category_value_bdt1_{BDT1}_bdt2_{BDT2}.npy',
         '/panfs/felician/B2Ktautau/workflow/generate_histograms/eff_category_error_bdt1_{BDT1}_bdt2_{BDT2}.npy'
     output:
-        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf',
-        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/pulls/BDT1_{BDT1}_bdt2_{BDT2}/C_BDDKp.pdf',
-        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_plots/fit_plot_bdt1_{BDT1}_bdt2_{BDT2}_seed_0.pdf'
-        # '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_plots/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.pdf',
-        # '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy',
-        # '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_plots/fit_plot_bdt1_{BDT1}_bdt2_{BDT2}_seed_1000.pdf'
+        # Limit calculation outputs:
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy',
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_plots/fit_plot_bdt1_{BDT1}_bdt2_{BDT2}.pdf',
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_plots/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.pdf'
+        # Fit validation outputs:
+        # '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf',
+        # '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/pulls/BDT1_{BDT1}_bdt2_{BDT2}/a.pdf',
+        # '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_plots/fit_plot_bdt1_{BDT1}_bdt2_{BDT2}_seed_0.pdf'
     log:
         '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/logs/out_bdt1_{BDT1}_bdt2_{BDT2}.log'
     shell:
@@ -703,13 +750,13 @@ rule upper_limit_optimisation:
     ''' Minimises the 90% C.L. upper limit on the branching fraction '''
     input:
         'Final_fit/upper_limit_optimisation.py',
-        [ [f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{{fit_name}}/N_sig_{{nsig}}/fit_results/cls_limit_bdt1_{bdt1}_bdt2_{bdt2}.npy' for bdt1 in np.round( np.linspace(0.965,0.985,21), 3 )] for bdt2 in np.round( np.linspace(0.965,0.985,21), 3 )]
+        [ [f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{{fit_name}}/BF_sig_{{BF_sig}}/fit_results/cls_limit_bdt1_{bdt1}_bdt2_{bdt2}.npy' for bdt1 in np.round( np.linspace(0.96,0.98,21), 3)] for bdt2 in np.round( np.linspace(0.96,0.98,21), 3)]
     output:
-        '/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{fit_name}/N_sig_{nsig}/BF_vs_bdt1_vs_bdt2.pdf',
-        '/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{fit_name}/N_sig_{nsig}/BF_vs_bdt1_vs_bdt2_1.pdf'
+        '/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{fit_name}/BF_sig_{BF_sig}/BF_vs_bdt1_vs_bdt2.pdf',
+        '/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{fit_name}/BF_sig_{BF_sig}/BF_vs_bdt1_vs_bdt2_1.pdf'
     log:    
-        '/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{fit_name}/N_sig_{nsig}/out.log'
+        '/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{fit_name}/BF_sig_{BF_sig}/out.log'
     shell:
-        'python -u Final_fit/upper_limit_optimisation.py {wildcards.fit_name} {wildcards.nsig} &> {log}'
+        'python -u Final_fit/upper_limit_optimisation.py {wildcards.fit_name} {wildcards.BF_sig} &> {log}'
 
 #########################################################################################################################################################################################################

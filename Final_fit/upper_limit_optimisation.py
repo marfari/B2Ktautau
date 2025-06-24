@@ -8,7 +8,8 @@ def main(argv):
     fit_name = argv[1]
     BF_sig = argv[2]
 
-    bdt_cuts = np.round( np.linspace(0.965,0.985,21), 3 )
+    # bdt_cuts = np.round( np.linspace(0.965,0.985,21), 3 )
+    bdt_cuts = np.round( np.linspace(0.96,0.98,21), 3)
     N = len(bdt_cuts)
 
     BDT1_values = np.zeros(N*N)
@@ -21,7 +22,10 @@ def main(argv):
             bdt1 = bdt_cuts[i]
             bdt2 = bdt_cuts[j]
                 
-            branching_fraction_values[a] = np.load(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{bdt1}_bdt2_{bdt2}.npy')
+            try:
+                branching_fraction_values[a] = np.load(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{bdt1}_bdt2_{bdt2}.npy')
+            except:
+                branching_fraction_values[a] = np.inf
 
             print(f"BDT1 = {bdt1} | BDT2 = {bdt2} | BF = {branching_fraction_values[a]}")
             

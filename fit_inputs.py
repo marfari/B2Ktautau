@@ -42,7 +42,10 @@ def main(argv):
 
     eps_s = ufloat(eps_s_num/eps_s_den, eps_s_err)
 
-    A = A_const/eps_s
+    if(eps_s.nominal_value != 0):
+        A = A_const/eps_s
+    else:
+        A = ufloat(0.0, 0.0)
     np.save(f'/panfs/felician/B2Ktautau/workflow/fit_inputs/A_bdt1_{bdt1}_bdt2_{bdt2}.npy', A.nominal_value)
     np.save(f'/panfs/felician/B2Ktautau/workflow/fit_inputs/A_err_bdt1_{bdt1}_bdt2_{bdt2}.npy', A.std_dev)
 
