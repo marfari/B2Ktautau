@@ -9,7 +9,7 @@ def main(argv):
     BF_sig = argv[2]
 
     # bdt_cuts = np.round( np.linspace(0.965,0.985,21), 3 )
-    bdt_cuts = np.round( np.linspace(0.96,0.98,21), 3)
+    bdt_cuts = np.round( np.linspace(0.95,0.98,21), 3)
     N = len(bdt_cuts)
 
     BDT1_values = np.zeros(N*N)
@@ -42,8 +42,8 @@ def main(argv):
     fig.add_axes(ax)
     cm = plt.get_cmap("coolwarm")
     ax.scatter(BDT1_values, BDT2_values, branching_fraction_values, marker='o', c=branching_fraction_values, cmap=cm)
-    ax.set_xlabel('BDT1 (isolation)', rotation=-15)
-    ax.set_ylabel('BDT2 (topology)', rotation=45)
+    ax.set_xlabel('BDT1 (physics)', rotation=-15)
+    ax.set_ylabel('BDT2 (combinatorial)', rotation=45)
     ax.set_zlabel('B($B^+ \\to K^+ \\tau^+ \\tau^-$)')
     ax.set_box_aspect(None, zoom=0.85)
     plt.tight_layout()
@@ -59,8 +59,8 @@ def main(argv):
     cbar = plt.colorbar(p, ax=ax1)
     cbar.set_label('Branching fraction')  # optional: add a label to the legend
     ax1.plot(BDT1_values[min_index], BDT2_values[min_index], marker='*', color='black', markersize=15, linestyle='None', label='Minimum')
-    plt.xlabel('Isolation BDT')
-    plt.ylabel('Topology BDT')
+    plt.xlabel('physics BDT')
+    plt.ylabel('combinatorial BDT')
     plt.title('Branching fraction vs BDT cuts')
     plt.legend()
     plt.tight_layout()

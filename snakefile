@@ -4,37 +4,19 @@ localrules: exact_constraints, comparisons, fit_mass, make_sPlot_histos, compare
 
 rule all:
     input:
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.0, BDT2=0.0),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.5, BDT2=0.5),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.8, BDT2=0.8),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.9, BDT2=0.9),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.95, BDT2=0.95),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.97, BDT2=0.97),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.971, BDT2=0.971),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.972, BDT2=0.972),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.973, BDT2=0.973),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.974, BDT2=0.974),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.975, BDT2=0.975),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.976, BDT2=0.976),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.977, BDT2=0.977),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="error_categories", BF_sig=0, BDT1=0.978, BDT2=0.978),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.0, BDT2=0.0),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.5, BDT2=0.5),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.8, BDT2=0.8),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.9, BDT2=0.9),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.95, BDT2=0.95),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.97, BDT2=0.97),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.971, BDT2=0.971),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.972, BDT2=0.972),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.973, BDT2=0.973),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.974, BDT2=0.974),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.975, BDT2=0.975),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.976, BDT2=0.976),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.977, BDT2=0.977),
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy', fit_name="all_events", BF_sig=0, BDT1=0.978, BDT2=0.978)
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig}/BDT1_{BDT1}_BDT2_{BDT2}/fit_validation_plot.pdf', fit_name="AllEvents", fit_type="ToyDataSidebands", BF_sig=0.001, BDT1=0.972, BDT2=0.972),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig}/BDT1_{BDT1}_BDT2_{BDT2}/fit_validation_plot.pdf', fit_name="AllEvents", fit_type="ToyDataSidebands", BF_sig=0.001, BDT1=0.975, BDT2=0.975),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig}/BDT1_{BDT1}_BDT2_{BDT2}/fit_validation_plot.pdf', fit_name="ErrorCategories", fit_type="ToyDataSidebands", BF_sig=0.001, BDT1=0.972, BDT2=0.972),
+        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig}/BDT1_{BDT1}_BDT2_{BDT2}/fit_validation_plot.pdf', fit_name="ErrorCategories", fit_type="ToyDataSidebands", BF_sig=0.001, BDT1=0.975, BDT2=0.975)
 
-        # expand('/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{fit_name}/BF_sig_{BF_sig}/out.log', fit_name="all_events", BF_sig=0)
-        # expand('/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{fit_name}/BF_sig_{BF_sig}/out.log', fit_name="error_categories", BF_sig=0)
+        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig}/BDT1_{BDT1}_BDT2_{BDT2}/fit_validation_plot.pdf', fit_name="AllEvents", fit_type="ToyDataSidebands", BF_sig=0.001, BDT1=0.0, BDT2=0.0),
+        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig}/BDT1_{BDT1}_BDT2_{BDT2}/fit_validation_plot.pdf', fit_name="AllEvents", fit_type="ToyDataSidebands", BF_sig=0.001, BDT1=0.8, BDT2=0.8),
+        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig}/BDT1_{BDT1}_BDT2_{BDT2}/fit_validation_plot.pdf', fit_name="AllEvents", fit_type="ToyDataSidebands", BF_sig=0.001, BDT1=0.9, BDT2=0.9),
+        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig}/BDT1_{BDT1}_BDT2_{BDT2}/fit_validation_plot.pdf', fit_name="AllEvents", fit_type="ToyDataSidebands", BF_sig=0.001, BDT1=0.97, BDT2=0.97),
+        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig}/BDT1_{BDT1}_BDT2_{BDT2}/fit_validation_plot.pdf', fit_name="ErrorCategories", fit_type="ToyDataSidebands", BF_sig=0.001, BDT1=0.0, BDT2=0.0),
+        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig}/BDT1_{BDT1}_BDT2_{BDT2}/fit_validation_plot.pdf', fit_name="ErrorCategories", fit_type="ToyDataSidebands", BF_sig=0.001, BDT1=0.8, BDT2=0.8),
+        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig}/BDT1_{BDT1}_BDT2_{BDT2}/fit_validation_plot.pdf', fit_name="ErrorCategories", fit_type="ToyDataSidebands", BF_sig=0.001, BDT1=0.9, BDT2=0.9),
+        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig}/BDT1_{BDT1}_BDT2_{BDT2}/fit_validation_plot.pdf', fit_name="ErrorCategories", fit_type="ToyDataSidebands", BF_sig=0.001, BDT1=0.97, BDT2=0.97)
 
 # Every time grid files are updated need to:
 # - run pidgen for ktautau / DDs over the pre-selection files (signal + normalisation channel)
@@ -696,7 +678,6 @@ rule fit_templates_choice:
     shell:
         'python -u Final_fit/template_shapes_choice.py &> {log}'
 
-
 rule generate_histograms:
     ''' Generates fit histograms after the BDT cuts '''
     input:
@@ -704,53 +685,55 @@ rule generate_histograms:
         '/panfs/felician/B2Ktautau/workflow/fit_inputs/C_bdt1_{BDT1}_bdt2_{BDT2}.npy',
         '/panfs/felician/B2Ktautau/workflow/fit_inputs/C_err_bdt1_{BDT1}_bdt2_{BDT2}.npy'
     output:
-        '/panfs/felician/B2Ktautau/workflow/generate_histograms/histograms_bdt1_{BDT1}_bdt2_{BDT2}.root',
-        '/panfs/felician/B2Ktautau/workflow/generate_histograms/histograms_errors_bdt1_{BDT1}_bdt2_{BDT2}.root',
-        '/panfs/felician/B2Ktautau/workflow/generate_histograms/N_comb_bdt1_{BDT1}_bdt2_{BDT2}.npy',
-        '/panfs/felician/B2Ktautau/workflow/generate_histograms/eff_category_value_bdt1_{BDT1}_bdt2_{BDT2}.npy',
-        '/panfs/felician/B2Ktautau/workflow/generate_histograms/eff_category_error_bdt1_{BDT1}_bdt2_{BDT2}.npy',
-        '/panfs/felician/B2Ktautau/workflow/generate_histograms/C_bdt1_{BDT1}_bdt2_{BDT2}.npy',
-        '/panfs/felician/B2Ktautau/workflow/generate_histograms/C_err_bdt1_{BDT1}_bdt2_{BDT2}.npy'
+        '/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{BDT1}_BDT2_{BDT2}/histograms.root',
+        '/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{BDT1}_BDT2_{BDT2}/histogram_errors.root',
+        '/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{BDT1}_BDT2_{BDT2}/N_comb.npy',
+        '/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{BDT1}_BDT2_{BDT2}/eff_category_value.npy',
+        '/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{BDT1}_BDT2_{BDT2}/eff_category_error.npy',
+        '/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{BDT1}_BDT2_{BDT2}/C.npy',
+        '/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{BDT1}_BDT2_{BDT2}/C_err.npy',
+        '/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{BDT1}_BDT2_{BDT2}/signal_region_indices.npy'
     log:
-        '/panfs/felician/B2Ktautau/workflow/generate_histograms/out_bdt1_{BDT1}_bdt2_{BDT2}.log'   
+        '/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{BDT1}_BDT2_{BDT2}/out.log'   
     shell:
-        'python -u Final_fit/generate_histograms.py {wildcards.BDT1} {wildcards.BDT2} &> {log}'
+        'python -u Final_fit/generate_histograms.py {wildcards.fit_type} {wildcards.BDT1} {wildcards.BDT2} &> {log}'
 
 rule pyhf_fit:
     ''' Does the fit, fit validation '''
     input:
         'Final_fit/do_all.py',
-        '/panfs/felician/B2Ktautau/workflow/generate_histograms/histograms_bdt1_{BDT1}_bdt2_{BDT2}.root',
-        '/panfs/felician/B2Ktautau/workflow/generate_histograms/histograms_errors_bdt1_{BDT1}_bdt2_{BDT2}.root',
         '/panfs/felician/B2Ktautau/workflow/fit_inputs/A_bdt1_{BDT1}_bdt2_{BDT2}.npy',
         '/panfs/felician/B2Ktautau/workflow/fit_inputs/A_err_bdt1_{BDT1}_bdt2_{BDT2}.npy',
         '/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/B.npy',
         '/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/B_err.npy',
-        '/panfs/felician/B2Ktautau/workflow/generate_histograms/C_bdt1_{BDT1}_bdt2_{BDT2}.npy',
-        '/panfs/felician/B2Ktautau/workflow/generate_histograms/C_err_bdt1_{BDT1}_bdt2_{BDT2}.npy',
-        '/panfs/felician/B2Ktautau/workflow/generate_histograms/N_comb_bdt1_{BDT1}_bdt2_{BDT2}.npy',
-        '/panfs/felician/B2Ktautau/workflow/generate_histograms/eff_category_value_bdt1_{BDT1}_bdt2_{BDT2}.npy',
-        '/panfs/felician/B2Ktautau/workflow/generate_histograms/eff_category_error_bdt1_{BDT1}_bdt2_{BDT2}.npy'
+        '/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{BDT1}_BDT2_{BDT2}/histograms.root',
+        '/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{BDT1}_BDT2_{BDT2}/histogram_errors.root',
+        '/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{BDT1}_BDT2_{BDT2}/N_comb.npy',
+        '/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{BDT1}_BDT2_{BDT2}/eff_category_value.npy',
+        '/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{BDT1}_BDT2_{BDT2}/eff_category_error.npy',
+        '/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{BDT1}_BDT2_{BDT2}/C.npy',
+        '/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{BDT1}_BDT2_{BDT2}/C_err.npy',
+        '/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{BDT1}_BDT2_{BDT2}/signal_region_indices.npy'
     output:
         # Limit calculation outputs:
-        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_results/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.npy',
-        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_plots/fit_plot_bdt1_{BDT1}_bdt2_{BDT2}.pdf',
-        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_plots/cls_limit_bdt1_{BDT1}_bdt2_{BDT2}.pdf'
+        # '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig}/BDT1_{BDT1}_BDT2_{BDT2}/fit_plot.pdf',
+        # '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig}/BDT1_{BDT1}_BDT2_{BDT2}/cls_limit.pdf',
+        # '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig}/BDT1_{BDT1}_BDT2_{BDT2}cls_limit.npy'
         # Fit validation outputs:
-        # '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/bdt1_{BDT1}_bdt2_{BDT2}.pdf',
-        # '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_validation_plots/pulls/BDT1_{BDT1}_bdt2_{BDT2}/a.pdf',
-        # '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/fit_plots/fit_plot_bdt1_{BDT1}_bdt2_{BDT2}_seed_0.pdf'
+        # '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig}/BDT1_{BDT1}_BDT2_{BDT2}/fit_plot_seed_0.pdf',
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig}/BDT1_{BDT1}_BDT2_{BDT2}/pulls/BF_sig.pdf',
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig}/BDT1_{BDT1}_BDT2_{BDT2}/fit_validation_plot.pdf'
     log:
-        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_name}/BF_sig_{BF_sig}/logs/out_bdt1_{BDT1}_bdt2_{BDT2}.log'
+        '/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig}/BDT1_{BDT1}_BDT2_{BDT2}/out.log'
     shell:
-        'python -u Final_fit/do_all.py {wildcards.fit_name} {wildcards.BF_sig} {wildcards.BDT1} {wildcards.BDT2} &> {log}'
+        'python -u Final_fit/do_all.py \"{wildcards.fit_name}\" \"{wildcards.fit_type}\" {wildcards.BF_sig} {wildcards.BDT1} {wildcards.BDT2} &> {log}'
 
 
 rule upper_limit_optimisation:
     ''' Minimises the 90% C.L. upper limit on the branching fraction '''
     input:
-        'Final_fit/upper_limit_optimisation.py',
-        [ [f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{{fit_name}}/BF_sig_{{BF_sig}}/fit_results/cls_limit_bdt1_{bdt1}_bdt2_{bdt2}.npy' for bdt1 in np.round( np.linspace(0.96,0.98,21), 3)] for bdt2 in np.round( np.linspace(0.96,0.98,21), 3)]
+        'Final_fit/upper_limit_optimisation.py'
+        # [ [f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{{fit_name}}/BF_sig_{{BF_sig}}/fit_results/cls_limit_bdt1_{bdt1}_bdt2_{bdt2}.npy' for bdt1 in np.round( np.linspace(0.95,0.98,21), 3)] for bdt2 in np.round( np.linspace(0.95,0.98,21), 3)]
     output:
         '/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{fit_name}/BF_sig_{BF_sig}/BF_vs_bdt1_vs_bdt2.pdf',
         '/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{fit_name}/BF_sig_{BF_sig}/BF_vs_bdt1_vs_bdt2_1.pdf'

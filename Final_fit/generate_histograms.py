@@ -4,7 +4,13 @@ import numpy as np
 from uncertainties import ufloat
 import time
 
+# Definitoin of the signal region
+xmin = [4800, 4800, 4800, 5000]
+xmax = [6500, 6000, 6500, 7500]
+
+# Definition of the error categories
 channel_cut = {0: "", 1: " && (df_Bp_MERR >= 0) && (df_Bp_MERR <= 100)", 2: " && (df_Bp_MERR > 100) && (df_Bp_MERR <= 250)", 3: " && (df_Bp_MERR > 250)"}
+
 error_threshold = 0
 bdt_fix_sig = 0.985
 bdt_fix = 0.9
@@ -75,7 +81,7 @@ def number_of_bins(t_sig, ch, bdt1, bdt2, channel_cut):
 
 #     return array.array('d', bins)
 
-def create_histograms(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, ch, channel_cut):
+def create_histograms(fit_type, t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, ch, channel_cut):
     # bin width ~half of signal mass resolution
     nbins = number_of_bins(t_sig, ch, bdt1, bdt2, channel_cut)
 
@@ -90,7 +96,13 @@ def create_histograms(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_B
     h_BdD0DmKp = ROOT.TH1D(f"h_BdD0DmKp_{ch}", f"h_BdD0DmKp_{ch}", nbins, 4000, 8000)
     h_BsD0DsKp = ROOT.TH1D(f"h_BsD0DsKp_{ch}", f"h_BsD0DsKp_{ch}", nbins, 4000, 8000)
 
-    cut_string = channel_cut[ch]
+    if((fit_type == "ToyDataSidebands") or (fit_type == "RSDataSidebands")):
+        cut_string = channel_cut[ch]+f" && ((df_Bp_M < {xmin[ch]}) || (df_Bp_M > {xmax[ch]}) )"
+    elif((fit_type == "ToyData") or (fit_type == "RSData")):
+        cut_string = channel_cut[ch]
+    else:
+        print("Wrong fit type. Try: 'ToyDataSidebands': validation of signal region definition \n 'RSDataSidebands': extraction of Ncomb \n 'ToyData': calculation of expected upper limit (blinded) \n 'RSData': calculation of observed upper limit (unblinded) ")
+        quit()
 
     if((bdt1 >= bdt_fix_sig) and (bdt2 >= bdt_fix_sig)):
         t_sig.Draw(f"df_Bp_M >> h_sig_{ch}", "(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt_fix_sig,bdt_fix_sig)+cut_string)
@@ -128,7 +140,21 @@ def create_histograms(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_B
     if(h_BDDKp.Integral() != 0):
         h_BDDKp.Scale(1/h_BDDKp.Integral())
 
-    return [h_sig, h_comb, h_BDDKp]
+    if((fit_type == "ToyDataSidebands") or (fit_type == "RSDataSidebands")):
+        excluded_bins = []
+        for i in range(nbins):
+            bin_left_edge = h_sig.GetBinLowEdge(i+1)
+            bin_right_edge = bin_left_edge + h_sig.GetBinWidth(i+1)
+            if((bin_right_edge >= xmin[ch]) and (bin_left_edge <= xmax[ch])):
+                excluded_bins.append(i+1)
+
+        i_min = excluded_bins[0]+1
+        i_max = excluded_bins[len(excluded_bins)-1]-1
+    else:
+        i_min = -1
+        i_max = -1
+
+    return [h_sig, h_comb, h_BDDKp], i_min, i_max
 
 
 def create_histogram_errors(h_sig, h_comb, h_BDDKp, ch):
@@ -191,11 +217,13 @@ def combinatorial_background_yield(t_rs_data, t_comb, bdt1, bdt2):
     eps_ws_up = ROOT.TEfficiency.Wilson(eps_ws_den, eps_ws_num, 0.68, True)
     eps_ws_down = ROOT.TEfficiency.Wilson(eps_ws_den, eps_ws_num, 0.68, False)
     eps_ws_err = 0.5*(eps_ws_up-eps_ws_down)
+    eps_ws = ufloat(eps_ws, eps_ws_err)
 
     eps_rs = eps_rs_num/eps_rs_den
     eps_rs_up = ROOT.TEfficiency.Wilson(eps_rs_den, eps_rs_num, 0.68, True)
     eps_rs_down = ROOT.TEfficiency.Wilson(eps_rs_den, eps_rs_num, 0.68, False)
     eps_rs_err = 0.5*(eps_rs_up-eps_rs_down)
+    eps_rs = ufloat(eps_rs, eps_rs_err)
 
     r = eps_rs/eps_ws
     print("eps_rs / eps_ws = ", r)
@@ -204,6 +232,8 @@ def combinatorial_background_yield(t_rs_data, t_comb, bdt1, bdt2):
     eps_ws_bdt_up = ROOT.TEfficiency.Wilson(eps_ws_den, eps_num_bdt, 0.68, True)
     eps_ws_bdt_down = ROOT.TEfficiency.Wilson(eps_ws_den, eps_num_bdt, 0.68, False)
     eps_ws_bdt_err = 0.5*(eps_ws_bdt_up-eps_ws_bdt_down)
+    eps_ws_bdt = ufloat(eps_ws_bdt, eps_ws_bdt_err)
+    print("eps_ws = ", eps_ws_bdt)
 
     n_rs_prebdt_value = t_rs_data.GetEntries()
 
@@ -364,8 +394,9 @@ def physics_backgrounds_yields(C_values, C_errors, bdt1, bdt2):
 def main(argv):
     start = time.time()
 
-    bdt1 = argv[1]
-    bdt2 = argv[2]
+    fit_type = argv[1]
+    bdt1 = argv[2]
+    bdt2 = argv[3]
 
     bdt1 = float(bdt1)
     bdt2 = float(bdt2)
@@ -403,13 +434,13 @@ def main(argv):
     t_BuDD = f_BuDD.Get("DecayTree")
     
     ###################################################### 1) Retrieve histograms after BDT cuts (all histograms are normalised to unity)
-    [h_sig, h_comb, h_BDDKp] = create_histograms(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, 0, channel_cut)
-    [h_sig_1, h_comb_1, h_BDDKp_1] = create_histograms(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, 1, channel_cut)
-    [h_sig_2, h_comb_2, h_BDDKp_2] = create_histograms(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, 2, channel_cut)
-    [h_sig_3, h_comb_3, h_BDDKp_3] = create_histograms(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, 3, channel_cut)
+    [h_sig, h_comb, h_BDDKp], i_min, i_max = create_histograms(fit_type, t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, 0, channel_cut)
+    [h_sig_1, h_comb_1, h_BDDKp_1], i_min_1, i_max_1 = create_histograms(fit_type, t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, 1, channel_cut)
+    [h_sig_2, h_comb_2, h_BDDKp_2], i_min_2, i_max_2 = create_histograms(fit_type, t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, 2, channel_cut)
+    [h_sig_3, h_comb_3, h_BDDKp_3], i_min_3, i_max_3 = create_histograms(fit_type, t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, 3, channel_cut)
     
     print("Saving histograms into file")
-    f = ROOT.TFile(f"/panfs/felician/B2Ktautau/workflow/generate_histograms/histograms_bdt1_{bdt1}_bdt2_{bdt2}.root", "RECREATE")
+    f = ROOT.TFile(f"/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{bdt1}_BDT2_{bdt2}/histograms.root", "RECREATE")
     f.cd()
     f.mkdir("Channel_0")
     f.mkdir("Channel_1")
@@ -441,7 +472,7 @@ def main(argv):
     [h_sig_err_3, h_comb_err_3, h_BDDKp_err_3] = create_histogram_errors(h_sig_3, h_comb_3, h_BDDKp_3, 3)
 
     print("Saving histograms errors into file")
-    f1 = ROOT.TFile(f"/panfs/felician/B2Ktautau/workflow/generate_histograms/histograms_errors_bdt1_{bdt1}_bdt2_{bdt2}.root", "RECREATE")
+    f1 = ROOT.TFile(f"/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{bdt1}_BDT2_{bdt2}/histogram_errors.root", "RECREATE")
     f1.cd()
     f1.mkdir("Channel_0")
     f1.mkdir("Channel_1")
@@ -469,13 +500,13 @@ def main(argv):
     ### Combinatorial background yield
     N_comb, N_comb_err = combinatorial_background_yield(t_rs_data, t_comb, bdt1, bdt2)
     print("N_comb = ", N_comb, " +/- ", N_comb_err)
-    np.save(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/N_comb_bdt1_{bdt1}_bdt2_{bdt2}.npy', [N_comb, N_comb_err])
+    np.save(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{bdt1}_BDT2_{bdt2}/N_comb.npy', [N_comb, N_comb_err])
 
     ### Error category efficiency (eps1, eps2)
     eps_sig, eps_comb, eps_BDDKp, eps_BuDDK0, eps_BuDD, eps_sig_err, eps_comb_err, eps_BDDKp_err, eps_BuDDK0_err, eps_BuDD_err = error_category_efficiency(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, channel_cut)
 
-    np.save(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/eff_category_value_bdt1_{bdt1}_bdt2_{bdt2}.npy', [eps_sig, eps_comb, eps_BDDKp, eps_BuDDK0, eps_BuDD])
-    np.save(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/eff_category_error_bdt1_{bdt1}_bdt2_{bdt2}.npy', [eps_sig_err, eps_comb_err, eps_BDDKp_err, eps_BuDDK0_err, eps_BuDD_err])
+    np.save(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{bdt1}_BDT2_{bdt2}/eff_category_value.npy', [eps_sig, eps_comb, eps_BDDKp, eps_BuDDK0, eps_BuDD])
+    np.save(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{bdt1}_BDT2_{bdt2}/eff_category_error.npy', [eps_sig_err, eps_comb_err, eps_BDDKp_err, eps_BuDDK0_err, eps_BuDD_err])
 
     ### Physics backgrounds C values
     C_values = np.load(f'/panfs/felician/B2Ktautau/workflow/fit_inputs/C_bdt1_{bdt1}_bdt2_{bdt2}.npy')
@@ -483,8 +514,10 @@ def main(argv):
 
     c, c_err = physics_backgrounds_yields(C_values, C_errors, bdt1, bdt2)
 
-    np.save(f"/panfs/felician/B2Ktautau/workflow/generate_histograms/C_bdt1_{bdt1}_bdt2_{bdt2}.npy", c)
-    np.save(f"/panfs/felician/B2Ktautau/workflow/generate_histograms/C_err_bdt1_{bdt1}_bdt2_{bdt2}.npy", c_err)
+    np.save(f"/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{bdt1}_BDT2_{bdt2}/C.npy", c)
+    np.save(f"/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{bdt1}_BDT2_{bdt2}/C_err.npy", c_err)
+
+    np.save(f"/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{bdt1}_BDT2_{bdt2}/signal_region_indices.npy", [ [i_min, i_min_1, i_min_2, i_max_3], [i_max, i_max_1, i_max_2, i_max_3] ])
 
     end = time.time()
     print(f"Elapsed time: {end - start:.2f} seconds")
