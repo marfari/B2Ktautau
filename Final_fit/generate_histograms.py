@@ -204,14 +204,14 @@ def combinatorial_background_yield(t_rs_data, t_comb, bdt1, bdt2):
     eps_ws_den = t_comb.GetEntries()
     eps_rs_den = t_rs_data.GetEntries()
 
-    eps_num_bdt = t_comb.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2))
+    eps_num_bdt = t_comb.GetEntries(f"(BDT1 > {bdt1}) && (BDT2 > {bdt2}) ")
 
     if((bdt1 <= 0.8) and (bdt2 <= 0.8)):
-        eps_ws_num = t_comb.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2))
-        eps_rs_num = t_rs_data.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(bdt1,bdt2))
+        eps_ws_num = t_comb.GetEntries(f"(BDT1 > {bdt1}) && (BDT2 > {bdt2}) ")
+        eps_rs_num = t_rs_data.GetEntries(f"(BDT1 > {bdt1}) && (BDT2 > {bdt2}) ")
     else:
-        eps_ws_num = t_comb.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(0.9,0.9))
-        eps_rs_num = t_rs_data.GetEntries("(BDT1 > {0}) && (BDT2 > {1}) ".format(0.9,0.9))
+        eps_ws_num = t_comb.GetEntries(f"(BDT1 > {0.9}) && (BDT2 > {0.9}) ")
+        eps_rs_num = t_rs_data.GetEntries(f"(BDT1 > {0.9}) && (BDT2 > {0.9}) ")
 
     eps_ws = eps_ws_num/eps_ws_den
     eps_ws_up = ROOT.TEfficiency.Wilson(eps_ws_den, eps_ws_num, 0.68, True)
@@ -243,82 +243,6 @@ def combinatorial_background_yield(t_rs_data, t_comb, bdt1, bdt2):
     N_comb = n_rs_prebdt*eps_ws_bdt*r
 
     return N_comb.nominal_value, N_comb.std_dev
-
-
-def error_category_efficiency(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, channel_cut):
-    n = len(channel_cut)-2
-
-    eps_sig = np.zeros(n)
-    eps_comb = np.zeros(n)
-    eps_BDDKp = np.zeros(n)
-    eps_BuDDK0 = np.zeros(n)
-    eps_BuDD = np.zeros(n)
-
-    eps_sig_err = np.zeros(n)
-    eps_comb_err = np.zeros(n)
-    eps_BDDKp_err = np.zeros(n)
-    eps_BuDDK0_err = np.zeros(n)
-    eps_BuDD_err = np.zeros(n)
-
-    for ch in range(n):
-        bdt_string = f"(BDT1 > {bdt1}) && (BDT2 > {bdt2})"
-
-        # signal
-        N_num_sig = t_sig.GetEntries(bdt_string+channel_cut[ch+1])
-        N_den_sig = t_sig.GetEntries(bdt_string)
-        up_sig = ROOT.TEfficiency.Wilson(N_den_sig, N_num_sig, 0.68, True)
-        lo_sig = ROOT.TEfficiency.Wilson(N_den_sig, N_num_sig, 0.68, False)
-        if(N_den_sig != 0):
-            eps_sig[ch] = N_num_sig/N_den_sig
-        else:
-            eps_sig[ch] = 0
-        eps_sig_err[ch] = 0.5*(up_sig - lo_sig)
-
-        # combinatorial
-        N_num_comb = t_comb.GetEntries(bdt_string+channel_cut[ch+1])
-        N_den_comb = t_comb.GetEntries(bdt_string)
-        up_comb = ROOT.TEfficiency.Wilson(N_den_comb, N_num_comb, 0.68, True)
-        lo_comb = ROOT.TEfficiency.Wilson(N_den_comb, N_num_comb, 0.68, False)
-        if(N_den_comb != 0):
-            eps_comb[ch] = N_num_comb/N_den_comb
-        else:
-            eps_comb[ch] = 0
-        eps_comb_err[ch] = 0.5*(up_comb - lo_comb)
-
-        # B -> DD K+
-        N_num_BDDKp = t_BuDDKp.GetEntries(bdt_string+channel_cut[ch+1]) + t_BdDDKp.GetEntries(bdt_string+channel_cut[ch+1]) + t_BsDDKp.GetEntries(bdt_string+channel_cut[ch+1])
-        N_den_BDDKp = t_BuDDKp.GetEntries(bdt_string) + t_BdDDKp.GetEntries(bdt_string) + t_BsDDKp.GetEntries(bdt_string)
-        up_BDDKp = ROOT.TEfficiency.Wilson(N_den_BDDKp, N_num_BDDKp, 0.68, True)
-        lo_BDDKp = ROOT.TEfficiency.Wilson(N_den_BDDKp, N_num_BDDKp, 0.68, False)
-        if(N_den_BDDKp != 0):
-            eps_BDDKp[ch] = N_num_BDDKp/N_den_BDDKp
-        else:
-            eps_BDDKp[ch] = 0
-        eps_BDDKp_err[ch] = 0.5*(up_BDDKp - lo_BDDKp)
-
-        # B -> DD K0
-        N_num_BuDDK0 = t_BuDDK0.GetEntries(bdt_string+channel_cut[ch+1])
-        N_den_BuDDK0 = t_BuDDK0.GetEntries(bdt_string)
-        up_BuDDK0 = ROOT.TEfficiency.Wilson(N_den_BuDDK0, N_num_BuDDK0, 0.68, True)
-        lo_BuDDK0 = ROOT.TEfficiency.Wilson(N_den_BuDDK0, N_num_BuDDK0, 0.68, False)
-        if(N_den_BuDDK0 != 0):
-            eps_BuDDK0[ch] = N_num_BuDDK0/N_den_BuDDK0
-        else:
-            eps_BuDDK0[ch] = 0
-        eps_BuDDK0_err[ch] = 0.5*(up_BuDDK0 - lo_BuDDK0)
-
-        # B -> DD
-        N_num_BuDD = t_BuDD.GetEntries(bdt_string+channel_cut[ch+1])
-        N_den_BuDD = t_BuDD.GetEntries(bdt_string)
-        up_BuDD = ROOT.TEfficiency.Wilson(N_den_BuDD, N_num_BuDD, 0.68, True)
-        lo_BuDD = ROOT.TEfficiency.Wilson(N_den_BuDD, N_num_BuDD, 0.68, False)
-        if(N_den_BuDD != 0):
-            eps_BuDD[ch] = N_num_BuDD/N_den_BuDD
-        else:
-            eps_BuDD[ch] = 0
-        eps_BuDD_err[ch] = 0.5*(up_BuDD - lo_BuDD)
-
-    return eps_sig, eps_comb, eps_BDDKp, eps_BuDDK0, eps_BuDD, eps_sig_err, eps_comb_err, eps_BDDKp_err, eps_BuDDK0_err, eps_BuDD_err
 
 
 def physics_backgrounds_yields(C_values, C_errors, bdt1, bdt2):
@@ -389,6 +313,86 @@ def physics_backgrounds_yields(C_values, C_errors, bdt1, bdt2):
     c_err = [C_BDDKp.std_dev, C_BuDDK0.std_dev, C_BuDD.std_dev]
 
     return c, c_err
+
+
+def channel_efficiency(fit_type, t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, channel_cut):
+    n = len(channel_cut)
+
+    eps_sig = np.zeros(n)
+    eps_comb = np.zeros(n)
+    eps_BDDKp = np.zeros(n)
+    eps_BuDDK0 = np.zeros(n)
+    eps_BuDD = np.zeros(n)
+
+    eps_sig_err = np.zeros(n)
+    eps_comb_err = np.zeros(n)
+    eps_BDDKp_err = np.zeros(n)
+    eps_BuDDK0_err = np.zeros(n)
+    eps_BuDD_err = np.zeros(n)
+
+    bdt_string = f"(BDT1 > {bdt1}) && (BDT2 > {bdt2})"
+
+    for ch in range(n):
+        cut_string = bdt_string + channel_cut[ch]
+        if((fit_type == "ToyDataSidebands") or (fit_type == "RSDataSidebands")):
+            cut_string += f" && ((df_Bp_M < {xmin[ch]}) || (df_Bp_M > {xmax[ch]}))"
+
+        # signal
+        N_num_sig = t_sig.GetEntries(cut_string)
+        N_den_sig = t_sig.GetEntries(bdt_string)
+        up_sig = ROOT.TEfficiency.Wilson(N_den_sig, N_num_sig, 0.68, True)
+        lo_sig = ROOT.TEfficiency.Wilson(N_den_sig, N_num_sig, 0.68, False)
+        if(N_den_sig != 0):
+            eps_sig[ch] = N_num_sig/N_den_sig
+        else:
+            eps_sig[ch] = 0
+        eps_sig_err[ch] = 0.5*(up_sig - lo_sig)
+
+        # combinatorial
+        N_num_comb = t_comb.GetEntries(cut_string)
+        N_den_comb = t_comb.GetEntries(bdt_string)
+        up_comb = ROOT.TEfficiency.Wilson(N_den_comb, N_num_comb, 0.68, True)
+        lo_comb = ROOT.TEfficiency.Wilson(N_den_comb, N_num_comb, 0.68, False)
+        if(N_den_comb != 0):
+            eps_comb[ch] = N_num_comb/N_den_comb
+        else:
+            eps_comb[ch] = 0
+        eps_comb_err[ch] = 0.5*(up_comb - lo_comb)
+
+        # B -> DD K+
+        N_num_BDDKp = t_BuDDKp.GetEntries(cut_string) + t_BdDDKp.GetEntries(cut_string) + t_BsDDKp.GetEntries(cut_string)
+        N_den_BDDKp = t_BuDDKp.GetEntries(bdt_string) + t_BdDDKp.GetEntries(bdt_string) + t_BsDDKp.GetEntries(bdt_string)
+        up_BDDKp = ROOT.TEfficiency.Wilson(N_den_BDDKp, N_num_BDDKp, 0.68, True)
+        lo_BDDKp = ROOT.TEfficiency.Wilson(N_den_BDDKp, N_num_BDDKp, 0.68, False)
+        if(N_den_BDDKp != 0):
+            eps_BDDKp[ch] = N_num_BDDKp/N_den_BDDKp
+        else:
+            eps_BDDKp[ch] = 0
+        eps_BDDKp_err[ch] = 0.5*(up_BDDKp - lo_BDDKp)
+
+        # B -> DD K0
+        N_num_BuDDK0 = t_BuDDK0.GetEntries(cut_string)
+        N_den_BuDDK0 = t_BuDDK0.GetEntries(bdt_string)
+        up_BuDDK0 = ROOT.TEfficiency.Wilson(N_den_BuDDK0, N_num_BuDDK0, 0.68, True)
+        lo_BuDDK0 = ROOT.TEfficiency.Wilson(N_den_BuDDK0, N_num_BuDDK0, 0.68, False)
+        if(N_den_BuDDK0 != 0):
+            eps_BuDDK0[ch] = N_num_BuDDK0/N_den_BuDDK0
+        else:
+            eps_BuDDK0[ch] = 0
+        eps_BuDDK0_err[ch] = 0.5*(up_BuDDK0 - lo_BuDDK0)
+
+        # B -> DD
+        N_num_BuDD = t_BuDD.GetEntries(cut_string)
+        N_den_BuDD = t_BuDD.GetEntries(bdt_string)
+        up_BuDD = ROOT.TEfficiency.Wilson(N_den_BuDD, N_num_BuDD, 0.68, True)
+        lo_BuDD = ROOT.TEfficiency.Wilson(N_den_BuDD, N_num_BuDD, 0.68, False)
+        if(N_den_BuDD != 0):
+            eps_BuDD[ch] = N_num_BuDD/N_den_BuDD
+        else:
+            eps_BuDD[ch] = 0
+        eps_BuDD_err[ch] = 0.5*(up_BuDD - lo_BuDD)
+
+    return eps_sig, eps_comb, eps_BDDKp, eps_BuDDK0, eps_BuDD, eps_sig_err, eps_comb_err, eps_BDDKp_err, eps_BuDDK0_err, eps_BuDD_err
 
 
 def main(argv):
@@ -503,10 +507,10 @@ def main(argv):
     np.save(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{bdt1}_BDT2_{bdt2}/N_comb.npy', [N_comb, N_comb_err])
 
     ### Error category efficiency (eps1, eps2)
-    eps_sig, eps_comb, eps_BDDKp, eps_BuDDK0, eps_BuDD, eps_sig_err, eps_comb_err, eps_BDDKp_err, eps_BuDDK0_err, eps_BuDD_err = error_category_efficiency(t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, channel_cut)
+    eps_sig, eps_comb, eps_BDDKp, eps_BuDDK0, eps_BuDD, eps_sig_err, eps_comb_err, eps_BDDKp_err, eps_BuDDK0_err, eps_BuDD_err = channel_efficiency(fit_type, t_sig, t_comb, t_BuDDKp, t_BdDDKp, t_BsDDKp, t_BuDDK0, t_BuDD, bdt1, bdt2, channel_cut)
 
-    np.save(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{bdt1}_BDT2_{bdt2}/eff_category_value.npy', [eps_sig, eps_comb, eps_BDDKp, eps_BuDDK0, eps_BuDD])
-    np.save(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{bdt1}_BDT2_{bdt2}/eff_category_error.npy', [eps_sig_err, eps_comb_err, eps_BDDKp_err, eps_BuDDK0_err, eps_BuDD_err])
+    np.save(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{bdt1}_BDT2_{bdt2}/channel_eff_value.npy', [eps_sig, eps_comb, eps_BDDKp, eps_BuDDK0, eps_BuDD])
+    np.save(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT1_{bdt1}_BDT2_{bdt2}/channel_eff_error.npy', [eps_sig_err, eps_comb_err, eps_BDDKp_err, eps_BuDDK0_err, eps_BuDD_err])
 
     ### Physics backgrounds C values
     C_values = np.load(f'/panfs/felician/B2Ktautau/workflow/fit_inputs/C_bdt1_{bdt1}_bdt2_{bdt2}.npy')
