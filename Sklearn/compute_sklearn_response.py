@@ -24,15 +24,18 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
                         'Bp_TRKISOBDTFIRSTVALUE_taum_pi1', 'Bp_TRKISOBDTFIRSTVALUE_taum_pi2', 'Bp_TRKISOBDTFIRSTVALUE_taum_pi3', 
                         'Bp_TRKISOBDTSECONDVALUE_taum_pi1', 'Bp_TRKISOBDTSECONDVALUE_taum_pi2', 'Bp_TRKISOBDTSECONDVALUE_taum_pi3', 
                         'Bp_TRKISOBDTTHIRDVALUE_taum_pi1', 'Bp_TRKISOBDTTHIRDVALUE_taum_pi2', 'Bp_TRKISOBDTTHIRDVALUE_taum_pi3',
-                        'Bp_NC_05_PTASYM_taup', 'Bp_NC_05_PTASYM_taum', 'Bp_CCNC_05_IT_B', 'Bp_NC_05_PTASYM_taup', 'Bp_NC_05_PTASYM_taum', 'Bp_CC_05_MULT_B', 'Bp_NC_05_IT_B', 'Bp_NC_05_PTASYM_B',
+                        'Bp_NC_05_PTASYM_taup', 'Bp_NC_05_PTASYM_taum', 'Bp_CCNC_05_IT_B', 'Bp_NC_05_PTASYM_taup', 'Bp_NC_05_PTASYM_taum', 'Bp_CC_05_MULT_B', 'Bp_NC_05_IT_B', 'Bp_NC_05_PTASYM_B', 'Bp_CCNC_05_IT_taup', 'Bp_CCNC_05_IT_taum',
                         'taup_M', 'taup_M12', 'taup_M23', 'taup_M13', 'taup_DIRA_ORIVX', 'taum_M', 'taum_M12', 'taum_M23', 'taum_M13', 'taum_DIRA_ORIVX', 'Bp_DIRA_OWNPV',
                         'df_BVx', 'df_BVy', 'df_BVz', 'df_DV1x', 'df_DV1y', 'df_DV1z', 'df_DV2x', 'df_DV2y', 'df_DV2z', 'df_PVx', 'df_PVy', 'df_PVz',
                         'df_BVx_err', 'df_BVy_err', 'df_BVz_err', 'df_DV1x_err', 'df_DV1y_err', 'df_DV1z_err', 'df_DV2x_err', 'df_DV2y_err', 'df_DV2z_err', 'df_PVx_err', 'df_PVy_err', 'df_PVz_err',
                         'df_Kp_PX', 'df_Kp_PY', 'df_Kp_PZ', 'df_chi2', 
                         'Kp_IPCHI2_OWNPV', 'taup_pi1_IPCHI2_OWNPV', 'taup_pi2_IPCHI2_OWNPV', 'taup_pi3_IPCHI2_OWNPV', 'taum_pi1_IPCHI2_OWNPV', 'taum_pi2_IPCHI2_OWNPV', 'taum_pi3_IPCHI2_OWNPV',
                         'taup_AMAXDOCA', 'taup_AMINDOCA', 'taup_DOCACHI2MAX', 'taum_AMAXDOCA', 'taum_AMINDOCA', 'taum_DOCACHI2MAX',
-                        'Bp_M02', 'Bp_M04', 'Bp_M06', 'Bp_M0456']
-    
+                        'Bp_M02', 'Bp_M04', 'Bp_M06', 'Bp_M0456', 
+                        'taup_ENDVERTEX_CHI2', 'taum_ENDVERTEX_CHI2', 'Bp_ENDVERTEX_CHI2', 'Bp_VTXISODCHI2MASSONETRACK_B', 'Bp_VTXISODCHI2MASSTWOTRACK_B', 'Bp_VTXISODCHI2MASSTWOTRACK_taum', 'Bp_VTXISODCHI2MASSTWOTRACK_taup',
+                        'Bp_NC_05_PZASYM_taup', 'Bp_NC_05_PZASYM_taum', 'Bp_CC_05_PTASYM_taum', 'Bp_CC_05_PTASYM_taup', 
+                        'eventNumber', 'runNumber', 'nCandidate']
+
     else:
         branch_names = ['Bp_CC_05_IT_B',  'Bp_VTXISONUMVTX_B', 'Bp_VTXISODCHI2ONETRACK_B', 'Bp_VTXISODCHI2MASSONETRACK_B', 'Bp_VTXISODCHI2TWOTRACK_B', 'Bp_VTXISODCHI2MASSTWOTRACK_B', 
                         'Bp_VTXISONUMVTX_D0bar', 'Bp_VTXISODCHI2ONETRACK_D0bar', 'Bp_VTXISODCHI2MASSONETRACK_D0bar', 'Bp_VTXISODCHI2TWOTRACK_D0bar', 'Bp_VTXISODCHI2MASSTWOTRACK_D0bar', 
@@ -61,24 +64,28 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
     ###################################################################### Isolation ##########################################################################
     # Physics
     if((isKtautau == True) or (is_cocktailMC == True)):
-        X1['Bp_VTXISONUMVTX_taup'] = x['Bp_VTXISONUMVTX_taup']
-        X1['Bp_VTXISONUMVTX_taum'] = x['Bp_VTXISONUMVTX_taum']
         X1['Bp_VTXISODCHI2ONETRACK_taup'] = x['Bp_VTXISODCHI2ONETRACK_taup']
         X1['Bp_VTXISODCHI2ONETRACK_taum'] = x['Bp_VTXISODCHI2ONETRACK_taum']
+        X1['Bp_VTXISODCHI2TWOTRACK_taup'] = x['Bp_VTXISODCHI2TWOTRACK_taup']
         X1['Bp_VTXISODCHI2TWOTRACK_taum'] = x['Bp_VTXISODCHI2TWOTRACK_taum']
+        X1['Bp_VTXISODCHI2MASSTWOTRACK_taup'] = x['Bp_VTXISODCHI2MASSTWOTRACK_taup']
+        X1['Bp_VTXISODCHI2MASSTWOTRACK_taum'] = x['Bp_VTXISODCHI2MASSTWOTRACK_taum']
         X1['Bp_VTXISODCHI2ONETRACK_B'] = x['Bp_VTXISODCHI2ONETRACK_B']
-        X1['tau_iso_second_value_max'] = np.maximum( x['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], x['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] )
-        X1['tau_iso_third_value_max'] = np.maximum( x['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup'], x['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] ) 
-        X1['tau_iso_second_value_min'] = np.minimum( x['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], x['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] )
-        X1['tau_iso_third_value_min'] = np.minimum( x['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup'], x['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] ) 
-        X1['Bp_NC_05_PTASYM_taum'] = x['Bp_NC_05_PTASYM_taum']
-        X1['Bp_CCNC_05_IT_B'] = x['Bp_CCNC_05_IT_B']
-        X1['Bp_CC_05_MULT_B'] = x['Bp_CC_05_MULT_B']
+        X1['Bp_VTXISODCHI2MASSONETRACK_B'] = x['Bp_VTXISODCHI2MASSONETRACK_B']
+        X1['taup_iso_second_value'] = x['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup']
+        X1['taum_iso_second_value'] = x['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum']
+        X1['taup_iso_third_value'] = x['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup']
+        X1['taum_iso_third_value'] = x['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum']
         X1['Bp_NC_05_IT_B'] = x['Bp_NC_05_IT_B']
-        X1['Bp_NC_05_PTASYM_B'] = x['Bp_NC_05_PTASYM_B']
         X1['Bp_M02'] = x['Bp_M02']
         X1['Bp_M04'] = x['Bp_M04']
         X1['Bp_M06'] = x['Bp_M06']
+
+        a1_x = np.sqrt( (x['df_BVx'] - x['df_DV1x'])**2 + (x['df_BVy'] - x['df_DV1y'])**2 + (x['df_BVz'] - x['df_DV1z'])**2 )
+        b1_x = np.sqrt( (x['df_BVx'] - x['df_DV2x'])**2 + (x['df_BVy'] - x['df_DV2y'])**2 + (x['df_BVz'] - x['df_DV2z'])**2 )
+        c1_x= np.sqrt( (x['df_DV1x'] - x['df_DV2x'])**2 + (x['df_DV1y'] - x['df_DV2y'])**2 + (x['df_DV1z'] - x['df_DV2z'])**2 )
+        s1_x = (a1_x+b1_x+c1_x)*0.5
+        X1['log10_A_BV_DV1_DV2'] = np.log10( np.sqrt(s1_x*(s1_x-a1_x)*(s1_x-b1_x)*(s1_x-c1_x)) )
 
     else:
         X1['Bp_VTXISONUMVTX_D0bar'] = x['Bp_VTXISONUMVTX_D0bar']
@@ -106,14 +113,24 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
     ############################################################################ Topology #####################################################################
     # Combinatorial
     if((isKtautau == True) or (is_cocktailMC == True)):
-        X2['TRKISOBDTFIRSTVALUE_tau_pi_min_min'] = np.minimum( np.minimum( x['Bp_TRKISOBDTFIRSTVALUE_taup_pi1'], x['Bp_TRKISOBDTFIRSTVALUE_taup_pi2'], x['Bp_TRKISOBDTFIRSTVALUE_taup_pi3'] ), np.minimum( x['Bp_TRKISOBDTFIRSTVALUE_taum_pi1'], x['Bp_TRKISOBDTFIRSTVALUE_taum_pi2'], x['Bp_TRKISOBDTFIRSTVALUE_taum_pi3'] ) )
-        X2['TRKISOBDTTHIRDVALUE_tau_pi_min_min'] = np.minimum( np.minimum( x['Bp_TRKISOBDTTHIRDVALUE_taup_pi1'], x['Bp_TRKISOBDTTHIRDVALUE_taup_pi2'], x['Bp_TRKISOBDTTHIRDVALUE_taup_pi3'] ), np.minimum( x['Bp_TRKISOBDTTHIRDVALUE_taum_pi1'], x['Bp_TRKISOBDTTHIRDVALUE_taum_pi2'], x['Bp_TRKISOBDTTHIRDVALUE_taum_pi3'] ) )
         X2['tau_M_max'] = np.maximum( x['taup_M'], x['taum_M'] )
         X2['tau_M12_M23_max_max'] = np.maximum( np.maximum( x['taup_M12'], x['taup_M23'] ), np.maximum( x['taum_M12'], x['taum_M23'] ) )
         X2['tau_M12_M23_min_max'] = np.minimum( np.maximum( x['taup_M12'], x['taup_M23'] ), np.maximum( x['taum_M12'], x['taum_M23'] ) )
         X2['tau_M12_M23_max_min'] = np.maximum( np.minimum( x['taup_M12'], x['taup_M23'] ), np.minimum( x['taum_M12'], x['taum_M23'] ) )
         X2['log10_1_minus_tau_DIRA_BV_min'] = np.minimum( np.log10(1 - np.abs(x['taup_DIRA_ORIVX'] ))*np.sign( x['taup_DIRA_ORIVX']),  np.log10(1 - np.abs(x['taum_DIRA_ORIVX'] ))*np.sign( x['taum_DIRA_ORIVX'] ) )
+        X2['log10_1_minus_tau_DIRA_BV_max'] = np.maximum( np.log10(1 - np.abs(x['taup_DIRA_ORIVX'] ))*np.sign( x['taup_DIRA_ORIVX']),  np.log10(1 - np.abs(x['taum_DIRA_ORIVX'] ))*np.sign( x['taum_DIRA_ORIVX'] ) )
         X2['log10_df_chi2'] = np.log10( x['df_chi2'] )
+
+        if((species == 1) or (species == 10) or (is_cocktailMC == True)):
+            X2['Kp_ProbNNk'] = x['Kp_ProbNNk_pidgen_default']
+            X2['tau_prod_pi_min'] = np.minimum(x['taum_pi1_ProbNNpi_pidgen_default']*x['taum_pi2_ProbNNpi_pidgen_default']*x['taum_pi3_ProbNNpi_pidgen_default'], x['taup_pi1_ProbNNpi_pidgen_default']*x['taup_pi2_ProbNNpi_pidgen_default']*x['taup_pi3_ProbNNpi_pidgen_default'])
+        else:
+            X2['Kp_ProbNNk'] = x['Kp_ProbNNk']
+            X2['tau_prod_pi_min'] = np.minimum(x['taum_pi1_ProbNNpi']*x['taum_pi2_ProbNNpi']*x['taum_pi3_ProbNNpi'], x['taup_pi1_ProbNNpi']*x['taup_pi2_ProbNNpi']*x['taup_pi3_ProbNNpi'])
+
+        X2['log10_Bp_FD_PV'] = np.log10( np.sqrt( (x['df_BVx'] - x['df_PVx'])**2 + (x['df_BVy'] - x['df_PVy'])**2 + (x['df_BVz'] - x['df_PVz'])**2 ) )
+        X2['log10_tau_FD_BV_min'] = np.log10( np.minimum( np.sqrt( (x['df_DV1x'] - x['df_BVx'])**2 + (x['df_DV1y'] - x['df_BVy'])**2 + (x['df_DV1z'] - x['df_BVz'])**2), np.sqrt( (x['df_DV2x'] - x['df_BVx'])**2 + (x['df_DV2y'] - x['df_BVy'])**2 + (x['df_DV2z'] - x['df_BVz'])**2) ) )
+        X2['log10_tau_ENDVERTEX_chi2_max'] = np.log10( np.maximum( x['taup_ENDVERTEX_CHI2'], x['taum_ENDVERTEX_CHI2'] ) )
 
         Cx_taup_x =  (x['df_DV1y'] - x['df_BVy'])*x['df_Kp_PZ']  - ( x['df_DV1z'] - x['df_BVz'])*x['df_Kp_PY']
         Cy_taup_x =  (x['df_DV1z'] - x['df_BVz'])*x['df_Kp_PX']  - ( x['df_DV1x'] - x['df_BVx'])*x['df_Kp_PZ']
@@ -127,19 +144,23 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
         C_taum_x = np.sqrt( Cx_taum_x**2 + Cy_taum_x**2 + Cz_taum_x**2  )
         IP_taum_Kp_x = (2*C_taum_x)/( np.sqrt( x['df_Kp_PX']**2 + x['df_Kp_PY']**2 + x['df_Kp_PZ']**2 ) )
 
-        X2['IP_tau_Kp_max'] = np.maximum( IP_taup_Kp_x, IP_taum_Kp_x ) 
-        X2['IP_tau_Kp_min'] = np.minimum( IP_taup_Kp_x, IP_taum_Kp_x ) 
+        X2['log10_IP_tau_Kp_max'] = np.log10( np.maximum( IP_taup_Kp_x, IP_taum_Kp_x ) )
+        X2['log10_IP_tau_Kp_min'] = np.log10( np.minimum( IP_taup_Kp_x, IP_taum_Kp_x ) )
 
-        if((species == 1) or (species == 10) or (is_cocktailMC == True)):
-            X2['Kp_ProbNNk'] = x['Kp_ProbNNk_pidgen_default']
-            X2['tau_prod_pi_min'] = np.minimum(x['taum_pi1_ProbNNpi_pidgen_default']*x['taum_pi2_ProbNNpi_pidgen_default']*x['taum_pi3_ProbNNpi_pidgen_default'], x['taup_pi1_ProbNNpi_pidgen_default']*x['taup_pi2_ProbNNpi_pidgen_default']*x['taup_pi3_ProbNNpi_pidgen_default'])
-        else:
-            X2['Kp_ProbNNk'] = x['Kp_ProbNNk']
-            X2['tau_prod_pi_min'] = np.minimum(x['taum_pi1_ProbNNpi']*x['taum_pi2_ProbNNpi']*x['taum_pi3_ProbNNpi'], x['taup_pi1_ProbNNpi']*x['taup_pi2_ProbNNpi']*x['taup_pi3_ProbNNpi'])
+        a_x = np.sqrt( (x['df_PVx'] - x['df_DV1x'])**2 + (x['df_PVy'] - x['df_DV1y'])**2 + (x['df_PVz'] - x['df_DV1z'])**2 )
+        b_x = np.sqrt( (x['df_PVx'] - x['df_DV2x'])**2 + (x['df_PVy'] - x['df_DV2y'])**2 + (x['df_PVz'] - x['df_DV2z'])**2 )
+        c_x= np.sqrt( (x['df_DV1x'] - x['df_DV2x'])**2 + (x['df_DV1y'] - x['df_DV2y'])**2 + (x['df_DV1z'] - x['df_DV2z'])**2 )
+        s_x = (a_x+b_x+c_x)*0.5
+        X2['log10_A_PV_DV1_DV2'] = np.log10( np.sqrt(s_x*(s_x-a_x)*(s_x-b_x)*(s_x-c_x)) )
 
         for i in range(len(X2['log10_df_chi2'])):
             if np.isnan(X2['log10_df_chi2'][i]):
                 X2['log10_df_chi2'][i] = -99999
+
+        for i in range(len(X2['log10_A_PV_DV1_DV2'])):
+            if np.isnan(X2['log10_A_PV_DV1_DV2'][i]):
+                X2['log10_A_PV_DV1_DV2'] = -99999
+
     else:
         X2['TRKISOBDTFIRSTVALUE_D_K_pi_min_min'] = np.minimum( np.minimum( x['Bp_TRKISOBDTFIRSTVALUE_D0bar_K'], x['Bp_TRKISOBDTFIRSTVALUE_D0bar_pi'] ), np.minimum( x['Bp_TRKISOBDTFIRSTVALUE_Dsp_K1'], x['Bp_TRKISOBDTFIRSTVALUE_Dsp_K2'], x['Bp_TRKISOBDTFIRSTVALUE_Dsp_pi'] ) )
         X2['TRKISOBDTTHIRDVALUE_D_K_pi_min_min'] = np.minimum( np.minimum( x['Bp_TRKISOBDTTHIRDVALUE_D0bar_K'], x['Bp_TRKISOBDTTHIRDVALUE_D0bar_pi'] ), np.minimum( x['Bp_TRKISOBDTTHIRDVALUE_Dsp_K1'], x['Bp_TRKISOBDTTHIRDVALUE_Dsp_K2'], x['Bp_TRKISOBDTTHIRDVALUE_Dsp_pi'] ) )
