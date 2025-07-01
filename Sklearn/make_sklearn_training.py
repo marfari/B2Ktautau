@@ -439,7 +439,8 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
                         'Bp_ENDVERTEX_XERR', 'Bp_ENDVERTEX_YERR', 'Bp_ENDVERTEX_ZERR', 'D0bar_ENDVERTEX_XERR', 'D0bar_ENDVERTEX_YERR', 'D0bar_ENDVERTEX_ZERR', 'Dsp_ENDVERTEX_XERR', 'Dsp_ENDVERTEX_YERR', 'Dsp_ENDVERTEX_ZERR', 'Bp_OWNPV_XERR', 'Bp_OWNPV_YERR', 'Bp_OWNPV_ZERR', 'Bp_dtf_chi2', 
                         'D0bar_AMAXDOCA', 'D0bar_AMINDOCA', 'D0bar_DOCACHI2MAX', 'Dsp_AMAXDOCA', 'Dsp_AMINDOCA', 'Dsp_DOCACHI2MAX', 'Bp_FDCHI2_OWNPV', 'D0bar_FD_ORIVX', 'Dsp_FD_ORIVX',
                         'D0bar_K_PX', 'D0bar_K_PY', 'D0bar_K_PZ', 'D0bar_K_PE', 'D0bar_pi_PX', 'D0bar_pi_PY', 'D0bar_pi_PZ', 'D0bar_pi_PE', 
-                        'Dsp_K1_PX', 'Dsp_K1_PY', 'Dsp_K1_PZ', 'Dsp_K1_PE', 'Dsp_K2_PX', 'Dsp_K2_PY', 'Dsp_K2_PZ', 'Dsp_K2_PE', 'Dsp_pi_PX', 'Dsp_pi_PY', 'Dsp_pi_PZ', 'Dsp_pi_PE']
+                        'Dsp_K1_PX', 'Dsp_K1_PY', 'Dsp_K1_PZ', 'Dsp_K1_PE', 'Dsp_K2_PX', 'Dsp_K2_PY', 'Dsp_K2_PZ', 'Dsp_K2_PE', 'Dsp_pi_PX', 'Dsp_pi_PY', 'Dsp_pi_PZ', 'Dsp_pi_PE',
+                        'eventNumber', 'runNumber', 'nCandidate', 'D0bar_ENDVERTEX_CHI2', 'Dsp_ENDVERTEX_CHI2']
 
     if(species_name == "Ktautau"):
         branch_names += ['df_Bp_M']
@@ -714,19 +715,17 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
         mpion = 139.57039
         if(step_name == "physics"):
             # SIGNAL
-            signal['Bp_VTXISONUMVTX_D0bar'] = sig['Bp_VTXISONUMVTX_D0bar']
-            signal['Bp_VTXISONUMVTX_Dsp'] = sig['Bp_VTXISONUMVTX_Dsp']
             signal['Bp_VTXISODCHI2ONETRACK_D0bar'] = sig['Bp_VTXISODCHI2ONETRACK_D0bar']
             signal['Bp_VTXISODCHI2ONETRACK_Dsp'] = sig['Bp_VTXISODCHI2ONETRACK_Dsp']
+            signal['Bp_VTXISODCHI2TWOTRACK_D0bar'] = sig['Bp_VTXISODCHI2TWOTRACK_D0bar']
             signal['Bp_VTXISODCHI2TWOTRACK_Dsp'] = sig['Bp_VTXISODCHI2TWOTRACK_Dsp']
+            signal['Bp_VTXISODCHI2MASSTWOTRACK_D0bar'] = sig['Bp_VTXISODCHI2MASSTWOTRACK_D0bar']
+            signal['Bp_VTXISODCHI2MASSTWOTRACK_Dsp'] = sig['Bp_VTXISODCHI2MASSTWOTRACK_Dsp']
             signal['Bp_VTXISODCHI2ONETRACK_B'] = sig['Bp_VTXISODCHI2ONETRACK_B']
-            signal['tau_iso_second_value_max'] = np.maximum( sig['Bp_Bstautau_ISOBDTSECONDVALUE_taup'], sig['Bp_Bstautau_ISOBDTSECONDVALUE_taum'] ) 
-            signal['tau_iso_third_value_max'] = np.maximum( sig['Bp_Bstautau_ISOBDTTHIRDVALUE_taup'], sig['Bp_Bstautau_ISOBDTTHIRDVALUE_taum'] ) 
-            signal['Bp_NC_05_PTASYM_Dsp'] = sig['Bp_NC_05_PTASYM_Dsp']
-            signal['Bp_CCNC_05_IT_B'] = sig['Bp_CCNC_05_IT_B']
-            signal['Bp_CC_05_MULT_B'] = sig['Bp_CC_05_MULT_B']
+            signal['Bp_VTXISODCHI2MASSONETRACK_B'] = sig['Bp_VTXISODCHI2MASSONETRACK_B']
+            signal['tau_iso_second_value_max'] = np.maximum( sig['Bp_Bstautau_ISOBDTSECONDVALUE_taup'], sig['Bp_Bstautau_ISOBDTSECONDVALUE_taum'] )
+            signal['tau_iso_third_value_max'] = np.maximum( sig['Bp_Bstautau_ISOBDTTHIRDVALUE_taup'], sig['Bp_Bstautau_ISOBDTTHIRDVALUE_taum'] )
             signal['Bp_NC_05_IT_B'] = sig['Bp_NC_05_IT_B']
-            signal['Bp_NC_05_PTASYM_B'] = sig['Bp_NC_05_PTASYM_B']
 
             M15_squared_sig = mkaon**2 + mpion**2 + 2*sig['D0bar_K_PE']*sig['Dsp_pi_PE'] - 2*( sig['D0bar_K_PX']*sig['Dsp_pi_PX'] + sig['D0bar_K_PY']*sig['Dsp_pi_PY'] + sig['D0bar_K_PZ']*sig['Dsp_pi_PZ'] )
             M23_squared_sig = mkaon**2 + mpion**2 + 2*sig['D0bar_pi_PE']*sig['Dsp_K1_PE'] - 2*( sig['D0bar_pi_PX']*sig['Dsp_K1_PX'] + sig['D0bar_pi_PY']*sig['Dsp_K1_PY'] + sig['D0bar_pi_PZ']*sig['Dsp_K1_PZ'] )
@@ -736,21 +735,25 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
             signal['Bp_M23'] = np.sqrt( np.abs(M23_squared_sig) )*np.sign(M23_squared_sig)
             signal['Bp_M24'] = np.sqrt( np.abs(M24_squared_sig) )*np.sign(M24_squared_sig)
 
+            a1_sig = np.sqrt( (sig['Bp_ENDVERTEX_X'] - sig['D0bar_ENDVERTEX_X'])**2 + (sig['Bp_ENDVERTEX_Y'] - sig['D0bar_ENDVERTEX_Y'])**2 + (sig['Bp_ENDVERTEX_Z'] - sig['D0bar_ENDVERTEX_Z'])**2 )
+            b1_sig = np.sqrt( (sig['Bp_ENDVERTEX_X'] - sig['Dsp_ENDVERTEX_X'])**2 + (sig['Bp_ENDVERTEX_Y'] - sig['Dsp_ENDVERTEX_Y'])**2 + (sig['Bp_ENDVERTEX_Z'] - sig['Dsp_ENDVERTEX_Z'])**2 )
+            c1_sig= np.sqrt( (sig['D0bar_ENDVERTEX_X'] - sig['Dsp_ENDVERTEX_X'])**2 + (sig['D0bar_ENDVERTEX_Y'] - sig['Dsp_ENDVERTEX_Y'])**2 + (sig['D0bar_ENDVERTEX_Z'] - sig['Dsp_ENDVERTEX_Z'])**2 )
+            s1_sig = (a1_sig+b1_sig+c1_sig)*0.5
+            signal['log10_A_BV_DV1_DV2'] = np.log10( np.sqrt(s1_sig*(s1_sig-a1_sig)*(s1_sig-b1_sig)*(s1_sig-c1_sig)) )
+
             # BACKGROUND
-            background['Bp_VTXISONUMVTX_D0bar'] = bkg['Bp_VTXISONUMVTX_D0bar']
-            background['Bp_VTXISONUMVTX_Dsp'] = bkg['Bp_VTXISONUMVTX_Dsp']
             background['Bp_VTXISODCHI2ONETRACK_D0bar'] = bkg['Bp_VTXISODCHI2ONETRACK_D0bar']
             background['Bp_VTXISODCHI2ONETRACK_Dsp'] = bkg['Bp_VTXISODCHI2ONETRACK_Dsp']
+            background['Bp_VTXISODCHI2TWOTRACK_D0bar'] = bkg['Bp_VTXISODCHI2TWOTRACK_D0bar']
             background['Bp_VTXISODCHI2TWOTRACK_Dsp'] = bkg['Bp_VTXISODCHI2TWOTRACK_Dsp']
+            background['Bp_VTXISODCHI2MASSTWOTRACK_D0bar'] = bkg['Bp_VTXISODCHI2MASSTWOTRACK_D0bar']
+            background['Bp_VTXISODCHI2MASSTWOTRACK_Dsp'] = bkg['Bp_VTXISODCHI2MASSTWOTRACK_Dsp']
             background['Bp_VTXISODCHI2ONETRACK_B'] = bkg['Bp_VTXISODCHI2ONETRACK_B']
-            background['tau_iso_second_value_max'] = np.maximum( bkg['Bp_Bstautau_ISOBDTSECONDVALUE_taup'], bkg['Bp_Bstautau_ISOBDTSECONDVALUE_taum'] ) 
-            background['tau_iso_third_value_max'] = np.maximum( bkg['Bp_Bstautau_ISOBDTTHIRDVALUE_taup'], bkg['Bp_Bstautau_ISOBDTTHIRDVALUE_taum'] ) 
-            background['Bp_NC_05_PTASYM_Dsp'] = bkg['Bp_NC_05_PTASYM_Dsp']
-            background['Bp_CCNC_05_IT_B'] = bkg['Bp_CCNC_05_IT_B']
-            background['Bp_CC_05_MULT_B'] = bkg['Bp_CC_05_MULT_B']
+            background['Bp_VTXISODCHI2MASSONETRACK_B'] = bkg['Bp_VTXISODCHI2MASSONETRACK_B']
+            background['tau_iso_second_value_max'] = np.maximum( bkg['Bp_Bstautau_ISOBDTSECONDVALUE_taup'], bkg['Bp_Bstautau_ISOBDTSECONDVALUE_taum'] )
+            background['tau_iso_third_value_max'] = np.maximum( bkg['Bp_Bstautau_ISOBDTTHIRDVALUE_taup'], bkg['Bp_Bstautau_ISOBDTTHIRDVALUE_taum'] )
             background['Bp_NC_05_IT_B'] = bkg['Bp_NC_05_IT_B']
-            background['Bp_NC_05_PTASYM_B'] = bkg['Bp_NC_05_PTASYM_B']
-            
+
             M15_squared_bkg = mkaon**2 + mpion**2 + 2*bkg['D0bar_K_PE']*bkg['Dsp_pi_PE'] - 2*( bkg['D0bar_K_PX']*bkg['Dsp_pi_PX'] + bkg['D0bar_K_PY']*bkg['Dsp_pi_PY'] + bkg['D0bar_K_PZ']*bkg['Dsp_pi_PZ'] )
             M23_squared_bkg = mkaon**2 + mpion**2 + 2*bkg['D0bar_pi_PE']*bkg['Dsp_K1_PE'] - 2*( bkg['D0bar_pi_PX']*bkg['Dsp_K1_PX'] + bkg['D0bar_pi_PY']*bkg['Dsp_K1_PY'] + bkg['D0bar_pi_PZ']*bkg['Dsp_K1_PZ'] )
             M24_squared_bkg = mkaon**2 + mpion**2 + 2*bkg['D0bar_pi_PE']*bkg['Dsp_K2_PE'] - 2*( bkg['D0bar_pi_PX']*bkg['Dsp_K2_PX'] + bkg['D0bar_pi_PY']*bkg['Dsp_K2_PY'] + bkg['D0bar_pi_PZ']*bkg['Dsp_K2_PZ'] )
@@ -759,36 +762,56 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
             background['Bp_M23'] = np.sqrt( np.abs(M23_squared_bkg) )*np.sign(M23_squared_bkg)
             background['Bp_M24'] = np.sqrt( np.abs(M24_squared_bkg) )*np.sign(M24_squared_bkg)
 
+            a1_bkg = np.sqrt( (bkg['Bp_ENDVERTEX_X'] - bkg['D0bar_ENDVERTEX_X'])**2 + (bkg['Bp_ENDVERTEX_Y'] - bkg['D0bar_ENDVERTEX_Y'])**2 + (bkg['Bp_ENDVERTEX_Z'] - bkg['D0bar_ENDVERTEX_Z'])**2 )
+            b1_bkg = np.sqrt( (bkg['Bp_ENDVERTEX_X'] - bkg['Dsp_ENDVERTEX_X'])**2 + (bkg['Bp_ENDVERTEX_Y'] - bkg['Dsp_ENDVERTEX_Y'])**2 + (bkg['Bp_ENDVERTEX_Z'] - bkg['Dsp_ENDVERTEX_Z'])**2 )
+            c1_bkg= np.sqrt( (bkg['D0bar_ENDVERTEX_X'] - bkg['Dsp_ENDVERTEX_X'])**2 + (bkg['D0bar_ENDVERTEX_Y'] - bkg['Dsp_ENDVERTEX_Y'])**2 + (bkg['D0bar_ENDVERTEX_Z'] - bkg['Dsp_ENDVERTEX_Z'])**2 )
+            s1_bkg = (a1_bkg+b1_bkg+c1_bkg)*0.5
+            background['log10_A_BV_DV1_DV2'] = np.log10( np.sqrt(s1_bkg*(s1_bkg-a1_bkg)*(s1_bkg-b1_bkg)*(s1_bkg-c1_bkg)) )
+
         else:
             # SIGNAL:
-            signal['TRKISOBDTFIRSTVALUE_D_K_pi_min_min'] = np.minimum( np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_D0bar_K'], sig['Bp_TRKISOBDTFIRSTVALUE_D0bar_pi'] ), np.minimum( sig['Bp_TRKISOBDTFIRSTVALUE_Dsp_K1'], sig['Bp_TRKISOBDTFIRSTVALUE_Dsp_K2'], sig['Bp_TRKISOBDTFIRSTVALUE_Dsp_pi'] ) )
-            signal['TRKISOBDTTHIRDVALUE_D_K_pi_min_min'] = np.minimum( np.minimum( sig['Bp_TRKISOBDTTHIRDVALUE_D0bar_K'], sig['Bp_TRKISOBDTTHIRDVALUE_D0bar_pi'] ), np.minimum( sig['Bp_TRKISOBDTTHIRDVALUE_Dsp_K1'], sig['Bp_TRKISOBDTTHIRDVALUE_Dsp_K2'], sig['Bp_TRKISOBDTTHIRDVALUE_Dsp_pi'] ) )
-            signal['D_M_max'] = np.maximum( sig['D0bar_M'], sig['Dsp_M'] )
-            signal['log10_1_minus_D_DIRA_BV_min'] = np.minimum( np.log10(1 - np.abs(sig['D0bar_DIRA_ORIVX'] ))*np.sign( sig['D0bar_DIRA_ORIVX']),  np.log10(1 - np.abs(sig['Dsp_DIRA_ORIVX'] ))*np.sign( sig['Dsp_DIRA_ORIVX'] ) )
+            # signal['D_M_max'] = np.maximum( sig['D0bar_M'], sig['Dsp_M'] )
+            # signal['log10_1_minus_D_DIRA_BV_min'] = np.minimum( np.log10(1 - np.abs(sig['D0bar_DIRA_ORIVX'] ))*np.sign( sig['D0bar_DIRA_ORIVX']),  np.log10(1 - np.abs(sig['Dsp_DIRA_ORIVX'] ))*np.sign( sig['Dsp_DIRA_ORIVX'] ) )
+            signal['log10_1_minus_D_DIRA_BV_max'] = np.maximum( np.log10(1 - np.abs(sig['D0bar_DIRA_ORIVX'] ))*np.sign( sig['D0bar_DIRA_ORIVX']),  np.log10(1 - np.abs(sig['Dsp_DIRA_ORIVX'] ))*np.sign( sig['Dsp_DIRA_ORIVX'] ) )
 
             dtf_chi2_sig = sig['Bp_dtf_chi2']
             for i in range(len(dtf_chi2_sig)):
                 dtf_chi2_sig[i] = np.log10( dtf_chi2_sig[i][0] )
-            signal['log10_DTF_chi2'] = dtf_chi2_sig
+            # signal['log10_DTF_chi2'] = dtf_chi2_sig
 
             signal['D_prod_K_min'] = np.minimum(sig['D0bar_K_ProbNNk_pidgen_default'], sig['Dsp_K1_ProbNNk_pidgen_default']*sig['Dsp_K2_ProbNNk_pidgen_default'])
             signal['D_prod_pi_min'] = np.minimum(sig['D0bar_pi_ProbNNpi_pidgen_default'], sig['Dsp_pi_ProbNNpi_pidgen_default'])
+            signal['log10_Bp_FD_PV'] = np.log10( np.sqrt( (sig['Bp_ENDVERTEX_X'] - sig['Bp_OWNPV_X'])**2 + (sig['Bp_ENDVERTEX_Y'] - sig['Bp_OWNPV_Y'])**2 + (sig['Bp_ENDVERTEX_Z'] - sig['Bp_OWNPV_Z'])**2 ) )
+            signal['log10_D_FD_BV_min'] = np.log10( np.minimum( np.sqrt( (sig['D0bar_ENDVERTEX_X'] - sig['Bp_ENDVERTEX_X'])**2 + (sig['D0bar_ENDVERTEX_Y'] - sig['Bp_ENDVERTEX_Y'])**2 + (sig['D0bar_ENDVERTEX_Z'] - sig['Bp_ENDVERTEX_Z'])**2), np.sqrt( (sig['Dsp_ENDVERTEX_X'] - sig['Bp_ENDVERTEX_X'])**2 + (sig['Dsp_ENDVERTEX_Y'] - sig['Bp_ENDVERTEX_Y'])**2 + (sig['Dsp_ENDVERTEX_Z'] - sig['Bp_ENDVERTEX_Z'])**2) ) )
+            signal['log10_tau_ENDVERTEX_chi2_max'] = np.log10( np.maximum( sig['D0bar_ENDVERTEX_CHI2'], sig['Dsp_ENDVERTEX_CHI2'] ) )
 
+            a_sig = np.sqrt( (sig['Bp_OWNPV_X'] - sig['D0bar_ENDVERTEX_X'])**2 + (sig['Bp_OWNPV_Y'] - sig['D0bar_ENDVERTEX_Y'])**2 + (sig['Bp_OWNPV_Z'] - sig['D0bar_ENDVERTEX_Z'])**2 )
+            b_sig = np.sqrt( (sig['Bp_OWNPV_X'] - sig['Dsp_ENDVERTEX_X'])**2 + (sig['Bp_OWNPV_Y'] - sig['Dsp_ENDVERTEX_Y'])**2 + (sig['Bp_OWNPV_Z'] - sig['Dsp_ENDVERTEX_Z'])**2 )
+            c_sig= np.sqrt( (sig['D0bar_ENDVERTEX_X'] - sig['Dsp_ENDVERTEX_X'])**2 + (sig['D0bar_ENDVERTEX_Y'] - sig['Dsp_ENDVERTEX_Y'])**2 + (sig['D0bar_ENDVERTEX_Z'] - sig['Dsp_ENDVERTEX_Z'])**2 )
+            s_sig = (a_sig+b_sig+c_sig)*0.5
+            signal['log10_A_PV_DV1_DV2'] = np.log10( np.sqrt(s_sig*(s_sig-a_sig)*(s_sig-b_sig)*(s_sig-c_sig)) )
 
             # BACKGROUND
-            # SIGNAL:
-            background['TRKISOBDTFIRSTVALUE_D_K_pi_min_min'] = np.minimum( np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_D0bar_K'], bkg['Bp_TRKISOBDTFIRSTVALUE_D0bar_pi'] ), np.minimum( bkg['Bp_TRKISOBDTFIRSTVALUE_Dsp_K1'], bkg['Bp_TRKISOBDTFIRSTVALUE_Dsp_K2'], bkg['Bp_TRKISOBDTFIRSTVALUE_Dsp_pi'] ) )
-            background['TRKISOBDTTHIRDVALUE_D_K_pi_min_min'] = np.minimum( np.minimum( bkg['Bp_TRKISOBDTTHIRDVALUE_D0bar_K'], bkg['Bp_TRKISOBDTTHIRDVALUE_D0bar_pi'] ), np.minimum( bkg['Bp_TRKISOBDTTHIRDVALUE_Dsp_K1'], bkg['Bp_TRKISOBDTTHIRDVALUE_Dsp_K2'], bkg['Bp_TRKISOBDTTHIRDVALUE_Dsp_pi'] ) )
-            background['D_M_max'] = np.maximum( bkg['D0bar_M'], bkg['Dsp_M'] )
-            background['log10_1_minus_D_DIRA_BV_min'] = np.minimum( np.log10(1 - np.abs(bkg['D0bar_DIRA_ORIVX'] ))*np.sign( bkg['D0bar_DIRA_ORIVX']),  np.log10(1 - np.abs(bkg['Dsp_DIRA_ORIVX'] ))*np.sign( bkg['Dsp_DIRA_ORIVX'] ) )
+            # background['D_M_max'] = np.maximum( bkg['D0bar_M'], bkg['Dsp_M'] )
+            # background['log10_1_minus_D_DIRA_BV_min'] = np.minimum( np.log10(1 - np.abs(bkg['D0bar_DIRA_ORIVX'] ))*np.sign( bkg['D0bar_DIRA_ORIVX']),  np.log10(1 - np.abs(bkg['Dsp_DIRA_ORIVX'] ))*np.sign( bkg['Dsp_DIRA_ORIVX'] ) )
+            background['log10_1_minus_D_DIRA_BV_max'] = np.maximum( np.log10(1 - np.abs(bkg['D0bar_DIRA_ORIVX'] ))*np.sign( bkg['D0bar_DIRA_ORIVX']),  np.log10(1 - np.abs(bkg['Dsp_DIRA_ORIVX'] ))*np.sign( bkg['Dsp_DIRA_ORIVX'] ) )
 
             dtf_chi2_bkg = bkg['Bp_dtf_chi2']
             for i in range(len(dtf_chi2_bkg)):
                 dtf_chi2_bkg[i] = np.log10( dtf_chi2_bkg[i][0] )
-            background['log10_DTF_chi2'] = dtf_chi2_bkg
+            # background['log10_DTF_chi2'] = dtf_chi2_bkg
 
             background['D_prod_K_min'] = np.minimum(bkg['D0bar_K_ProbNNk'], bkg['Dsp_K1_ProbNNk']*bkg['Dsp_K2_ProbNNk'])
             background['D_prod_pi_min'] = np.minimum(bkg['D0bar_pi_ProbNNpi'], bkg['Dsp_pi_ProbNNpi'])
+            background['log10_Bp_FD_PV'] = np.log10( np.sqrt( (bkg['Bp_ENDVERTEX_X'] - bkg['Bp_OWNPV_X'])**2 + (bkg['Bp_ENDVERTEX_Y'] - bkg['Bp_OWNPV_Y'])**2 + (bkg['Bp_ENDVERTEX_Z'] - bkg['Bp_OWNPV_Z'])**2 ) )
+            background['log10_D_FD_BV_min'] = np.log10( np.minimum( np.sqrt( (bkg['D0bar_ENDVERTEX_X'] - bkg['Bp_ENDVERTEX_X'])**2 + (bkg['D0bar_ENDVERTEX_Y'] - bkg['Bp_ENDVERTEX_Y'])**2 + (bkg['D0bar_ENDVERTEX_Z'] - bkg['Bp_ENDVERTEX_Z'])**2), np.sqrt( (bkg['Dsp_ENDVERTEX_X'] - bkg['Bp_ENDVERTEX_X'])**2 + (bkg['Dsp_ENDVERTEX_Y'] - bkg['Bp_ENDVERTEX_Y'])**2 + (bkg['Dsp_ENDVERTEX_Z'] - bkg['Bp_ENDVERTEX_Z'])**2) ) )
+            background['log10_tau_ENDVERTEX_chi2_max'] = np.log10( np.maximum( bkg['D0bar_ENDVERTEX_CHI2'], bkg['Dsp_ENDVERTEX_CHI2'] ) )
+
+            a_bkg = np.sqrt( (bkg['Bp_OWNPV_X'] - bkg['D0bar_ENDVERTEX_X'])**2 + (bkg['Bp_OWNPV_Y'] - bkg['D0bar_ENDVERTEX_Y'])**2 + (bkg['Bp_OWNPV_Z'] - bkg['D0bar_ENDVERTEX_Z'])**2 )
+            b_bkg = np.sqrt( (bkg['Bp_OWNPV_X'] - bkg['Dsp_ENDVERTEX_X'])**2 + (bkg['Bp_OWNPV_Y'] - bkg['Dsp_ENDVERTEX_Y'])**2 + (bkg['Bp_OWNPV_Z'] - bkg['Dsp_ENDVERTEX_Z'])**2 )
+            c_bkg= np.sqrt( (bkg['D0bar_ENDVERTEX_X'] - bkg['Dsp_ENDVERTEX_X'])**2 + (bkg['D0bar_ENDVERTEX_Y'] - bkg['Dsp_ENDVERTEX_Y'])**2 + (bkg['D0bar_ENDVERTEX_Z'] - bkg['Dsp_ENDVERTEX_Z'])**2 )
+            s_bkg = (a_bkg+b_bkg+c_bkg)*0.5
+            background['log10_A_PV_DV1_DV2'] = np.log10( np.sqrt(s_bkg*(s_bkg-a_bkg)*(s_bkg-b_bkg)*(s_bkg-c_bkg)) )
 
     input_features = signal.columns.tolist()
 
