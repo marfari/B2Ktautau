@@ -93,7 +93,7 @@ def draw_variables(sig_data, bkg_data, mc_weights, columns, setup_name, step_nam
         plt.xlabel(column, fontsize=15)
         plt.ylabel("Normalised entries / ({0})".format(nbins), fontsize=15)
 
-        plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/{1}/{2}/'.format(species_name,setup_name,step_name)+column+'.pdf')
+        plt.savefig(f'/panfs/felician/B2Ktautau/workflow/sklearn_training/{species_name}/{setup_name}/{step_name}/'+column+'.pdf')
         plt.clf()
 
 
@@ -105,7 +105,7 @@ def draw_scatter_plots(data, columns, setup_name, step_name, species_name):
         t.set_text(l)
     plt.setp(fig._legend.get_texts(), fontsize='32')
 
-    fig.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/{1}/{2}/scatter_plot.pdf'.format(species_name,setup_name,step_name)) 
+    fig.savefig(f'/panfs/felician/B2Ktautau/workflow/sklearn_training/{species_name}/{setup_name}/{step_name}/scatter_plot.pdf') 
     plt.clf()    
 
 
@@ -139,7 +139,7 @@ def correlation_matrix(data, name, setup_name, step_name, species_name, **kwds):
         ax.set_yticklabels(labels, minor=False)
         
     plt.tight_layout()
-    fig1.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/{1}/{2}/correlation_matrix_'.format(species_name,setup_name,step_name)+name+'.pdf') 
+    fig1.savefig(f'/panfs/felician/B2Ktautau/workflow/sklearn_training/{species_name}/{setup_name}/{step_name}/correlation_matrix_'+name+'.pdf') 
     fig1.clf()
 
 
@@ -199,26 +199,31 @@ def do_cross_validation(name, clf, X_train, y_train, X_test, y_test):
     return grid_result.best_estimator_
 
 
-def roc_curve_plot(names, classifiers, X_test, y_test, setup_name, step_name, species_name):
+def roc_curve_plot(classifiers, X_test_list, y_test_list, setup_name, step_name, species_name):
     clf_fpr = []
     clf_tpr = []
     clf_thresholds = []
 
-    for i in range(len(names)):
-        if((names[i] == "RForest") or (names[i] == "XGBoost")):
-            decisions = classifiers[i].predict_proba(X_test)[:, 1]
-        else:
-            decisions = classifiers[i].decision_function(X_test)
+    fpr_list = []
+    tpr_list = []
+    thresholds_list = []
+
+    for i in range(len(classifiers)):
+        decisions = classifiers[i].predict_proba(X_test_list[i])[:, 1]
 
         # Compute ROC curve and area under the curve
-        fpr, tpr, thresholds = roc_curve(y_test, decisions)
+        fpr, tpr, thresholds = roc_curve(y_test_list[i], decisions)
         clf_fpr.append(fpr)
         clf_tpr.append(tpr)
         clf_thresholds.append(thresholds)
 
         roc_auc = auc(fpr, tpr)
 
-        plt.plot(fpr, tpr, lw=1, label=names[i]+' (area = %0.2f)'%(roc_auc))
+        plt.plot(fpr, tpr, lw=1, label=f"fold = {i}"+' (area = %0.2f)'%(roc_auc))
+
+        fpr_list.append(fpr)
+        tpr_list.append(tpr)
+        thresholds_list.append(thresholds)
 
     plt.plot([0, 1], [0, 1], '--', color=(0.6, 0.6, 0.6))
     plt.xlim([-0.05, 1.05])
@@ -228,9 +233,10 @@ def roc_curve_plot(names, classifiers, X_test, y_test, setup_name, step_name, sp
     plt.title('ROC curve')
     plt.legend(loc="lower right")
     plt.grid()
-    plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/{1}/{2}/roc_curve.pdf'.format(species_name,setup_name,step_name))
+    plt.savefig(f'/panfs/felician/B2Ktautau/workflow/sklearn_training/{species_name}/{setup_name}/{step_name}/roc_curve.pdf')
     plt.clf()
-    return clf_fpr, clf_tpr, clf_thresholds
+
+    return fpr_list, tpr_list, thresholds_list
 
 # def bdt_2d_cut(X_test, y_test, thresholds_1st_step, thresholds_2nd_step, decisions_first_step, decisions_second_step):
 #     # Add bdt columns to dataset
@@ -268,7 +274,7 @@ def roc_curve_plot(names, classifiers, X_test, y_test, setup_name, step_name, sp
 #     #     background = pd.concat([background,bdt_output_values_background], axis=1)
 
 
-def draw_signal_significance_vs_bdt_cut(name, fpr, tpr, thresholds, N_bkg, setup_name, step_name, species_name):
+def draw_signal_significance_vs_bdt_cut(fold, fpr, tpr, thresholds, N_bkg, setup_name, step_name, species_name):
     eps_s = tpr
     B = fpr*N_bkg
     a = 5
@@ -279,32 +285,27 @@ def draw_signal_significance_vs_bdt_cut(name, fpr, tpr, thresholds, N_bkg, setup
     plt.plot(thresholds, tpr, color='b', label='Signal eff.')
     plt.plot(thresholds, fpr, color='r', label='Background eff.')
     plt.xlabel('BDT cut value')
+    plt.title(f"fold = {fold}")
     plt.grid()
     plt.legend()
 
-    plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/{1}/{2}/significance_vs_bdt_cut_'.format(species_name,setup_name,step_name)+name+'.pdf')
+    plt.savefig(f'/panfs/felician/B2Ktautau/workflow/sklearn_training/{species_name}/{setup_name}/{step_name}/significance_vs_bdt_cut_fold_{fold}.pdf')
     plt.clf()
 
     optimal_index = np.argmax( np.ma.masked_invalid(metric) )
     optimal_metric = metric[optimal_index]
     optimal_cut = thresholds[optimal_index]
-    print(name)
     print('The optimal cut value is {0} for a max significance of = {1}'.format(optimal_cut,optimal_metric))
     print('For this BDT cut, signal eff. = {0} and background eff. = {1}'.format(tpr[optimal_index], fpr[optimal_index]))
 
     return optimal_cut, optimal_metric
 
 
-def compare_train_test(name, clf, X_train, y_train, X_test, y_test, setup_name, step_name, species_name, bins=30):
+def compare_train_test(clf, X_train, y_train, X_test, y_test, setup_name, step_name, species_name, fold, bins=30):
     decisions = []
     for X,y in ((X_train, y_train), (X_test, y_test)):
-
-        if((name == "RForest") or (name == "XGBoost")):
-            d1 = clf.predict_proba(X[y>0.5])[:,1].ravel()
-            d2 = clf.predict_proba(X[y<0.5])[:,1].ravel()
-        else:
-            d1 = clf.decision_function(X[y>0.5]).ravel()
-            d2 = clf.decision_function(X[y<0.5]).ravel()
+        d1 = clf.predict_proba(X[y>0.5])[:,1].ravel()
+        d2 = clf.predict_proba(X[y<0.5])[:,1].ravel()
         decisions += [d1, d2]
 
     low = min(np.min(d) for d in decisions)
@@ -342,7 +343,6 @@ def compare_train_test(name, clf, X_train, y_train, X_test, y_test, setup_name, 
     # plt.hist(twoclass_output[y_train < 0.5], bins=bins, range=plot_range, facecolor='b', label="B (train)", alpha=0.5, edgecolor="k", density=True)
     # x1, x2, y1, y2 = plt.axis()
 
-
     h_sig_train = ROOT.TH1D("h_sig_train", "h_sig_train", 30, 0, 1)
     h_sig_test = ROOT.TH1D("h_sig_test", "h_sig_test", 30, 0, 1)
     h_bkg_train = ROOT.TH1D("h_bkg_train", "h_bkg_train", 30, 0, 1)
@@ -370,10 +370,10 @@ def compare_train_test(name, clf, X_train, y_train, X_test, y_test, setup_name, 
 
     plt.xlabel("BDT output")
     plt.ylabel("Scaled entries")
-    plt.title(name+f" : sig KS ({ks_sig:.4f}) | bkg KS ({ks_bkg:.4f})")
+    plt.title(f"fold = {fold} \n sig KS ({ks_sig:.4f}) | bkg KS ({ks_bkg:.4f})")
     plt.legend(loc='best')
 
-    plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/{1}/{2}/classifier_output_'.format(species_name,setup_name,step_name)+name+'.pdf')
+    plt.savefig(f'/panfs/felician/B2Ktautau/workflow/sklearn_training/{species_name}/{setup_name}/{step_name}/classifier_output_fold_{fold}.pdf')
     plt.clf()
 
 
@@ -383,30 +383,19 @@ def confusion_matrix(name, clf, X_test, y_test, setup_name, step_name, species_n
     plt.clf()
 
 
-def draw_feature_importance(name, clf, columns, setup_name, step_name, species_name):
-    if(name == 'XGBoost'): 
-        plt.figure(figsize=(20,10))
-        importances = clf.feature_importances_
-        sorted_idx = np.argsort(importances)
-        sorted_columns = [columns[i] for i in sorted_idx]
-        sorted_importances = importances[sorted_idx]
-        plt.barh(sorted_columns, sorted_importances)
-        plt.yticks(fontsize=20)
-        plt.xticks(fontsize=20)
-        plt.title("Feature importance for {0}".format(name), fontsize=20)
-        plt.tight_layout()
-    else:
-        importances = clf.feature_importances_
-        feature_importances = pd.Series(importances, index=columns)
+def draw_feature_importance(fold, clf, columns, setup_name, step_name, species_name):
+    plt.figure(figsize=(20,10))
+    importances = clf.feature_importances_
+    sorted_idx = np.argsort(importances)
+    sorted_columns = [columns[i] for i in sorted_idx]
+    sorted_importances = importances[sorted_idx]
+    plt.barh(sorted_columns, sorted_importances)
+    plt.yticks(fontsize=20)
+    plt.xticks(fontsize=20)
+    plt.title(f"Feature importance: fold = {fold}", fontsize=20)
+    plt.tight_layout()
 
-        fig, ax = plt.subplots()
-        std = np.std([tree.feature_importances_ for tree in clf.estimators_], axis=0)
-        feature_importances.plot.bar(yerr=std, ax=ax)
-        ax.set_title("Feature importances using MDI")
-        ax.set_ylabel("Mean decrease in impurity")
-        fig.tight_layout()
-
-    plt.savefig('/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/{1}/{2}/feature_importance_'.format(species_name,setup_name,step_name)+name+'.pdf')
+    plt.savefig(f'/panfs/felician/B2Ktautau/workflow/sklearn_training/{species_name}/{setup_name}/{step_name}/feature_importance_fold_{fold}.pdf')
     plt.clf()
 
 
@@ -433,7 +422,8 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
                         'taup_AMAXDOCA', 'taup_AMINDOCA', 'taup_DOCACHI2MAX', 'taum_AMAXDOCA', 'taum_AMINDOCA', 'taum_DOCACHI2MAX',
                         'Bp_M02', 'Bp_M04', 'Bp_M06', 'Bp_M0456', 
                         'taup_ENDVERTEX_CHI2', 'taum_ENDVERTEX_CHI2', 'Bp_ENDVERTEX_CHI2', 'Bp_VTXISODCHI2MASSONETRACK_B', 'Bp_VTXISODCHI2MASSTWOTRACK_B', 'Bp_VTXISODCHI2MASSTWOTRACK_taum', 'Bp_VTXISODCHI2MASSTWOTRACK_taup',
-                        'Bp_NC_05_PZASYM_taup', 'Bp_NC_05_PZASYM_taum', 'Bp_CC_05_PTASYM_taum', 'Bp_CC_05_PTASYM_taup']
+                        'Bp_NC_05_PZASYM_taup', 'Bp_NC_05_PZASYM_taum', 'Bp_CC_05_PTASYM_taum', 'Bp_CC_05_PTASYM_taup', 
+                        'eventNumber', 'runNumber', 'nCandidate']
 
     else:
         branch_names = ['Bp_CC_05_IT_B',  'Bp_VTXISONUMVTX_B', 'Bp_VTXISODCHI2ONETRACK_B', 'Bp_VTXISODCHI2MASSONETRACK_B', 'Bp_VTXISODCHI2TWOTRACK_B', 'Bp_VTXISODCHI2MASSTWOTRACK_B', 
@@ -474,9 +464,6 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
     if(species_name == "Ktautau"):
         if(step_name == "physics"):
             # SIGNAL
-            # signal['Bp_VTXISONUMVTX_tau_min'] = np.minimum( sig['Bp_VTXISONUMVTX_taup'], sig['Bp_VTXISONUMVTX_taum'] )
-            # signal['Bp_VTXISONUMVTX_taup'] = sig['Bp_VTXISONUMVTX_taup']
-            # signal['Bp_VTXISONUMVTX_taum'] = sig['Bp_VTXISONUMVTX_taum']
             signal['Bp_VTXISODCHI2ONETRACK_taup'] = sig['Bp_VTXISODCHI2ONETRACK_taup']
             signal['Bp_VTXISODCHI2ONETRACK_taum'] = sig['Bp_VTXISODCHI2ONETRACK_taum']
             signal['Bp_VTXISODCHI2TWOTRACK_taup'] = sig['Bp_VTXISODCHI2TWOTRACK_taup']
@@ -489,17 +476,10 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
             signal['taum_iso_second_value'] = sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum']
             signal['taup_iso_third_value'] = sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup']
             signal['taum_iso_third_value'] = sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum']
-            # signal['tau_iso_second_value_max'] = np.maximum( sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] )
-            # signal['tau_iso_third_value_max'] = np.maximum( sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] ) 
-            # signal['tau_iso_second_value_min'] = np.minimum( sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] )
-            # signal['Bp_NC_05_PZASYM_taup'] = sig['Bp_NC_05_PZASYM_taup']
-            # signal['Bp_NC_05_PZASYM_taum'] = sig['Bp_NC_05_PZASYM_taum']
             signal['Bp_NC_05_IT_B'] = sig['Bp_NC_05_IT_B']
             signal['Bp_M02'] = sig['Bp_M02']
             signal['Bp_M04'] = sig['Bp_M04']
             signal['Bp_M06'] = sig['Bp_M06']
-            # signal['taup_AMAXDOCA'] = sig['taup_AMAXDOCA']
-            # signal['taum_AMAXDOCA'] = sig['taum_AMAXDOCA']
 
             a1_sig = np.sqrt( (sig['df_BVx'] - sig['df_DV1x'])**2 + (sig['df_BVy'] - sig['df_DV1y'])**2 + (sig['df_BVz'] - sig['df_DV1z'])**2 )
             b1_sig = np.sqrt( (sig['df_BVx'] - sig['df_DV2x'])**2 + (sig['df_BVy'] - sig['df_DV2y'])**2 + (sig['df_BVz'] - sig['df_DV2z'])**2 )
@@ -508,9 +488,6 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
             signal['log10_A_BV_DV1_DV2'] = np.log10( np.sqrt(s1_sig*(s1_sig-a1_sig)*(s1_sig-b1_sig)*(s1_sig-c1_sig)) )
 
             # BACKGROUND
-            # background['Bp_VTXISONUMVTX_tau_min'] = np.minimum( bkg['Bp_VTXISONUMVTX_taup'], bkg['Bp_VTXISONUMVTX_taum'] )
-            # background['Bp_VTXISONUMVTX_taup'] = bkg['Bp_VTXISONUMVTX_taup']
-            # background['Bp_VTXISONUMVTX_taum'] = bkg['Bp_VTXISONUMVTX_taum']
             background['Bp_VTXISODCHI2ONETRACK_taup'] = bkg['Bp_VTXISODCHI2ONETRACK_taup']
             background['Bp_VTXISODCHI2ONETRACK_taum'] = bkg['Bp_VTXISODCHI2ONETRACK_taum']
             background['Bp_VTXISODCHI2TWOTRACK_taup'] = bkg['Bp_VTXISODCHI2TWOTRACK_taup']
@@ -523,17 +500,10 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
             background['taum_iso_second_value'] = bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum']
             background['taup_iso_third_value'] = bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup']
             background['taum_iso_third_value'] = bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum']
-            # background['tau_iso_second_value_max'] = np.maximum( bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] )
-            # background['tau_iso_third_value_max'] = np.maximum( bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] ) 
-            # background['tau_iso_second_value_min'] = np.minimum( bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] )
-            # background['Bp_NC_05_PZASYM_taup'] = bkg['Bp_NC_05_PZASYM_taup']
-            # background['Bp_NC_05_PZASYM_taum'] = bkg['Bp_NC_05_PZASYM_taum']
             background['Bp_NC_05_IT_B'] = bkg['Bp_NC_05_IT_B']
             background['Bp_M02'] = bkg['Bp_M02']
             background['Bp_M04'] = bkg['Bp_M04']
             background['Bp_M06'] = bkg['Bp_M06']
-            # background['taup_AMAXDOCA'] = bkg['taup_AMAXDOCA']
-            # background['taum_AMAXDOCA'] = bkg['taum_AMAXDOCA']
 
             a1_bkg = np.sqrt( (bkg['df_BVx'] - bkg['df_DV1x'])**2 + (bkg['df_BVy'] - bkg['df_DV1y'])**2 + (bkg['df_BVz'] - bkg['df_DV1z'])**2 )
             b1_bkg = np.sqrt( (bkg['df_BVx'] - bkg['df_DV2x'])**2 + (bkg['df_BVy'] - bkg['df_DV2y'])**2 + (bkg['df_BVz'] - bkg['df_DV2z'])**2 )
@@ -820,8 +790,12 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
             background['D_prod_K_min'] = np.minimum(bkg['D0bar_K_ProbNNk'], bkg['Dsp_K1_ProbNNk']*bkg['Dsp_K2_ProbNNk'])
             background['D_prod_pi_min'] = np.minimum(bkg['D0bar_pi_ProbNNpi'], bkg['Dsp_pi_ProbNNpi'])
 
-
     input_features = signal.columns.tolist()
+
+    # k-fold
+    k = 3
+    signal['fold'] = (sig['eventNumber'] + sig['runNumber'] + sig['nCandidate']) % k
+    background['fold'] = (bkg['eventNumber'] + bkg['runNumber'] + bkg['nCandidate']) % k
 
     # Add weights to the signal and background datasets
     mc_weights = []
@@ -839,10 +813,10 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
     # for sklearn data is usually organised into one 2D array of shape (n_samples x n_features) containing all the data and one array of categories of length n_samples
     # signal = 1 and background = 0
     X = np.concatenate((signal, background))
-    y = np.concatenate((np.ones(signal.shape[0]), np.zeros(background.shape[0])))
+    y = np.concatenate((np.ones(signal.shape[0]), np.zeros(background.shape[0])))    
 
     # data = pd.DataFrame(np.hstack((X, y.reshape(y.shape[0], -1))),columns=input_features+['weight']+['y'])
-    data = pd.DataFrame(np.hstack((X, y.reshape(y.shape[0], -1))), columns=input_features+['y'])
+    data = pd.DataFrame(np.hstack((X, y.reshape(y.shape[0], -1))), columns=input_features+['fold','y'])
 
     # Plotting variables and correlations
     if(setup_name == "input_features"):
@@ -880,7 +854,7 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
 
     # Train and test split
     # X_dev,X_eval, y_dev,y_eval = train_test_split(X, y, test_size=0.1, random_state=42)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
 
     # X_train_weights = X_train[:, -1]
     # X_test_weights = X_test[:, -1]
@@ -888,64 +862,62 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
     # X_test = np.delete(X_test, -1, 1)
     # X = np.delete(X, -1, 1)
 
-    print("Signal train size = ", X_train[y_train>0.5].shape[0] )
-    print("Signal test size = ", X_test[y_test>0.5].shape[0] )
-    print("Background train size = ", X_train[y_train<0.5].shape[0] )
-    print("Background test size = ", X_test[y_test<0.5].shape[0])
+    # print("Signal train size = ", X_train[y_train>0.5].shape[0] )
+    # print("Signal test size = ", X_test[y_test>0.5].shape[0] )
+    # print("Background train size = ", X_train[y_train<0.5].shape[0] )
+    # print("Background test size = ", X_test[y_test<0.5].shape[0])
 
     ##############################################################################################################################################
 
     ###################################################### Train a classifier ####################################################################
     # I am using the optimised hyper-parameters here:
-    # classifiers = best_classifiers
-    # names = ["AdaBDT", "GradBDT", "RForest", "XGBoost"]
-    names = ["XGBoost"]
+    name = "XGBoost"
     if(step_name == "physics"):
-        classifiers = [ # AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.05, n_estimators=800, random_state=42),
-                        # GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=800, random_state=42), 
-                        # RandomForestClassifier(class_weight='balanced', max_depth=9, n_estimators=800, random_state=42),
-                        xgb.XGBClassifier(tree_method="hist", n_estimators=500, max_depth=2, learning_rate=0.1, random_state=42, importance_type='weight')] # hist is the fastest tree method
-    elif(step_name == "small_physics"):
-        classifiers = [ # AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.05, n_estimators=800, random_state=42),
-                    # GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=800, random_state=42), 
-                    # RandomForestClassifier(class_weight='balanced', max_depth=9, n_estimators=800, random_state=42),
-                    xgb.XGBClassifier(tree_method="hist", n_estimators=80, max_depth=3, learning_rate=0.1, random_state=42, importance_type='weight') ] # hist is the fastest tree method
-    else:
-        classifiers = [ # AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), learning_rate=0.1, n_estimators=800, random_state=42),
-                        # GradientBoostingClassifier(max_depth=3, learning_rate=0.1, n_estimators=500, random_state=42),
-                        # RandomForestClassifier(class_weight='balanced', max_depth=9, n_estimators=800, random_state=42),
-                        xgb.XGBClassifier(tree_method="hist", n_estimators=500, max_depth=2, learning_rate=0.1, random_state=42, importance_type='weight') ] # hist is the fastest tree method
+        clf = xgb.XGBClassifier(tree_method="hist", n_estimators=500, max_depth=2, learning_rate=0.1, random_state=42, importance_type='weight') # hist is the fastest tree method
+    elif(step_name == "combinatorial"):
+        clf = xgb.XGBClassifier(tree_method="hist", n_estimators=500, max_depth=2, learning_rate=0.1, random_state=42, importance_type='weight') # hist is the fastest tree method
 
-    for i in range(len(names)):
-        name = names[i]
-        clf = classifiers[i]
+    X = pd.DataFrame(X, columns=input_features+['fold'])
+    y = pd.DataFrame(y, columns=['y'])
+    df = pd.concat([X, y], axis=1)
 
-        print("Fitting "+name)
-        if( (name =="AdaBDT") or (name =="GradBDT") or(name == "XGBoost") ):
-            class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(y_train), y=y_train)
-            class_weight = np.zeros(len(X_train[:, -1]))
+    classifiers = []
+    X_test_list = []
+    y_test_list = []
+    for fold in range(k):
+        df_train = df[df['fold'] != fold]
+        df_test = df[df['fold'] == fold]
 
-            # signal: y > 0.5 (class 1)
-            # bakcground: y < 0.5 (class 0)
-            for i in range(len(y_train)):
-                if y_train[i] > 0.5:
-                    class_weight[i] = class_weights[1]
-                else:
-                    class_weight[i] = class_weights[0]
-            # clf.fit(X_train, y_train, X_train_weights*class_weight)
+        fold_train = df_train[['fold']]
+        fold_test = df_test[['fold']]
+        X_train = df_train[input_features]
+        X_test = df_test[input_features]
+        y_train = df_train[['y']]
+        y_test = df_test[['y']]
 
-            if(name == "XGBoost"):
-                clf.fit(X_train, y_train, class_weight, eval_set=[(X_test, y_test)], verbose=False)
+        X_train = X_train.to_numpy()
+        X_test = X_test.to_numpy()
+        y_train = y_train.to_numpy().flatten()
+        y_test = y_test.to_numpy().flatten()
+
+        class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(y_train), y=y_train)
+        class_weight = np.zeros(len(X_train[:, -1]))
+
+        # signal: y > 0.5 (class 1)
+        # bakcground: y < 0.5 (class 0)
+        for i in range(len(y_train)):
+            if y_train[i] > 0.5:
+                class_weight[i] = class_weights[1]
             else:
-                clf.fit(X_train, y_train, class_weight)
-        else:
-            # clf.fit(X_train, y_train, X_train_weights)
-            clf.fit(X_train, y_train)
+                class_weight[i] = class_weights[0]
+
+        clf.fit(X_train, y_train, class_weight, eval_set=[(X_test, y_test)], verbose=False)
 
         if(cross_validation == "True"):
             # do_cross_validation(name, clf, X_train, y_train, X_test, y_test, X_train_weights) 
             do_cross_validation(name, clf, X_train, y_train, X_test, y_test) 
         else:
+            print(f"Classification report: fold = {fold}")
             y_predicted = clf.predict(X_test)
             print(classification_report(y_test, y_predicted, target_names=["background", "signal"]))
 
@@ -953,27 +925,29 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
             # confusion_matrix(name, clf, X_test, y_test, setup_name, step_name, species_name)
 
             print("Comparing train and test sets")
-            compare_train_test(name, clf, X_train, y_train, X_test, y_test, setup_name, step_name, species_name) 
+            compare_train_test(clf, X_train, y_train, X_test, y_test, setup_name, step_name, species_name, fold) 
+
+        classifiers.append(clf)
+        X_test_list.append(X_test)
+        y_test_list.append(y_test)
 
     if(cross_validation == "True"):
         quit()
 
+
     # Compare different classifiers
     print("Drawing roc curve")
-    fpr, tpr, thresholds = roc_curve_plot(names, classifiers, X_test, y_test, setup_name, step_name, species_name)
+    fpr_list, tpr_list, thresholds_list = roc_curve_plot(classifiers, X_test_list, y_test_list, setup_name, step_name, species_name)
 
     print("Drawing signal significance vs BDT cut")
-    N_bkg = X_test[y_test<0.5].shape[0]
-    print("N_bkg = ", N_bkg)
+    for i in range(len(fpr_list)):
+        x_test = X_test_list[i]
+        N_bkg = x_test[y_test_list[i]<0.5].shape[0]
+        bdt_cut, significance = draw_signal_significance_vs_bdt_cut(i, fpr_list[i], tpr_list[i], thresholds_list[i], N_bkg, setup_name, step_name, species_name)
 
-    for i in range(len(fpr)):
-        bdt_cut, significance = draw_signal_significance_vs_bdt_cut(names[i], fpr[i], tpr[i], thresholds[i], N_bkg, setup_name, step_name, species_name)
-
-    for i in range(len(names)):
-        name = names[i]
-        if(name == 'XGBoost'):
-            print("Drawing feature importances for "+ name)
-            draw_feature_importance(names[i], classifiers[i], input_features, setup_name, step_name, species_name)
+    print("Drawing feature importance")
+    for i in range(len(classifiers)):
+        draw_feature_importance(i, classifiers[i], input_features, setup_name, step_name, species_name)
 
     # find which classifier gives the maximum value for the metric
     # idx = np.argmax( metrics )
@@ -986,62 +960,9 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
     #     classifiers[i].save_model('/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/clf_{1}.json'.format(species_name,step_name))
     # else:
 
-    with open('/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/clf_{1}.pkl'.format(species_name,step_name), 'wb') as f:
+    with open(f'/panfs/felician/B2Ktautau/workflow/sklearn_training/{species_name}/clf_{step_name}.pkl', 'wb') as f:
         for i in range(len(classifiers)):
             pickle.dump(classifiers[i], f)
-
-    # Save signal and background training samples in a root file -> UNCOMMENT IN THE END
-    for i in range(len(names)):
-        if(names[i] == "XGBoost"):
-            # Signal test sample
-            out_file_sig = ROOT.TFile.Open("/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/{1}_test_dataset_sig.root".format(species_name,step_name), "RECREATE")
-            out_file_sig.mkdir(names[i])
-            out_tree_sig = ROOT.TTree("DecayTree", "DecayTree")
-            bdt_var_sig = array('d', [0])
-            
-            if(step_name == "physics"):
-                out_tree_sig.Branch('BDT1', bdt_var_sig, "BDT1/D")
-            else:
-                out_tree_sig.Branch('BDT2', bdt_var_sig, "BDT2/D")
-
-            X_test_sig = X_test[y_test>0.5]
-            decisions_sig = classifiers[i].predict_proba(X_test_sig)[:, 1] 
-
-            for j in range(len(decisions_sig)):
-                bdt_var_sig[0] = decisions_sig[j]
-                out_tree_sig.Fill()
-
-            out_file_sig.cd(names[i])    
-            out_tree_sig.Write()
-            out_file_sig.Close()
-
-            # Background test sample
-            out_file_bkg = ROOT.TFile.Open("/panfs/felician/B2Ktautau/workflow/sklearn_training/{0}/{1}_test_dataset_bkg.root".format(species_name,step_name), "RECREATE")
-            out_file_bkg.mkdir(names[i])
-            out_tree_bkg = ROOT.TTree("DecayTree", "DecayTree")
-            bdt_var_bkg = array('d', [0])
-
-            if(step_name == "topology_phys"):
-                out_tree_bkg.Branch('BDT1', bdt_var_bkg, "BDT1/D")
-            elif(step_name == "topology_comb"):
-                out_tree_bkg.Branch('BDT2', bdt_var_bkg, "BDT2/D")
-
-            X_test_bkg = X_test[y_test<0.5]
-            decisions_bkg = classifiers[i].predict_proba(X_test_bkg)[:, 1] 
-
-            for k in range(len(decisions_bkg)):
-                bdt_var_bkg[0] = decisions_bkg[k]
-                out_tree_bkg.Fill()
-
-            out_file_bkg.cd(names[i])    
-            out_tree_bkg.Write()
-            out_file_bkg.Close()
-
-    # decisions_sig_saved = clf_saved.predict_proba(np.array(X_test_sig))[:, 1] 
-
-    # print(decisions_sig)
-    # print(decisions_sig_saved)
-
 
 def main(argv):
 

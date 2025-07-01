@@ -183,8 +183,6 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
             X2['D_prod_pi_min'] = np.minimum(x['D0bar_pi_ProbNNpi'], x['Dsp_pi_ProbNNpi'])
 
     ##################################################################################################################################################################
-    names = ["XGBoost"]
-
     classifiers_phys = []
     classifiers_comb = []
 
@@ -219,41 +217,35 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
                 except EOFError:
                     break
 
-    decisions_first_step = []
+
+    # Arrays with decisions of every model 
+    decisions_physics = []
+    decisions_combinatorial = []
     for i in range(len(classifiers_phys)):
-        if( (names[i]=="RForest") or (names[i] == "XGBoost") ):
-            decisions_first_step.append( classifiers_phys[i].predict_proba(X1)[:, 1] )
-        else:
-            decisions_first_step.append( classifiers_phys[i].decision_function(X1) )
+        decisions_physics.append( classifiers_phys[i].predict_proba(X1)[:, 1] )
+        decisions_combinatorial.append( classifiers_comb[i].predict_proba(X2)[:, 1] )
 
-    decisions_second_step = []
-    for i in range(len(classifiers_comb)):
-        if( (names[i]=="RForest") or (names[i] == "XGBoost") ):
-            decisions_second_step.append( classifiers_comb[i].predict_proba(X2)[:, 1] )
-        else:
-            decisions_second_step.append( classifiers_comb[i].decision_function(X2) )
+    tout = ROOT.TTree("DecayTree", "Decaytree")
 
-    trees = []
-    clf_outputs_phys = []
-    clf_outputs_comb = []
+    phys_bdt = array('d', [0])
+    comb_bdt = array('d', [0])
 
-    for i in range(len(names)):
-        fout.mkdir(names[i])
-        trees.append(ROOT.TTree("DecayTree", "Decaytree"))
-        
-        clf_outputs_phys.append( array('d', [0]) )
-        clf_outputs_comb.append( array('d', [0]) )
+    tout.Branch("BDT1", phys_bdt, "BDT1/D")
+    tout.Branch("BDT2", comb_bdt, "BDT2/D")
 
-        trees[i].Branch("BDT1", clf_outputs_phys[i], "BDT1/D")
-        trees[i].Branch("BDT2", clf_outputs_comb[i], "BDT2/D")
+    N = len(decisions_physics[0])
+    for evt in range(N):
+        index = (x['runNumber'][evt] + x['eventNumber'][evt] + x['nCandidate'][evt]) % len(classifiers_phys)
 
-        for j in range(len(decisions_first_step[i])):
-            clf_outputs_phys[i][0] = decisions_first_step[i][j]
-            clf_outputs_comb[i][0] = decisions_second_step[i][j]
-            trees[i].Fill()
-        
-        fout.cd(names[i])
-        trees[i].Write()
+        phys_bdt[0] = decisions_physics[index][evt]
+        comb_bdt[0] = decisions_combinatorial[index][evt]
+
+        tout.Fill()
+
+    fout.cd()
+    tout.Write()
+    fout.Close()
+
 
 def main(argv):
 
