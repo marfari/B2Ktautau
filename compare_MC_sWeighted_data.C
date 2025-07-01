@@ -4,20 +4,20 @@ using namespace std;
 
 TH1D* create_histogram_mc(RooRealVar var, TTree* t, TString weight, Int_t i, Double_t var_min, Double_t var_max);
 // void addWeight( TTree* t, TString WEIGHT_file, Int_t year, Int_t species);
-void compute_1Dweights(RooWorkspace* w, RooDataSet* data_mc, RooDataSet data_signal_sw, TString var_name, Int_t year, Int_t species);
-void compute_2Dweights(RooWorkspace* w, RooDataSet* data_mc, RooDataSet data_signal_sw, TString var1_name, TString var2_name, Int_t year, Int_t species);
+void compute_1Dweights(RooWorkspace* w, RooDataSet* data_mc, RooDataSet data_signal_sw, TString var_name, Int_t species);
+void compute_2Dweights(RooWorkspace* w, RooDataSet* data_mc, RooDataSet data_signal_sw, TString var1_name, TString var2_name, Int_t species);
 Double_t reduced_chi2(TH1D* h_mc, TH1D* h_data);
 
 Int_t N = 50;
 
-void compare_MC_sWeighted_data(Int_t year, Int_t species, Bool_t applyWeight)
+void compare_MC_sWeighted_data(Int_t species, Bool_t applyWeight)
 {
-    TFile* f = new TFile(Form("/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201%i/Species_8/splot_result.root",year));
+    TFile* f = new TFile("/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/Species_8/splot_result.root");
     RooWorkspace* w = (RooWorkspace*)f->Get("w_out");
     RooDataSet* data_sw = (RooDataSet*)w->data("dataWithSWeights");
     RooDataSet data_signal_sw{data_sw->GetName(), data_sw->GetTitle(), data_sw, *data_sw->get(), nullptr, "n_signal_sw"};
 
-    TFile* f1 = new TFile(Form("/panfs/felician/B2Ktautau/workflow/create_dataset/201%i/Species_%i/mass_dataset.root",year,species));
+    TFile* f1 = new TFile(Form("/panfs/felician/B2Ktautau/workflow/create_dataset/Species_%i/mass_dataset.root",species));
     RooWorkspace* w1 = (RooWorkspace*)f1->Get("w");
     RooDataSet* data_mc = (RooDataSet*)w1->data("data");
 
@@ -29,31 +29,31 @@ void compare_MC_sWeighted_data(Int_t year, Int_t species, Bool_t applyWeight)
 
     TString weight = "";
     TChain* t;
-    if(applyWeight)
-    {
-        // Get TTree
-        TFileCollection* fc = new TFileCollection("fc", "fc", Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/Species_%i/pre_sel_tree.txt",year,species));
-        t = new TChain("DecayTree");
-        t->AddFileInfoList((TCollection*)fc->GetList());
+    // if(applyWeight)
+    // {
+    //     // Get TTree
+    //     TFileCollection* fc = new TFileCollection("fc", "fc", Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/Species_%i/pre_sel_tree.txt",year,species));
+    //     t = new TChain("DecayTree");
+    //     t->AddFileInfoList((TCollection*)fc->GetList());
 
-        TFileCollection* fc1 = new TFileCollection("fc1", "fc1", Form("/panfs/felician/B2Ktautau/workflow/sklearn_response/201%i/Species_%i/bdt_output.txt",year,species));
-        TChain* t1 = new TChain("XGBoost/DecayTree");
-        t1->AddFileInfoList((TCollection*)fc1->GetList());
+    //     TFileCollection* fc1 = new TFileCollection("fc1", "fc1", Form("/panfs/felician/B2Ktautau/workflow/sklearn_response/201%i/Species_%i/bdt_output.txt",year,species));
+    //     TChain* t1 = new TChain("XGBoost/DecayTree");
+    //     t1->AddFileInfoList((TCollection*)fc1->GetList());
 
-        // Get TTree with weight branch
-        TFile* f2 = new TFile(Form("/panfs/felician/B2Ktautau/workflow/bdt_reweighter/201%i/DDs_correction/Species_%i/tree_with_weights.root",year,species));
-        // TFile* f2 = new TFile(Form("/panfs/felician/B2Ktautau/workflow/addWeight/DDs_correction/201%i/Species_%i/tree_with_weight_1D.root",year,species));
-        TTree* tw = (TTree*)f2->Get("DecayTree");
+    //     // Get TTree with weight branch
+    //     TFile* f2 = new TFile(Form("/panfs/felician/B2Ktautau/workflow/bdt_reweighter/201%i/DDs_correction/Species_%i/tree_with_weights.root",year,species));
+    //     // TFile* f2 = new TFile(Form("/panfs/felician/B2Ktautau/workflow/addWeight/DDs_correction/201%i/Species_%i/tree_with_weight_1D.root",year,species));
+    //     TTree* tw = (TTree*)f2->Get("DecayTree");
 
 
-        t->AddFriend(tw);
-        t->AddFriend(t1);
-        weight = "weights";
+    //     t->AddFriend(tw);
+    //     t->AddFriend(t1);
+    //     weight = "weights";
 
-        cout << tw->GetEntries() << endl;
-        cout << t->GetEntries() << endl;
-        cout << t1->GetEntries() << endl;
-    }
+    //     cout << tw->GetEntries() << endl;
+    //     cout << t->GetEntries() << endl;
+    //     cout << t1->GetEntries() << endl;
+    // }
     
     std::vector<double> red_chi2_values;
 
@@ -358,11 +358,11 @@ void compare_MC_sWeighted_data(Int_t year, Int_t species, Bool_t applyWeight)
 
         if(applyWeight)
         {
-            c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/201%i/DDs_correction/Species_%i/MC_reweighted/var_%i.pdf",year,species,i));            
+            c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/Species_%i/MC_reweighted/var_%i.pdf",species,i));            
         }
         else
         {
-            c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/201%i/DDs_correction/Species_%i/MC_unweighted/var_%i.pdf",year,species,i));  
+            c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/Species_%i/MC_unweighted/var_%i.pdf",species,i));  
         }
     }
     std::vector<int> idx(red_chi2_values.size());
@@ -382,13 +382,13 @@ void compare_MC_sWeighted_data(Int_t year, Int_t species, Bool_t applyWeight)
     // 1D weight histogram
     if(!applyWeight)
     {
-        compute_1Dweights(w, data_mc, data_signal_sw, "nSPDHits", year, species);
+        compute_1Dweights(w, data_mc, data_signal_sw, "nSPDHits", species);
     }
 
     // 2D Weight map histogram
     // if(!applyWeight)
     // {
-    //     compute_2Dweights(w, data_mc, data_signal_sw, "nTracks", "nSPDHits", year, species);
+    //     compute_2Dweights(w, data_mc, data_signal_sw, "nTracks", "nSPDHits", species);
     // }
 }
 
@@ -408,7 +408,7 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, TString weight, Int_t i, Dou
     return h;
 }
 
-// void addWeight( TTree* t, TString WEIGHT_file, Int_t year, Int_t species)
+// void addWeight( TTree* t, TString WEIGHT_file, Int_t species)
 // {   
 //     TFile* f = new TFile(WEIGHT_file, "READ");
 //     TH2D* h_wei = (TH2D*)f->Get("weight");
@@ -440,7 +440,7 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, TString weight, Int_t i, Dou
 //     fout->Close();
 // }
 
-void compute_1Dweights(RooWorkspace* w, RooDataSet* data_mc, RooDataSet data_signal_sw, TString var_name, Int_t year, Int_t species)
+void compute_1Dweights(RooWorkspace* w, RooDataSet* data_mc, RooDataSet data_signal_sw, TString var_name, Int_t species)
 {
     RooRealVar* var =  (RooRealVar*)w->var(var_name);
 
@@ -471,7 +471,7 @@ void compute_1Dweights(RooWorkspace* w, RooDataSet* data_mc, RooDataSet data_sig
     h_sig_MC->GetYaxis()->SetTitle(Form("Entries / (%i bins)",N));
     h_sig_MC->SetTitle("MC");
     h_sig_MC->Draw("COLZ");
-    c1.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/201%i/DDs_correction/Species_%i/MC_unweighted/1D_MC.pdf",year,species));
+    c1.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/Species_%i/MC_unweighted/1D_MC.pdf",species));
 
     TCanvas c2;
     c2.cd();
@@ -479,7 +479,7 @@ void compute_1Dweights(RooWorkspace* w, RooDataSet* data_mc, RooDataSet data_sig
     h_sig_data->GetYaxis()->SetTitle(Form("Entries / (%i bins)",N));
     h_sig_data->SetTitle("Data (sp)");
     h_sig_data->Draw("COLZ");
-    c2.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/201%i/DDs_correction/Species_%i/MC_unweighted/1D_data.pdf",year,species));
+    c2.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/Species_%i/MC_unweighted/1D_data.pdf",species));
 
     h_wei->SetDefaultSumw2(kTRUE);
     h_wei = (TH1D*)h_sig_data->Clone("weight");
@@ -491,15 +491,15 @@ void compute_1Dweights(RooWorkspace* w, RooDataSet* data_mc, RooDataSet data_sig
     h_wei->GetYaxis()->SetTitle(Form("Entries / (%i bins)",N));
     h_wei->SetTitle("Data (sp) / MC");
     h_wei->Draw("COLZ");
-    c3.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/201%i/DDs_correction/Species_%i/MC_unweighted/1D_weights.pdf",year,species));
+    c3.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/Species_%i/MC_unweighted/1D_weights.pdf",species));
 
-    TFile* f_wei = new TFile(Form("/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/201%i/DDs_correction/Species_%i/weights.root",year,species), "RECREATE");
+    TFile* f_wei = new TFile(Form("/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/Species_%i/weights.root",species), "RECREATE");
     f_wei->cd();
     h_wei->Write();
     f_wei->Close();
 }
 
-void compute_2Dweights(RooWorkspace* w, RooDataSet* data_mc, RooDataSet data_signal_sw, TString var1_name, TString var2_name, Int_t year, Int_t species)
+void compute_2Dweights(RooWorkspace* w, RooDataSet* data_mc, RooDataSet data_signal_sw, TString var1_name, TString var2_name, Int_t species)
 {
     RooRealVar* var1 =  (RooRealVar*)w->var(var1_name);
     RooRealVar* var2 =  (RooRealVar*)w->var(var2_name);
@@ -530,7 +530,7 @@ void compute_2Dweights(RooWorkspace* w, RooDataSet* data_mc, RooDataSet data_sig
     h_2D_sig_MC->GetYaxis()->SetTitle(var2_name);
     h_2D_sig_MC->SetTitle("MC");
     h_2D_sig_MC->Draw("COLZ");
-    c1.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/201%i/DDs_correction/Species_%i/MC_unweighted/2D_MC.pdf",year,species));
+    c1.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/Species_%i/MC_unweighted/2D_MC.pdf",species));
 
     TCanvas c2;
     c2.cd();
@@ -538,7 +538,7 @@ void compute_2Dweights(RooWorkspace* w, RooDataSet* data_mc, RooDataSet data_sig
     h_2D_sig_data->GetYaxis()->SetTitle(var2_name);
     h_2D_sig_data->SetTitle("Data (sp)");
     h_2D_sig_data->Draw("COLZ");
-    c2.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/201%i/DDs_correction/Species_%i/MC_unweighted/2D_data.pdf",year,species));
+    c2.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/Species_%i/MC_unweighted/2D_data.pdf",species));
 
     h_2D_wei->SetDefaultSumw2(kTRUE);
     h_2D_wei = (TH2D*)h_2D_sig_data->Clone("weight");
@@ -550,9 +550,9 @@ void compute_2Dweights(RooWorkspace* w, RooDataSet* data_mc, RooDataSet data_sig
     h_2D_wei->GetYaxis()->SetTitle(var2_name);
     h_2D_wei->SetTitle("Data (sp) / MC");
     h_2D_wei->Draw("COLZ");
-    c3.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/201%i/DDs_correction/Species_%i/MC_unweighted/2D_weights.pdf",year,species));
+    c3.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/Species_%i/MC_unweighted/2D_weights.pdf",species));
 
-    TFile* f_wei = new TFile(Form("/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/201%i/DDs_correction/Species_%i/weights.root",year,species), "RECREATE");
+    TFile* f_wei = new TFile(Form("/panfs/felician/B2Ktautau/workflow/compare_MC_sWeighted_data/Species_%i/weights.root",species), "RECREATE");
     f_wei->cd();
     h_2D_wei->Write();
     f_wei->Close();

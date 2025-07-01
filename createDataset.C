@@ -36,40 +36,14 @@ TString variables[] = {"mass", "BDT1", "BDT2",
                     "nPVs", "nTracks", "nLongTracks", "nDownstreamTracks", "nUpstreamTracks", "nVeloTracks", "nTTracks", "nVeloClusters", "nITClusters", "nSPDHits",
                     }; 
 
-void createDataset(int year, int species)
+void createDataset(int species)
 {
     cout << "Opening .root files" << endl;
 
-    TChain* t ,*t1;
-    if(year == -1) // With best candidate selection branch (merge 3 years)
-    {
-        TFile* f = new TFile(Form("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_%i/post_sel_tree_bdt1_0_bdt2_0.root",species));
-        t = (TChain*)f->Get("DecayTree");
-    }
-    else
-    {
-        TFileCollection *fc = new TFileCollection("fc", "fc", Form("/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/201%i/Species_%i/pre_sel_tree.txt",year,species));
-        t = new TChain("DecayTree");
-        t->AddFileInfoList((TCollection*)fc->GetList());
-        
-        TFileCollection *fc1 = new TFileCollection("fc1", "fc1", Form("/panfs/felician/B2Ktautau/workflow/sklearn_response/201%i/Species_%i/bdt_output.txt",year,species));
-        t1 = new TChain("XGBoost/DecayTree");
-        t1->AddFileInfoList((TCollection*)fc1->GetList());
+    TFile* f = new TFile(Form("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_%i/post_sel_tree_bdt1_0_bdt2_0.root",species));
+    TTree* t = (TChain*)f->Get("DecayTree");
 
-        Int_t Nentries = t->GetEntries();
-        Int_t N1entries = t1->GetEntries();
-        if(Nentries != N1entries)
-        {
-            cout << "Wrong number of entries" << endl;
-            return;
-        }
-        else
-        {
-            t->AddFriend(t1);
-        }
-    }
-
-    TFile* fout = new TFile( Form("/panfs/felician/B2Ktautau/workflow/create_dataset/201%i/Species_%i/mass_dataset.root",year,species), "RECREATE"); 
+    TFile* fout = new TFile( Form("/panfs/felician/B2Ktautau/workflow/create_dataset/Species_%i/mass_dataset.root",species), "RECREATE"); 
     fout->cd();
 
     cout << "Creating TTree" << endl;
@@ -93,22 +67,6 @@ void createDataset(int year, int species)
     Double_t the_bdt1, the_bdt2;
     TBranch* bdt1 = t_cut->Branch("BDT1", &the_bdt1);
     TBranch* bdt2 = t_cut->Branch("BDT2", &the_bdt2);
-
-    Double_t BDT1, BDT2;
-    if(year != -1)
-    {
-        t1->SetBranchAddress("BDT1", &BDT1);
-        t1->SetBranchAddress("BDT2", &BDT2);
-    
-        for(int i = 0; i < t1->GetEntries(); i++)
-        {
-            t1->GetEntry(i);
-            the_bdt1 = BDT1;
-            the_bdt2 = BDT2;
-            bdt1->Fill();
-            bdt2->Fill();
-        }
-    }
 
     // Create workspace
     RooWorkspace* w = new RooWorkspace("w");

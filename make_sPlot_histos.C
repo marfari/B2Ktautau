@@ -4,9 +4,9 @@ using namespace std;
 
 Int_t nbins = 50;
 
-void make_sPlot_histos(Int_t year, Int_t species, TString FIT_workspace)
+void make_sPlot_histos(Int_t species)
 {
-    TFile* f = new TFile(FIT_workspace);
+    TFile* f = new TFile("/panfs/felician/B2Ktautau/workflow/fit_mass/Species_8/mass_fit_result.root");
     RooWorkspace* w = (RooWorkspace*)f->Get("w_out");
 
     // 1) Get RooDataSet + RooAbsPdf + RooRealVars
@@ -236,7 +236,7 @@ void make_sPlot_histos(Int_t year, Int_t species, TString FIT_workspace)
         leg->SetBorderSize(0);
         leg->SetFillStyle(0);
         leg->Draw("same");
-        c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201%i/Species_%i/Sideband_plots/var_%i.pdf",year,species,i));
+        c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/Species_%i/Sideband_plots/var_%i.pdf",species,i));
 
         sideband_histos.push_back(h_sig);
     }
@@ -283,7 +283,7 @@ void make_sPlot_histos(Int_t year, Int_t species, TString FIT_workspace)
 
     RooMsgService::instance().setGlobalKillBelow(RooFit::INFO);
 
-    TFile* fout = new TFile(Form("/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201%i/Species_%i/splot_result.root",year,species), "RECREATE");
+    TFile* fout = new TFile(Form("/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/Species_%i/splot_result.root",species), "RECREATE");
     fout->cd();
     w->Write();
     fout->Close();
@@ -295,49 +295,6 @@ void make_sPlot_histos(Int_t year, Int_t species, TString FIT_workspace)
     RooDataSet* data_sw = (RooDataSet*)w->data("dataWithSWeights");
     RooDataSet data_signal_sw{data_sw->GetName(), data_sw->GetTitle(), data_sw, *data_sw->get(), nullptr, "n_signal_sw"};
     RooDataSet data_background_sw{data_sw->GetName(), data_sw->GetTitle(), data_sw, *data_sw->get(), nullptr, "n_combinatorial_sw"};
-
-    // for(int i = 0; i < n_vars; i++)
-    // {
-    //     // make our canvas
-    //     TCanvas *cdata = new TCanvas("sPlot", "sPlot", 400, 600);
-    //     cdata->Divide(1, 3);
-
-    //     //  plot invMass for data with full model and individual components overlaid
-    //     //  TCanvas* cdata = new TCanvas();
-    //     cdata->cd(1);
-    //     RooPlot *frame = mass->frame(Title("Fit of model to B^{+} mass"));
-    //     data_sw->plotOn(frame);
-    //     model->plotOn(frame, Name("FullModel"));
-    //     model->plotOn(frame, Components("sig_pdf"), LineStyle(kDashed), LineColor(kRed), Name("Signal"));
-    //     model->plotOn(frame, Components("exp"), LineStyle(kDashed), LineColor(kGreen), Name("Background"));
-
-    //     TLegend leg(0.5, 0.5, 0.9, 0.8);
-    //     leg.AddEntry(frame->findObject("FullModel"), "Full model", "L");
-    //     leg.AddEntry(frame->findObject("Signal"), "Signal", "L");
-    //     leg.AddEntry(frame->findObject("Background"), "Background", "L");
-    //     leg.SetBorderSize(0);
-    //     leg.SetFillStyle(0);
-
-    //     frame->Draw();
-    //     leg.DrawClone();
-
-    //     RooRealVar* var = (RooRealVar*)vars[i];
-    //     TString var_name = var->GetName();
-
-    //     // Plot variable for signal component.
-    //     cdata->cd(2);
-    //     RooPlot *frame2 = var->frame(Title(var_name+" signal distribution"));
-    //     // Since the data are weighted, we use SumW2 to compute the errors.
-    //     data_signal_sw.plotOn(frame2, DataError(RooAbsData::SumW2));
-    //     frame2->Draw();
-
-    //     // Plot variable for background component.
-    //     cdata->cd(3);
-    //     RooPlot *frame3 = var->frame(Title(var_name+" background distribution"));
-    //     data_background_sw.plotOn(frame3, DataError(RooAbsData::SumW2));
-    //     frame3->Draw();
-    //     cdata->SaveAs(Form("/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201%i/Species_%i/Splot_plots/Mass_var_plots/var_%i.pdf",year,species,i));
-    // }
 
     // Plot total vs signal vs background distributions in the same plot
     std::vector<TH1D*> splot_histos; 
@@ -507,7 +464,7 @@ void make_sPlot_histos(Int_t year, Int_t species, TString FIT_workspace)
         leg1->SetBorderSize(0);
         leg1->SetFillStyle(0);
         leg1->Draw("same");
-        c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201%i/Species_%i/Splot_plots/var_%i.pdf",year,species,i));
+        c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/Species_%i/Splot_plots/var_%i.pdf",species,i));
 
         splot_histos.push_back(h_sig);
     }
@@ -560,7 +517,7 @@ void make_sPlot_histos(Int_t year, Int_t species, TString FIT_workspace)
         leg2->SetFillStyle(0);
         leg2->SetTextSize(0.03);
         leg2->Draw("same");
-        c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/201%i/Species_%i/Splot_vs_sideband_plots/var_%i.pdf",year,species,i));
+        c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/make_sPlot_histos/Species_%i/Splot_vs_sideband_plots/var_%i.pdf",species,i));
     }
 
 }

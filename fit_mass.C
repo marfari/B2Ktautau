@@ -2,12 +2,12 @@ using namespace RooStats;
 using namespace RooFit;
 using namespace std;
 
-void validate_fit(RooAbsPdf* model, RooRealVar* mass, RooRealVar* var, Int_t year, Int_t species);
+void validate_fit(RooAbsPdf* model, RooRealVar* mass, RooRealVar* var, Int_t species);
 
-void fit_mass(Int_t year, Int_t species)
+void fit_mass(Int_t species)
 {
 
-    TFile* f = new TFile(Form("/panfs/felician/B2Ktautau/workflow/create_dataset/201%i/Species_%i/mass_dataset.root",year,species));
+    TFile* f = new TFile(Form("/panfs/felician/B2Ktautau/workflow/create_dataset/Species_%i/mass_dataset.root",species));
     RooWorkspace* w = (RooWorkspace*)f->Get("w");
     RooDataSet *data = (RooDataSet*)w->data("data");
 
@@ -29,9 +29,9 @@ void fit_mass(Int_t year, Int_t species)
 
         RooRealVar alpha("alpha", "#alpha", 2, 0., 20.);
         RooRealVar alpha1("alpha1", "#alpha1", -2, -20., 5.);
-        RooRealVar n("n", "n", 2, 0, 300);
+        RooRealVar n("n", "n", 10, 0, 300);
         RooRealVar frac("frac", "f", 0.5, 0, 1);
-        n.setConstant();
+        // n.setConstant();
 
         RooCBShape* cb1 = new RooCBShape("cb1", "cb1", *mass, mu, sig, alpha, n);
         RooCBShape* cb2 = new RooCBShape("cb2", "cb2", *mass, mu, sig1, alpha1, n);
@@ -141,7 +141,7 @@ void fit_mass(Int_t year, Int_t species)
         l->SetLineStyle(2);
         l->Draw("same");
 
-        c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/fit_mass/201%i/Species_%i/mass_fit.pdf",year,species));
+        c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/fit_mass/Species_%i/mass_fit.pdf",species));
 
         w_out = new RooWorkspace("w_out");
         w_out->import(*data);
@@ -150,136 +150,7 @@ void fit_mass(Int_t year, Int_t species)
         Int_t fit_status = fit->status();
         if(fit_status == 0)
         {
-            validate_fit(model, mass, n_signal, year, species);
-        }
-    }
-    else if(species == 78)
-    {
-        Double_t nbins = 30;
-        mass->setBins(nbins);
-
-        RooRealVar mu("mu", "#mu", 5240., 5310., "MeV");
-        RooRealVar sig("sig", "#sigma", 7., 0.5, 100., "MeV");
-        RooRealVar sig1("sig1", "#sigma1", 7., 0.5, 100., "MeV");
-        RooRealVar alpha("alpha", "#alpha", 2, 0., 20.);
-        RooRealVar alpha1("alpha1", "#alpha1", -2, -20., 5.);
-        RooRealVar n("n", "n", 50, 0, 300);
-        RooRealVar n1("n1", "n1", 10, 0, 300);
-        RooRealVar frac("frac", "f", 0.5, 0, 1);
-
-        RooRealVar xi("xi", "xi", 0., -1. ,1.);
-        RooRealVar ro1("ro1", "ro1", -0.1, -0.99, -0.001);
-        RooRealVar ro2("ro2", "ro2", 0.05, -1., 1.);
-        xi.setConstant();
-
-        RooBukinPdf* bukin = new RooBukinPdf("bukin", "bukin", *mass, mu, sig, xi, ro1, ro2);
-        RooGaussian* g1 = new RooGaussian("g1", "g1", *mass, mu, sig1);
-        RooAddPdf* sig_pdf = new RooAddPdf("sig_pdf", "sig_pdf", RooArgList(*bukin,*g1), frac);
-
-        // RooAddPdf* sig_pdf = new RooAddPdf("sig_pdf", "sig_pdf", RooArgList(*cb1,*cb2), frac); 
-        // RooAddPdf* sig_pdf = new RooAddPdf("sig_pdf", "sig_pdf", RooArgList(*g1,*g2), frac);
-        // RooAddPdf* sig_pdf = new RooAddPdf("sig_pdf", "sig_pdf", RooArgList(*cb1,*g1), frac); 
-
-        Double_t n_signal_initial = data->sumEntries();
-        RooRealVar* n_signal = new RooRealVar("n_signal", "n_signal", n_signal_initial, 0.,2*(data->sumEntries()));
-
-        RooExtendPdf* model = new RooExtendPdf("model", "model", *sig_pdf, *n_signal);
-
-        fit = model->fitTo(*data, RooFit::Minos(true), RooFit::Extended(kTRUE), RooFit::Save());
-        fit->Print();
-
-        TCanvas c("c", "c", 2000,1500);
-        c.SetTitle("");
-
-        TPad *p1 = new TPad("p1","p1",0.,0.27,1.,1.);
-        p1->SetTitle("");
-        p1->SetBorderMode(1);
-        p1->SetFrameBorderMode(0);
-        p1->SetBorderSize(2);
-        p1->SetBottomMargin(0.10);
-        p1->Draw();
-
-        TPad *p2 = new TPad("p2","p2",0.,0.075,1.,0.25);
-        p2->SetTitle("");
-        p2->SetTopMargin(0.);
-        p2->SetBottomMargin(0.2);
-        p2->SetBorderMode(1);
-        p2->Draw();
-
-        p1->cd();
-        RooPlot* massframe = mass->frame();
-        data->plotOn(massframe, RooFit::Name("Data"));
-        model->plotOn(massframe, RooFit::Name("Fit"), RooFit::LineColor(kBlue), RooFit::LineStyle(1), RooFit::LineWidth(2));
-        model->plotOn(massframe, RooFit::Name("Bukin"), RooFit::Components("bukin"), RooFit::LineColor(kCyan), RooFit::LineStyle(3), RooFit::LineWidth(2));
-        model->plotOn(massframe, RooFit::Name("Gauss"), RooFit::Components("g1"), RooFit::LineColor(kGreen), RooFit::LineStyle(3), RooFit::LineWidth(2));
-        model->paramOn(massframe, RooFit::Layout(0.6,0.85, 0.9));
-        massframe->SetXTitle("m_{B^{+}} (MeV)");
-        massframe->Draw();
-
-        double n_float_params = fit->floatParsFinal().getSize();
-        double chis = massframe->chiSquare("Fit", "Data", n_float_params);
-        TLatex* tex = new TLatex(0.13, 0.85, Form("#chi^{2}/ndf = %f",chis));//%.3lf
-        tex->SetNDC(kTRUE);
-        tex->SetTextFont(42);
-        tex->SetTextSize(0.035);
-        tex->Draw("same");
-
-        Double_t ndf = nbins - n_float_params;
-        Double_t pvalue =  TMath::Prob(chis*ndf, ndf);
-        TLatex* tex1 = new TLatex(0.13, 0.75, Form("p = %f",pvalue));//%.3lf
-        tex1->SetNDC(kTRUE);
-        tex1->SetTextFont(42);
-        tex1->SetTextSize(0.035);
-        tex1->Draw("same");
-
-        TLegend* leg = new TLegend(0.5, 0.6, 0.6, 0.85);
-        leg->SetBorderSize(0);
-        leg->SetTextSize(0.04);
-        leg->AddEntry("Data","Data");
-        leg->AddEntry("Fit","Fit");
-        leg->AddEntry("Bukin","Bukin");
-        leg->AddEntry("Gauss","Gauss");
-        leg->Draw("same");
-
-        RooHist* pull_hist = massframe->pullHist("Data","Fit");
-        RooPlot* pull_plot = mass->frame(Title(""));
-
-        pull_plot->addPlotable(static_cast<RooPlotable*>(pull_hist),"P");
-        pull_plot->SetTitle("");
-
-        pull_plot->GetXaxis()->SetTitle("");
-        pull_plot->GetXaxis()->SetTitleSize(0.15);
-        pull_plot->GetXaxis()->SetTitleOffset(0.9);
-        pull_plot->GetXaxis()->SetLabelSize(0.15);
-        pull_plot->GetXaxis()->SetLabelOffset(0.01);
-        pull_plot->GetXaxis()->SetTickLength(0.13);
-
-        pull_plot->GetYaxis()->SetTitle("Pull");
-        pull_plot->GetYaxis()->SetTitleSize(0.13);
-        pull_plot->GetYaxis()->SetTitleOffset(0.18);
-        pull_plot->GetYaxis()->SetLabelSize(0.13);
-        pull_plot->GetYaxis()->SetLabelOffset(0.005);
-        pull_plot->GetYaxis()->SetNdivisions(305);
-
-        p2->cd();
-        pull_plot->Draw();
-        TLine* l = new TLine(5235,0, 5355,0);
-        l->Draw("same");
-        l->SetLineColor(kBlue);
-        l->SetLineStyle(2);
-        l->Draw("same");
-
-        c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/fit_mass/201%i/Species_%i/mass_fit.pdf",year,species));
-
-        w_out = new RooWorkspace("w_out");
-        w_out->import(*data);
-        w_out->import(*model);
-
-        Int_t fit_status = fit->status();
-        cout << "Fit status == " << fit_status << endl;
-        if(fit_status == 0)
-        {
-            validate_fit(model, mass, n_signal, year, species);
+            validate_fit(model, mass, n_signal, species);
         }
     }
     else if(species == 8)
@@ -290,38 +161,33 @@ void fit_mass(Int_t year, Int_t species)
         // Signal PDF    
         RooRealVar mu("mu", "#mu", 5240., 5310., "MeV");
         RooRealVar sig("sig", "#sigma", 7., 0.5, 100., "MeV");
-        RooRealVar n("n", "n", 2, 0, 300);
-        n.setConstant();
+        RooRealVar sig1("sig1", "#sigma_{1}", 3, 0.5, 100., "MeV");
+        RooRealVar n("n", "n", 10, 0, 300);
+        // n.setConstant();
 
-        TFile* fr;
-        if(year != -1)
-        {
-            fr = new TFile( Form("/panfs/felician/B2Ktautau/workflow/fit_mass/201%i/Species_7/mass_fit_result.root",year));
-        }
-        else
-        {
-            fr = new TFile("/panfs/felician/B2Ktautau/workflow/fit_mass/201-1/Species_72/mass_fit_result.root");
-        }
+        TFile* fr = new TFile("/panfs/felician/B2Ktautau/workflow/fit_mass/Species_72/mass_fit_result.root");
+        
         RooFitResult* fitres = (RooFitResult*)fr->Get("fitresult_model_data");
+        RooRealVar* n_mc = (RooRealVar*)fitres->floatParsFinal().find(Form("n"));
         RooRealVar* frac_mc = (RooRealVar*)fitres->floatParsFinal().find(Form("frac"));
         RooRealVar* sig1_mc = (RooRealVar*)fitres->floatParsFinal().find(Form("sig1"));
         RooRealVar* alpha_mc = (RooRealVar*)fitres->floatParsFinal().find(Form("alpha"));
         RooRealVar* alpha1_mc = (RooRealVar*)fitres->floatParsFinal().find(Form("alpha1"));
 
+        n_mc->setConstant();
         frac_mc->setConstant();
         sig1_mc->setConstant();
         alpha_mc->setConstant();
         alpha1_mc->setConstant();
 
-        RooCBShape* cb1 = new RooCBShape("cb1", "cb1", *mass, mu, sig, *alpha_mc, n);
-        RooCBShape* cb2 = new RooCBShape("cb2", "cb2", *mass, mu, *sig1_mc, *alpha1_mc, n);
+        RooCBShape* cb1 = new RooCBShape("cb1", "cb1", *mass, mu, sig, *alpha_mc, *n_mc);
+        RooCBShape* cb2 = new RooCBShape("cb2", "cb2", *mass, mu, sig1, *alpha1_mc, *n_mc);
 
         RooAddPdf* sig_pdf = new RooAddPdf("sig_pdf", "sig_pdf", RooArgList(*cb1,*cb2), *frac_mc);
 
         Double_t mass_peak = 5279.34;
         Double_t n_signal_initial = data->sumEntries(TString::Format("(abs(mass-%g)<20)", mass_peak));
         RooRealVar* n_signal = new RooRealVar("n_signal", "n_signal", n_signal_initial, 0.,2*(data->sumEntries()));
-
 
         // Background PDF
         RooRealVar a1("a1", "a1", 0.5, 0, 5);
@@ -441,7 +307,7 @@ void fit_mass(Int_t year, Int_t species)
         l->SetLineStyle(2);
         l->Draw("same");
 
-        c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/fit_mass/201%i/Species_%i/mass_fit.pdf",year,species));
+        c.SaveAs(Form("/panfs/felician/B2Ktautau/workflow/fit_mass/Species_%i/mass_fit.pdf",species));
 
         w_out = new RooWorkspace("w_out");
         w_out->import(*data);
@@ -450,12 +316,12 @@ void fit_mass(Int_t year, Int_t species)
         Int_t fit_status = fit->status();
         if(fit_status == 0)
         {
-            validate_fit(model, mass, n_signal, year, species);
+            validate_fit(model, mass, n_signal, species);
         }
 
     }
 
-    TFile* fout = new TFile(Form("/panfs/felician/B2Ktautau/workflow/fit_mass/201%i/Species_%i/mass_fit_result.root",year,species),"RECREATE");
+    TFile* fout = new TFile(Form("/panfs/felician/B2Ktautau/workflow/fit_mass/Species_%i/mass_fit_result.root",species),"RECREATE");
     fout->cd();
     w_out->Write();
     fit->Write();
@@ -463,7 +329,7 @@ void fit_mass(Int_t year, Int_t species)
 
 }
 
-void validate_fit(RooAbsPdf* model, RooRealVar* mass, RooRealVar* var, Int_t year, Int_t species)
+void validate_fit(RooAbsPdf* model, RooRealVar* mass, RooRealVar* var, Int_t species)
 {
     // Validate fit
     RooMCStudy* mcstudy = new RooMCStudy(*model, *mass, Binned(kTRUE), Silence(), Extended(), FitOptions(Save(kTRUE), PrintEvalErrors(0)));
@@ -500,7 +366,7 @@ void validate_fit(RooAbsPdf* model, RooRealVar* mass, RooRealVar* var, Int_t yea
     framesParam->GetYaxis()->SetTitleOffset(1.4);
     framesParam->Draw();
 
-    c_pull->SaveAs(Form("/panfs/felician/B2Ktautau/workflow/fit_mass/201%i/Species_%i/pulls_poisson.pdf",year,species));
-    c_params->SaveAs(Form("/panfs/felician/B2Ktautau/workflow/fit_mass/201%i/Species_%i/params_poisson.pdf",year,species));
+    c_pull->SaveAs(Form("/panfs/felician/B2Ktautau/workflow/fit_mass/Species_%i/pulls_poisson.pdf",species));
+    c_params->SaveAs(Form("/panfs/felician/B2Ktautau/workflow/fit_mass/Species_%i/params_poisson.pdf",species));
     
 }
