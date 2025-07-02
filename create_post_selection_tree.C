@@ -18,6 +18,7 @@ void create_post_selection_tree(Int_t species, Double_t BDT1, Double_t BDT2, boo
     // Creates post selection tree fot Ktautau
     TCut pass_fitter = "(df_status==0)";
     TCut fit_region = "(df_Bp_M > 4000) && (df_Bp_M < 8000)";
+    TCut other_cuts = "( TMath::Min(TMath::Log10(1 - TMath::Abs(taup_DIRA_ORIVX)) * TMath::Sign(1.0, taup_DIRA_ORIVX), TMath::Log10(1 - TMath::Abs(taum_DIRA_ORIVX)) * TMath::Sign(1.0, taum_DIRA_ORIVX)) < -1 )";
     TCut mass_vetoes = "";
     if((BDT1 == 0) and (BDT2 == 0)) // no BDT cut
     {   
@@ -25,14 +26,14 @@ void create_post_selection_tree(Int_t species, Double_t BDT1, Double_t BDT2, boo
         mass_vetoes += "(TMath::Abs(Bp_M02-1864.84) > 20) && (TMath::Abs(Bp_M04-1864.84) > 20) && (TMath::Abs(Bp_M06-1864.84) > 20)"; // 2 particles: D0
         mass_vetoes += "(TMath::Abs(Bp_M046-1869.66) > 20)"; // 3 particles: D+
         mass_vetoes += "(TMath::Abs(Bp_M0456-1864.84) > 30)"; // 4 particles: D0
-        mass_vetoes += "(TMath::Abs(Bp_M02456-2010.26) > 30)"; // 5 particle: D*-
+        // mass_vetoes += "(TMath::Abs(Bp_M02456-2010.26) > 30)"; // 5 particle: D*-
     }
     TCut bdt_cuts = Form("(BDT1 > %f) && (BDT2 > %f)",BDT1,BDT2);
     
     TCut cuts = "";
     if(isKtautau || is_cocktailMC)
     {
-        cuts += pass_fitter+fit_region+mass_vetoes+bdt_cuts;
+        cuts += pass_fitter+fit_region+other_cuts+mass_vetoes+bdt_cuts;
     }
     else
     {
@@ -102,9 +103,9 @@ void create_post_selection_tree(Int_t species, Double_t BDT1, Double_t BDT2, boo
     TFileCollection *fc3_2017 = new TFileCollection("fc3_2017", "fc3_2017", Form("/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_%i/bdt_output.txt",species));
     TFileCollection *fc3_2018 = new TFileCollection("fc3_2018", "fc3_2018", Form("/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_%i/bdt_output.txt",species));
 
-    TChain* t3_2016 = new TChain("XGBoost/DecayTree");
-    TChain* t3_2017 = new TChain("XGBoost/DecayTree");
-    TChain* t3_2018 = new TChain("XGBoost/DecayTree");
+    TChain* t3_2016 = new TChain("DecayTree");
+    TChain* t3_2017 = new TChain("DecayTree");
+    TChain* t3_2018 = new TChain("DecayTree");
 
     t3_2016->AddFileInfoList((TCollection*)fc3_2016->GetList());
     t3_2017->AddFileInfoList((TCollection*)fc3_2017->GetList());
@@ -253,7 +254,7 @@ void create_table(Int_t species, TCut pass_fitter, TCut fit_region, TCut bdt_cut
 
         // BDT tree
         TFileCollection *fc3 = new TFileCollection("fc3", "fc3", Form("/panfs/felician/B2Ktautau/workflow/sklearn_response/201%i/Species_%i/bdt_output.txt",year,species));
-        TChain* t3 = new TChain("XGBoost/DecayTree");
+        TChain* t3 = new TChain("DecayTree");
         t3->AddFileInfoList((TCollection*)fc3->GetList());
 
 

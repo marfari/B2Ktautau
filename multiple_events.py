@@ -182,7 +182,7 @@ def main(argv):
 
     if(isKtautau or is_cokctailMC):
         fc1 = ROOT.TFileCollection("fc1", "fc1", "/panfs/felician/B2Ktautau/workflow/sklearn_response/201{0}/Species_{1}/bdt_output.txt".format(year,species), 1, line)
-        t1 = ROOT.TChain("XGBoost/DecayTree")
+        t1 = ROOT.TChain("DecayTree")
         t1.AddFileInfoList(fc1.GetList())
         n1_entries = t1.GetEntries()
 
