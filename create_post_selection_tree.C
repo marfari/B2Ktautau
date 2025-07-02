@@ -20,7 +20,7 @@ void create_post_selection_tree(Int_t species, Double_t BDT1, Double_t BDT2, boo
     TCut fit_region = "(df_Bp_M > 4000) && (df_Bp_M < 8000)";
     TCut other_cuts = "( TMath::Min(TMath::Log10(1 - TMath::Abs(taup_DIRA_ORIVX)) * TMath::Sign(1.0, taup_DIRA_ORIVX), TMath::Log10(1 - TMath::Abs(taum_DIRA_ORIVX)) * TMath::Sign(1.0, taum_DIRA_ORIVX)) < -1 )";
     TCut mass_vetoes = "";
-    if((BDT1 == 0) and (BDT2 == 0)) // no BDT cut
+    if((BDT1 == 0) && (BDT2 == 0)) // no BDT cut
     {   
         cout << "Applying mass vetoe cuts" << endl;
         mass_vetoes += "(TMath::Abs(Bp_M02-1864.84) > 20) && (TMath::Abs(Bp_M04-1864.84) > 20) && (TMath::Abs(Bp_M06-1864.84) > 20)"; // 2 particles: D0
