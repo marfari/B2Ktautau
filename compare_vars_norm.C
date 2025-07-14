@@ -1,33 +1,30 @@
 
 using namespace std;
 
-void compare_vars()
+void compare_vars_norm()
 {
       /////////////////////////////////////////////////////////////////////////////// Input files /////////////////////////////////////////////////////////////////////////////////////////////////////
-      TString FILES_MC = "/panfs/felician/B2Ktautau/workflow/PIDCalib/2016/Species_1/pid_corr.txt"; 
-      TString FILES_data = "Files_on_grid/data_2016_noSel_DTF.txt"; 
+      TString FILES_MC = "/panfs/felician/B2Ktautau/workflow/PIDCalib/2016/Species_7/pid_corr.txt"; 
+      TString FILES_data = "Files_on_grid/data_D0Dps_2016.txt"; 
 
-      TFileCollection *fc = new TFileCollection("fc", "fc", FILES_MC);
+      TFileCollection *fc = new TFileCollection("fc", "fc", FILES_MC, 10);
       TChain *t = new TChain("DecayTree");
       t->AddFileInfoList((TCollection*)fc->GetList());
 
-      TFileCollection *fc2 = new TFileCollection("fc2", "fc2", FILES_data);
-      TChain *t2 = new TChain("ntuple/DecayTree");
-      TChain *t3 = new TChain("ntuple_SS/DecayTree");
-      t2->AddFileInfoList((TCollection*)fc2->GetList());
-      t3->AddFileInfoList((TCollection*)fc2->GetList());
+      TFileCollection *fc1 = new TFileCollection("fc1", "fc1", FILES_data, 100);
+      TChain *t1 = new TChain("ntuple/DecayTree");
+      t1->AddFileInfoList((TCollection*)fc1->GetList());
       ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-      TCut truthMatch = "(abs(Kp_TRUEID) == 321) && (abs(taup_pi1_TRUEID) == 211) && (abs(taup_pi2_TRUEID) == 211) && (abs(taup_pi3_TRUEID) == 211) && (abs(taum_pi1_TRUEID) == 211) && (abs(taum_pi2_TRUEID) == 211) && (abs(taum_pi3_TRUEID) == 211) && (abs(taup_TRUEID) == 15) && (abs(taum_TRUEID) == 15) && (abs(Bp_TRUEID) == 521)";
+      cout << t->GetEntries() << endl;
+      cout << t1->GetEntries() << endl;
+
+      TCut truthMatch = "(abs(D0bar_K_TRUEID) == 321) && (abs(Dsp_K1_TRUEID) == 321) && (abs(Dsp_K2_TRUEID) == 321) && (abs(D0bar_pi_TRUEID) == 211) && (abs(Dsp_pi_TRUEID) == 211) && (abs(D0bar_TRUEID) == 421) && (abs(Dsp_TRUEID) == 431) && (abs(Bp_TRUEID) == 521)";
 
       TCut L0_trigger = "(Bp_L0HadronDecision_TOS==1) || ((Bp_L0HadronDecision_TIS==1) || (Bp_L0MuonDecision_TIS==1) || (Bp_L0ElectronDecision_TIS==1) || (Bp_L0PhotonDecision_TIS==1))";
       TCut HLT1_trigger = "(Bp_Hlt1TrackMVADecision_TOS==1) || (Bp_Hlt1TwoTrackMVADecision_TOS==1)";
       TCut HLT2_trigger = "(Bp_Hlt2Topo2BodyDecision_TOS==1) || (Bp_Hlt2Topo3BodyDecision_TOS==1) || (Bp_Hlt2Topo4BodyDecision_TOS==1)";
       TCut trigger = L0_trigger+HLT1_trigger+HLT2_trigger;
-
-      // cout << t->GetEntries(truthMatch+trigger) << endl;
-      // cout << t2->GetEntries(trigger) << endl;
-      // cout << t3->GetEntries(trigger) << endl;
 
       // Some fancy variables
       // IP of tau DV to K+ trajectory
@@ -61,7 +58,7 @@ void compare_vars()
       TString DV1_DV2_distance = "TMath::Sqrt( pow(df_DV1x - df_DV2x,2) + pow(df_DV1y - df_DV2y,2) + pow(df_DV1z - df_DV2z,2) )";
 
       // For Ktautau:
-      TString variables[] = {"taup_M", "taum_M", "Bp_VTXISODCHI2MASSONETRACK_B", "Bp_VTXISOBDTHARDFIRSTVALUE_B", "Bp_BPVVD", "TMath::Max(Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup,Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum)", "TMath::Min(TMath::Log10(1 - TMath::Abs(taup_DIRA_ORIVX)) * TMath::Sign(1.0, taup_DIRA_ORIVX), TMath::Log10(1 - TMath::Abs(taum_DIRA_ORIVX)) * TMath::Sign(1.0, taum_DIRA_ORIVX))"
+      TString variables[] = {"Bp_BPVVD", "D0bar_M", "Dsp_M", "D0bar_K_ProbNNk", "Dsp_K1_ProbNNk", "Dsp_K2_ProbNNk"
 
                         // "TMath::Max(Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taup,Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taum)", "TMath::Max(Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup,Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum)", "TMath::Max(Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup,Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum)",
                         // "TMath::Max( TMath::Log10(1-TMath::Abs(taup_DIRA_ORIVX))*TMath::Sign(1,taup_DIRA_ORIVX), TMath::Log10(1-TMath::Abs(taum_DIRA_ORIVX))*TMath::Sign(1,taum_DIRA_ORIVX)  )",
@@ -182,19 +179,17 @@ void compare_vars()
 
       std::vector<TH1D*> h1;
       std::vector<TH1D*> h2;
-      std::vector<TH1D*> h3;
 
-      TString folder_name = "/panfs/felician/B2Ktautau/workflow/compare_vars/2016/Ktautau_sig_vs_bkg_rect_cuts";
+      TString folder_name = "/panfs/felician/B2Ktautau/workflow/compare_vars/2016/DDs_sig_vs_bkg_rect_cuts";
 
-      TString name1 = "All MC";
-      TString name2 = "RS data";
-      TString name3 = "WS data";
+      TString name1 = "MC";
+      TString name2 = "Data (right)";
 
       for(int i = 0; i < n_var; i++){
             double x1_min = t->GetMinimum(variables[i]);
             double x1_max = t->GetMaximum(variables[i]);
-            double x2_min = t2->GetMinimum(variables[i]);
-            double x2_max = t2->GetMaximum(variables[i]);
+            double x2_min = t1->GetMinimum(variables[i]);
+            double x2_max = t1->GetMaximum(variables[i]);
 
             double X_min, X_max;
             if(x1_min < x2_min){X_min = x1_min;}
@@ -323,11 +318,16 @@ void compare_vars()
             
             h1.push_back(new TH1D(Form("h1_%.i",i), Form("h1_%.i",i), 100, X_min, X_max));
             h2.push_back(new TH1D(Form("h2_%.i",i), Form("h2_%.i",i), 100, X_min, X_max));
-            h3.push_back(new TH1D(Form("h3_%.i",i), Form("h3_%.i",i), 100, X_min, X_max));
 
-            t->Draw(variables[i]+Form(" >> h1_%.i",i), truthMatch+trigger);
-            t2->Draw(variables[i]+Form(" >> h2_%.i",i), trigger);
-            t3->Draw(variables[i]+Form(" >> h3_%.i",i), trigger);
+            if((variables[i] == "D0bar_K_ProbNNk") || (variables[i] == "Dsp_K1_ProbNNk") || (variables[i] == "Dsp_K2_ProbNNk"))
+            {
+                  t->Draw(variables[i]+"_pidgen_default"+Form(" >> h1_%.i",i), truthMatch+trigger);
+            }
+            else
+            {
+                  t->Draw(variables[i]+Form(" >> h1_%.i",i), truthMatch+trigger);
+            }
+            t1->Draw(variables[i]+Form(" >> h2_%.i",i), trigger+"Bp_dtf_M[0] > 5350");
 
             C.push_back(new TCanvas());
             C[i]->cd();
@@ -338,67 +338,47 @@ void compare_vars()
             h1[i]->SetMarkerStyle(2);
 
             // RS data
-            h2[i]->SetMarkerColor(kBlack);
-            h2[i]->SetLineColor(kBlack);
+            h2[i]->SetMarkerColor(kRed);
+            h2[i]->SetLineColor(kRed);
             h2[i]->SetMarkerStyle(2);
 
-            // WS data
-            h3[i]->SetMarkerColor(kRed);
-            h3[i]->SetLineColor(kRed);
-            h3[i]->SetMarkerStyle(2);
-
-            TString names[] = {"m_{#tau^{+}} (MeV)", "m_{#tau^{-}} (MeV)", "B^{+} VTXISODCHI2MASSONETRACK (MeV)" ,"B^{+} VTXISOBDTHARDFIRSTVALUE", "B^{+} FD from PV (mm)", "Max btw #tau leptons of tau_iso_bdt_3rd_value", "Min btw #tau leptons of log10(1-|tau_DIRA_to_BV|)*sign(tau_DIRA_to_BV)"};
+            TString names[] = {"B^{+} FD from PV (mm)", "m_{#bar{D}^{0}} (MeV)", "m_{D^{+}_{s}} (MeV)", "D0bar_K_ProbNNk", "Dsp_K1_ProbNNk", "Dsp_K2_ProbNNk"};
 
             h1[i]->SetTitle("");
             h2[i]->SetTitle("");
-            h3[i]->SetTitle("");
             h1[i]->GetXaxis()->SetTitle(names[i]);
             h1[i]->GetYaxis()->SetTitle( TString::Format("Normalised entries /(%g)",(h1[i]->GetXaxis()->GetXmax() - h1[i]->GetXaxis()->GetXmin())/100) );
             h2[i]->GetXaxis()->SetTitle(names[i]);
             h2[i]->GetYaxis()->SetTitle( TString::Format("Normalised entries /(%g)",(h2[i]->GetXaxis()->GetXmax() - h2[i]->GetXaxis()->GetXmin())/100) );
-            h3[i]->GetXaxis()->SetTitle(names[i]);
-            h3[i]->GetYaxis()->SetTitle( TString::Format("Normalised entries /(%g)",(h3[i]->GetXaxis()->GetXmax() - h3[i]->GetXaxis()->GetXmin())/100) );
 
             h1[i]->Scale(1/h1[i]->Integral());
             h2[i]->Scale(1/h2[i]->Integral());
-            h3[i]->Scale(1/h3[i]->Integral());
-      
+
             double ymax = TMath::Max(1.3*h1[i]->GetMaximum(), 1.3*h2[i]->GetMaximum());
             h1[i]->GetYaxis()->SetRangeUser(0, ymax);
 
             h1[i]->Draw();
             h2[i]->Draw("same");
-            h3[i]->Draw("same");
 
             double x_cut1, x_cut2;
-            if((variables[i] == "taup_M") || (variables[i] == "taum_M"))
-            {
-                  x_cut1 = 750;
-                  x_cut2 = 1650;
-            }
-            if(variables[i] == "Bp_VTXISODCHI2MASSONETRACK_B")
-            {
-                  x_cut1 = 3600;
-                  x_cut2 = x_cut1;
-            }
-            if(variables[i] == "Bp_VTXISOBDTHARDFIRSTVALUE_B")
-            {
-                  x_cut1 = 0;
-                  x_cut2 = x_cut1;
-            }
             if(variables[i] == "Bp_BPVVD")
             {
                   x_cut1 = 4;
-                  x_cut2 = x_cut1;
+                  x_cut2 = 80;
             }
-            if(variables[i] == "TMath::Max(Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup,Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum)")
+            if(variables[i] == "D0bar_M")
             {
-                  x_cut1 = -0.1;
-                  x_cut2 = x_cut1;
+                  x_cut1 = 1820;
+                  x_cut2 = 1910;
             }
-            if(variables[i] == "TMath::Min(TMath::Log10(1 - TMath::Abs(taup_DIRA_ORIVX)) * TMath::Sign(1.0, taup_DIRA_ORIVX), TMath::Log10(1 - TMath::Abs(taum_DIRA_ORIVX)) * TMath::Sign(1.0, taum_DIRA_ORIVX))")
+            if(variables[i] == "Dsp_M")
             {
-                  x_cut1 = -1;
+                  x_cut1 = 1930;
+                  x_cut2 = 2000;
+            }
+            if((variables[i] == "D0bar_K_ProbNNk") || (variables[i] == "Dsp_K1_ProbNNk") || (variables[i] == "Dsp_K2_ProbNNk"))
+            {
+                  x_cut1 = 0.55;
                   x_cut2 = x_cut1;
             }
 
@@ -416,20 +396,11 @@ void compare_vars()
             line1->Draw("same");
             line2->Draw("same");
 
-            // auto rp = new TRatioPlot(h1[i], h3[i], "diffsig");
-            // C[i]->SetTicks(0, 1);
-            // rp->SetH1DrawOpt("E");
-            // rp->Draw();
-            // rp->GetLowerRefYaxis()->SetTitle("mc - ws data / #sigma");
-            // rp->GetUpperRefYaxis()->SetTitle( TString::Format("Normalised entries / (%g)", (h1[i]->GetXaxis()->GetXmax() - h1[i]->GetXaxis()->GetXmin())/100) );
-            // C[i]->Update();
-
             TLegend* leg = new TLegend(0.7, 0.7, 0.9, 0.9);
             leg->SetBorderSize(0);
             leg->SetTextSize(0.05);
             leg->AddEntry(h1[i],name1,"p");
             leg->AddEntry(h2[i],name2,"p");
-            leg->AddEntry(h3[i],name3,"p");
             leg->Draw("same");
 
             C[i]->SaveAs(folder_name+"/"+Form("var_%i",i)+".pdf");
