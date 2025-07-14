@@ -5,21 +5,21 @@ void mass_vetoes_plots()
 {
     // Input files
     // 3pi3pi MC
-    TFile* f1 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_1/post_sel_tree_bdt1_0.8_bdt2_0.8.root");
+    TFile* f1 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_1/post_sel_tree_bdt1_0.6_bdt2_0.8.root");
     TTree* t1 = (TTree*)f1->Get("DecayTree");  
 
     cout << "3pi3pi MC" << endl;
     cout << t1->GetEntries() << endl;
 
     // RS data
-    TFile* f2 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_2/post_sel_tree_bdt1_0.8_bdt2_0.8.root");
+    TFile* f2 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_2/post_sel_tree_bdt1_0.6_bdt2_0.8.root");
     TTree* t2 = (TTree*)f2->Get("DecayTree");  
 
     cout << "RS data" << endl;
     cout << t2->GetEntries() << endl;
 
     // WS data
-    TFile* f3 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_3/post_sel_tree_bdt1_0.8_bdt2_0.8.root");
+    TFile* f3 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_3/post_sel_tree_bdt1_0.6_bdt2_0.8.root");
     TTree* t3 = (TTree*)f3->Get("DecayTree");      
 
     cout << "WS data" << endl;
@@ -49,9 +49,9 @@ void mass_vetoes_plots()
     Int_t b5 = 0;
     Int_t b6 = 0;
 
-    TString costheta_pi2 = "(Kp_PX*taup_pi2_PX + Kp_PY*taup_pi2_PY + Kp_PZ*taup_pi2_PZ)/(TMath::Sqrt(pow(Kp_PX,2) + pow(Kp_PY,2) + pow(Kp_PZ,2))*TMath::Sqrt(pow(taup_pi2_PX,2) + pow(taup_pi2_PY,2) + pow(taup_pi2_PZ,2)))";
-    TString costheta_pi4 = "TMath::Acos(  (Kp_PX*taum_pi1_PX + Kp_PY*taum_pi1_PY + Kp_PZ*taum_pi1_PZ)/(TMath::Sqrt(pow(Kp_PX,2) + pow(Kp_PY,2) + pow(Kp_PZ,2))*TMath::Sqrt(pow(taum_pi1_PX,2) + pow(taum_pi1_PY,2) + pow(taum_pi1_PZ,2)))  )";
-    TString costheta_pi6 = "TMath::Acos(  (Kp_PX*taum_pi3_PX + Kp_PY*taum_pi3_PY + Kp_PZ*taum_pi3_PZ)/(TMath::Sqrt(pow(Kp_PX,2) + pow(Kp_PY,2) + pow(Kp_PZ,2))*TMath::Sqrt(pow(taum_pi3_PX,2) + pow(taum_pi3_PY,2) + pow(taum_pi3_PZ,2)))  )";
+    // TString costheta_pi2 = "(Kp_PX*taup_pi2_PX + Kp_PY*taup_pi2_PY + Kp_PZ*taup_pi2_PZ)/(TMath::Sqrt(pow(Kp_PX,2) + pow(Kp_PY,2) + pow(Kp_PZ,2))*TMath::Sqrt(pow(taup_pi2_PX,2) + pow(taup_pi2_PY,2) + pow(taup_pi2_PZ,2)))";
+    // TString costheta_pi4 = "TMath::Acos(  (Kp_PX*taum_pi1_PX + Kp_PY*taum_pi1_PY + Kp_PZ*taum_pi1_PZ)/(TMath::Sqrt(pow(Kp_PX,2) + pow(Kp_PY,2) + pow(Kp_PZ,2))*TMath::Sqrt(pow(taum_pi1_PX,2) + pow(taum_pi1_PY,2) + pow(taum_pi1_PZ,2)))  )";
+    // TString costheta_pi6 = "TMath::Acos(  (Kp_PX*taum_pi3_PX + Kp_PY*taum_pi3_PY + Kp_PZ*taum_pi3_PZ)/(TMath::Sqrt(pow(Kp_PX,2) + pow(Kp_PY,2) + pow(Kp_PZ,2))*TMath::Sqrt(pow(taum_pi3_PX,2) + pow(taum_pi3_PY,2) + pow(taum_pi3_PZ,2)))  )";
 
     gStyle->SetOptStat(0);
 
@@ -72,105 +72,109 @@ void mass_vetoes_plots()
 
     TCut mass_vetoe_cuts = "";
     mass_vetoe_cuts += "(TMath::Abs(Bp_M02-1864.84) > 20) && (TMath::Abs(Bp_M04-1864.84) > 20) && (TMath::Abs(Bp_M06-1864.84) > 20)"; // 2 particles: D0
-    mass_vetoe_cuts += "(TMath::Abs(Bp_M046-1869.66) > 20)"; // 3 particles: D+
-    mass_vetoe_cuts += "(TMath::Abs(Bp_M0456-1864.84) > 30)"; // 4 particles: D0
+    mass_vetoe_cuts += "(TMath::Abs(Bp_M046-1869.66) > 15)"; // 3 particles: D+
+    mass_vetoe_cuts += "(TMath::Abs(Bp_M0456-1864.84) > 20)"; // 4 particles: D0
     // mass_vetoe_cuts += "(TMath::Abs(Bp_M02456-2010.26) > 30)"; // 5 particle: D*-
     // mass_vetoe_cuts += "(TMath::Abs(Bp_M0126-1864.84) > 20) && (TMath::Abs(Bp_M0234-1864.84) > 20) && (TMath::Abs(Bp_M0236-1864.84) > 20) && (TMath::Abs(Bp_M0245-1864.84) > 20) && (TMath::Abs(Bp_M0256-1864.84) > 20) && (TMath::Abs(Bp_M0346-1864.84) > 20) && (TMath::Abs(Bp_M0456-1864.84) > 25)"; // 4 particles: D0
 
+    Double_t xmin = 800;
+    Double_t xmax = 1100;
+    Double_t nbins = 60;
+
     TCanvas c_phys;
     c_phys.cd();
-    TH1D* h_phys_1 = new TH1D("h_phys_1", "h_phys_1", 100, 0, 3500);
-    TH1D* h_phys_2 = new TH1D("h_phys_2", "h_phys_2", 100, 0, 3500);
-    TH1D* h_phys_3 = new TH1D("h_phys_3", "h_phys_3", 100, 0, 3500);
-    TH1D* h_phys_4 = new TH1D("h_phys_4", "h_phys_4", 100, 0, 3500);
-    t2->Draw("Bp_M02 >> h_phys_1");
-    t2->Draw("Bp_M02 >> h_phys_2", "BDT1 > 0.9"+mass_vetoe_cuts);
-    t2->Draw("Bp_M02 >> h_phys_3", "BDT1 > 0.95"+mass_vetoe_cuts);
-    t2->Draw("Bp_M02 >> h_phys_4", "BDT1 > 0.97"+mass_vetoe_cuts);
+    TH1D* h_phys_1 = new TH1D("h_phys_1", "h_phys_1", nbins, xmin, xmax);
+    TH1D* h_phys_2 = new TH1D("h_phys_2", "h_phys_2", nbins, xmin, xmax);
+    TH1D* h_phys_3 = new TH1D("h_phys_3", "h_phys_3", nbins, xmin, xmax);
+    TH1D* h_phys_4 = new TH1D("h_phys_4", "h_phys_4", nbins, xmin, xmax);
+    t2->Draw("Bp_M02 >> h_phys_1", mass_vetoe_cuts);
+    t2->Draw("Bp_M02 >> h_phys_2", "BDT1 > 0.8"+mass_vetoe_cuts);
+    t2->Draw("Bp_M02 >> h_phys_3", "BDT1 > 0.9"+mass_vetoe_cuts);
+    t2->Draw("Bp_M02 >> h_phys_4", "BDT1 > 0.95"+mass_vetoe_cuts);
     h_phys_1->SetLineColor(kBlack);
     h_phys_2->SetLineColor(kBlue);
     h_phys_3->SetLineColor(kGreen+1);
     h_phys_4->SetLineColor(kRed);
     h_phys_4->GetXaxis()->SetTitle("Bp_M02");
-    h_phys_4->GetYaxis()->SetTitle("Normalized entries / (35 MeV)");
+    h_phys_4->GetYaxis()->SetTitle(Form("Normalized entries / (%.2f MeV)", (xmax-xmin)/nbins));
     h_phys_4->SetTitle("Effect of physics BDT");
     h_phys_4->DrawNormalized();
     h_phys_3->DrawNormalized("same");
     h_phys_2->DrawNormalized("same");
     h_phys_1->DrawNormalized("same");
     TLegend* leg_phys = new TLegend(0.7, 0.7, 0.9, 0.9);
-    leg_phys->AddEntry(h_phys_1, "BDT1 > 0.8", "lp");
-    leg_phys->AddEntry(h_phys_2, "BDT1 > 0.9", "lp");
-    leg_phys->AddEntry(h_phys_3, "BDT1 > 0.95", "lp");
-    leg_phys->AddEntry(h_phys_4, "BDT1 > 0.97", "lp");
+    leg_phys->AddEntry(h_phys_1, "BDT1 > 0.6", "lp");
+    leg_phys->AddEntry(h_phys_2, "BDT1 > 0.8", "lp");
+    leg_phys->AddEntry(h_phys_3, "BDT1 > 0.9", "lp");
+    leg_phys->AddEntry(h_phys_4, "BDT1 > 0.95", "lp");
     leg_phys->Draw("same");
     c_phys.SaveAs("/panfs/felician/B2Ktautau/workflow/mass_vetoes_plots/Bp_M02_phys_BDT.pdf");
 
     TCanvas c1_phys;
     c1_phys.cd();
-    TH1D* h1_phys_1 = new TH1D("h1_phys_1", "h1_phys_1", 100, 0, 3500);
-    TH1D* h1_phys_2 = new TH1D("h1_phys_2", "h1_phys_2", 100, 0, 3500);
-    TH1D* h1_phys_3 = new TH1D("h1_phys_3", "h1_phys_3", 100, 0, 3500);
-    TH1D* h1_phys_4 = new TH1D("h1_phys_4", "h1_phys_4", 100, 0, 3500);
-    t2->Draw("Bp_M04 >> h1_phys_1");
-    t2->Draw("Bp_M04 >> h1_phys_2", "BDT1 > 0.9"+mass_vetoe_cuts);
-    t2->Draw("Bp_M04 >> h1_phys_3", "BDT1 > 0.95"+mass_vetoe_cuts);
-    t2->Draw("Bp_M04 >> h1_phys_4", "BDT1 > 0.97"+mass_vetoe_cuts);
+    TH1D* h1_phys_1 = new TH1D("h1_phys_1", "h1_phys_1", nbins, xmin, xmax);
+    TH1D* h1_phys_2 = new TH1D("h1_phys_2", "h1_phys_2", nbins, xmin, xmax);
+    TH1D* h1_phys_3 = new TH1D("h1_phys_3", "h1_phys_3", nbins, xmin, xmax);
+    TH1D* h1_phys_4 = new TH1D("h1_phys_4", "h1_phys_4", nbins, xmin, xmax);
+    t2->Draw("Bp_M04 >> h1_phys_1", mass_vetoe_cuts);
+    t2->Draw("Bp_M04 >> h1_phys_2", "BDT1 > 0.8"+mass_vetoe_cuts);
+    t2->Draw("Bp_M04 >> h1_phys_3", "BDT1 > 0.9"+mass_vetoe_cuts);
+    t2->Draw("Bp_M04 >> h1_phys_4", "BDT1 > 0.95"+mass_vetoe_cuts);
     h1_phys_1->SetLineColor(kBlack);
     h1_phys_2->SetLineColor(kBlue);
     h1_phys_3->SetLineColor(kGreen+1);
     h1_phys_4->SetLineColor(kRed);
-    h1_phys_4->GetXaxis()->SetTitle("Bp_M04");
-    h1_phys_4->GetYaxis()->SetTitle("Normalized entries / (35 MeV)");
-    h1_phys_4->SetTitle("Effect of physics BDT");
-    h1_phys_4->DrawNormalized();
+    h1_phys_1->GetXaxis()->SetTitle("Bp_M04");
+    h1_phys_1->GetYaxis()->SetTitle(Form("Normalized entries / (%.2f MeV)", (xmax-xmin)/nbins));
+    h1_phys_1->SetTitle("Effect of physics BDT");
+    h1_phys_1->DrawNormalized();
     h1_phys_3->DrawNormalized("same");
     h1_phys_2->DrawNormalized("same");
-    h1_phys_1->DrawNormalized("same");
+    h1_phys_4->DrawNormalized("same");
     TLegend* leg1_phys = new TLegend(0.7, 0.7, 0.9, 0.9);
-    leg1_phys->AddEntry(h1_phys_1, "BDT1 > 0.8", "lp");
-    leg1_phys->AddEntry(h1_phys_2, "BDT1 > 0.9", "lp");
-    leg1_phys->AddEntry(h1_phys_3, "BDT1 > 0.95", "lp");
-    leg1_phys->AddEntry(h1_phys_4, "BDT1 > 0.97", "lp");
+    leg1_phys->AddEntry(h1_phys_1, "BDT1 > 0.6", "lp");
+    leg1_phys->AddEntry(h1_phys_2, "BDT1 > 0.8", "lp");
+    leg1_phys->AddEntry(h1_phys_3, "BDT1 > 0.9", "lp");
+    leg1_phys->AddEntry(h1_phys_4, "BDT1 > 0.95", "lp");
     leg1_phys->Draw("same");
     c1_phys.SaveAs("/panfs/felician/B2Ktautau/workflow/mass_vetoes_plots/Bp_M04_phys_BDT.pdf");
 
     TCanvas c2_phys;
     c2_phys.cd();
-    TH1D* h2_phys_1 = new TH1D("h2_phys_1", "h1_phys_1", 100, 0, 3500);
-    TH1D* h2_phys_2 = new TH1D("h2_phys_2", "h1_phys_2", 100, 0, 3500);
-    TH1D* h2_phys_3 = new TH1D("h2_phys_3", "h1_phys_3", 100, 0, 3500);
-    TH1D* h2_phys_4 = new TH1D("h2_phys_4", "h1_phys_4", 100, 0, 3500);
-    t2->Draw("Bp_M06 >> h2_phys_1");
-    t2->Draw("Bp_M06 >> h2_phys_2", "BDT1 > 0.9"+mass_vetoe_cuts);
-    t2->Draw("Bp_M06 >> h2_phys_3", "BDT1 > 0.95"+mass_vetoe_cuts);
-    t2->Draw("Bp_M06 >> h2_phys_4", "BDT1 > 0.97"+mass_vetoe_cuts);
+    TH1D* h2_phys_1 = new TH1D("h2_phys_1", "h1_phys_1", nbins, xmin, xmax);
+    TH1D* h2_phys_2 = new TH1D("h2_phys_2", "h1_phys_2", nbins, xmin, xmax);
+    TH1D* h2_phys_3 = new TH1D("h2_phys_3", "h1_phys_3", nbins, xmin, xmax);
+    TH1D* h2_phys_4 = new TH1D("h2_phys_4", "h1_phys_4", nbins, xmin, xmax);
+    t2->Draw("Bp_M06 >> h2_phys_1", mass_vetoe_cuts);
+    t2->Draw("Bp_M06 >> h2_phys_2", "BDT1 > 0.8"+mass_vetoe_cuts);
+    t2->Draw("Bp_M06 >> h2_phys_3", "BDT1 > 0.9"+mass_vetoe_cuts);
+    t2->Draw("Bp_M06 >> h2_phys_4", "BDT1 > 0.95"+mass_vetoe_cuts);
     h2_phys_1->SetLineColor(kBlack);
     h2_phys_2->SetLineColor(kBlue);
     h2_phys_3->SetLineColor(kGreen+1);
     h2_phys_4->SetLineColor(kRed);
     h2_phys_4->GetXaxis()->SetTitle("Bp_M06");
-    h2_phys_4->GetYaxis()->SetTitle("Normalized entries / (35 MeV)");
+    h2_phys_4->GetYaxis()->SetTitle(Form("Normalized entries / (%.2f MeV)", (xmax-xmin)/nbins));
     h2_phys_4->SetTitle("Effect of physics BDT");
     h2_phys_4->DrawNormalized();
     h2_phys_3->DrawNormalized("same");
     h2_phys_2->DrawNormalized("same");
     h2_phys_1->DrawNormalized("same");
     TLegend* leg2_phys = new TLegend(0.7, 0.7, 0.9, 0.9);
-    leg2_phys->AddEntry(h2_phys_1, "BDT1 > 0.8", "lp");
-    leg2_phys->AddEntry(h2_phys_2, "BDT1 > 0.9", "lp");
-    leg2_phys->AddEntry(h2_phys_3, "BDT1 > 0.95", "lp");
-    leg2_phys->AddEntry(h2_phys_4, "BDT1 > 0.97", "lp");
+    leg2_phys->AddEntry(h2_phys_1, "BDT1 > 0.6", "lp");
+    leg2_phys->AddEntry(h2_phys_2, "BDT1 > 0.8", "lp");
+    leg2_phys->AddEntry(h2_phys_3, "BDT1 > 0.9", "lp");
+    leg2_phys->AddEntry(h2_phys_4, "BDT1 > 0.95", "lp");
     leg2_phys->Draw("same");
     c2_phys.SaveAs("/panfs/felician/B2Ktautau/workflow/mass_vetoes_plots/Bp_M06_phys_BDT.pdf");
 
     TCanvas c_comb;
     c_comb.cd();
-    TH1D* h_comb_1 = new TH1D("h_comb_1", "h_comb_1", 100, 0, 3500);
-    TH1D* h_comb_2 = new TH1D("h_comb_2", "h_comb_2", 100, 0, 3500);
-    TH1D* h_comb_3 = new TH1D("h_comb_3", "h_comb_3", 100, 0, 3500);
-    TH1D* h_comb_4 = new TH1D("h_comb_4", "h_comb_4", 100, 0, 3500);
-    t2->Draw("Bp_M02 >> h_comb_1");
+    TH1D* h_comb_1 = new TH1D("h_comb_1", "h_comb_1", nbins, xmin, xmax);
+    TH1D* h_comb_2 = new TH1D("h_comb_2", "h_comb_2", nbins, xmin, xmax);
+    TH1D* h_comb_3 = new TH1D("h_comb_3", "h_comb_3", nbins, xmin, xmax);
+    TH1D* h_comb_4 = new TH1D("h_comb_4", "h_comb_4", nbins, xmin, xmax);
+    t2->Draw("Bp_M02 >> h_comb_1", mass_vetoe_cuts);
     t2->Draw("Bp_M02 >> h_comb_2", "BDT2 > 0.9"+mass_vetoe_cuts);
     t2->Draw("Bp_M02 >> h_comb_3", "BDT2 > 0.95"+mass_vetoe_cuts);
     t2->Draw("Bp_M02 >> h_comb_4", "BDT2 > 0.97"+mass_vetoe_cuts);
@@ -178,13 +182,13 @@ void mass_vetoes_plots()
     h_comb_2->SetLineColor(kBlue);
     h_comb_3->SetLineColor(kGreen+1);
     h_comb_4->SetLineColor(kRed);
-    h_comb_4->GetXaxis()->SetTitle("Bp_M02");
-    h_comb_4->GetYaxis()->SetTitle("Normalized entries / (35 MeV)");
-    h_comb_4->SetTitle("Effect of combinatorial BDT");
-    h_comb_4->DrawNormalized();
-    h_comb_3->DrawNormalized("same");
-    h_comb_2->DrawNormalized("same");
+    h_comb_3->GetXaxis()->SetTitle("Bp_M02");
+    h_comb_3->GetYaxis()->SetTitle(Form("Normalized entries / (%.2f MeV)", (xmax-xmin)/nbins));
+    h_comb_3->SetTitle("Effect of combinatorial BDT");
+    h_comb_3->DrawNormalized();
     h_comb_1->DrawNormalized("same");
+    h_comb_2->DrawNormalized("same");
+    h_comb_4->DrawNormalized("same");
     TLegend* leg_comb = new TLegend(0.7, 0.7, 0.9, 0.9);
     leg_comb->AddEntry(h_comb_1, "BDT2 > 0.8", "lp");
     leg_comb->AddEntry(h_comb_2, "BDT2 > 0.9", "lp");
@@ -195,11 +199,11 @@ void mass_vetoes_plots()
 
     TCanvas c1_comb;
     c1_comb.cd();
-    TH1D* h1_comb_1 = new TH1D("h1_comb_1", "h1_comb_1", 100, 0, 3500);
-    TH1D* h1_comb_2 = new TH1D("h1_comb_2", "h1_comb_2", 100, 0, 3500);
-    TH1D* h1_comb_3 = new TH1D("h1_comb_3", "h1_comb_3", 100, 0, 3500);
-    TH1D* h1_comb_4 = new TH1D("h1_comb_4", "h1_comb_4", 100, 0, 3500);
-    t2->Draw("Bp_M04 >> h1_comb_1");
+    TH1D* h1_comb_1 = new TH1D("h1_comb_1", "h1_comb_1", nbins, xmin, xmax);
+    TH1D* h1_comb_2 = new TH1D("h1_comb_2", "h1_comb_2", nbins, xmin, xmax);
+    TH1D* h1_comb_3 = new TH1D("h1_comb_3", "h1_comb_3", nbins, xmin, xmax);
+    TH1D* h1_comb_4 = new TH1D("h1_comb_4", "h1_comb_4", nbins, xmin, xmax);
+    t2->Draw("Bp_M04 >> h1_comb_1", mass_vetoe_cuts);
     t2->Draw("Bp_M04 >> h1_comb_2", "BDT2 > 0.9"+mass_vetoe_cuts);
     t2->Draw("Bp_M04 >> h1_comb_3", "BDT2 > 0.95"+mass_vetoe_cuts);
     t2->Draw("Bp_M04 >> h1_comb_4", "BDT2 > 0.97"+mass_vetoe_cuts);
@@ -207,13 +211,13 @@ void mass_vetoes_plots()
     h1_comb_2->SetLineColor(kBlue);
     h1_comb_3->SetLineColor(kGreen+1);
     h1_comb_4->SetLineColor(kRed);
-    h1_comb_4->GetXaxis()->SetTitle("Bp_M04");
-    h1_comb_4->GetYaxis()->SetTitle("Normalized entries / (35 MeV)");
-    h1_comb_4->SetTitle("Effect of combinatorial BDT");
-    h1_comb_4->DrawNormalized();
+    h1_comb_1->GetXaxis()->SetTitle("Bp_M04");
+    h1_comb_1->GetYaxis()->SetTitle(Form("Normalized entries / (%.2f MeV)", (xmax-xmin)/nbins));
+    h1_comb_1->SetTitle("Effect of combinatorial BDT");
+    h1_comb_1->DrawNormalized();
     h1_comb_3->DrawNormalized("same");
     h1_comb_2->DrawNormalized("same");
-    h1_comb_1->DrawNormalized("same");
+    h1_comb_4->DrawNormalized("same");
     TLegend* leg1_comb = new TLegend(0.7, 0.7, 0.9, 0.9);
     leg1_comb->AddEntry(h1_comb_1, "BDT2 > 0.8", "lp");
     leg1_comb->AddEntry(h1_comb_2, "BDT2 > 0.9", "lp");
@@ -224,11 +228,11 @@ void mass_vetoes_plots()
 
     TCanvas c2_comb;
     c2_comb.cd();
-    TH1D* h2_comb_1 = new TH1D("h2_comb_1", "h1_comb_1", 100, 0, 3500);
-    TH1D* h2_comb_2 = new TH1D("h2_comb_2", "h1_comb_2", 100, 0, 3500);
-    TH1D* h2_comb_3 = new TH1D("h2_comb_3", "h1_comb_3", 100, 0, 3500);
-    TH1D* h2_comb_4 = new TH1D("h2_comb_4", "h1_comb_4", 100, 0, 3500);
-    t2->Draw("Bp_M06 >> h2_comb_1");
+    TH1D* h2_comb_1 = new TH1D("h2_comb_1", "h1_comb_1", nbins, xmin, xmax);
+    TH1D* h2_comb_2 = new TH1D("h2_comb_2", "h1_comb_2", nbins, xmin, xmax);
+    TH1D* h2_comb_3 = new TH1D("h2_comb_3", "h1_comb_3", nbins, xmin, xmax);
+    TH1D* h2_comb_4 = new TH1D("h2_comb_4", "h1_comb_4", nbins, xmin, xmax);
+    t2->Draw("Bp_M06 >> h2_comb_1", mass_vetoe_cuts);
     t2->Draw("Bp_M06 >> h2_comb_2", "BDT2 > 0.9"+mass_vetoe_cuts);
     t2->Draw("Bp_M06 >> h2_comb_3", "BDT2 > 0.95"+mass_vetoe_cuts);
     t2->Draw("Bp_M06 >> h2_comb_4", "BDT2 > 0.97"+mass_vetoe_cuts);
@@ -237,7 +241,7 @@ void mass_vetoes_plots()
     h2_comb_3->SetLineColor(kGreen+1);
     h2_comb_4->SetLineColor(kRed);
     h2_comb_4->GetXaxis()->SetTitle("Bp_M06");
-    h2_comb_4->GetYaxis()->SetTitle("Normalized entries / (35 MeV)");
+    h2_comb_4->GetYaxis()->SetTitle(Form("Normalized entries / (%.2f MeV)", (xmax-xmin)/nbins));
     h2_comb_4->SetTitle("Effect of combinatorial BDT");
     h2_comb_4->DrawNormalized();
     h2_comb_3->DrawNormalized("same");
@@ -373,6 +377,34 @@ void draw_mass_plot(Int_t entry, TTree* t1, TTree* t2, TTree* t3, TString name, 
     Double_t x_min = x_min_vec[ std::distance( x_min_vec.begin(), std::min_element(x_min_vec.begin(), x_min_vec.end()) ) ];
     Double_t x_max = x_max_vec[ std::distance( x_max_vec.begin(), std::max_element(x_max_vec.begin(), x_max_vec.end()) ) ];
 
+    if(Npar == 2)
+    {
+        if((name == "Bp_M02") || (name == "Bp_M04") || (name == "Bp_M06"))
+        {
+            x_min = 500;
+            x_max = 3500;
+            nbins = 80;
+        }
+    }
+    else if(Npar == 3)
+    {
+        if(name == "Bp_M046")
+        {
+            x_min = 500;
+            x_max = 3500;
+            nbins = 100;
+        }
+    }
+    else if(Npar == 4)
+    {
+        if(name == "Bp_M0456")
+        {
+            x_min = 1000;
+            x_max = 4000;
+            nbins = 50;
+        }
+    }
+
     TH1D* h_mc = new TH1D(Form("h_%i_mc_%i_%i",Npar,entry,isWrong), Form("h_%i_mc_%i_%i",Npar,entry,isWrong), nbins, x_min, x_max);
     TH1D* h_rs_data = new TH1D(Form("h_%i_rs_data_%i_%i",Npar,entry,isWrong), Form("h_%i_rs_data_%i_%i",Npar,entry,isWrong), nbins, x_min, x_max);
     TH1D* h_ws_data = new TH1D(Form("h_%i_ws_data_%i_%i",Npar,entry,isWrong), Form("h_%i_ws_data_%i_%i",Npar,entry,isWrong), nbins, x_min, x_max);
@@ -427,15 +459,15 @@ void draw_mass_plot(Int_t entry, TTree* t1, TTree* t2, TTree* t3, TString name, 
     h1_rs_data->Scale(1./h1_rs_data->Integral());
     // h_ws_data->Scale(1./h_ws_data->Integral());
 
-    if( (h_rs_data->GetMaximum() > h_mc->GetMaximum()) && (h_rs_data->GetMaximum() > h1_mc->GetMaximum()) &&  (h_rs_data->GetMaximum() > h1_rs_data->GetMaximum()) )
+    if( (h_rs_data->GetMaximum() >= h_mc->GetMaximum()) && (h_rs_data->GetMaximum() >= h1_mc->GetMaximum()) &&  (h_rs_data->GetMaximum() >= h1_rs_data->GetMaximum()) )
     {
         h_mc->GetYaxis()->SetRangeUser(0, 1.1*(h_rs_data->GetMaximum()));
     }
-    else if( (h1_rs_data->GetMaximum() > h_mc->GetMaximum()) && (h1_rs_data->GetMaximum() > h1_mc->GetMaximum()) &&  (h1_rs_data->GetMaximum() > h_rs_data->GetMaximum()) )
+    else if( (h1_rs_data->GetMaximum() >= h_mc->GetMaximum()) && (h1_rs_data->GetMaximum() >= h1_mc->GetMaximum()) &&  (h1_rs_data->GetMaximum() >= h_rs_data->GetMaximum()) )
     {
         h_mc->GetYaxis()->SetRangeUser(0, 1.1*(h1_rs_data->GetMaximum()));
     }
-    else if( (h1_mc->GetMaximum() > h_mc->GetMaximum()) && (h1_mc->GetMaximum() > h_rs_data->GetMaximum()) &&  (h1_mc->GetMaximum() > h1_rs_data->GetMaximum()) )
+    else if( (h1_mc->GetMaximum() >= h_mc->GetMaximum()) && (h1_mc->GetMaximum() >= h_rs_data->GetMaximum()) &&  (h1_mc->GetMaximum() >= h1_rs_data->GetMaximum()) )
     {
         h_mc->GetYaxis()->SetRangeUser(0, 1.1*(h1_mc->GetMaximum()));
     }
@@ -445,8 +477,8 @@ void draw_mass_plot(Int_t entry, TTree* t1, TTree* t2, TTree* t3, TString name, 
     }
 
     h_mc->Draw("HIST");
-    h_rs_data->Draw("HIST same");
     h1_mc->Draw("HIST same");
+    h_rs_data->Draw("HIST same");
     h1_rs_data->Draw("HIST same");
     // h_ws_data->Draw("HIST same");
 
