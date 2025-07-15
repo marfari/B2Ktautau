@@ -228,10 +228,9 @@ def main(argv):
             elif((species == 72) or (species == 8)):
                 chi2 = getattr(t, "Bp_dtf_chi2")
                 dtf_chi2[i] = chi2[0]
-
+                
         if(isKtautau or is_cokctailMC):
             # best_candidates_index[evt] = indices[np.argmax( bdt_sum )]
-
             bdt_sum_sorted_indices = bdt_sum.argsort()
             best_candidates_index[evt] = indices[ bdt_sum_sorted_indices[-1] ]
             if(N > 1):
@@ -247,14 +246,20 @@ def main(argv):
     tout = ROOT.TTree("DecayTree", "DecayTree")
     isBest = array('i', [0])
     isSecondBest = array('i', [0])
+    nCandidates = array('d', [0])
     tout.Branch("is_best_cand", isBest, "is_best_cand/O")
     tout.Branch("is_second_best_cand", isSecondBest, "is_second_best_cand/O")
+    tout.Branch("n_candidates", nCandidates, "n_candidates/D")
 
+    evt = 0
     for i in range(n_entries):
         if(i in best_candidates_index):
             isBest[0] = True
+            nCandidates[0] = nCand[evt]
+            evt += 1
         else:
             isBest[0] = False
+            nCandidates[0] = -1
 
         if(i in second_best_candidate_index):
             isSecondBest[0] = True
