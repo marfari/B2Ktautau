@@ -2149,19 +2149,19 @@ def main(argv):
     isBdDD_cocktail = False
     isBsDD_cocktail = False
 
-    if(species == 100):
+    if((species == 100) or (species == 1000)):
         isBuDDKp_cocktail = True
     else:
         isBuDDKp_cocktail = False
-    if(species == 110):
+    if((species == 110) or (species == 1100)):
         isBdDDKp_cocktail = True
     else:
         isBdDDKp_cocktail = False
-    if(species == 120):
+    if((species == 120) or (species == 1200)):
         isBsDDKp_cocktail = True
     else:
         isBsDDKp_cocktail = False
-    if(species == 130):
+    if((species == 130) or (species == 1300)):
         isBuDDK0_cocktail = True
     else:
         isBuDDK0_cocktail = False
@@ -2169,7 +2169,7 @@ def main(argv):
         isBdDDK0_cocktail = True
     else:
         isBdDDK0_cocktail = False
-    if(species == 150):
+    if((species == 150) or (species == 1500)):
         isBuDD_cocktail = True
     else: 
         isBuDD_cocktail = False
