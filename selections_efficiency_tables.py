@@ -1995,10 +1995,10 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
     eps_mass_vetoes_WS = []
 
     if(species == 100):
-        N_mass_vetoes_BuDDKp = t_reco_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_1+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_1+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_1+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_2+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_2+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_2+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_3+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_3+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_3+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes)
-        N_mass_vetoes_BdDDKp = t_reco_BdDDKp_2016.GetEntries(truthMatch_BdDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BdDDKp_2017.GetEntries(truthMatch_BdDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BdDDKp_2018.GetEntries(truthMatch_BdDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes)
-        N_mass_vetoes_BsDDKp = t_reco_BsDDKp_2016.GetEntries(truthMatch_BsDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BsDDKp_2017.GetEntries(truthMatch_BsDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BsDDKp_2018.GetEntries(truthMatch_BsDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes)
-        N_mass_vetoes_BuDDK0 = t_reco_BuDDK0_2016.GetEntries(truthMatch_BuDDK0+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BuDDK0_2017.GetEntries(truthMatch_BuDDK0+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BuDDK0_2018.GetEntries(truthMatch_BuDDK0+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes)
+        N_mass_vetoes_BuDDKp = t_reco_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_1+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_1+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_1+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_2+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_2+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_2+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_3+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_3+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_3+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes)
+        N_mass_vetoes_BdDDKp = t_reco_BdDDKp_2016.GetEntries(truthMatch_BdDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BdDDKp_2017.GetEntries(truthMatch_BdDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BdDDKp_2018.GetEntries(truthMatch_BdDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes)
+        N_mass_vetoes_BsDDKp = t_reco_BsDDKp_2016.GetEntries(truthMatch_BsDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BsDDKp_2017.GetEntries(truthMatch_BsDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BsDDKp_2018.GetEntries(truthMatch_BsDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes)
+        N_mass_vetoes_BuDDK0 = t_reco_BuDDK0_2016.GetEntries(truthMatch_BuDDK0+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDDK0_2017.GetEntries(truthMatch_BuDDK0+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDDK0_2018.GetEntries(truthMatch_BuDDK0+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes)
         N_mass_vetoes_BuDD = t_reco_BuDD_2016.GetEntries(truthMatch_BuDD+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDD_2017.GetEntries(truthMatch_BuDD+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDD_2018.GetEntries(truthMatch_BuDD+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes)
 
         up_mass_vetoes_BuDDKp = ROOT.TEfficiency.Wilson(N_fit_region_BuDDKp, N_mass_vetoes_BuDDKp, 0.68, True)
@@ -2272,6 +2272,7 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
 
 
 
+
 def main(argv):
     species = argv[1]
     create_table = argv[2]
@@ -2288,7 +2289,7 @@ def main(argv):
         is_KtautauData = True
     
     is_cocktailMC = False
-    if((species == 100) or (species == 110) or (species == 120) or (species == 130) or (species == 140) or (species == 150) or (species == 160) or (species == 170)):
+    if((species == 100) or (species == 110) or (species == 120) or (species == 130) or (species == 140) or (species == 150) or (species == 160) or (species == 170) or (species == 1000) or (species == 1100) or (species == 1200) or (species == 1300) or (species == 1500)):
         is_cocktailMC = True
 
     ########################################### Definition of analysys selections ##################################################
@@ -2302,6 +2303,16 @@ def main(argv):
         truthMatch = "(abs(D0bar_K_TRUEID) == 321) && (abs(Dsp_K1_TRUEID) == 321) && (abs(Dsp_K2_TRUEID) == 321) && (abs(D0bar_pi_TRUEID) == 211) && (abs(Dsp_pi_TRUEID) == 211) && (abs(D0bar_TRUEID) == 421) && (abs(Dsp_TRUEID) == 431) && (abs(Bp_TRUEID) == 521)"
     if(species == 9): # B+ -> D0 D0 K+ TM cuts
         truthMatch = "(abs(D0bar_K_TRUEID) == 321) && (abs(D0bar_pi1_TRUEID) == 211) && (abs(D0bar_pi2_TRUEID) == 211) && (abs(D0bar_pi3_TRUEID) == 211) && (abs(D0_K_TRUEID) == 321) && (abs(D0_pi1_TRUEID) == 211) && (abs(D0_pi2_TRUEID) == 211) && (abs(D0_pi3_TRUEID) == 211) && (abs(D0bar_TRUEID) == 421) && (abs(D0_TRUEID) == 421) && (abs(Kp_TRUEID) == 321) && (abs(Bp_TRUEID) == 521)"
+    if(species == 1000):
+        truthMatch = truthMatch_cocktailMC("BuD0D0Kp")+" || "+truthMatch_cocktailMC("BuD0starD0Kp")+" || "+truthMatch_cocktailMC("BuD0D0starKp")+" || "+truthMatch_cocktailMC("BuD0starD0starKp")+" || "+truthMatch_cocktailMC("BuDpDmKp")+" || "+truthMatch_cocktailMC("BuDpstarDmKp")+" || "+truthMatch_cocktailMC("BuDpDmstarKp")+" || "+truthMatch_cocktailMC("BuDpstarDmstarKp")+" || "+truthMatch_cocktailMC("BuDsDsKp")+" || "+truthMatch_cocktailMC("BuDsstarDsKp")+" || "+truthMatch_cocktailMC("BuDsDsstarKp")+" || "+truthMatch_cocktailMC("BuDsstarDsstarKp")
+    if(species == 1100):
+        truthMatch = truthMatch_cocktailMC("BdDmD0Kp")+" || "+truthMatch_cocktailMC("BdDmstarD0Kp")+" || "+truthMatch_cocktailMC("BdDmD0starKp")+" || "+truthMatch_cocktailMC("BdDmstarD0starKp")
+    if(species == 1200):
+        truthMatch = truthMatch_cocktailMC("BsDsD0Kp")+" || "+truthMatch_cocktailMC("BsDsstarD0Kp")+" || "+truthMatch_cocktailMC("BsDsD0starKp")+" || "+truthMatch_cocktailMC("BsDsstarD0starKp")
+    if(species == 1300):
+        truthMatch = truthMatch_cocktailMC("BuD0DpK0")+" || "+truthMatch_cocktailMC("BuD0starDpK0")+" || "+truthMatch_cocktailMC("BuD0DpstarK0")+" || "+truthMatch_cocktailMC("BuD0starDpstarK0")
+    if(species == 1500):
+        truthMatch = truthMatch_cocktailMC("BuD0Ds")+" || "+truthMatch_cocktailMC("BuD0starDs")+" || "+truthMatch_cocktailMC("BuD0Dsstar")+" || "+truthMatch_cocktailMC("BuD0starDsstar")+" || "+truthMatch_cocktailMC("BuD0Dp")+" || "+truthMatch_cocktailMC("BuD0starDp")+" || "+truthMatch_cocktailMC("BuD0Dpstar")+" || "+truthMatch_cocktailMC("BuD0starDpstar")
 
     # Trigger
     L0_trigger = "( (Bp_L0HadronDecision_TOS==1) || ((Bp_L0HadronDecision_TIS==1) || (Bp_L0MuonDecision_TIS==1) || (Bp_L0ElectronDecision_TIS==1) || (Bp_L0PhotonDecision_TIS==1)) )"
@@ -2399,7 +2410,7 @@ def main(argv):
         mass_vetoes_cuts.append("(TMath::Abs(Bp_M02-1864.84) > 30) && (TMath::Abs(Bp_M04-1864.84) > 30) && (TMath::Abs(Bp_M06-1864.84) > 30)")
         mass_vetoes_cuts.append("(TMath::Abs(Bp_M046-1869.66) > 20)")
         mass_vetoes_cuts.append("(TMath::Abs(Bp_M0456-1864.84) > 30)")
-        mass_vetoes_cuts.append("(TMath::Abs(Bp_M01246-2010.26) > 15) && (TMath::Abs(Bp_M02346-2010.26) > 15) && (TMath::Abs(Bp_M02456-2010.26) > 15)")
+        mass_vetoes_cuts.append("(TMath::Abs(Bp_M01246-2010.26) > 20) && (TMath::Abs(Bp_M02346-2010.26) > 20) && (TMath::Abs(Bp_M02456-2010.26) > 20)")
 
         Cx_taup = "(df_DV1y-df_BVy)*df_Kp_PZ - (df_DV1z-df_BVz)*df_Kp_PY"
         Cy_taup = "(df_DV1z-df_BVz)*df_Kp_PX - (df_DV1x-df_BVx)*df_Kp_PZ"

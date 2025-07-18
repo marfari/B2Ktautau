@@ -77,7 +77,7 @@ void mass_vetoes_plots()
     mass_vetoe_cuts += "(TMath::Abs(Bp_M02-1864.84) > 30) && (TMath::Abs(Bp_M04-1864.84) > 30) && (TMath::Abs(Bp_M06-1864.84) > 30)"; // 2 particles: D0
     mass_vetoe_cuts += "(TMath::Abs(Bp_M046-1869.66) > 20)"; // 3 particles: D+
     mass_vetoe_cuts += "(TMath::Abs(Bp_M0456-1864.84) > 30)"; // 4 particles D0
-    mass_vetoe_cuts += "(TMath::Abs(Bp_M01246-2010.26) > 15) && (TMath::Abs(Bp_M02346-2010.26) > 15) && (TMath::Abs(Bp_M02456-2010.26) > 15)"; // 5 particles (D*-)
+    mass_vetoe_cuts += "(TMath::Abs(Bp_M01246-2010.26) > 20) && (TMath::Abs(Bp_M02346-2010.26) > 20) && (TMath::Abs(Bp_M02456-2010.26) > 20)"; // 5 particles (D*-)
     mass_vetoe_cuts += IP_2_particles_cut;
     mass_vetoe_cuts += IP_4_particles_cut;
 
