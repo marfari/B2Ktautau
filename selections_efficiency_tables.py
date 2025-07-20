@@ -959,9 +959,9 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
             else:
                 all_rectangular_cuts += rectangular_cuts[i]+" && "
 
-        fc_reco_BuDDKp_2016 = ROOT.TFileCollection("fc_reco_BuDDKp_2016", "fc_reco_BuDDKp_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_100/pre_sel_tree.txt")
-        fc_reco_BuDDKp_2017 = ROOT.TFileCollection("fc_reco_BuDDKp_2017", "fc_reco_BuDDKp_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_100/pre_sel_tree.txt")
-        fc_reco_BuDDKp_2018 = ROOT.TFileCollection("fc_reco_BuDDKp_2018", "fc_reco_BuDDKp_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_100/pre_sel_tree.txt")
+        fc_reco_BuDDKp_2016 = ROOT.TFileCollection("fc_reco_BuDDKp_2016", "fc_reco_BuDDKp_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_1000/pre_sel_tree.txt")
+        fc_reco_BuDDKp_2017 = ROOT.TFileCollection("fc_reco_BuDDKp_2017", "fc_reco_BuDDKp_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_1000/pre_sel_tree.txt")
+        fc_reco_BuDDKp_2018 = ROOT.TFileCollection("fc_reco_BuDDKp_2018", "fc_reco_BuDDKp_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_1000/pre_sel_tree.txt")
 
         t_reco_BuDDKp_2016 = ROOT.TChain("DecayTree")
         t_reco_BuDDKp_2017 = ROOT.TChain("DecayTree")
@@ -971,9 +971,9 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         t_reco_BuDDKp_2017.AddFileInfoList(fc_reco_BuDDKp_2017.GetList())
         t_reco_BuDDKp_2018.AddFileInfoList(fc_reco_BuDDKp_2018.GetList())
 
-        fc_reco_BdDDKp_2016 = ROOT.TFileCollection("fc_reco_BdDDKp_2016", "fc_reco_BdDDKp_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_110/pre_sel_tree.txt")
-        fc_reco_BdDDKp_2017 = ROOT.TFileCollection("fc_reco_BdDDKp_2017", "fc_reco_BdDDKp_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_110/pre_sel_tree.txt")
-        fc_reco_BdDDKp_2018 = ROOT.TFileCollection("fc_reco_BdDDKp_2018", "fc_reco_BdDDKp_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_110/pre_sel_tree.txt")
+        fc_reco_BdDDKp_2016 = ROOT.TFileCollection("fc_reco_BdDDKp_2016", "fc_reco_BdDDKp_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_1100/pre_sel_tree.txt")
+        fc_reco_BdDDKp_2017 = ROOT.TFileCollection("fc_reco_BdDDKp_2017", "fc_reco_BdDDKp_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_1100/pre_sel_tree.txt")
+        fc_reco_BdDDKp_2018 = ROOT.TFileCollection("fc_reco_BdDDKp_2018", "fc_reco_BdDDKp_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_1100/pre_sel_tree.txt")
 
         t_reco_BdDDKp_2016 = ROOT.TChain("DecayTree")
         t_reco_BdDDKp_2017 = ROOT.TChain("DecayTree")
@@ -983,9 +983,9 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         t_reco_BdDDKp_2017.AddFileInfoList(fc_reco_BdDDKp_2017.GetList())
         t_reco_BdDDKp_2018.AddFileInfoList(fc_reco_BdDDKp_2018.GetList())
 
-        fc_reco_BsDDKp_2016 = ROOT.TFileCollection("fc_reco_BsDDKp_2016", "fc_reco_BsDDKp_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_120/pre_sel_tree.txt")
-        fc_reco_BsDDKp_2017 = ROOT.TFileCollection("fc_reco_BsDDKp_2017", "fc_reco_BsDDKp_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_120/pre_sel_tree.txt")
-        fc_reco_BsDDKp_2018 = ROOT.TFileCollection("fc_reco_BsDDKp_2018", "fc_reco_BsDDKp_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_120/pre_sel_tree.txt")
+        fc_reco_BsDDKp_2016 = ROOT.TFileCollection("fc_reco_BsDDKp_2016", "fc_reco_BsDDKp_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_1200/pre_sel_tree.txt")
+        fc_reco_BsDDKp_2017 = ROOT.TFileCollection("fc_reco_BsDDKp_2017", "fc_reco_BsDDKp_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_1200/pre_sel_tree.txt")
+        fc_reco_BsDDKp_2018 = ROOT.TFileCollection("fc_reco_BsDDKp_2018", "fc_reco_BsDDKp_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_1200/pre_sel_tree.txt")
 
         t_reco_BsDDKp_2016 = ROOT.TChain("DecayTree")
         t_reco_BsDDKp_2017 = ROOT.TChain("DecayTree")
@@ -995,9 +995,9 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         t_reco_BsDDKp_2017.AddFileInfoList(fc_reco_BsDDKp_2017.GetList())
         t_reco_BsDDKp_2018.AddFileInfoList(fc_reco_BsDDKp_2018.GetList())
 
-        fc_reco_BuDDK0_2016 = ROOT.TFileCollection("fc_reco_BuDDK0_2016", "fc_reco_BuDDK0_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_130/pre_sel_tree.txt")
-        fc_reco_BuDDK0_2017 = ROOT.TFileCollection("fc_reco_BuDDK0_2017", "fc_reco_BuDDK0_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_130/pre_sel_tree.txt")
-        fc_reco_BuDDK0_2018 = ROOT.TFileCollection("fc_reco_BuDDK0_2018", "fc_reco_BuDDK0_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_130/pre_sel_tree.txt")
+        fc_reco_BuDDK0_2016 = ROOT.TFileCollection("fc_reco_BuDDK0_2016", "fc_reco_BuDDK0_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_1300/pre_sel_tree.txt")
+        fc_reco_BuDDK0_2017 = ROOT.TFileCollection("fc_reco_BuDDK0_2017", "fc_reco_BuDDK0_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_1300/pre_sel_tree.txt")
+        fc_reco_BuDDK0_2018 = ROOT.TFileCollection("fc_reco_BuDDK0_2018", "fc_reco_BuDDK0_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_1300/pre_sel_tree.txt")
 
         t_reco_BuDDK0_2016 = ROOT.TChain("DecayTree")
         t_reco_BuDDK0_2017 = ROOT.TChain("DecayTree")
@@ -1007,9 +1007,9 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         t_reco_BuDDK0_2017.AddFileInfoList(fc_reco_BuDDK0_2017.GetList())
         t_reco_BuDDK0_2018.AddFileInfoList(fc_reco_BuDDK0_2018.GetList())
 
-        fc_reco_BuDD_2016 = ROOT.TFileCollection("fc_reco_BuDD_2016", "fc_reco_BuDD_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_150/pre_sel_tree.txt")
-        fc_reco_BuDD_2017 = ROOT.TFileCollection("fc_reco_BuDD_2017", "fc_reco_BuDD_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_150/pre_sel_tree.txt")
-        fc_reco_BuDD_2018 = ROOT.TFileCollection("fc_reco_BuDD_2018", "fc_reco_BuDD_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_150/pre_sel_tree.txt")
+        fc_reco_BuDD_2016 = ROOT.TFileCollection("fc_reco_BuDD_2016", "fc_reco_BuDD_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_1500/pre_sel_tree.txt")
+        fc_reco_BuDD_2017 = ROOT.TFileCollection("fc_reco_BuDD_2017", "fc_reco_BuDD_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_1500/pre_sel_tree.txt")
+        fc_reco_BuDD_2018 = ROOT.TFileCollection("fc_reco_BuDD_2018", "fc_reco_BuDD_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_1500/pre_sel_tree.txt")
 
         t_reco_BuDD_2016 = ROOT.TChain("DecayTree")
         t_reco_BuDD_2017 = ROOT.TChain("DecayTree")
@@ -1019,9 +1019,9 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         t_reco_BuDD_2017.AddFileInfoList(fc_reco_BuDD_2017.GetList())
         t_reco_BuDD_2018.AddFileInfoList(fc_reco_BuDD_2018.GetList())
 
-        fc_gsl_BuDDKp_2016 = ROOT.TFileCollection("fc_gsl_BuDDKp_2016", "fc_gsl_BuDDKp_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_100/fit_results.txt")
-        fc_gsl_BuDDKp_2017 = ROOT.TFileCollection("fc_gsl_BuDDKp_2017", "fc_gsl_BuDDKp_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_100/fit_results.txt")
-        fc_gsl_BuDDKp_2018 = ROOT.TFileCollection("fc_gsl_BuDDKp_2018", "fc_gsl_BuDDKp_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_100/fit_results.txt")
+        fc_gsl_BuDDKp_2016 = ROOT.TFileCollection("fc_gsl_BuDDKp_2016", "fc_gsl_BuDDKp_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_1000/fit_results.txt")
+        fc_gsl_BuDDKp_2017 = ROOT.TFileCollection("fc_gsl_BuDDKp_2017", "fc_gsl_BuDDKp_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_1000/fit_results.txt")
+        fc_gsl_BuDDKp_2018 = ROOT.TFileCollection("fc_gsl_BuDDKp_2018", "fc_gsl_BuDDKp_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_1000/fit_results.txt")
 
         t_gsl_BuDDKp_2016 = ROOT.TChain("DecayTree")
         t_gsl_BuDDKp_2017 = ROOT.TChain("DecayTree")
@@ -1031,9 +1031,9 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         t_gsl_BuDDKp_2017.AddFileInfoList(fc_gsl_BuDDKp_2017.GetList())
         t_gsl_BuDDKp_2018.AddFileInfoList(fc_gsl_BuDDKp_2018.GetList())
 
-        fc_gsl_BdDDKp_2016 = ROOT.TFileCollection("fc_gsl_BdDDKp_2016", "fc_gsl_BdDDKp_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_110/fit_results.txt")
-        fc_gsl_BdDDKp_2017 = ROOT.TFileCollection("fc_gsl_BdDDKp_2017", "fc_gsl_BdDDKp_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_110/fit_results.txt")
-        fc_gsl_BdDDKp_2018 = ROOT.TFileCollection("fc_gsl_BdDDKp_2018", "fc_gsl_BdDDKp_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_110/fit_results.txt")
+        fc_gsl_BdDDKp_2016 = ROOT.TFileCollection("fc_gsl_BdDDKp_2016", "fc_gsl_BdDDKp_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_1100/fit_results.txt")
+        fc_gsl_BdDDKp_2017 = ROOT.TFileCollection("fc_gsl_BdDDKp_2017", "fc_gsl_BdDDKp_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_1100/fit_results.txt")
+        fc_gsl_BdDDKp_2018 = ROOT.TFileCollection("fc_gsl_BdDDKp_2018", "fc_gsl_BdDDKp_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_1100/fit_results.txt")
 
         t_gsl_BdDDKp_2016 = ROOT.TChain("DecayTree")
         t_gsl_BdDDKp_2017 = ROOT.TChain("DecayTree")
@@ -1043,9 +1043,9 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         t_gsl_BdDDKp_2017.AddFileInfoList(fc_gsl_BdDDKp_2017.GetList())
         t_gsl_BdDDKp_2018.AddFileInfoList(fc_gsl_BdDDKp_2018.GetList())
 
-        fc_gsl_BsDDKp_2016 = ROOT.TFileCollection("fc_gsl_BsDDKp_2016", "fc_gsl_BsDDKp_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_120/fit_results.txt")
-        fc_gsl_BsDDKp_2017 = ROOT.TFileCollection("fc_gsl_BsDDKp_2017", "fc_gsl_BsDDKp_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_120/fit_results.txt")
-        fc_gsl_BsDDKp_2018 = ROOT.TFileCollection("fc_gsl_BsDDKp_2018", "fc_gsl_BsDDKp_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_120/fit_results.txt")
+        fc_gsl_BsDDKp_2016 = ROOT.TFileCollection("fc_gsl_BsDDKp_2016", "fc_gsl_BsDDKp_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_1200/fit_results.txt")
+        fc_gsl_BsDDKp_2017 = ROOT.TFileCollection("fc_gsl_BsDDKp_2017", "fc_gsl_BsDDKp_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_1200/fit_results.txt")
+        fc_gsl_BsDDKp_2018 = ROOT.TFileCollection("fc_gsl_BsDDKp_2018", "fc_gsl_BsDDKp_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_1200/fit_results.txt")
 
         t_gsl_BsDDKp_2016 = ROOT.TChain("DecayTree")
         t_gsl_BsDDKp_2017 = ROOT.TChain("DecayTree")
@@ -1055,9 +1055,9 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         t_gsl_BsDDKp_2017.AddFileInfoList(fc_gsl_BsDDKp_2017.GetList())
         t_gsl_BsDDKp_2018.AddFileInfoList(fc_gsl_BsDDKp_2018.GetList())
 
-        fc_gsl_BuDDK0_2016 = ROOT.TFileCollection("fc_gsl_BuDDK0_2016", "fc_gsl_BuDDK0_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_130/fit_results.txt")
-        fc_gsl_BuDDK0_2017 = ROOT.TFileCollection("fc_gsl_BuDDK0_2017", "fc_gsl_BuDDK0_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_130/fit_results.txt")
-        fc_gsl_BuDDK0_2018 = ROOT.TFileCollection("fc_gsl_BuDDK0_2018", "fc_gsl_BuDDK0_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_130/fit_results.txt")
+        fc_gsl_BuDDK0_2016 = ROOT.TFileCollection("fc_gsl_BuDDK0_2016", "fc_gsl_BuDDK0_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_1300/fit_results.txt")
+        fc_gsl_BuDDK0_2017 = ROOT.TFileCollection("fc_gsl_BuDDK0_2017", "fc_gsl_BuDDK0_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_1300/fit_results.txt")
+        fc_gsl_BuDDK0_2018 = ROOT.TFileCollection("fc_gsl_BuDDK0_2018", "fc_gsl_BuDDK0_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_1300/fit_results.txt")
 
         t_gsl_BuDDK0_2016 = ROOT.TChain("DecayTree")
         t_gsl_BuDDK0_2017 = ROOT.TChain("DecayTree")
@@ -1067,9 +1067,9 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         t_gsl_BuDDK0_2017.AddFileInfoList(fc_gsl_BuDDK0_2017.GetList())
         t_gsl_BuDDK0_2018.AddFileInfoList(fc_gsl_BuDDK0_2018.GetList())
 
-        fc_gsl_BuDD_2016 = ROOT.TFileCollection("fc_gsl_BuDD_2016", "fc_gsl_BuDD_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_150/fit_results.txt")
-        fc_gsl_BuDD_2017 = ROOT.TFileCollection("fc_gsl_BuDD_2017", "fc_gsl_BuDD_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_150/fit_results.txt")
-        fc_gsl_BuDD_2018 = ROOT.TFileCollection("fc_gsl_BuDD_2018", "fc_gsl_BuDD_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_150/fit_results.txt")
+        fc_gsl_BuDD_2016 = ROOT.TFileCollection("fc_gsl_BuDD_2016", "fc_gsl_BuDD_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_1500/fit_results.txt")
+        fc_gsl_BuDD_2017 = ROOT.TFileCollection("fc_gsl_BuDD_2017", "fc_gsl_BuDD_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_1500/fit_results.txt")
+        fc_gsl_BuDD_2018 = ROOT.TFileCollection("fc_gsl_BuDD_2018", "fc_gsl_BuDD_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_1500/fit_results.txt")
 
         t_gsl_BuDD_2016 = ROOT.TChain("DecayTree")
         t_gsl_BuDD_2017 = ROOT.TChain("DecayTree")
@@ -1079,9 +1079,9 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         t_gsl_BuDD_2017.AddFileInfoList(fc_gsl_BuDD_2017.GetList())
         t_gsl_BuDD_2018.AddFileInfoList(fc_gsl_BuDD_2018.GetList())
 
-        fc_mass_BuDDKp_2016 =  ROOT.TFileCollection("fc_mass_BuDDKp_2016", "fc_mass_BuDDKp_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_100/invariant_mass_tree.txt")
-        fc_mass_BuDDKp_2017 =  ROOT.TFileCollection("fc_mass_BuDDKp_2017", "fc_mass_BuDDKp_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_100/invariant_mass_tree.txt")
-        fc_mass_BuDDKp_2018 =  ROOT.TFileCollection("fc_mass_BuDDKp_2018", "fc_mass_BuDDKp_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_100/invariant_mass_tree.txt")
+        fc_mass_BuDDKp_2016 =  ROOT.TFileCollection("fc_mass_BuDDKp_2016", "fc_mass_BuDDKp_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_1000/invariant_mass_tree.txt")
+        fc_mass_BuDDKp_2017 =  ROOT.TFileCollection("fc_mass_BuDDKp_2017", "fc_mass_BuDDKp_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_1000/invariant_mass_tree.txt")
+        fc_mass_BuDDKp_2018 =  ROOT.TFileCollection("fc_mass_BuDDKp_2018", "fc_mass_BuDDKp_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_1000/invariant_mass_tree.txt")
 
         t_mass_BuDDKp_2016 = ROOT.TChain("DecayTree")
         t_mass_BuDDKp_2017 = ROOT.TChain("DecayTree")
@@ -1091,9 +1091,9 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         t_mass_BuDDKp_2017.AddFileInfoList(fc_mass_BuDDKp_2017.GetList())
         t_mass_BuDDKp_2018.AddFileInfoList(fc_mass_BuDDKp_2018.GetList())
 
-        fc_mass_BdDDKp_2016 =  ROOT.TFileCollection("fc_mass_BdDDKp_2016", "fc_mass_BdDDKp_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_110/invariant_mass_tree.txt")
-        fc_mass_BdDDKp_2017 =  ROOT.TFileCollection("fc_mass_BdDDKp_2017", "fc_mass_BdDDKp_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_110/invariant_mass_tree.txt")
-        fc_mass_BdDDKp_2018 =  ROOT.TFileCollection("fc_mass_BdDDKp_2018", "fc_mass_BdDDKp_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_110/invariant_mass_tree.txt")
+        fc_mass_BdDDKp_2016 =  ROOT.TFileCollection("fc_mass_BdDDKp_2016", "fc_mass_BdDDKp_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_1100/invariant_mass_tree.txt")
+        fc_mass_BdDDKp_2017 =  ROOT.TFileCollection("fc_mass_BdDDKp_2017", "fc_mass_BdDDKp_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_1100/invariant_mass_tree.txt")
+        fc_mass_BdDDKp_2018 =  ROOT.TFileCollection("fc_mass_BdDDKp_2018", "fc_mass_BdDDKp_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_1100/invariant_mass_tree.txt")
 
         t_mass_BdDDKp_2016 = ROOT.TChain("DecayTree")
         t_mass_BdDDKp_2017 = ROOT.TChain("DecayTree")
@@ -1103,9 +1103,9 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         t_mass_BdDDKp_2017.AddFileInfoList(fc_mass_BdDDKp_2017.GetList())
         t_mass_BdDDKp_2018.AddFileInfoList(fc_mass_BdDDKp_2018.GetList())
 
-        fc_mass_BsDDKp_2016 =  ROOT.TFileCollection("fc_mass_BsDDKp_2016", "fc_mass_BsDDKp_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_120/invariant_mass_tree.txt")
-        fc_mass_BsDDKp_2017 =  ROOT.TFileCollection("fc_mass_BsDDKp_2017", "fc_mass_BsDDKp_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_120/invariant_mass_tree.txt")
-        fc_mass_BsDDKp_2018 =  ROOT.TFileCollection("fc_mass_BsDDKp_2018", "fc_mass_BsDDKp_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_120/invariant_mass_tree.txt")
+        fc_mass_BsDDKp_2016 =  ROOT.TFileCollection("fc_mass_BsDDKp_2016", "fc_mass_BsDDKp_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_1200/invariant_mass_tree.txt")
+        fc_mass_BsDDKp_2017 =  ROOT.TFileCollection("fc_mass_BsDDKp_2017", "fc_mass_BsDDKp_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_1200/invariant_mass_tree.txt")
+        fc_mass_BsDDKp_2018 =  ROOT.TFileCollection("fc_mass_BsDDKp_2018", "fc_mass_BsDDKp_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_1200/invariant_mass_tree.txt")
 
         t_mass_BsDDKp_2016 = ROOT.TChain("DecayTree")
         t_mass_BsDDKp_2017 = ROOT.TChain("DecayTree")
@@ -1115,9 +1115,9 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         t_mass_BsDDKp_2017.AddFileInfoList(fc_mass_BsDDKp_2017.GetList())
         t_mass_BsDDKp_2018.AddFileInfoList(fc_mass_BsDDKp_2018.GetList())
 
-        fc_mass_BuDDK0_2016 =  ROOT.TFileCollection("fc_mass_BuDDK0_2016", "fc_mass_BuDDK0_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_130/invariant_mass_tree.txt")
-        fc_mass_BuDDK0_2017 =  ROOT.TFileCollection("fc_mass_BuDDK0_2017", "fc_mass_BuDDK0_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_130/invariant_mass_tree.txt")
-        fc_mass_BuDDK0_2018 =  ROOT.TFileCollection("fc_mass_BuDDK0_2018", "fc_mass_BuDDK0_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_130/invariant_mass_tree.txt")
+        fc_mass_BuDDK0_2016 =  ROOT.TFileCollection("fc_mass_BuDDK0_2016", "fc_mass_BuDDK0_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_1300/invariant_mass_tree.txt")
+        fc_mass_BuDDK0_2017 =  ROOT.TFileCollection("fc_mass_BuDDK0_2017", "fc_mass_BuDDK0_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_1300/invariant_mass_tree.txt")
+        fc_mass_BuDDK0_2018 =  ROOT.TFileCollection("fc_mass_BuDDK0_2018", "fc_mass_BuDDK0_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_1300/invariant_mass_tree.txt")
 
         t_mass_BuDDK0_2016 = ROOT.TChain("DecayTree")
         t_mass_BuDDK0_2017 = ROOT.TChain("DecayTree")
@@ -1127,9 +1127,9 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         t_mass_BuDDK0_2017.AddFileInfoList(fc_mass_BuDDK0_2017.GetList())
         t_mass_BuDDK0_2018.AddFileInfoList(fc_mass_BuDDK0_2018.GetList())
 
-        fc_mass_BuDD_2016 =  ROOT.TFileCollection("fc_mass_BuDD_2016", "fc_mass_BuDD_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_150/invariant_mass_tree.txt")
-        fc_mass_BuDD_2017 =  ROOT.TFileCollection("fc_mass_BuDD_2017", "fc_mass_BuDD_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_150/invariant_mass_tree.txt")
-        fc_mass_BuDD_2018 =  ROOT.TFileCollection("fc_mass_BuDD_2018", "fc_mass_BuDD_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_150/invariant_mass_tree.txt")
+        fc_mass_BuDD_2016 =  ROOT.TFileCollection("fc_mass_BuDD_2016", "fc_mass_BuDD_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_1500/invariant_mass_tree.txt")
+        fc_mass_BuDD_2017 =  ROOT.TFileCollection("fc_mass_BuDD_2017", "fc_mass_BuDD_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_1500/invariant_mass_tree.txt")
+        fc_mass_BuDD_2018 =  ROOT.TFileCollection("fc_mass_BuDD_2018", "fc_mass_BuDD_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_1500/invariant_mass_tree.txt")
 
         t_mass_BuDD_2016 = ROOT.TChain("DecayTree")
         t_mass_BuDD_2017 = ROOT.TChain("DecayTree")
@@ -1139,131 +1139,56 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         t_mass_BuDD_2017.AddFileInfoList(fc_mass_BuDD_2017.GetList())
         t_mass_BuDD_2018.AddFileInfoList(fc_mass_BuDD_2018.GetList())
 
-        fc_best_cand_BuDDKp_2016 =  ROOT.TFileCollection("fc_best_cand_BuDDKp_2016", "fc_best_cand_BuDDKp_2016", "/panfs/felician/B2Ktautau/workflow/multiple_events/2016/Species_100/multiple_events.txt")
-        fc_best_cand_BuDDKp_2017 =  ROOT.TFileCollection("fc_best_cand_BuDDKp_2017", "fc_best_cand_BuDDKp_2017", "/panfs/felician/B2Ktautau/workflow/multiple_events/2017/Species_100/multiple_events.txt")
-        fc_best_cand_BuDDKp_2018 =  ROOT.TFileCollection("fc_best_cand_BuDDKp_2018", "fc_best_cand_BuDDKp_2018", "/panfs/felician/B2Ktautau/workflow/multiple_events/2018/Species_100/multiple_events.txt")
-
-        t_best_cand_BuDDKp_2016 = ROOT.TChain("DecayTree")
-        t_best_cand_BuDDKp_2017 = ROOT.TChain("DecayTree")
-        t_best_cand_BuDDKp_2018 = ROOT.TChain("DecayTree")
-
-        t_best_cand_BuDDKp_2016.AddFileInfoList(fc_best_cand_BuDDKp_2016.GetList())
-        t_best_cand_BuDDKp_2017.AddFileInfoList(fc_best_cand_BuDDKp_2017.GetList())
-        t_best_cand_BuDDKp_2018.AddFileInfoList(fc_best_cand_BuDDKp_2018.GetList())
-
-        fc_best_cand_BdDDKp_2016 =  ROOT.TFileCollection("fc_best_cand_BdDDKp_2016", "fc_best_cand_BdDDKp_2016", "/panfs/felician/B2Ktautau/workflow/multiple_events/2016/Species_110/multiple_events.txt")
-        fc_best_cand_BdDDKp_2017 =  ROOT.TFileCollection("fc_best_cand_BdDDKp_2017", "fc_best_cand_BdDDKp_2017", "/panfs/felician/B2Ktautau/workflow/multiple_events/2017/Species_110/multiple_events.txt")
-        fc_best_cand_BdDDKp_2018 =  ROOT.TFileCollection("fc_best_cand_BdDDKp_2018", "fc_best_cand_BdDDKp_2018", "/panfs/felician/B2Ktautau/workflow/multiple_events/2018/Species_110/multiple_events.txt")
-
-        t_best_cand_BdDDKp_2016 = ROOT.TChain("DecayTree")
-        t_best_cand_BdDDKp_2017 = ROOT.TChain("DecayTree")
-        t_best_cand_BdDDKp_2018 = ROOT.TChain("DecayTree")
-
-        t_best_cand_BdDDKp_2016.AddFileInfoList(fc_best_cand_BdDDKp_2016.GetList())
-        t_best_cand_BdDDKp_2017.AddFileInfoList(fc_best_cand_BdDDKp_2017.GetList())
-        t_best_cand_BdDDKp_2018.AddFileInfoList(fc_best_cand_BdDDKp_2018.GetList())
-
-        fc_best_cand_BsDDKp_2016 =  ROOT.TFileCollection("fc_best_cand_BsDDKp_2016", "fc_best_cand_BsDDKp_2016", "/panfs/felician/B2Ktautau/workflow/multiple_events/2016/Species_120/multiple_events.txt")
-        fc_best_cand_BsDDKp_2017 =  ROOT.TFileCollection("fc_best_cand_BsDDKp_2017", "fc_best_cand_BsDDKp_2017", "/panfs/felician/B2Ktautau/workflow/multiple_events/2017/Species_120/multiple_events.txt")
-        fc_best_cand_BsDDKp_2018 =  ROOT.TFileCollection("fc_best_cand_BsDDKp_2018", "fc_best_cand_BsDDKp_2018", "/panfs/felician/B2Ktautau/workflow/multiple_events/2018/Species_120/multiple_events.txt")
-
-        t_best_cand_BsDDKp_2016 = ROOT.TChain("DecayTree")
-        t_best_cand_BsDDKp_2017 = ROOT.TChain("DecayTree")
-        t_best_cand_BsDDKp_2018 = ROOT.TChain("DecayTree")
-
-        t_best_cand_BsDDKp_2016.AddFileInfoList(fc_best_cand_BsDDKp_2016.GetList())
-        t_best_cand_BsDDKp_2017.AddFileInfoList(fc_best_cand_BsDDKp_2017.GetList())
-        t_best_cand_BsDDKp_2018.AddFileInfoList(fc_best_cand_BsDDKp_2018.GetList())
-
-        fc_best_cand_BuDDK0_2016 =  ROOT.TFileCollection("fc_best_cand_BuDDK0_2016", "fc_best_cand_BuDDK0_2016", "/panfs/felician/B2Ktautau/workflow/multiple_events/2016/Species_130/multiple_events.txt")
-        fc_best_cand_BuDDK0_2017 =  ROOT.TFileCollection("fc_best_cand_BuDDK0_2017", "fc_best_cand_BuDDK0_2017", "/panfs/felician/B2Ktautau/workflow/multiple_events/2017/Species_130/multiple_events.txt")
-        fc_best_cand_BuDDK0_2018 =  ROOT.TFileCollection("fc_best_cand_BuDDK0_2018", "fc_best_cand_BuDDK0_2018", "/panfs/felician/B2Ktautau/workflow/multiple_events/2018/Species_130/multiple_events.txt")
-
-        t_best_cand_BuDDK0_2016 = ROOT.TChain("DecayTree")
-        t_best_cand_BuDDK0_2017 = ROOT.TChain("DecayTree")
-        t_best_cand_BuDDK0_2018 = ROOT.TChain("DecayTree")
-
-        t_best_cand_BuDDK0_2016.AddFileInfoList(fc_best_cand_BuDDK0_2016.GetList())
-        t_best_cand_BuDDK0_2017.AddFileInfoList(fc_best_cand_BuDDK0_2017.GetList())
-        t_best_cand_BuDDK0_2018.AddFileInfoList(fc_best_cand_BuDDK0_2018.GetList())
-
-        fc_best_cand_BuDD_2016 =  ROOT.TFileCollection("fc_best_cand_BuDD_2016", "fc_best_cand_BuDD_2016", "/panfs/felician/B2Ktautau/workflow/multiple_events/2016/Species_150/multiple_events.txt")
-        fc_best_cand_BuDD_2017 =  ROOT.TFileCollection("fc_best_cand_BuDD_2017", "fc_best_cand_BuDD_2017", "/panfs/felician/B2Ktautau/workflow/multiple_events/2017/Species_150/multiple_events.txt")
-        fc_best_cand_BuDD_2018 =  ROOT.TFileCollection("fc_best_cand_BuDD_2018", "fc_best_cand_BuDD_2018", "/panfs/felician/B2Ktautau/workflow/multiple_events/2018/Species_150/multiple_events.txt")
-
-        t_best_cand_BuDD_2016 = ROOT.TChain("DecayTree")
-        t_best_cand_BuDD_2017 = ROOT.TChain("DecayTree")
-        t_best_cand_BuDD_2018 = ROOT.TChain("DecayTree")
-
-        t_best_cand_BuDD_2016.AddFileInfoList(fc_best_cand_BuDD_2016.GetList())
-        t_best_cand_BuDD_2017.AddFileInfoList(fc_best_cand_BuDD_2017.GetList())
-        t_best_cand_BuDD_2018.AddFileInfoList(fc_best_cand_BuDD_2018.GetList())
-
         t_reco_BuDDKp_2016.AddFriend(t_gsl_BuDDKp_2016)
         t_reco_BuDDKp_2016.AddFriend(t_mass_BuDDKp_2016)
-        t_reco_BuDDKp_2016.AddFriend(t_best_cand_BuDDKp_2016)
 
         t_reco_BuDDKp_2017.AddFriend(t_gsl_BuDDKp_2017)
         t_reco_BuDDKp_2017.AddFriend(t_mass_BuDDKp_2017)
-        t_reco_BuDDKp_2017.AddFriend(t_best_cand_BuDDKp_2017)
 
         t_reco_BuDDKp_2018.AddFriend(t_gsl_BuDDKp_2018)
         t_reco_BuDDKp_2018.AddFriend(t_mass_BuDDKp_2018)
-        t_reco_BuDDKp_2018.AddFriend(t_best_cand_BuDDKp_2018)
 
         t_reco_BdDDKp_2016.AddFriend(t_gsl_BdDDKp_2016)
         t_reco_BdDDKp_2016.AddFriend(t_mass_BdDDKp_2016)
-        t_reco_BdDDKp_2016.AddFriend(t_best_cand_BdDDKp_2016)
 
         t_reco_BdDDKp_2017.AddFriend(t_gsl_BdDDKp_2017)
         t_reco_BdDDKp_2017.AddFriend(t_mass_BdDDKp_2017)
-        t_reco_BdDDKp_2017.AddFriend(t_best_cand_BdDDKp_2017)
 
         t_reco_BdDDKp_2018.AddFriend(t_gsl_BdDDKp_2018)
         t_reco_BdDDKp_2018.AddFriend(t_mass_BdDDKp_2018)
-        t_reco_BdDDKp_2018.AddFriend(t_best_cand_BdDDKp_2018)
 
         t_reco_BsDDKp_2016.AddFriend(t_gsl_BsDDKp_2016)
         t_reco_BsDDKp_2016.AddFriend(t_mass_BsDDKp_2016)
-        t_reco_BsDDKp_2016.AddFriend(t_best_cand_BsDDKp_2016)
 
         t_reco_BsDDKp_2017.AddFriend(t_gsl_BsDDKp_2017)
         t_reco_BsDDKp_2017.AddFriend(t_mass_BsDDKp_2017)
-        t_reco_BsDDKp_2017.AddFriend(t_best_cand_BsDDKp_2017)
 
         t_reco_BsDDKp_2018.AddFriend(t_gsl_BsDDKp_2018)
         t_reco_BsDDKp_2018.AddFriend(t_mass_BsDDKp_2018)
-        t_reco_BsDDKp_2018.AddFriend(t_best_cand_BsDDKp_2018)
 
         t_reco_BuDDK0_2016.AddFriend(t_gsl_BuDDK0_2016)
         t_reco_BuDDK0_2016.AddFriend(t_mass_BuDDK0_2016)
-        t_reco_BuDDK0_2016.AddFriend(t_best_cand_BuDDK0_2016)
 
         t_reco_BuDDK0_2017.AddFriend(t_gsl_BuDDK0_2017)
         t_reco_BuDDK0_2017.AddFriend(t_mass_BuDDK0_2017)
-        t_reco_BuDDK0_2017.AddFriend(t_best_cand_BuDDK0_2017)
 
         t_reco_BuDDK0_2018.AddFriend(t_gsl_BuDDK0_2018)
         t_reco_BuDDK0_2018.AddFriend(t_mass_BuDDK0_2018)
-        t_reco_BuDDK0_2018.AddFriend(t_best_cand_BuDDK0_2018)
 
         t_reco_BuDD_2016.AddFriend(t_gsl_BuDD_2016)
         t_reco_BuDD_2016.AddFriend(t_mass_BuDD_2016)
-        t_reco_BuDD_2016.AddFriend(t_best_cand_BuDD_2016)
 
         t_reco_BuDD_2017.AddFriend(t_gsl_BuDD_2017)
         t_reco_BuDD_2017.AddFriend(t_mass_BuDD_2017)
-        t_reco_BuDD_2017.AddFriend(t_best_cand_BuDD_2017)
 
         t_reco_BuDD_2018.AddFriend(t_gsl_BuDD_2018)
         t_reco_BuDD_2018.AddFriend(t_mass_BuDD_2018)
-        t_reco_BuDD_2018.AddFriend(t_best_cand_BuDD_2018)
 
-        N_rect_cuts_BuDDKp = t_reco_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_1+" && "+rectangular_cuts[-3]) + t_reco_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_1+" && "+rectangular_cuts[-3]) + t_reco_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_1+" && "+rectangular_cuts[-3]) + t_reco_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_2+" && "+rectangular_cuts[-3]) + t_reco_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_2+" && "+rectangular_cuts[-3]) + t_reco_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_2+" && "+rectangular_cuts[-3]) + t_reco_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_3+" && "+rectangular_cuts[-3]) + t_reco_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_3+" && "+rectangular_cuts[-3]) + t_reco_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_3+" && "+rectangular_cuts[-3])
-        N_rect_cuts_BdDDKp = t_reco_BdDDKp_2016.GetEntries(truthMatch_BdDDKp+" && "+rectangular_cuts[-3]) + t_reco_BdDDKp_2017.GetEntries(truthMatch_BdDDKp+" && "+rectangular_cuts[-3]) + t_reco_BdDDKp_2018.GetEntries(truthMatch_BdDDKp+" && "+rectangular_cuts[-3])
-        N_rect_cuts_BsDDKp = t_reco_BsDDKp_2016.GetEntries(truthMatch_BsDDKp+" && "+rectangular_cuts[-3]) + t_reco_BsDDKp_2017.GetEntries(truthMatch_BsDDKp+" && "+rectangular_cuts[-3]) + t_reco_BsDDKp_2018.GetEntries(truthMatch_BsDDKp+" && "+rectangular_cuts[-3])
-        N_rect_cuts_BuDDK0 = t_reco_BuDDK0_2016.GetEntries(truthMatch_BuDDK0+" && "+rectangular_cuts[-3]) + t_reco_BuDDK0_2017.GetEntries(truthMatch_BuDDK0+" && "+rectangular_cuts[-3]) + t_reco_BuDDK0_2018.GetEntries(truthMatch_BuDDK0+" && "+rectangular_cuts[-3])
-        N_rect_cuts_BuDD = t_reco_BuDD_2016.GetEntries(truthMatch_BuDD+" && "+rectangular_cuts[-3]) + t_reco_BuDD_2017.GetEntries(truthMatch_BuDD+" && "+rectangular_cuts[-3]) + t_reco_BuDD_2018.GetEntries(truthMatch_BuDD+" && "+rectangular_cuts[-3])
+        N_rect_cuts_BuDDKp = t_reco_BuDDKp_2016.GetEntries(trigger+" && "+all_rectangular_cuts) + t_reco_BuDDKp_2017.GetEntries(trigger+" && "+all_rectangular_cuts) + t_reco_BuDDKp_2018.GetEntries(trigger+" && "+all_rectangular_cuts)
+        N_rect_cuts_BdDDKp = t_reco_BdDDKp_2016.GetEntries(trigger+" && "+all_rectangular_cuts) + t_reco_BdDDKp_2017.GetEntries(trigger+" && "+all_rectangular_cuts) + t_reco_BdDDKp_2018.GetEntries(trigger+" && "+all_rectangular_cuts)
+        N_rect_cuts_BsDDKp = t_reco_BsDDKp_2016.GetEntries(trigger+" && "+all_rectangular_cuts) + t_reco_BsDDKp_2017.GetEntries(trigger+" && "+all_rectangular_cuts) + t_reco_BsDDKp_2018.GetEntries(trigger+" && "+all_rectangular_cuts)
+        N_rect_cuts_BuDDK0 = t_reco_BuDDK0_2016.GetEntries(trigger+" && "+all_rectangular_cuts) + t_reco_BuDDK0_2017.GetEntries(trigger+" && "+all_rectangular_cuts) + t_reco_BuDDK0_2018.GetEntries(trigger+" && "+all_rectangular_cuts)
+        N_rect_cuts_BuDD = t_reco_BuDD_2016.GetEntries(trigger+" && "+all_rectangular_cuts) + t_reco_BuDD_2017.GetEntries(trigger+" && "+all_rectangular_cuts) + t_reco_BuDD_2018.GetEntries(trigger+" && "+all_rectangular_cuts)
 
         up_rect_cuts_BuDDKp = ROOT.TEfficiency.Wilson(N_trigger_BuDDKp, N_rect_cuts_BuDDKp, 0.68, True)
         down_rect_cuts_BuDDKp = ROOT.TEfficiency.Wilson(N_trigger_BuDDKp, N_rect_cuts_BuDDKp, 0.68, False)
@@ -1302,6 +1227,7 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         rect_cut_table_1.loc["$B^+ \\to D D K^0$", "Rectangular cuts (\\%)"] = f"${eps_rect_cuts[3].nominal_value*100:.2f} \\pm {eps_rect_cuts[3].std_dev*100:.2f}$"
         rect_cut_table_1.loc["$B^+ \\to D D$", "Rectangular cuts (\\%)"] = f"${eps_rect_cuts[4].nominal_value*100:.2f} \\pm {eps_rect_cuts[4].std_dev*100:.2f}$"
 
+    
     else:
         if(species == 1):
             fc_data_2016_noRectCuts = ROOT.TFileCollection("fc_data_2016_noRectCuts", "fc_data_2016_noRectCuts", "Files_on_grid/data_2016_noSel_DTF.txt")
@@ -1521,11 +1447,11 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
 
     # Pass fitter
     if(species == 100):
-        N_pass_fit_BuDDKp = t_reco_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_1+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit) + t_reco_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_1+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit) + t_reco_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_1+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit) + t_reco_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_2+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit) + t_reco_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_2+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit) + t_reco_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_2+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit) + t_reco_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_3+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit) + t_reco_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_3+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit) + t_reco_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_3+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit)
-        N_pass_fit_BdDDKp = t_reco_BdDDKp_2016.GetEntries(truthMatch_BdDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit) + t_reco_BdDDKp_2017.GetEntries(truthMatch_BdDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit) + t_reco_BdDDKp_2018.GetEntries(truthMatch_BdDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit)
-        N_pass_fit_BsDDKp = t_reco_BsDDKp_2016.GetEntries(truthMatch_BsDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit) + t_reco_BsDDKp_2017.GetEntries(truthMatch_BsDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit) + t_reco_BsDDKp_2018.GetEntries(truthMatch_BsDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit)
-        N_pass_fit_BuDDK0 = t_reco_BuDDK0_2016.GetEntries(truthMatch_BuDDK0+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit) + t_reco_BuDDK0_2017.GetEntries(truthMatch_BuDDK0+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit) + t_reco_BuDDK0_2018.GetEntries(truthMatch_BuDDK0+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit)
-        N_pass_fit_BuDD = t_reco_BuDD_2016.GetEntries(truthMatch_BuDD+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit) + t_reco_BuDD_2017.GetEntries(truthMatch_BuDD+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit) + t_reco_BuDD_2018.GetEntries(truthMatch_BuDD+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit)
+        N_pass_fit_BuDDKp = t_reco_BuDDKp_2016.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit) + t_reco_BuDDKp_2017.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit) + t_reco_BuDDKp_2018.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit) 
+        N_pass_fit_BdDDKp = t_reco_BdDDKp_2016.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit) + t_reco_BdDDKp_2017.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit) + t_reco_BdDDKp_2018.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit)
+        N_pass_fit_BsDDKp = t_reco_BsDDKp_2016.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit) + t_reco_BsDDKp_2017.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit) + t_reco_BsDDKp_2018.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit)
+        N_pass_fit_BuDDK0 = t_reco_BuDDK0_2016.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit) + t_reco_BuDDK0_2017.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit) + t_reco_BuDDK0_2018.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit)
+        N_pass_fit_BuDD = t_reco_BuDD_2016.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit) + t_reco_BuDD_2017.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit) + t_reco_BuDD_2018.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit)
 
         up_pass_fit_BuDDKp = ROOT.TEfficiency.Wilson(N_rect_cuts_BuDDKp, N_pass_fit_BuDDKp, 0.68, True)
         down_pass_fit_BuDDKp = ROOT.TEfficiency.Wilson(N_rect_cuts_BuDDKp, N_pass_fit_BuDDKp, 0.68, False)
@@ -1603,29 +1529,14 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
             t_mass_mc_2017.AddFileInfoList(fc_mass_mc_2017.GetList())
             t_mass_mc_2018.AddFileInfoList(fc_mass_mc_2018.GetList())
 
-            fc_best_cand_mc_2016 =  ROOT.TFileCollection("fc_best_cand_mc_2016", "fc_best_cand_mc_2016", "/panfs/felician/B2Ktautau/workflow/multiple_events/2016/Species_10/multiple_events.txt")
-            fc_best_cand_mc_2017 =  ROOT.TFileCollection("fc_best_cand_mc_2017", "fc_best_cand_mc_2017", "/panfs/felician/B2Ktautau/workflow/multiple_events/2017/Species_10/multiple_events.txt")
-            fc_best_cand_mc_2018 =  ROOT.TFileCollection("fc_best_cand_mc_2018", "fc_best_cand_mc_2018", "/panfs/felician/B2Ktautau/workflow/multiple_events/2018/Species_10/multiple_events.txt")
-
-            t_best_cand_mc_2016 = ROOT.TChain("DecayTree")
-            t_best_cand_mc_2017 = ROOT.TChain("DecayTree")
-            t_best_cand_mc_2018 = ROOT.TChain("DecayTree")
-
-            t_best_cand_mc_2016.AddFileInfoList(fc_best_cand_mc_2016.GetList())
-            t_best_cand_mc_2017.AddFileInfoList(fc_best_cand_mc_2017.GetList())
-            t_best_cand_mc_2018.AddFileInfoList(fc_best_cand_mc_2018.GetList())
-
             t_reco_mc_2016.AddFriend(t_gsl_mc_2016)
             t_reco_mc_2016.AddFriend(t_mass_mc_2016)
-            t_reco_mc_2016.AddFriend(t_best_cand_mc_2016)
 
             t_reco_mc_2017.AddFriend(t_gsl_mc_2017)
             t_reco_mc_2017.AddFriend(t_mass_mc_2017)
-            t_reco_mc_2017.AddFriend(t_best_cand_mc_2017)
 
             t_reco_mc_2018.AddFriend(t_gsl_mc_2018)
             t_reco_mc_2018.AddFriend(t_mass_mc_2018)
-            t_reco_mc_2018.AddFriend(t_best_cand_mc_2018)
 
             N_pass_fitter_3pi3pi = t_reco_mc_2016.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && (component == 0)") + t_reco_mc_2017.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && (component == 0)") + t_reco_mc_2018.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && (component == 0)")
             N_pass_fitter_3pi3pipi0 = t_reco_mc_2016.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && (component == 1)") + t_reco_mc_2017.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && (component == 1)") + t_reco_mc_2018.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && (component == 1)")
@@ -1686,29 +1597,14 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
             t_mass_rs_2017.AddFileInfoList(fc_mass_rs_2017.GetList())
             t_mass_rs_2018.AddFileInfoList(fc_mass_rs_2018.GetList())
 
-            fc_best_cand_rs_2016 =  ROOT.TFileCollection("fc_best_cand_rs_2016", "fc_best_cand_rs_2016", "/panfs/felician/B2Ktautau/workflow/multiple_events/2016/Species_2/multiple_events.txt", 10)
-            fc_best_cand_rs_2017 =  ROOT.TFileCollection("fc_best_cand_rs_2017", "fc_best_cand_rs_2017", "/panfs/felician/B2Ktautau/workflow/multiple_events/2017/Species_2/multiple_events.txt", 10)
-            fc_best_cand_rs_2018 =  ROOT.TFileCollection("fc_best_cand_rs_2018", "fc_best_cand_rs_2018", "/panfs/felician/B2Ktautau/workflow/multiple_events/2018/Species_2/multiple_events.txt", 10)
-
-            t_best_cand_rs_2016 = ROOT.TChain("DecayTree")
-            t_best_cand_rs_2017 = ROOT.TChain("DecayTree")
-            t_best_cand_rs_2018 = ROOT.TChain("DecayTree")
-
-            t_best_cand_rs_2016.AddFileInfoList(fc_best_cand_rs_2016.GetList())
-            t_best_cand_rs_2017.AddFileInfoList(fc_best_cand_rs_2017.GetList())
-            t_best_cand_rs_2018.AddFileInfoList(fc_best_cand_rs_2018.GetList())
-
             t_reco_rs_2016.AddFriend(t_gsl_rs_2016)
             t_reco_rs_2016.AddFriend(t_mass_rs_2016)
-            t_reco_rs_2016.AddFriend(t_best_cand_rs_2016)
 
             t_reco_rs_2017.AddFriend(t_gsl_rs_2017)
             t_reco_rs_2017.AddFriend(t_mass_rs_2017)
-            t_reco_rs_2017.AddFriend(t_best_cand_rs_2017)
 
             t_reco_rs_2018.AddFriend(t_gsl_rs_2018)
             t_reco_rs_2018.AddFriend(t_mass_rs_2018)
-            t_reco_rs_2018.AddFriend(t_best_cand_rs_2018)
 
             fc_reco_ws_2016 = ROOT.TFileCollection("fc_reco_ws_2016", "fc_reco_ws_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_3/pre_sel_tree.txt", 10)
             fc_reco_ws_2017 = ROOT.TFileCollection("fc_reco_ws_2017", "fc_reco_ws_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_3/pre_sel_tree.txt", 10)
@@ -1745,30 +1641,15 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
             t_mass_ws_2016.AddFileInfoList(fc_mass_ws_2016.GetList())
             t_mass_ws_2017.AddFileInfoList(fc_mass_ws_2017.GetList())
             t_mass_ws_2018.AddFileInfoList(fc_mass_ws_2018.GetList())
-        
-            fc_best_cand_ws_2016 =  ROOT.TFileCollection("fc_best_cand_ws_2016", "fc_best_cand_ws_2016", "/panfs/felician/B2Ktautau/workflow/multiple_events/2016/Species_3/multiple_events.txt", 10)
-            fc_best_cand_ws_2017 =  ROOT.TFileCollection("fc_best_cand_ws_2017", "fc_best_cand_ws_2017", "/panfs/felician/B2Ktautau/workflow/multiple_events/2017/Species_3/multiple_events.txt", 10)
-            fc_best_cand_ws_2018 =  ROOT.TFileCollection("fc_best_cand_ws_2018", "fc_best_cand_ws_2018", "/panfs/felician/B2Ktautau/workflow/multiple_events/2018/Species_3/multiple_events.txt", 10)
-
-            t_best_cand_ws_2016 = ROOT.TChain("DecayTree")
-            t_best_cand_ws_2017 = ROOT.TChain("DecayTree")
-            t_best_cand_ws_2018 = ROOT.TChain("DecayTree")
-
-            t_best_cand_ws_2016.AddFileInfoList(fc_best_cand_ws_2016.GetList())
-            t_best_cand_ws_2017.AddFileInfoList(fc_best_cand_ws_2017.GetList())
-            t_best_cand_ws_2018.AddFileInfoList(fc_best_cand_ws_2018.GetList())
 
             t_reco_ws_2016.AddFriend(t_gsl_ws_2016)
             t_reco_ws_2016.AddFriend(t_mass_ws_2016)
-            t_reco_ws_2016.AddFriend(t_best_cand_ws_2016)
 
             t_reco_ws_2017.AddFriend(t_gsl_ws_2017)
             t_reco_ws_2017.AddFriend(t_mass_ws_2017)
-            t_reco_ws_2017.AddFriend(t_best_cand_ws_2017)
 
             t_reco_ws_2018.AddFriend(t_gsl_ws_2018)
             t_reco_ws_2018.AddFriend(t_mass_ws_2018)
-            t_reco_ws_2018.AddFriend(t_best_cand_ws_2018)
 
             N_pass_fitter_WS = t_reco_ws_2016.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit) + t_reco_ws_2017.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit) + t_reco_ws_2018.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit)
             N_cuts_WS = t_reco_ws_2016.GetEntries(trigger+" && "+all_rectangular_cuts_data) + t_reco_ws_2017.GetEntries(trigger+" && "+all_rectangular_cuts_data) + t_reco_ws_2018.GetEntries(trigger+" && "+all_rectangular_cuts_data)
@@ -1879,11 +1760,11 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
 
     # Fit region
     if(species == 100):
-        N_fit_region_BuDDKp = t_reco_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_1+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_1+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_1+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_2+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_2+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_2+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_3+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_3+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_3+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range)
-        N_fit_region_BdDDKp = t_reco_BdDDKp_2016.GetEntries(truthMatch_BdDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BdDDKp_2017.GetEntries(truthMatch_BdDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BdDDKp_2018.GetEntries(truthMatch_BdDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range)
-        N_fit_region_BsDDKp = t_reco_BsDDKp_2016.GetEntries(truthMatch_BsDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BsDDKp_2017.GetEntries(truthMatch_BsDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BsDDKp_2018.GetEntries(truthMatch_BsDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range)
-        N_fit_region_BuDDK0 = t_reco_BuDDK0_2016.GetEntries(truthMatch_BuDDK0+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BuDDK0_2017.GetEntries(truthMatch_BuDDK0+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BuDDK0_2018.GetEntries(truthMatch_BuDDK0+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range)
-        N_fit_region_BuDD = t_reco_BuDD_2016.GetEntries(truthMatch_BuDD+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BuDD_2017.GetEntries(truthMatch_BuDD+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BuDD_2018.GetEntries(truthMatch_BuDD+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range)
+        N_fit_region_BuDDKp = t_reco_BuDDKp_2016.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BuDDKp_2017.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BuDDKp_2018.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range) 
+        N_fit_region_BdDDKp = t_reco_BdDDKp_2016.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BdDDKp_2017.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BdDDKp_2018.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range)
+        N_fit_region_BsDDKp = t_reco_BsDDKp_2016.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BsDDKp_2017.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BsDDKp_2018.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range)
+        N_fit_region_BuDDK0 = t_reco_BuDDK0_2016.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BuDDK0_2017.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BuDDK0_2018.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range)
+        N_fit_region_BuDD = t_reco_BuDD_2016.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BuDD_2017.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BuDD_2018.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range)
 
         up_fit_region_BuDDKp = ROOT.TEfficiency.Wilson(N_pass_fit_BuDDKp, N_fit_region_BuDDKp, 0.68, True)
         down_fit_region_BuDDKp = ROOT.TEfficiency.Wilson(N_pass_fit_BuDDKp, N_fit_region_BuDDKp, 0.68, False)
@@ -1992,14 +1873,14 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
     eps_mass_vetoes_3pi3pi2pi0 = []
     eps_mass_vetoes_MC = []
     eps_mass_vetoes_RS = []
-    eps_mass_vetoes_WS = []
+    eps_mass_vetoes_WS = [] 
 
     if(species == 100):
-        N_mass_vetoes_BuDDKp = t_reco_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_1+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_1+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_1+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_2+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_2+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_2+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_3+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_3+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_3+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes)
-        N_mass_vetoes_BdDDKp = t_reco_BdDDKp_2016.GetEntries(truthMatch_BdDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BdDDKp_2017.GetEntries(truthMatch_BdDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BdDDKp_2018.GetEntries(truthMatch_BdDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes)
-        N_mass_vetoes_BsDDKp = t_reco_BsDDKp_2016.GetEntries(truthMatch_BsDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BsDDKp_2017.GetEntries(truthMatch_BsDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BsDDKp_2018.GetEntries(truthMatch_BsDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes)
-        N_mass_vetoes_BuDDK0 = t_reco_BuDDK0_2016.GetEntries(truthMatch_BuDDK0+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDDK0_2017.GetEntries(truthMatch_BuDDK0+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDDK0_2018.GetEntries(truthMatch_BuDDK0+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes)
-        N_mass_vetoes_BuDD = t_reco_BuDD_2016.GetEntries(truthMatch_BuDD+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDD_2017.GetEntries(truthMatch_BuDD+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes) + t_reco_BuDD_2018.GetEntries(truthMatch_BuDD+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes)
+        N_mass_vetoes_BuDDKp = t_reco_BuDDKp_2016.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BuDDKp_2017.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BuDDKp_2018.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) 
+        N_mass_vetoes_BdDDKp = t_reco_BdDDKp_2016.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BdDDKp_2017.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BdDDKp_2018.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes)
+        N_mass_vetoes_BsDDKp = t_reco_BsDDKp_2016.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BsDDKp_2017.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BsDDKp_2018.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes)
+        N_mass_vetoes_BuDDK0 = t_reco_BuDDK0_2016.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BuDDK0_2017.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BuDDK0_2018.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes)
+        N_mass_vetoes_BuDD = t_reco_BuDD_2016.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BuDD_2017.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes) + t_reco_BuDD_2018.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes)
 
         up_mass_vetoes_BuDDKp = ROOT.TEfficiency.Wilson(N_fit_region_BuDDKp, N_mass_vetoes_BuDDKp, 0.68, True)
         down_mass_vetoes_BuDDKp = ROOT.TEfficiency.Wilson(N_fit_region_BuDDKp, N_mass_vetoes_BuDDKp, 0.68, False)
@@ -2171,106 +2052,6 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
     if((species == 100) or (species == 1)):
         with open(f'/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/mass_vetoes_efficiency_table.tex', 'w') as fout_mass_vetoes:
             fout_mass_vetoes.write(mass_vetoes_table.to_latex())
-
-
-    # Best candidate efficiency
-    if(species == 100):
-        N_best_cand_BuDDKp = t_reco_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_1+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && "+best_cand) + t_reco_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_1+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && "+best_cand) + t_reco_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_1+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && "+best_cand) + t_reco_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_2+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && "+best_cand) + t_reco_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_2+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && "+best_cand) + t_reco_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_2+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && "+best_cand) + t_reco_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_3+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && "+best_cand) + t_reco_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_3+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && "+best_cand) + t_reco_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_3+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && "+best_cand)
-        N_best_cand_BdDDKp = t_reco_BdDDKp_2016.GetEntries(truthMatch_BdDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && "+best_cand) + t_reco_BdDDKp_2017.GetEntries(truthMatch_BdDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && "+best_cand) + t_reco_BdDDKp_2018.GetEntries(truthMatch_BdDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && "+best_cand)
-        N_best_cand_BsDDKp = t_reco_BsDDKp_2016.GetEntries(truthMatch_BsDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && "+best_cand) + t_reco_BsDDKp_2017.GetEntries(truthMatch_BsDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && "+best_cand) + t_reco_BsDDKp_2018.GetEntries(truthMatch_BsDDKp+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && "+best_cand)
-        N_best_cand_BuDDK0 = t_reco_BuDDK0_2016.GetEntries(truthMatch_BuDDK0+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && "+best_cand) + t_reco_BuDDK0_2017.GetEntries(truthMatch_BuDDK0+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && "+best_cand) + t_reco_BuDDK0_2018.GetEntries(truthMatch_BuDDK0+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && "+best_cand)
-        N_best_cand_BuDD = t_reco_BuDD_2016.GetEntries(truthMatch_BuDD+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes+" && "+best_cand) + t_reco_BuDD_2017.GetEntries(truthMatch_BuDD+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes+" && "+best_cand) + t_reco_BuDD_2018.GetEntries(truthMatch_BuDD+" && "+rectangular_cuts[-3]+" && "+pass_mass_fit+" && "+mass_vetoes+" && "+best_cand)
-
-        up_best_cand_BuDDKp = ROOT.TEfficiency.Wilson(N_mass_vetoes_BuDDKp, N_best_cand_BuDDKp, 0.68, True)
-        down_best_cand_BuDDKp = ROOT.TEfficiency.Wilson(N_mass_vetoes_BuDDKp, N_best_cand_BuDDKp, 0.68, False)
-        eps_best_cand_BuDDKp_err = 0.5*(up_best_cand_BuDDKp - down_best_cand_BuDDKp)
-        eps_best_cand_BuDDKp = ufloat(N_best_cand_BuDDKp/N_mass_vetoes_BuDDKp, eps_best_cand_BuDDKp_err)
-
-        up_best_cand_BdDDKp = ROOT.TEfficiency.Wilson(N_mass_vetoes_BdDDKp, N_best_cand_BdDDKp, 0.68, True)
-        down_best_cand_BdDDKp = ROOT.TEfficiency.Wilson(N_mass_vetoes_BdDDKp, N_best_cand_BdDDKp, 0.68, False)
-        eps_best_cand_BdDDKp_err = 0.5*(up_best_cand_BdDDKp - down_best_cand_BdDDKp)
-        eps_best_cand_BdDDKp = ufloat(N_best_cand_BdDDKp/N_mass_vetoes_BdDDKp, eps_best_cand_BdDDKp_err)
-
-        up_best_cand_BsDDKp = ROOT.TEfficiency.Wilson(N_mass_vetoes_BsDDKp, N_best_cand_BsDDKp, 0.68, True)
-        down_best_cand_BsDDKp = ROOT.TEfficiency.Wilson(N_mass_vetoes_BsDDKp, N_best_cand_BsDDKp, 0.68, False)
-        eps_best_cand_BsDDKp_err = 0.5*(up_best_cand_BsDDKp - down_best_cand_BsDDKp)
-        eps_best_cand_BsDDKp = ufloat(N_best_cand_BsDDKp/N_mass_vetoes_BsDDKp, eps_best_cand_BsDDKp_err)
-
-        up_best_cand_BuDDK0 = ROOT.TEfficiency.Wilson(N_mass_vetoes_BuDDK0, N_best_cand_BuDDK0, 0.68, True)
-        down_best_cand_BuDDK0 = ROOT.TEfficiency.Wilson(N_mass_vetoes_BuDDK0, N_best_cand_BuDDK0, 0.68, False)
-        eps_best_cand_BuDDK0_err = 0.5*(up_best_cand_BuDDK0 - down_best_cand_BuDDK0)
-        eps_best_cand_BuDDK0 = ufloat(N_best_cand_BuDDK0/N_mass_vetoes_BuDDK0, eps_best_cand_BuDDK0_err)
-
-        up_best_cand_BuDD = ROOT.TEfficiency.Wilson(N_mass_vetoes_BuDD, N_best_cand_BuDD, 0.68, True)
-        down_best_cand_BuDD = ROOT.TEfficiency.Wilson(N_mass_vetoes_BuDD, N_best_cand_BuDD, 0.68, False)
-        eps_best_cand_BuDD_err = 0.5*(up_best_cand_BuDD - down_best_cand_BuDD)
-        eps_best_cand_BuDD = ufloat(N_best_cand_BuDD/N_mass_vetoes_BuDD, eps_best_cand_BuDD_err)
-
-        eps_best_cand = [eps_best_cand_BuDDKp, eps_best_cand_BdDDKp, eps_best_cand_BsDDKp, eps_best_cand_BuDDK0, eps_best_cand_BuDD]
-
-        best_cand_columns = ["Best candidate efficiency (\\%)"]
-        best_cand_rows = ["$B^+ \\to D D K^+$", "$B^0 \\to D D K^+$", "$B^0_s \\to D D K^+$", "$B^+ \\to D D K^0$", "$B^+ \\to D D$"]
-
-        best_cand_table = pd.DataFrame(index=best_cand_rows, columns=best_cand_columns)
-        best_cand_table.loc["$B^+ \\to D D K^+$", "Best candidate efficiency (\\%)"] = f"${eps_best_cand[0].nominal_value*100:.2f} \\pm {eps_best_cand[0].std_dev*100:.2f}$"
-        best_cand_table.loc["$B^0 \\to D D K^+$", "Best candidate efficiency (\\%)"] = f"${eps_best_cand[1].nominal_value*100:.2f} \\pm {eps_best_cand[1].std_dev*100:.2f}$"
-        best_cand_table.loc["$B^0_s \\to D D K^+$", "Best candidate efficiency (\\%)"] = f"${eps_best_cand[2].nominal_value*100:.2f} \\pm {eps_best_cand[2].std_dev*100:.2f}$"
-        best_cand_table.loc["$B^+ \\to D D K^0$", "Best candidate efficiency (\\%)"] = f"${eps_best_cand[3].nominal_value*100:.2f} \\pm {eps_best_cand[3].std_dev*100:.2f}$"
-        best_cand_table.loc["$B^+ \\to D D$", "Best candidate efficiency (\\%)"] = f"${eps_best_cand[4].nominal_value*100:.2f} \\pm {eps_best_cand[4].std_dev*100:.2f}$"
-
-    else:
-        if(species == 1):
-            N_best_cand_3pi3pi = t_reco_mc_2016.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && (component == 0)"+" && "+mass_vetoes+" && "+best_cand) + t_reco_mc_2017.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && (component == 0)"+" && "+mass_vetoes+" && "+best_cand) + t_reco_mc_2018.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && (component == 0)"+" && "+mass_vetoes+" && "+best_cand)
-            N_best_cand_3pi3pipi0 = t_reco_mc_2016.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && (component == 1)"+" && "+mass_vetoes+" && "+best_cand) + t_reco_mc_2017.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && (component == 1)"+" && "+mass_vetoes+" && "+best_cand) + t_reco_mc_2018.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && (component == 1)"+" && "+mass_vetoes+" && "+best_cand)
-            N_best_cand_3pi3pi2pi0 = t_reco_mc_2016.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && (component == 2)"+" && "+mass_vetoes+" && "+best_cand) + t_reco_mc_2017.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && (component == 2)"+" && "+mass_vetoes+" && "+best_cand) + t_reco_mc_2018.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && (component == 2)"+" && "+mass_vetoes+" && "+best_cand)
-
-            up_best_cand_3pi3pi = ROOT.TEfficiency.Wilson(N_all_mass_vetoes_3pi3pi, N_best_cand_3pi3pi, 0.68, True)
-            down_best_cand_3pi3pi = ROOT.TEfficiency.Wilson(N_all_mass_vetoes_3pi3pi, N_best_cand_3pi3pi, 0.68, False)
-            eps_best_cand_3pi3pi_err = 0.5*(up_best_cand_3pi3pi - down_best_cand_3pi3pi)
-            eps_best_cand_3pi3pi =  ufloat(N_best_cand_3pi3pi/N_all_mass_vetoes_3pi3pi, eps_best_cand_3pi3pi_err)    
-
-            up_best_cand_3pi3pipi0 = ROOT.TEfficiency.Wilson(N_all_mass_vetoes_3pi3pipi0, N_best_cand_3pi3pipi0, 0.68, True)
-            down_best_cand_3pi3pipi0 = ROOT.TEfficiency.Wilson(N_all_mass_vetoes_3pi3pipi0, N_best_cand_3pi3pipi0, 0.68, False)
-            eps_best_cand_3pi3pipi0_err = 0.5*(up_best_cand_3pi3pipi0 - down_best_cand_3pi3pipi0)
-            eps_best_cand_3pi3pipi0 =  ufloat(N_best_cand_3pi3pipi0/N_all_mass_vetoes_3pi3pipi0, eps_best_cand_3pi3pipi0_err)    
-
-            up_best_cand_3pi3pi2pi0 = ROOT.TEfficiency.Wilson(N_all_mass_vetoes_3pi3pi2pi0, N_best_cand_3pi3pi2pi0, 0.68, True)
-            down_best_cand_3pi3pi2pi0 = ROOT.TEfficiency.Wilson(N_all_mass_vetoes_3pi3pi2pi0, N_best_cand_3pi3pi2pi0, 0.68, False)
-            eps_best_cand_3pi3pi2pi0_err = 0.5*(up_best_cand_3pi3pi2pi0 - down_best_cand_3pi3pi2pi0)
-            eps_best_cand_3pi3pi2pi0 =  ufloat(N_best_cand_3pi3pi2pi0/N_all_mass_vetoes_3pi3pi2pi0, eps_best_cand_3pi3pi2pi0_err)  
-
-        N_best_cand_MC = t_reco_mc_2016.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && "+best_cand) + t_reco_mc_2017.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && "+best_cand) + t_reco_mc_2018.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && "+best_cand)
-
-        if(species == 1):
-            up_best_cand_MC = ROOT.TEfficiency.Wilson(N_all_mass_vetoes_MC, N_best_cand_MC, 0.68, True)
-            down_best_cand_MC = ROOT.TEfficiency.Wilson(N_all_mass_vetoes_MC, N_best_cand_MC, 0.68, False)
-            eps_best_cand_MC_err = 0.5*(up_best_cand_MC - down_best_cand_MC)
-            eps_best_cand_MC =  ufloat(N_best_cand_MC/N_all_mass_vetoes_MC, eps_best_cand_MC_err)    
-        else:
-            up_best_cand_MC = ROOT.TEfficiency.Wilson(N_fit_region_MC, N_best_cand_MC, 0.68, True)
-            down_best_cand_MC = ROOT.TEfficiency.Wilson(N_fit_region_MC, N_best_cand_MC, 0.68, False)
-            eps_best_cand_MC_err = 0.5*(up_best_cand_MC - down_best_cand_MC)
-            eps_best_cand_MC =  ufloat(N_best_cand_MC/N_fit_region_MC, eps_best_cand_MC_err)    
-
-        if(species == 1):
-            best_cand_columns = ["$3\\pi 3\\pi$", "$3\\pi 3\\pi \\pi^0$", "$3\\pi 3\\pi 2\\pi^0$", "All MC"]
-        else:
-            best_cand_columns = ["MC"]
-        best_cand_rows = ["All years"]
-
-        best_cand_table = pd.DataFrame(index=best_cand_rows, columns=best_cand_columns)
-        if(species == 1):
-            best_cand_table.loc["All years", "$3\\pi 3\\pi$"] = f"${eps_best_cand_3pi3pi.nominal_value*100:.2f} \\pm {eps_best_cand_3pi3pi.std_dev*100:.2f}$"
-            best_cand_table.loc["All years", "$3\\pi 3\\pi \\pi^0$"] = f"${eps_best_cand_3pi3pipi0.nominal_value*100:.2f} \\pm {eps_best_cand_3pi3pipi0.std_dev*100:.2f}$"
-            best_cand_table.loc["All years", "$3\\pi 3\\pi 2\\pi^0$"] = f"${eps_best_cand_3pi3pi2pi0.nominal_value*100:.2f} \\pm {eps_best_cand_3pi3pi2pi0.std_dev*100:.2f}$"
-            best_cand_table.loc["All years", "All MC"] = f"${eps_best_cand_MC.nominal_value*100:.2f} \\pm {eps_best_cand_MC.std_dev*100:.2f}$"
-        else:
-            best_cand_table.loc["All years", "MC"] = f"${eps_best_cand_MC.nominal_value*100:.2f} \\pm {eps_best_cand_MC.std_dev*100:.2f}$"
-
-    with open(f'/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/best_cand_efficiency_table.tex', 'w') as fout_best_cand:
-        fout_best_cand.write(best_cand_table.to_latex())
-
-
 
 
 def main(argv):

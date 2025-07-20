@@ -63,6 +63,8 @@ def draw_variables(sig_data, bkg_data, mc_weights, columns, setup_name, step_nam
         elif(column == "D_FD_BV_min"):
             xlim = [0,150]
         elif(column == "Bp_VTXISODCHI2ONETRACK_B"):
+            xlim = [0,3000]
+        elif(column == "Bp_VTXISODCHI2TWOTRACK_B"):
             xlim = [0,5000]
         elif(column == "Bp_VTXISODCHI2ONETRACK_taup"):
             xlim = [0,100]
@@ -73,11 +75,13 @@ def draw_variables(sig_data, bkg_data, mc_weights, columns, setup_name, step_nam
         elif(column == "Bp_VTXISODCHI2TWOTRACK_taum"):
             xlim = [0,150]
         elif(column == "Bp_VTXISODCHI2ONETRACK_tau_max"):
-            xlim = [0,150]
+            xlim = [0,60]
         elif(column == "Bp_VTXISODCHI2ONETRACK_tau_min"):
-            xlim = [0,30]
+            xlim = [0,10]
         elif(column == "Bp_VTXISODCHI2TWOTRACK_tau_min"):
-            xlim = [0,100]
+            xlim = [0,40]
+        elif(column == "Bp_VTXISODCHI2TWOTRACK_tau_max"):
+            xlim = [0,150]
         elif(column == "A_BV_DV1_DV2"):
             xlim = [0,2]
         elif(column == "A_PV_DV1_DV2"):
@@ -406,14 +410,14 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
     # Variables needed to build the input features for the 1st and 2nd steps
     if(species_name == "Ktautau"):
         branch_names = ['Bp_VTXISODCHI2ONETRACK_B', 'Bp_VTXISODCHI2ONETRACK_taup', 'Bp_VTXISODCHI2ONETRACK_taum', 'Bp_VTXISODCHI2TWOTRACK_taup', 'Bp_VTXISODCHI2TWOTRACK_taum', 'Bp_VTXISONUMVTX_taup', 'Bp_VTXISONUMVTX_taum', 
-                        'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum',
+                        'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup', 'Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum', 'Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taup', 'Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taum',
                         'Bp_TRKISOBDTFIRSTVALUE_taup_pi1', 'Bp_TRKISOBDTFIRSTVALUE_taup_pi2', 'Bp_TRKISOBDTFIRSTVALUE_taup_pi3', 
                         'Bp_TRKISOBDTSECONDVALUE_taup_pi1', 'Bp_TRKISOBDTSECONDVALUE_taup_pi2', 'Bp_TRKISOBDTSECONDVALUE_taup_pi3', 
                         'Bp_TRKISOBDTTHIRDVALUE_taup_pi1', 'Bp_TRKISOBDTTHIRDVALUE_taup_pi2', 'Bp_TRKISOBDTTHIRDVALUE_taup_pi3', 
                         'Bp_TRKISOBDTFIRSTVALUE_taum_pi1', 'Bp_TRKISOBDTFIRSTVALUE_taum_pi2', 'Bp_TRKISOBDTFIRSTVALUE_taum_pi3', 
                         'Bp_TRKISOBDTSECONDVALUE_taum_pi1', 'Bp_TRKISOBDTSECONDVALUE_taum_pi2', 'Bp_TRKISOBDTSECONDVALUE_taum_pi3', 
                         'Bp_TRKISOBDTTHIRDVALUE_taum_pi1', 'Bp_TRKISOBDTTHIRDVALUE_taum_pi2', 'Bp_TRKISOBDTTHIRDVALUE_taum_pi3',
-                        'Bp_NC_05_PTASYM_taup', 'Bp_NC_05_PTASYM_taum', 'Bp_CCNC_05_IT_B', 'Bp_NC_05_PTASYM_taup', 'Bp_NC_05_PTASYM_taum', 'Bp_CC_05_MULT_B', 'Bp_NC_05_IT_B', 'Bp_NC_05_PTASYM_B', 'Bp_CCNC_05_IT_taup', 'Bp_CCNC_05_IT_taum',
+                        'Bp_NC_05_PTASYM_taup', 'Bp_NC_05_PTASYM_taum', 'Bp_CCNC_05_IT_B', 'Bp_NC_05_PTASYM_taup', 'Bp_NC_05_PTASYM_taum', 'Bp_CC_05_MULT_B', 'Bp_NC_05_IT_B', 'Bp_NC_05_PTASYM_B', 'Bp_CCNC_05_IT_taup', 'Bp_CCNC_05_IT_taum', 'Bp_NC_05_MULT_taup', 'Bp_NC_05_MULT_taum',
                         'taup_M', 'taup_M12', 'taup_M23', 'taup_M13', 'taup_DIRA_ORIVX', 'taum_M', 'taum_M12', 'taum_M23', 'taum_M13', 'taum_DIRA_ORIVX', 'Bp_DIRA_OWNPV',
                         'df_BVx', 'df_BVy', 'df_BVz', 'df_DV1x', 'df_DV1y', 'df_DV1z', 'df_DV2x', 'df_DV2y', 'df_DV2z', 'df_PVx', 'df_PVy', 'df_PVz',
                         'df_BVx_err', 'df_BVy_err', 'df_BVz_err', 'df_DV1x_err', 'df_DV1y_err', 'df_DV1z_err', 'df_DV2x_err', 'df_DV2y_err', 'df_DV2z_err', 'df_PVx_err', 'df_PVy_err', 'df_PVz_err',
@@ -446,17 +450,20 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
         branch_names += ['df_Bp_M']
     else:
         branch_names += ['Bp_dtf_M']
+    
+    if(step_name == "merged"):
+        branch_names += ['BDT1', 'BDT2']
 
     print("Loading signal")
     if(species_name == "Ktautau"):
         sig = sig_df.AsNumpy(branch_names+['Kp_ProbNNk_pidgen_default', 'taum_pi1_ProbNNpi_pidgen_default', 'taum_pi2_ProbNNpi_pidgen_default', 'taum_pi3_ProbNNpi_pidgen_default', 'taup_pi1_ProbNNpi_pidgen_default', 'taup_pi2_ProbNNpi_pidgen_default', 'taup_pi3_ProbNNpi_pidgen_default'])
-        if((step_name == "combinatorial") or (step_name == "big_combinatorial")):
+        if((step_name == "combinatorial") or (step_name == "big_combinatorial") or (step_name == "merged")):
             bkg = bkg_df.AsNumpy(branch_names+['Kp_ProbNNk', 'taum_pi1_ProbNNpi', 'taum_pi2_ProbNNpi', 'taum_pi3_ProbNNpi', 'taup_pi1_ProbNNpi', 'taup_pi2_ProbNNpi', 'taup_pi3_ProbNNpi']) 
         else:
             bkg = bkg_df.AsNumpy(branch_names)
     else:
         sig = sig_df.AsNumpy(branch_names+['D0bar_K_ProbNNk_pidgen_default', 'Dsp_K1_ProbNNk_pidgen_default', 'Dsp_K2_ProbNNk_pidgen_default', 'D0bar_pi_ProbNNpi_pidgen_default', 'Dsp_pi_ProbNNpi_pidgen_default'])
-        if((step_name == "combinatorial") or (step_name == "big_combinatorial")):
+        if((step_name == "combinatorial") or (step_name == "big_combinatorial") or (step_name == "merged")):
             bkg = bkg_df.AsNumpy(branch_names+['D0bar_K_ProbNNk', 'Dsp_K1_ProbNNk', 'Dsp_K2_ProbNNk', 'D0bar_pi_ProbNNpi', 'Dsp_pi_ProbNNpi']) 
         else:
             bkg = bkg_df.AsNumpy(branch_names)
@@ -718,6 +725,123 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
             background['IP_tau_Kp_max'] = np.maximum( IP_taup_Kp_bkg, IP_taum_Kp_bkg ) 
             background['IP_tau_Kp_min'] = np.minimum( IP_taup_Kp_bkg, IP_taum_Kp_bkg ) 
 
+        elif(step_name == "isolation"):
+            signal['Bp_VTXISODCHI2ONETRACK_tau_max'] = np.maximum( sig['Bp_VTXISODCHI2ONETRACK_taup'], sig['Bp_VTXISODCHI2ONETRACK_taum'] )
+            signal['Bp_VTXISODCHI2ONETRACK_tau_min'] = np.minimum( sig['Bp_VTXISODCHI2ONETRACK_taup'], sig['Bp_VTXISODCHI2ONETRACK_taum'] )
+            signal['Bp_VTXISODCHI2TWOTRACK_tau_max'] = np.maximum( sig['Bp_VTXISODCHI2TWOTRACK_taup'], sig['Bp_VTXISODCHI2TWOTRACK_taum'] )
+            signal['Bp_VTXISODCHI2TWOTRACK_tau_min'] = np.minimum( sig['Bp_VTXISODCHI2TWOTRACK_taup'], sig['Bp_VTXISODCHI2TWOTRACK_taum'] )
+            signal['Bp_VTXISODCHI2ONETRACK_B'] = sig['Bp_VTXISODCHI2ONETRACK_B']
+            signal['Bp_VTXISODCHI2TWOTRACK_B'] = sig['Bp_VTXISODCHI2TWOTRACK_B']
+            signal['Bp_CCNC_05_IT_B'] = sig['Bp_CCNC_05_IT_B']
+            signal['Bp_NC_05_PTASYM_tau_max'] = np.maximum( sig['Bp_NC_05_PTASYM_taup'], sig['Bp_NC_05_PTASYM_taum'] )
+            signal['Bp_NC_05_PTASYM_tau_min'] = np.minimum( sig['Bp_NC_05_PTASYM_taup'], sig['Bp_NC_05_PTASYM_taum'] )
+            # signal['tau_iso_first_value_max'] = np.maximum( sig['Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taum'] )
+            # signal['tau_iso_second_value_max'] = np.maximum( sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] )
+            # signal['tau_iso_third_value_max'] = np.maximum( sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup'], sig['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] )
+
+            background['Bp_VTXISODCHI2ONETRACK_tau_max'] = np.maximum( bkg['Bp_VTXISODCHI2ONETRACK_taup'], bkg['Bp_VTXISODCHI2ONETRACK_taum'] )
+            background['Bp_VTXISODCHI2ONETRACK_tau_min'] = np.minimum( bkg['Bp_VTXISODCHI2ONETRACK_taup'], bkg['Bp_VTXISODCHI2ONETRACK_taum'] )
+            background['Bp_VTXISODCHI2TWOTRACK_tau_max'] = np.maximum( bkg['Bp_VTXISODCHI2TWOTRACK_taup'], bkg['Bp_VTXISODCHI2TWOTRACK_taum'] )
+            background['Bp_VTXISODCHI2TWOTRACK_tau_min'] = np.minimum( bkg['Bp_VTXISODCHI2TWOTRACK_taup'], bkg['Bp_VTXISODCHI2TWOTRACK_taum'] )
+            background['Bp_VTXISODCHI2ONETRACK_B'] = bkg['Bp_VTXISODCHI2ONETRACK_B']
+            background['Bp_VTXISODCHI2TWOTRACK_B'] = bkg['Bp_VTXISODCHI2TWOTRACK_B']
+            background['Bp_CCNC_05_IT_B'] = bkg['Bp_CCNC_05_IT_B']
+            background['Bp_NC_05_PTASYM_tau_max'] = np.maximum( bkg['Bp_NC_05_PTASYM_taup'], bkg['Bp_NC_05_PTASYM_taum'] )
+            background['Bp_NC_05_PTASYM_tau_min'] = np.minimum( bkg['Bp_NC_05_PTASYM_taup'], bkg['Bp_NC_05_PTASYM_taum'] )
+            # background['tau_iso_first_value_max'] = np.maximum( bkg['Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTFIRSTVALUE_taum'] )
+            # background['tau_iso_second_value_max'] = np.maximum( bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTSECONDVALUE_taum'] )
+            # background['tau_iso_third_value_max'] = np.maximum( bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taup'], bkg['Bp_B2Ksttautau_ISOBDTTHIRDVALUE_taum'] )
+
+        elif(step_name == "topology"):
+            # signal['tau_M_max'] = np.maximum( sig['taup_M'], sig['taum_M'] )
+            signal['tau_M12_M23_max_max'] = np.maximum( np.maximum( sig['taup_M12'], sig['taup_M23'] ), np.maximum( sig['taum_M12'], sig['taum_M23'] ) )
+            signal['tau_M12_M23_min_max'] = np.minimum( np.maximum( sig['taup_M12'], sig['taup_M23'] ), np.maximum( sig['taum_M12'], sig['taum_M23'] ) )
+            signal['tau_M12_M23_max_min'] = np.maximum( np.minimum( sig['taup_M12'], sig['taup_M23'] ), np.minimum( sig['taum_M12'], sig['taum_M23'] ) )
+            signal['log10_1_minus_tau_DIRA_BV_min'] = np.minimum( np.log10(1 - np.abs(sig['taup_DIRA_ORIVX'] ))*np.sign( sig['taup_DIRA_ORIVX']),  np.log10(1 - np.abs(sig['taum_DIRA_ORIVX'] ))*np.sign( sig['taum_DIRA_ORIVX'] ) )
+            signal['log10_1_minus_tau_DIRA_BV_max'] = np.maximum( np.log10(1 - np.abs(sig['taup_DIRA_ORIVX'] ))*np.sign( sig['taup_DIRA_ORIVX']),  np.log10(1 - np.abs(sig['taum_DIRA_ORIVX'] ))*np.sign( sig['taum_DIRA_ORIVX'] ) )
+            signal['log10_df_chi2'] = np.log10( sig['df_chi2'] )
+            # signal['log10_Bp_FD_PV'] = np.log10( np.sqrt( (sig['df_BVx'] - sig['df_PVx'])**2 + (sig['df_BVy'] - sig['df_PVy'])**2 + (sig['df_BVz'] - sig['df_PVz'])**2 ) )
+            signal['log10_tau_FD_BV_min'] = np.log10( np.minimum( np.sqrt( (sig['df_DV1x'] - sig['df_BVx'])**2 + (sig['df_DV1y'] - sig['df_BVy'])**2 + (sig['df_DV1z'] - sig['df_BVz'])**2), np.sqrt( (sig['df_DV2x'] - sig['df_BVx'])**2 + (sig['df_DV2y'] - sig['df_BVy'])**2 + (sig['df_DV2z'] - sig['df_BVz'])**2) ) )
+            signal['log10_tau_ENDVERTEX_chi2_max'] = np.log10( np.maximum( sig['taup_ENDVERTEX_CHI2'], sig['taum_ENDVERTEX_CHI2'] ) )
+
+            Cx_taup_sig =  (sig['df_DV1y'] - sig['df_BVy'])*sig['df_Kp_PZ']  - ( sig['df_DV1z'] - sig['df_BVz'])*sig['df_Kp_PY']
+            Cy_taup_sig =  (sig['df_DV1z'] - sig['df_BVz'])*sig['df_Kp_PX']  - ( sig['df_DV1x'] - sig['df_BVx'])*sig['df_Kp_PZ']
+            Cz_taup_sig =  (sig['df_DV1x'] - sig['df_BVx'])*sig['df_Kp_PY']  - ( sig['df_DV1y'] - sig['df_BVy'])*sig['df_Kp_PX']
+            C_taup_sig = np.sqrt( Cx_taup_sig**2 + Cy_taup_sig**2 + Cz_taup_sig**2  )
+            IP_taup_Kp_sig = (2*C_taup_sig)/( np.sqrt( sig['df_Kp_PX']**2 + sig['df_Kp_PY']**2 + sig['df_Kp_PZ']**2 ) )
+
+            Cx_taum_sig =  (sig['df_DV2y'] - sig['df_BVy'])*sig['df_Kp_PZ']  - ( sig['df_DV2z'] - sig['df_BVz'])*sig['df_Kp_PY']
+            Cy_taum_sig =  (sig['df_DV2z'] - sig['df_BVz'])*sig['df_Kp_PX']  - ( sig['df_DV2x'] - sig['df_BVx'])*sig['df_Kp_PZ']
+            Cz_taum_sig =  (sig['df_DV2x'] - sig['df_BVx'])*sig['df_Kp_PY']  - ( sig['df_DV2y'] - sig['df_BVy'])*sig['df_Kp_PX']
+            C_taum_sig = np.sqrt( Cx_taum_sig**2 + Cy_taum_sig**2 + Cz_taum_sig**2  )
+            IP_taum_Kp_sig = (2*C_taum_sig)/( np.sqrt( sig['df_Kp_PX']**2 + sig['df_Kp_PY']**2 + sig['df_Kp_PZ']**2 ) )
+
+            # signal['log10_IP_tau_Kp_max'] = np.log10( np.maximum( IP_taup_Kp_sig, IP_taum_Kp_sig ) )
+            signal['log10_IP_tau_Kp_min'] = np.log10( np.minimum( IP_taup_Kp_sig, IP_taum_Kp_sig ) )
+
+            a_sig = np.sqrt( (sig['df_PVx'] - sig['df_DV1x'])**2 + (sig['df_PVy'] - sig['df_DV1y'])**2 + (sig['df_PVz'] - sig['df_DV1z'])**2 )
+            b_sig = np.sqrt( (sig['df_PVx'] - sig['df_DV2x'])**2 + (sig['df_PVy'] - sig['df_DV2y'])**2 + (sig['df_PVz'] - sig['df_DV2z'])**2 )
+            c_sig= np.sqrt( (sig['df_DV1x'] - sig['df_DV2x'])**2 + (sig['df_DV1y'] - sig['df_DV2y'])**2 + (sig['df_DV1z'] - sig['df_DV2z'])**2 )
+            s_sig = (a_sig+b_sig+c_sig)*0.5
+            signal['log10_A_PV_DV1_DV2'] = np.log10( np.sqrt(s_sig*(s_sig-a_sig)*(s_sig-b_sig)*(s_sig-c_sig)) )
+
+            a1_sig = np.sqrt( (sig['df_BVx'] - sig['df_DV1x'])**2 + (sig['df_BVy'] - sig['df_DV1y'])**2 + (sig['df_BVz'] - sig['df_DV1z'])**2 )
+            b1_sig = np.sqrt( (sig['df_BVx'] - sig['df_DV2x'])**2 + (sig['df_BVy'] - sig['df_DV2y'])**2 + (sig['df_BVz'] - sig['df_DV2z'])**2 )
+            c1_sig= np.sqrt( (sig['df_DV1x'] - sig['df_DV2x'])**2 + (sig['df_DV1y'] - sig['df_DV2y'])**2 + (sig['df_DV1z'] - sig['df_DV2z'])**2 )
+            s1_sig = (a1_sig+b1_sig+c1_sig)*0.5
+            # signal['log10_A_BV_DV1_DV2'] = np.log10( np.sqrt(s1_sig*(s1_sig-a1_sig)*(s1_sig-b1_sig)*(s1_sig-c1_sig)) )
+
+
+            # background['tau_M_max'] = np.maximum( bkg['taup_M'], bkg['taum_M'] )
+            background['tau_M12_M23_max_max'] = np.maximum( np.maximum( bkg['taup_M12'], bkg['taup_M23'] ), np.maximum( bkg['taum_M12'], bkg['taum_M23'] ) )
+            background['tau_M12_M23_min_max'] = np.minimum( np.maximum( bkg['taup_M12'], bkg['taup_M23'] ), np.maximum( bkg['taum_M12'], bkg['taum_M23'] ) )
+            background['tau_M12_M23_max_min'] = np.maximum( np.minimum( bkg['taup_M12'], bkg['taup_M23'] ), np.minimum( bkg['taum_M12'], bkg['taum_M23'] ) )
+            background['log10_1_minus_tau_DIRA_BV_min'] = np.minimum( np.log10(1 - np.abs(bkg['taup_DIRA_ORIVX'] ))*np.sign( bkg['taup_DIRA_ORIVX']),  np.log10(1 - np.abs(bkg['taum_DIRA_ORIVX'] ))*np.sign( bkg['taum_DIRA_ORIVX'] ) )
+            background['log10_1_minus_tau_DIRA_BV_max'] = np.maximum( np.log10(1 - np.abs(bkg['taup_DIRA_ORIVX'] ))*np.sign( bkg['taup_DIRA_ORIVX']),  np.log10(1 - np.abs(bkg['taum_DIRA_ORIVX'] ))*np.sign( bkg['taum_DIRA_ORIVX'] ) )
+            background['log10_df_chi2'] = np.log10( bkg['df_chi2'] )
+            # background['log10_Bp_FD_PV'] = np.log10( np.sqrt( (bkg['df_BVx'] - bkg['df_PVx'])**2 + (bkg['df_BVy'] - bkg['df_PVy'])**2 + (bkg['df_BVz'] - bkg['df_PVz'])**2 ) )
+            background['log10_tau_FD_BV_min'] = np.log10( np.minimum( np.sqrt( (bkg['df_DV1x'] - bkg['df_BVx'])**2 + (bkg['df_DV1y'] - bkg['df_BVy'])**2 + (bkg['df_DV1z'] - bkg['df_BVz'])**2), np.sqrt( (bkg['df_DV2x'] - bkg['df_BVx'])**2 + (bkg['df_DV2y'] - bkg['df_BVy'])**2 + (bkg['df_DV2z'] - bkg['df_BVz'])**2) ) )
+            background['log10_tau_ENDVERTEX_chi2_max'] = np.log10( np.maximum( bkg['taup_ENDVERTEX_CHI2'], bkg['taum_ENDVERTEX_CHI2'] ) )
+
+            Cx_taup_bkg =  (bkg['df_DV1y'] - bkg['df_BVy'])*bkg['df_Kp_PZ']  - ( bkg['df_DV1z'] - bkg['df_BVz'])*bkg['df_Kp_PY']
+            Cy_taup_bkg =  (bkg['df_DV1z'] - bkg['df_BVz'])*bkg['df_Kp_PX']  - ( bkg['df_DV1x'] - bkg['df_BVx'])*bkg['df_Kp_PZ']
+            Cz_taup_bkg =  (bkg['df_DV1x'] - bkg['df_BVx'])*bkg['df_Kp_PY']  - ( bkg['df_DV1y'] - bkg['df_BVy'])*bkg['df_Kp_PX']
+            C_taup_bkg = np.sqrt( Cx_taup_bkg**2 + Cy_taup_bkg**2 + Cz_taup_bkg**2  )
+            IP_taup_Kp_bkg = (2*C_taup_bkg)/( np.sqrt( bkg['df_Kp_PX']**2 + bkg['df_Kp_PY']**2 + bkg['df_Kp_PZ']**2 ) )
+
+            Cx_taum_bkg =  (bkg['df_DV2y'] - bkg['df_BVy'])*bkg['df_Kp_PZ']  - ( bkg['df_DV2z'] - bkg['df_BVz'])*bkg['df_Kp_PY']
+            Cy_taum_bkg =  (bkg['df_DV2z'] - bkg['df_BVz'])*bkg['df_Kp_PX']  - ( bkg['df_DV2x'] - bkg['df_BVx'])*bkg['df_Kp_PZ']
+            Cz_taum_bkg =  (bkg['df_DV2x'] - bkg['df_BVx'])*bkg['df_Kp_PY']  - ( bkg['df_DV2y'] - bkg['df_BVy'])*bkg['df_Kp_PX']
+            C_taum_bkg = np.sqrt( Cx_taum_bkg**2 + Cy_taum_bkg**2 + Cz_taum_bkg**2  )
+            IP_taum_Kp_bkg = (2*C_taum_bkg)/( np.sqrt( bkg['df_Kp_PX']**2 + bkg['df_Kp_PY']**2 + bkg['df_Kp_PZ']**2 ) )
+
+            # background['log10_IP_tau_Kp_max'] = np.log10( np.maximum( IP_taup_Kp_bkg, IP_taum_Kp_bkg ) )
+            background['log10_IP_tau_Kp_min'] = np.log10( np.minimum( IP_taup_Kp_bkg, IP_taum_Kp_bkg ) )
+
+            a_bkg = np.sqrt( (bkg['df_PVx'] - bkg['df_DV1x'])**2 + (bkg['df_PVy'] - bkg['df_DV1y'])**2 + (bkg['df_PVz'] - bkg['df_DV1z'])**2 )
+            b_bkg = np.sqrt( (bkg['df_PVx'] - bkg['df_DV2x'])**2 + (bkg['df_PVy'] - bkg['df_DV2y'])**2 + (bkg['df_PVz'] - bkg['df_DV2z'])**2 )
+            c_bkg= np.sqrt( (bkg['df_DV1x'] - bkg['df_DV2x'])**2 + (bkg['df_DV1y'] - bkg['df_DV2y'])**2 + (bkg['df_DV1z'] - bkg['df_DV2z'])**2 )
+            s_bkg = (a_bkg+b_bkg+c_bkg)*0.5
+            background['log10_A_PV_DV1_DV2'] = np.log10( np.sqrt(s_bkg*(s_bkg-a_bkg)*(s_bkg-b_bkg)*(s_bkg-c_bkg)) )
+
+            a1_bkg = np.sqrt( (bkg['df_BVx'] - bkg['df_DV1x'])**2 + (bkg['df_BVy'] - bkg['df_DV1y'])**2 + (bkg['df_BVz'] - bkg['df_DV1z'])**2 )
+            b1_bkg = np.sqrt( (bkg['df_BVx'] - bkg['df_DV2x'])**2 + (bkg['df_BVy'] - bkg['df_DV2y'])**2 + (bkg['df_BVz'] - bkg['df_DV2z'])**2 )
+            c1_bkg= np.sqrt( (bkg['df_DV1x'] - bkg['df_DV2x'])**2 + (bkg['df_DV1y'] - bkg['df_DV2y'])**2 + (bkg['df_DV1z'] - bkg['df_DV2z'])**2 )
+            s1_bkg = (a1_bkg+b1_bkg+c1_bkg)*0.5
+            # background['log10_A_BV_DV1_DV2'] = np.log10( np.sqrt(s1_bkg*(s1_bkg-a1_bkg)*(s1_bkg-b1_bkg)*(s1_bkg-c1_bkg)) )
+
+        elif(step_name == "merged"):
+            signal['Kp_ProbNNk'] = sig['Kp_ProbNNk_pidgen_default']
+            signal['tau_prod_pi_min'] = np.minimum(sig['taum_pi1_ProbNNpi_pidgen_default']*sig['taum_pi2_ProbNNpi_pidgen_default']*sig['taum_pi3_ProbNNpi_pidgen_default'], sig['taup_pi1_ProbNNpi_pidgen_default']*sig['taup_pi2_ProbNNpi_pidgen_default']*sig['taup_pi3_ProbNNpi_pidgen_default'])
+            signal['BDT1'] = sig['BDT1']
+            signal['BDT2'] = sig['BDT2']
+
+            background['Kp_ProbNNk'] = bkg['Kp_ProbNNk']
+            background['tau_prod_pi_min'] = np.minimum(bkg['taum_pi1_ProbNNpi']*bkg['taum_pi2_ProbNNpi']*bkg['taum_pi3_ProbNNpi'], bkg['taup_pi1_ProbNNpi']*bkg['taup_pi2_ProbNNpi']*bkg['taup_pi3_ProbNNpi'])
+            background['BDT1'] = bkg['BDT1']
+            background['BDT2'] = bkg['BDT2']
+
+
     else:
         mkaon = 493.677
         mpion = 139.57039
@@ -901,10 +1025,10 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
     ###################################################### Train a classifier ####################################################################
     # I am using the optimised hyper-parameters here:
     name = "XGBoost"
-    if(step_name == "physics"):
-        clf = xgb.XGBClassifier(tree_method="hist", n_estimators=500, max_depth=2, learning_rate=0.1, random_state=42, importance_type='weight') # hist is the fastest tree method
-    elif(step_name == "combinatorial"):
-        clf = xgb.XGBClassifier(tree_method="hist", n_estimators=500, max_depth=2, learning_rate=0.1, random_state=42, importance_type='weight') # hist is the fastest tree method
+    # if(step_name == "physics"):
+    #     clf = xgb.XGBClassifier(tree_method="hist", n_estimators=500, max_depth=2, learning_rate=0.1, random_state=42, importance_type='weight') # hist is the fastest tree method
+    # elif(step_name == "combinatorial"):
+    clf = xgb.XGBClassifier(tree_method="hist", n_estimators=500, max_depth=2, learning_rate=0.1, random_state=42, importance_type='weight') # hist is the fastest tree method
 
     X = pd.DataFrame(X, columns=input_features+['fold'])
     y = pd.DataFrame(y, columns=['y'])
@@ -1019,6 +1143,13 @@ def main(argv):
         fc_sig2_2017 = ROOT.TFileCollection("fc_sig2_2017", "fc_sig2_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_1/invariant_mass_tree.txt")
         fc_sig2_2018 = ROOT.TFileCollection("fc_sig2_2018", "fc_sig2_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_1/invariant_mass_tree.txt")
 
+        if(step_name == "merged"):
+            # sklearn branches
+            fc_sig3_2016 = ROOT.TFileCollection("fc_sig3_2016", "fc_sig3_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_1/bdt_output.txt")
+            fc_sig3_2017 = ROOT.TFileCollection("fc_sig3_2017", "fc_sig3_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_1/bdt_output.txt")
+            fc_sig3_2018 = ROOT.TFileCollection("fc_sig3_2018", "fc_sig3_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_1/bdt_output.txt")
+
+
         t_sig_2016 = ROOT.TChain("DecayTree")
         t_sig_2017 = ROOT.TChain("DecayTree")
         t_sig_2018 = ROOT.TChain("DecayTree")
@@ -1031,6 +1162,11 @@ def main(argv):
         t_sig2_2017 = ROOT.TChain("DecayTree")
         t_sig2_2018 = ROOT.TChain("DecayTree")
 
+        if(step_name == "merged"):
+            t_sig3_2016 = ROOT.TChain("DecayTree")
+            t_sig3_2017 = ROOT.TChain("DecayTree")
+            t_sig3_2018 = ROOT.TChain("DecayTree")
+
         t_sig_2016.AddFileInfoList(fc_sig_2016.GetList())
         t_sig_2017.AddFileInfoList(fc_sig_2017.GetList())
         t_sig_2018.AddFileInfoList(fc_sig_2018.GetList())
@@ -1042,6 +1178,11 @@ def main(argv):
         t_sig2_2016.AddFileInfoList(fc_sig2_2016.GetList())
         t_sig2_2017.AddFileInfoList(fc_sig2_2017.GetList())
         t_sig2_2018.AddFileInfoList(fc_sig2_2018.GetList())
+
+        if(step_name == "merged"):
+            t_sig3_2016.AddFileInfoList(fc_sig3_2016.GetList())
+            t_sig3_2017.AddFileInfoList(fc_sig3_2017.GetList())
+            t_sig3_2018.AddFileInfoList(fc_sig3_2018.GetList())
 
         t_sig_2016.GetEntries()
         t_sig_2017.GetEntries()
@@ -1061,13 +1202,26 @@ def main(argv):
         t_sig2_2016.Add(t_sig2_2017)
         t_sig2_2016.Add(t_sig2_2018)
 
+        if(step_name == "merged"):
+            t_sig3_2016.GetEntries()
+            t_sig3_2017.GetEntries()
+            t_sig3_2018.GetEntries()
+            t_sig3_2016.Add(t_sig3_2017)
+            t_sig3_2016.Add(t_sig3_2018)
+
+
         print("SIGNAL")
         print("pre sel entries = ", t_sig_2016.GetEntries())
         print("gsl entries = ", t_sig1_2016.GetEntries())
         print("inv mass entries = ", t_sig2_2016.GetEntries())
+        if(step_name == "merged"):
+            print("sklearn response = ", t_sig3_2016.GetEntries())
 
         t_sig_2016.AddFriend(t_sig1_2016)
         t_sig_2016.AddFriend(t_sig2_2016)
+        if(step_name == "merged"):
+            t_sig_2016.AddFriend(t_sig3_2016)
+
 
         if((step_name == "physics") or (step_name == "small_physics")):
             # Background proxy 1: B -> DD K+ (fit region) (2016+2017+2018) (B and final state particles truth-matched)
@@ -1333,19 +1487,24 @@ def main(argv):
             t_BuDDKp_2016.AddFriend(t_BuDDKp2_2016)
         
         
-        elif((step_name == "combinatorial") or (step_name == "big_combinatorial")):
+        elif((step_name == "combinatorial") or (step_name == "big_combinatorial") or (step_name == "isolation") or (step_name == "topology") or (step_name == "merged")):
             # Background proxy: WS data (K- tau+ tau+) (fit region) (100 files of 2016, 2017 and 2018)
-            fc_ws_data_2016 = ROOT.TFileCollection("fc_ws_data_2016", "fc_ws_data_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_3/pre_sel_tree.txt", 10) 
-            fc_ws_data_2017 = ROOT.TFileCollection("fc_ws_data_2017", "fc_ws_data_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_3/pre_sel_tree.txt", 10) 
-            fc_ws_data_2018 = ROOT.TFileCollection("fc_ws_data_2018", "fc_ws_data_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_3/pre_sel_tree.txt", 10) 
+            fc_ws_data_2016 = ROOT.TFileCollection("fc_ws_data_2016", "fc_ws_data_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_3/pre_sel_tree.txt", 100) 
+            fc_ws_data_2017 = ROOT.TFileCollection("fc_ws_data_2017", "fc_ws_data_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_3/pre_sel_tree.txt", 100) 
+            fc_ws_data_2018 = ROOT.TFileCollection("fc_ws_data_2018", "fc_ws_data_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_3/pre_sel_tree.txt", 100) 
             
-            fc_ws_data1_2016 = ROOT.TFileCollection("fc_ws_data1_2016", "fc_ws_data1_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_3/fit_results.txt", 10) 
-            fc_ws_data1_2017 = ROOT.TFileCollection("fc_ws_data1_2017", "fc_ws_data1_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_3/fit_results.txt", 10) 
-            fc_ws_data1_2018 = ROOT.TFileCollection("fc_ws_data1_2018", "fc_ws_data1_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_3/fit_results.txt", 10) 
+            fc_ws_data1_2016 = ROOT.TFileCollection("fc_ws_data1_2016", "fc_ws_data1_2016", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2016/Species_3/fit_results.txt", 100) 
+            fc_ws_data1_2017 = ROOT.TFileCollection("fc_ws_data1_2017", "fc_ws_data1_2017", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2017/Species_3/fit_results.txt", 100) 
+            fc_ws_data1_2018 = ROOT.TFileCollection("fc_ws_data1_2018", "fc_ws_data1_2018", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/2018/Species_3/fit_results.txt", 100) 
 
-            fc_ws_data2_2016 = ROOT.TFileCollection("fc_ws_data2_2016", "fc_ws_data2_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_3/invariant_mass_tree.txt", 10) 
-            fc_ws_data2_2017 = ROOT.TFileCollection("fc_ws_data2_2017", "fc_ws_data2_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_3/invariant_mass_tree.txt", 10) 
-            fc_ws_data2_2018 = ROOT.TFileCollection("fc_ws_data2_2018", "fc_ws_data2_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_3/invariant_mass_tree.txt", 10) 
+            fc_ws_data2_2016 = ROOT.TFileCollection("fc_ws_data2_2016", "fc_ws_data2_2016", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2016/Species_3/invariant_mass_tree.txt", 100) 
+            fc_ws_data2_2017 = ROOT.TFileCollection("fc_ws_data2_2017", "fc_ws_data2_2017", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2017/Species_3/invariant_mass_tree.txt", 100) 
+            fc_ws_data2_2018 = ROOT.TFileCollection("fc_ws_data2_2018", "fc_ws_data2_2018", "/panfs/felician/B2Ktautau/workflow/create_invariant_mass_tree/2018/Species_3/invariant_mass_tree.txt", 100) 
+
+            if(step_name == "merged"):
+                fc_ws_data3_2016 = ROOT.TFileCollection("fc_ws_data3_2016", "fc_ws_data3_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_3/bdt_output.txt", 100) 
+                fc_ws_data3_2017 = ROOT.TFileCollection("fc_ws_data3_2017", "fc_ws_data3_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_3/bdt_output.txt", 100) 
+                fc_ws_data3_2018 = ROOT.TFileCollection("fc_ws_data3_2018", "fc_ws_data3_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_3/bdt_output.txt", 100) 
 
             t_ws_data_2016 = ROOT.TChain("DecayTree")
             t_ws_data_2017 = ROOT.TChain("DecayTree")
@@ -1359,6 +1518,11 @@ def main(argv):
             t_ws_data2_2017 = ROOT.TChain("DecayTree")
             t_ws_data2_2018 = ROOT.TChain("DecayTree")
 
+            if(step_name == "merged"):
+                t_ws_data3_2016 = ROOT.TChain("DecayTree")
+                t_ws_data3_2017 = ROOT.TChain("DecayTree")
+                t_ws_data3_2018 = ROOT.TChain("DecayTree")
+
             t_ws_data_2016.AddFileInfoList(fc_ws_data_2016.GetList())
             t_ws_data_2017.AddFileInfoList(fc_ws_data_2017.GetList())
             t_ws_data_2018.AddFileInfoList(fc_ws_data_2018.GetList())
@@ -1370,6 +1534,11 @@ def main(argv):
             t_ws_data2_2016.AddFileInfoList(fc_ws_data2_2016.GetList())
             t_ws_data2_2017.AddFileInfoList(fc_ws_data2_2017.GetList())
             t_ws_data2_2018.AddFileInfoList(fc_ws_data2_2018.GetList())
+
+            if(step_name == "merged"):
+                t_ws_data3_2016.AddFileInfoList(fc_ws_data3_2016.GetList())
+                t_ws_data3_2017.AddFileInfoList(fc_ws_data3_2017.GetList())
+                t_ws_data3_2018.AddFileInfoList(fc_ws_data3_2018.GetList())    
 
             t_ws_data_2016.GetEntries()
             t_ws_data_2017.GetEntries()
@@ -1388,29 +1557,63 @@ def main(argv):
             t_ws_data2_2018.GetEntries()
             t_ws_data2_2016.Add(t_ws_data2_2017)
             t_ws_data2_2016.Add(t_ws_data2_2018)
-
-            t_ws_data_2016.AddFriend(t_ws_data1_2016)
-            t_ws_data_2016.AddFriend(t_ws_data2_2016)
+        
+            if(step_name == "merged"):
+                t_ws_data3_2016.GetEntries()
+                t_ws_data3_2017.GetEntries()
+                t_ws_data3_2018.GetEntries()
+                t_ws_data3_2016.Add(t_ws_data3_2017)
+                t_ws_data3_2016.Add(t_ws_data3_2018)
 
             print("BACKGROUND : WS data")
             print("pre sel entries = ", t_ws_data_2016.GetEntries())
             print("gsl entries = ", t_ws_data1_2016.GetEntries())
-            print("inv mass entries = ", t_ws_data1_2016.GetEntries())
+            print("inv mass entries = ", t_ws_data2_2016.GetEntries())
+            if(step_name == "merged"):
+                print("bdt output = ", t_ws_data3_2016.GetEntries())
+
+            t_ws_data_2016.AddFriend(t_ws_data1_2016)
+            t_ws_data_2016.AddFriend(t_ws_data2_2016)
+            if(step_name == "merged"):
+                t_ws_data_2016.AddFriend(t_ws_data3_2016)
         
         else:
             print("Wrong step name")
             quit()
 
         # Convert TChain in RDataframe and apply cuts
+        t_sig = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_1/selections.root")
+        ktautau_mc_truthMatch_exp = t_sig.Get("truthMatch")
+        trigger_exp = t_sig.Get("trigger")
+        ktautau_mc_rectangular_cuts_exp = t_sig.Get("rectangular_cuts")
+        pass_mass_fit_exp = t_sig.Get("pass_mass_fit")
+        fit_range_exp = t_sig.Get("fit_range")
+        mass_vetoes_exp = t_sig.Get("mass_vetoes")
+
+        ktautau_mc_truthMatch = ROOT.TCut(ktautau_mc_truthMatch_exp.GetString().Data())
+        trigger = ROOT.TCut(trigger_exp.GetString().Data())
+        ktautau_mc_rectangular_cuts = ROOT.TCut(ktautau_mc_rectangular_cuts_exp.GetString().Data())
+        pass_mass_fit = ROOT.TCut(pass_mass_fit_exp.GetString().Data())
+        fit_range = ROOT.TCut(fit_range_exp.GetString().Data())
+        mass_vetoes = ROOT.TCut(mass_vetoes_exp.GetString().Data())
+
+        sig_selection = ktautau_mc_truthMatch+trigger+ktautau_mc_rectangular_cuts+pass_mass_fit+fit_range+mass_vetoes
+
         sig_df = ROOT.RDataFrame(t_sig_2016)
-        sig_df = sig_df.Filter('(df_status==0) && (df_Bp_M > 4000) && (df_Bp_M < 8000) && ( TMath::Min(TMath::Log10(1 - TMath::Abs(taup_DIRA_ORIVX)) * TMath::Sign(1.0, taup_DIRA_ORIVX), TMath::Log10(1 - TMath::Abs(taum_DIRA_ORIVX)) * TMath::Sign(1.0, taum_DIRA_ORIVX)) < -1 )')
+        sig_df = sig_df.Filter(sig_selection.GetTitle())
 
         if((step_name == "physics")  or (step_name == "small_physics")):
             bkg_df = ROOT.RDataFrame(t_BuDDKp_2016) # B+ -> DD K+, B0 -> DD K+, B0s -> DD K+, B+ -> DD K0 and B+ -> DD
             bkg_df = bkg_df.Filter('(df_status==0) && (df_Bp_M > 4000) && (df_Bp_M < 8000) && (taup_BKGCAT <= 60) && (taum_BKGCAT <= 60) && (Bp_BKGCAT <= 60) && ( TMath::Min(TMath::Log10(1 - TMath::Abs(taup_DIRA_ORIVX)) * TMath::Sign(1.0, taup_DIRA_ORIVX), TMath::Log10(1 - TMath::Abs(taum_DIRA_ORIVX)) * TMath::Sign(1.0, taum_DIRA_ORIVX)) < -1 )')
         else:
+            t_bkg = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_3/selections.root")
+            ktautau_data_rectangular_cuts_exp = t_bkg.Get("rectangular_cuts")
+            ktautau_data_rectangular_cuts = ROOT.TCut(ktautau_data_rectangular_cuts_exp.GetString().Data())
+            bkg_selection = trigger+ktautau_data_rectangular_cuts+pass_mass_fit+fit_range+mass_vetoes
+
             bkg_df = ROOT.RDataFrame(t_ws_data_2016) # WS data
-            bkg_df = bkg_df.Filter('(df_status==0) && (df_Bp_M > 4000) && (df_Bp_M < 8000) && ( TMath::Min(TMath::Log10(1 - TMath::Abs(taup_DIRA_ORIVX)) * TMath::Sign(1.0, taup_DIRA_ORIVX), TMath::Log10(1 - TMath::Abs(taum_DIRA_ORIVX)) * TMath::Sign(1.0, taum_DIRA_ORIVX)) < -1 )')
+            bkg_df = bkg_df.Filter(bkg_selection.GetTitle())
+
 
     elif(species_name == "DDs"):
         # Prepare datasets
