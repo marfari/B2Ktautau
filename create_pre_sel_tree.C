@@ -135,16 +135,16 @@ void create_pre_sel_tree(int year, int species, int line)
     }
     else if(species == 7) // DDs MC
     {
-        pre_selections = truthMatch+trigger+rectangular_cuts+pass_mass_fit+fit_range;
+        pre_selections = truthMatch+trigger+rectangular_cuts+pass_mass_fit;
     }
     else if((species == 8) || (species == 72)) // DDs data and DDs MC w/o TM cuts
     {
-        pre_selections = trigger+rectangular_cuts+pass_mass_fit+fit_range;
+        pre_selections = trigger+rectangular_cuts+pass_mass_fit;
     }
     else if(species == 71) // D0bar Ds+ MC without rectangular cuts for the MVA validation
     {
         TCut stripping_cuts = "(D0bar_pi_ProbNNpi_pidgen_default > 0.55) && (Dsp_pi_ProbNNpi_pidgen_default > 0.55)";
-        pre_selections = stripping_cuts+truthMatch+trigger+pass_mass_fit+fit_range;
+        pre_selections = stripping_cuts+truthMatch+trigger+pass_mass_fit;
     }
     else if(species == 81) // D0bar Ds+ data without the rectangular cuts for MVA validation
     {
