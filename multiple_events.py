@@ -5,27 +5,35 @@ from collections import Counter
 import matplotlib.pyplot as plt
 import math as m
 from array import array
+import random
 
 def best_candidate(species, isKtautau, is_cokctailMC, t, evt, N, indices):   
-    bdt_sum = np.zeros(N)
+    # bdt_sum = np.zeros(N)
     dtf_chi2 = np.zeros(N)
+
+    gsl_chi2 = np.zeros(N)
 
     for cand in range(N): # loop over candidates and choose the one with the largest BDT value
         t.GetEntry(indices[cand])
 
         if(isKtautau or is_cokctailMC):
-            bdt1 = getattr(t, "BDT1")
-            bdt2 = getattr(t, "BDT2")
+            # bdt1 = getattr(t, "BDT1")
+            # bdt2 = getattr(t, "BDT2")
+            # bdt_sum[cand] = bdt1 + bdt2 
 
-            bdt_sum[cand] = bdt1 + bdt2 
+            gsl_chi2[cand] = getattr(t, "df_chi2")
+
         elif((species == 72) or (species == 8)):
             chi2 = getattr(t, "Bp_dtf_chi2")
             dtf_chi2[cand] = chi2[0]
 
     if(isKtautau or is_cokctailMC):
-        return indices[np.argmax( bdt_sum )]
+        # return indices[np.argmax( bdt_sum )]
+        return indices[np.argmin( gsl_chi2 )]
+
     elif((species == 72) or (species == 8)):
         return indices[np.argmin( dtf_chi2 )]
+
 
 def candidate_category(t, evt, indices, nCand):
     N = nCand[evt]
@@ -81,6 +89,7 @@ def candidate_category(t, evt, indices, nCand):
         PK = ROOT.Math.PxPyPzEVector( Kp_PX, Kp_PY, Kp_PZ, Kp_PE )
 
     return 0
+
 
 def angle_between_two_tracks(t, i, j, isKtautau, is_cokctailMC, species):
     if(isKtautau or is_cokctailMC):
@@ -165,8 +174,6 @@ def main(argv):
     species = int(species) 
     line = int(line)
 
-    create_single_event_tree = True
-
     is_cokctailMC = False
     if((species == 100) or (species == 110) or (species == 120) or (species == 130) or (species == 150)):
         is_cokctailMC = True
@@ -186,15 +193,19 @@ def main(argv):
         t1.AddFileInfoList(fc1.GetList())
         n1_entries = t1.GetEntries()
 
-        if(n_entries == n1_entries):
+        fc2 = ROOT.TFileCollection("fc1", "fc1", "/panfs/felician/B2Ktautau/workflow/standalone_fitter/201{0}/Species_{1}/fit_results.txt".format(year,species), 1, line)
+        t2 = ROOT.TChain("DecayTree")
+        t2.AddFileInfoList(fc2.GetList())
+        n2_entries = t2.GetEntries()
+
+        if((n_entries == n1_entries) and (n_entries == n2_entries)):
             t.AddFriend(t1)
+            t.AddFriend(t2)
         else:
             print("Wrong number of entries")
             quit()
 
     df = ROOT.RDataFrame(t)
-    if(not create_single_event_tree):
-        df = df.Filter("(BDT1 > 0.9) && (BDT2 > 0.9)")
 
     branch_names = ['runNumber', 'eventNumber']
     x = df.AsNumpy(branch_names)
@@ -206,37 +217,61 @@ def main(argv):
 
     # Loop over events
     best_candidates_index = -np.ones(n_events, dtype=int)
-    second_best_candidate_index = -np.ones(n_events, dtype=int)
+    # second_best_candidate_index = -np.ones(n_events, dtype=int)
 
     n_current = 0
     for evt in range(n_events):
         N = nCand[evt]
 
         indices = np.zeros(N, dtype=int)
-        bdt_sum = np.zeros(N)
-        dtf_chi2 = np.zeros(N)
+        # bdt_sum = np.zeros(N)
+        # gsl_chi2 = np.zeros(N)
+        # tau_chi2_sum = np.zeros(N)
+        # df_merr = np.zeros(N)
+        # dtf_chi2 = np.zeros(N)
 
         # best candidate selection
         for i in range(N):
             indices[i] = i + n_current
-            t.GetEntry(i + n_current)
-
-            if(isKtautau or is_cokctailMC):
-                bdt1 = getattr(t, "BDT1")
-                bdt2 = getattr(t, "BDT2")
-                bdt_sum[i] = bdt1 + bdt2 
-            elif((species == 72) or (species == 8)):
-                chi2 = getattr(t, "Bp_dtf_chi2")
-                dtf_chi2[i] = chi2[0]
+        
+        #     t.GetEntry(i + n_current)
+        #     if(isKtautau or is_cokctailMC):
+        #         bdt_sum[i] = getattr(t, "BDT1") + getattr(t, "BDT2") 
+        #         gsl_chi2[i] = getattr(t, "df_chi2")
+        #         tau_chi2_sum[i] = getattr(t, "taup_ENDVERTEX_CHI2") + getattr(t, "taum_ENDVERTEX_CHI2")
+        #         df_merr[i] = getattr(t, "df_Bp_MERR")
+        #     if((species == 72) or (species == 8)):
+        #         chi2 = getattr(t, "Bp_dtf_chi2")
+        #         dtf_chi2[i] = chi2[0]
                 
-        if(isKtautau or is_cokctailMC):
-            # best_candidates_index[evt] = indices[np.argmax( bdt_sum )]
-            bdt_sum_sorted_indices = bdt_sum.argsort()
-            best_candidates_index[evt] = indices[ bdt_sum_sorted_indices[-1] ]
-            if(N > 1):
-                second_best_candidate_index[evt] = indices[ bdt_sum_sorted_indices[-2] ]
-        elif((species == 72) or (species == 8)):
-            best_candidates_index[evt] = indices[np.argmin( dtf_chi2 )]
+        # if(isKtautau or is_cokctailMC):
+            # bdt_sum_sorted_indices = bdt_sum.argsort()
+            # best_candidates_index[evt] = indices[ bdt_sum_sorted_indices[-1] ]
+            # if(N > 1):
+            #     second_best_candidate_index[evt] = indices[ bdt_sum_sorted_indices[-2] ]
+
+            # gsl_chi2_sorted_indices = gsl_chi2.argsort()
+            # best_candidates_index[evt] = indices[ gsl_chi2_sorted_indices[0] ]
+            # if(N > 1):
+            #     second_best_candidate_index[evt] = indices[ gsl_chi2_sorted_indices[1] ]
+
+            # tau_chi2_sorted_indices = tau_chi2_sum.argsort()
+            # best_candidates_index[evt] = indices[ tau_chi2_sorted_indices[0] ]
+            # if(N > 1):
+            #     second_best_candidate_index[evt] = indices[ tau_chi2_sorted_indices[1] ]
+
+            # df_merr_sorted_indices = df_merr.argsort()
+            # best_candidates_index[evt] = indices[ df_merr_sorted_indices[0] ]
+            # if(N > 1):
+            #     second_best_candidate_index[evt] = indices[ df_merr_sorted_indices[1] ]
+        # elif((species == 72) or (species == 8)):
+        #     best_candidates_index[evt] = indices[np.argmin( dtf_chi2 )]
+
+        random.seed(42)
+        idx = random.randint(0, N-1)
+        best_candidates_index[evt] = indices[ idx ]
+
+        # print("N = ", N, " | best index = ", idx, " | event index = ", indices[ idx ])
         
         n_current += N
 
@@ -248,7 +283,7 @@ def main(argv):
     isSecondBest = array('i', [0])
     nCandidates = array('d', [0])
     tout.Branch("is_best_cand", isBest, "is_best_cand/O")
-    tout.Branch("is_second_best_cand", isSecondBest, "is_second_best_cand/O")
+    # tout.Branch("is_second_best_cand", isSecondBest, "is_second_best_cand/O")
     tout.Branch("n_candidates", nCandidates, "n_candidates/D")
 
     evt = 0
@@ -261,15 +296,12 @@ def main(argv):
             isBest[0] = False
             nCandidates[0] = -1
 
-        if(i in second_best_candidate_index):
-            isSecondBest[0] = True
-        else:
-            isSecondBest[0] = False
+        # if(i in second_best_candidate_index):
+        #     isSecondBest[0] = True
+        # else:
+        #     isSecondBest[0] = False
 
         tout.Fill()
-
-    print(n_entries)
-    print(n_events)
 
     tout.Write()
     fout.Close()

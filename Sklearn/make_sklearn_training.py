@@ -900,7 +900,7 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
             s1_bkg = (a1_bkg+b1_bkg+c1_bkg)*0.5
             background['log10_A_BV_DV1_DV2'] = np.log10( np.sqrt(s1_bkg*(s1_bkg-a1_bkg)*(s1_bkg-b1_bkg)*(s1_bkg-c1_bkg)) )
 
-        else:
+        elif(step_name == "combinatorial"):
             # SIGNAL
             signal['log10_1_minus_D_DIRA_BV_min'] = np.minimum( np.log10(1 - np.abs(sig['D0bar_DIRA_ORIVX'] ))*np.sign( sig['D0bar_DIRA_ORIVX']),  np.log10(1 - np.abs(sig['Dsp_DIRA_ORIVX'] ))*np.sign( sig['Dsp_DIRA_ORIVX'] ) )
             signal['log10_1_minus_D_DIRA_BV_max'] = np.maximum( np.log10(1 - np.abs(sig['D0bar_DIRA_ORIVX'] ))*np.sign( sig['D0bar_DIRA_ORIVX']),  np.log10(1 - np.abs(sig['Dsp_DIRA_ORIVX'] ))*np.sign( sig['Dsp_DIRA_ORIVX'] ) )
@@ -942,6 +942,68 @@ def make_classification(sig_df, bkg_df, species_name, step_name, setup_name, cro
             c_bkg= np.sqrt( (bkg['D0bar_ENDVERTEX_X'] - bkg['Dsp_ENDVERTEX_X'])**2 + (bkg['D0bar_ENDVERTEX_Y'] - bkg['Dsp_ENDVERTEX_Y'])**2 + (bkg['D0bar_ENDVERTEX_Z'] - bkg['Dsp_ENDVERTEX_Z'])**2 )
             s_bkg = (a_bkg+b_bkg+c_bkg)*0.5
             background['log10_A_PV_DV1_DV2'] = np.log10( np.sqrt(s_bkg*(s_bkg-a_bkg)*(s_bkg-b_bkg)*(s_bkg-c_bkg)) )
+
+        elif(step_name == "isolation"):
+            signal['Bp_VTXISODCHI2ONETRACK_D_max'] = np.maximum( sig['Bp_VTXISODCHI2ONETRACK_D0bar'], sig['Bp_VTXISODCHI2ONETRACK_Dsp'] )
+            signal['Bp_VTXISODCHI2ONETRACK_D_min'] = np.minimum( sig['Bp_VTXISODCHI2ONETRACK_D0bar'], sig['Bp_VTXISODCHI2ONETRACK_Dsp'] )
+            signal['Bp_VTXISODCHI2TWOTRACK_D_max'] = np.maximum( sig['Bp_VTXISODCHI2TWOTRACK_D0bar'], sig['Bp_VTXISODCHI2TWOTRACK_Dsp'] )
+            signal['Bp_VTXISODCHI2TWOTRACK_D_min'] = np.minimum( sig['Bp_VTXISODCHI2TWOTRACK_D0bar'], sig['Bp_VTXISODCHI2TWOTRACK_Dsp'] )
+            signal['Bp_VTXISODCHI2ONETRACK_B'] = sig['Bp_VTXISODCHI2ONETRACK_B']
+            signal['Bp_VTXISODCHI2TWOTRACK_B'] = sig['Bp_VTXISODCHI2TWOTRACK_B']
+            signal['Bp_CCNC_05_IT_B'] = sig['Bp_CCNC_05_IT_B']
+            signal['Bp_NC_05_PTASYM_D_max'] = np.maximum( sig['Bp_NC_05_PTASYM_D0bar'], sig['Bp_NC_05_PTASYM_Dsp'] )
+            signal['Bp_NC_05_PTASYM_D_min'] = np.minimum( sig['Bp_NC_05_PTASYM_D0bar'], sig['Bp_NC_05_PTASYM_Dsp'] )
+
+            background['Bp_VTXISODCHI2ONETRACK_D_max'] = np.maximum( bkg['Bp_VTXISODCHI2ONETRACK_D0bar'], bkg['Bp_VTXISODCHI2ONETRACK_Dsp'] )
+            background['Bp_VTXISODCHI2ONETRACK_D_min'] = np.minimum( bkg['Bp_VTXISODCHI2ONETRACK_D0bar'], bkg['Bp_VTXISODCHI2ONETRACK_Dsp'] )
+            background['Bp_VTXISODCHI2TWOTRACK_D_max'] = np.maximum( bkg['Bp_VTXISODCHI2TWOTRACK_D0bar'], bkg['Bp_VTXISODCHI2TWOTRACK_Dsp'] )
+            background['Bp_VTXISODCHI2TWOTRACK_D_min'] = np.minimum( bkg['Bp_VTXISODCHI2TWOTRACK_D0bar'], bkg['Bp_VTXISODCHI2TWOTRACK_Dsp'] )
+            background['Bp_VTXISODCHI2ONETRACK_B'] = bkg['Bp_VTXISODCHI2ONETRACK_B']
+            background['Bp_VTXISODCHI2TWOTRACK_B'] = bkg['Bp_VTXISODCHI2TWOTRACK_B']
+            background['Bp_CCNC_05_IT_B'] = bkg['Bp_CCNC_05_IT_B']
+            background['Bp_NC_05_PTASYM_D_max'] = np.maximum( bkg['Bp_NC_05_PTASYM_D0bar'], bkg['Bp_NC_05_PTASYM_Dsp'] )
+            background['Bp_NC_05_PTASYM_D_min'] = np.minimum( bkg['Bp_NC_05_PTASYM_D0bar'], bkg['Bp_NC_05_PTASYM_Dsp'] )
+
+        elif(step_name == "topology"):
+            signal['log10_1_minus_D_DIRA_BV_min'] = np.minimum( np.log10(1 - np.abs(sig['D0bar_DIRA_ORIVX'] ))*np.sign( sig['D0bar_DIRA_ORIVX']),  np.log10(1 - np.abs(sig['Dsp_DIRA_ORIVX'] ))*np.sign( sig['Dsp_DIRA_ORIVX'] ) )
+            signal['log10_1_minus_D_DIRA_BV_max'] = np.maximum( np.log10(1 - np.abs(sig['D0bar_DIRA_ORIVX'] ))*np.sign( sig['D0bar_DIRA_ORIVX']),  np.log10(1 - np.abs(sig['Dsp_DIRA_ORIVX'] ))*np.sign( sig['Dsp_DIRA_ORIVX'] ) )
+            dtf_chi2_sig = sig['Bp_dtf_chi2']
+            for i in range(len(dtf_chi2_sig)):
+                dtf_chi2_sig[i] = np.log10( dtf_chi2_sig[i][0] )
+            signal['log10_D_FD_BV_min'] = np.log10( np.minimum( np.sqrt( (sig['D0bar_ENDVERTEX_X'] - sig['Bp_ENDVERTEX_X'])**2 + (sig['D0bar_ENDVERTEX_Y'] - sig['Bp_ENDVERTEX_Y'])**2 + (sig['D0bar_ENDVERTEX_Z'] - sig['Bp_ENDVERTEX_Z'])**2), np.sqrt( (sig['Dsp_ENDVERTEX_X'] - sig['Bp_ENDVERTEX_X'])**2 + (sig['Dsp_ENDVERTEX_Y'] - sig['Bp_ENDVERTEX_Y'])**2 + (sig['Dsp_ENDVERTEX_Z'] - sig['Bp_ENDVERTEX_Z'])**2) ) )
+            signal['log10_D_ENDVERTEX_chi2_max'] = np.log10( np.maximum( sig['D0bar_ENDVERTEX_CHI2'], sig['Dsp_ENDVERTEX_CHI2'] ) )
+
+            a_sig = np.sqrt( (sig['Bp_OWNPV_X'] - sig['D0bar_ENDVERTEX_X'])**2 + (sig['Bp_OWNPV_Y'] - sig['D0bar_ENDVERTEX_Y'])**2 + (sig['Bp_OWNPV_Z'] - sig['D0bar_ENDVERTEX_Z'])**2 )
+            b_sig = np.sqrt( (sig['Bp_OWNPV_X'] - sig['Dsp_ENDVERTEX_X'])**2 + (sig['Bp_OWNPV_Y'] - sig['Dsp_ENDVERTEX_Y'])**2 + (sig['Bp_OWNPV_Z'] - sig['Dsp_ENDVERTEX_Z'])**2 )
+            c_sig= np.sqrt( (sig['D0bar_ENDVERTEX_X'] - sig['Dsp_ENDVERTEX_X'])**2 + (sig['D0bar_ENDVERTEX_Y'] - sig['Dsp_ENDVERTEX_Y'])**2 + (sig['D0bar_ENDVERTEX_Z'] - sig['Dsp_ENDVERTEX_Z'])**2 )
+            s_sig = (a_sig+b_sig+c_sig)*0.5
+            signal['log10_A_PV_DV1_DV2'] = np.log10( np.sqrt(s_sig*(s_sig-a_sig)*(s_sig-b_sig)*(s_sig-c_sig)) )
+
+
+            background['log10_1_minus_D_DIRA_BV_min'] = np.minimum( np.log10(1 - np.abs(bkg['D0bar_DIRA_ORIVX'] ))*np.sign( bkg['D0bar_DIRA_ORIVX']),  np.log10(1 - np.abs(bkg['Dsp_DIRA_ORIVX'] ))*np.sign( bkg['Dsp_DIRA_ORIVX'] ) )
+            background['log10_1_minus_D_DIRA_BV_max'] = np.maximum( np.log10(1 - np.abs(bkg['D0bar_DIRA_ORIVX'] ))*np.sign( bkg['D0bar_DIRA_ORIVX']),  np.log10(1 - np.abs(bkg['Dsp_DIRA_ORIVX'] ))*np.sign( bkg['Dsp_DIRA_ORIVX'] ) )
+            dtf_chi2_bkg = bkg['Bp_dtf_chi2']
+            for i in range(len(dtf_chi2_bkg)):
+                dtf_chi2_bkg[i] = np.log10( dtf_chi2_bkg[i][0] )
+            background['log10_D_FD_BV_min'] = np.log10( np.minimum( np.sqrt( (bkg['D0bar_ENDVERTEX_X'] - bkg['Bp_ENDVERTEX_X'])**2 + (bkg['D0bar_ENDVERTEX_Y'] - bkg['Bp_ENDVERTEX_Y'])**2 + (bkg['D0bar_ENDVERTEX_Z'] - bkg['Bp_ENDVERTEX_Z'])**2), np.sqrt( (bkg['Dsp_ENDVERTEX_X'] - bkg['Bp_ENDVERTEX_X'])**2 + (bkg['Dsp_ENDVERTEX_Y'] - bkg['Bp_ENDVERTEX_Y'])**2 + (bkg['Dsp_ENDVERTEX_Z'] - bkg['Bp_ENDVERTEX_Z'])**2) ) )
+            background['log10_D_ENDVERTEX_chi2_max'] = np.log10( np.maximum( bkg['D0bar_ENDVERTEX_CHI2'], bkg['Dsp_ENDVERTEX_CHI2'] ) )
+
+            a_bkg = np.sqrt( (bkg['Bp_OWNPV_X'] - bkg['D0bar_ENDVERTEX_X'])**2 + (bkg['Bp_OWNPV_Y'] - bkg['D0bar_ENDVERTEX_Y'])**2 + (bkg['Bp_OWNPV_Z'] - bkg['D0bar_ENDVERTEX_Z'])**2 )
+            b_bkg = np.sqrt( (bkg['Bp_OWNPV_X'] - bkg['Dsp_ENDVERTEX_X'])**2 + (bkg['Bp_OWNPV_Y'] - bkg['Dsp_ENDVERTEX_Y'])**2 + (bkg['Bp_OWNPV_Z'] - bkg['Dsp_ENDVERTEX_Z'])**2 )
+            c_bkg= np.sqrt( (bkg['D0bar_ENDVERTEX_X'] - bkg['Dsp_ENDVERTEX_X'])**2 + (bkg['D0bar_ENDVERTEX_Y'] - bkg['Dsp_ENDVERTEX_Y'])**2 + (bkg['D0bar_ENDVERTEX_Z'] - bkg['Dsp_ENDVERTEX_Z'])**2 )
+            s_bkg = (a_bkg+b_bkg+c_bkg)*0.5
+            background['log10_A_PV_DV1_DV2'] = np.log10( np.sqrt(s_bkg*(s_bkg-a_bkg)*(s_bkg-b_bkg)*(s_bkg-c_bkg)) )
+        
+        elif(step_name == "merged"):
+            signal['D_prod_K_min'] = np.minimum(sig['D0bar_K_ProbNNk_pidgen_default'], sig['Dsp_K1_ProbNNk_pidgen_default']*sig['Dsp_K2_ProbNNk_pidgen_default'])
+            signal['D_prod_pi_min'] = np.minimum(sig['D0bar_pi_ProbNNpi_pidgen_default'], sig['Dsp_pi_ProbNNpi_pidgen_default'])
+            signal['BDT1'] = sig['BDT1']
+            signal['BDT2'] = sig['BDT2']
+
+            background['D_prod_K_min'] = np.minimum(bkg['D0bar_K_ProbNNk'], bkg['Dsp_K1_ProbNNk']*bkg['Dsp_K2_ProbNNk'])
+            background['D_prod_pi_min'] = np.minimum(bkg['D0bar_pi_ProbNNpi'], bkg['Dsp_pi_ProbNNpi'])
+            background['BDT1'] = bkg['BDT1']
+            background['BDT2'] = bkg['BDT2']
 
     input_features = signal.columns.tolist()
 
@@ -1636,6 +1698,28 @@ def main(argv):
 
         t_sig_2016.Add(t_sig_2017)
         t_sig_2016.Add(t_sig_2018)
+    
+        if(step_name == "merged"):
+            fc1_sig_2016 = ROOT.TFileCollection("fc1_sig_2016", "fc_sig_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_71/bdt_output.txt")
+            fc1_sig_2017 = ROOT.TFileCollection("fc1_sig_2017", "fc_sig_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_71/bdt_output.txt")
+            fc1_sig_2018 = ROOT.TFileCollection("fc1_sig_2018", "fc_sig_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_71/bdt_output.txt")
+
+            t1_sig_2016 = ROOT.TChain("DecayTree")
+            t1_sig_2017 = ROOT.TChain("DecayTree")
+            t1_sig_2018 = ROOT.TChain("DecayTree")
+
+            t1_sig_2016.AddFileInfoList(fc1_sig_2016.GetList())
+            t1_sig_2017.AddFileInfoList(fc1_sig_2017.GetList())
+            t1_sig_2018.AddFileInfoList(fc1_sig_2018.GetList())
+
+            t1_sig_2016.GetEntries()
+            t1_sig_2017.GetEntries()
+            t1_sig_2018.GetEntries()
+
+            t1_sig_2016.Add(t1_sig_2017)
+            t1_sig_2016.Add(t1_sig_2018)
+
+            t_sig_2016.AddFriend(t1_sig_2016)
 
         print("SIGNAL")
         print("pre sel entries = ", t_sig_2016.GetEntries())
@@ -1659,6 +1743,28 @@ def main(argv):
     
         t_bkg_2016.Add(t_bkg_2017)
         t_bkg_2016.Add(t_bkg_2018)
+
+        if(step_name == "merged"):
+            fc1_bkg_2016 = ROOT.TFileCollection("fc1_bkg_2016", "fc1_bkg_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_81/bdt_output.txt", 500) 
+            fc1_bkg_2017 = ROOT.TFileCollection("fc1_bkg_2017", "fc1_bkg_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_81/bdt_output.txt", 500) 
+            fc1_bkg_2018 = ROOT.TFileCollection("fc1_bkg_2018", "fc1_bkg_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_81/bdt_output.txt", 500) 
+
+            t1_bkg_2016 = ROOT.TChain("DecayTree")
+            t1_bkg_2017 = ROOT.TChain("DecayTree")
+            t1_bkg_2018 = ROOT.TChain("DecayTree")
+
+            t1_bkg_2016.AddFileInfoList(fc1_bkg_2016.GetList())
+            t1_bkg_2017.AddFileInfoList(fc1_bkg_2017.GetList())
+            t1_bkg_2018.AddFileInfoList(fc1_bkg_2018.GetList())
+
+            t1_bkg_2016.GetEntries()
+            t1_bkg_2017.GetEntries()
+            t1_bkg_2018.GetEntries()
+        
+            t1_bkg_2016.Add(t1_bkg_2017)
+            t1_bkg_2016.Add(t1_bkg_2018)
+
+            t_bkg_2016.AddFriend(t1_bkg_2016)
     
         print("BACKGROUND")
         print("pre sel entries = ", t_bkg_2016.GetEntries())

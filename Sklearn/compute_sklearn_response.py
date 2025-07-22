@@ -100,28 +100,38 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
 
 
     else:
-        X1['Bp_VTXISODCHI2ONETRACK_D0bar'] = x['Bp_VTXISODCHI2ONETRACK_D0bar']
-        X1['Bp_VTXISODCHI2ONETRACK_Dsp'] = x['Bp_VTXISODCHI2ONETRACK_Dsp']
-        X1['Bp_VTXISODCHI2TWOTRACK_D0bar'] = x['Bp_VTXISODCHI2TWOTRACK_D0bar']
-        X1['Bp_VTXISODCHI2TWOTRACK_Dsp'] = x['Bp_VTXISODCHI2TWOTRACK_Dsp']
+        # X1['Bp_VTXISODCHI2ONETRACK_D0bar'] = x['Bp_VTXISODCHI2ONETRACK_D0bar']
+        # X1['Bp_VTXISODCHI2ONETRACK_Dsp'] = x['Bp_VTXISODCHI2ONETRACK_Dsp']
+        # X1['Bp_VTXISODCHI2TWOTRACK_D0bar'] = x['Bp_VTXISODCHI2TWOTRACK_D0bar']
+        # X1['Bp_VTXISODCHI2TWOTRACK_Dsp'] = x['Bp_VTXISODCHI2TWOTRACK_Dsp']
+        # X1['Bp_VTXISODCHI2ONETRACK_B'] = x['Bp_VTXISODCHI2ONETRACK_B']
+        # X1['tau_iso_second_value_max'] = np.maximum( x['Bp_Bstautau_ISOBDTSECONDVALUE_taup'], x['Bp_Bstautau_ISOBDTSECONDVALUE_taum'] )
+        # X1['tau_iso_third_value_max'] = np.maximum( x['Bp_Bstautau_ISOBDTTHIRDVALUE_taup'], x['Bp_Bstautau_ISOBDTTHIRDVALUE_taum'] )
+        # X1['Bp_NC_05_IT_B'] = x['Bp_NC_05_IT_B']
+
+        # # M15_squared_x = mkaon**2 + mpion**2 + 2*x['D0bar_K_PE']*x['Dsp_pi_PE'] - 2*( x['D0bar_K_PX']*x['Dsp_pi_PX'] + x['D0bar_K_PY']*x['Dsp_pi_PY'] + x['D0bar_K_PZ']*x['Dsp_pi_PZ'] )
+        # # M23_squared_x = mkaon**2 + mpion**2 + 2*x['D0bar_pi_PE']*x['Dsp_K1_PE'] - 2*( x['D0bar_pi_PX']*x['Dsp_K1_PX'] + x['D0bar_pi_PY']*x['Dsp_K1_PY'] + x['D0bar_pi_PZ']*x['Dsp_K1_PZ'] )
+        # # M24_squared_x = mkaon**2 + mpion**2 + 2*x['D0bar_pi_PE']*x['Dsp_K2_PE'] - 2*( x['D0bar_pi_PX']*x['Dsp_K2_PX'] + x['D0bar_pi_PY']*x['Dsp_K2_PY'] + x['D0bar_pi_PZ']*x['Dsp_K2_PZ'] )
+
+        # # X1['Bp_M15'] = np.sqrt( np.abs(M15_squared_x) )*np.sign(M15_squared_x)
+        # # X1['Bp_M23'] = np.sqrt( np.abs(M23_squared_x) )*np.sign(M23_squared_x)
+        # # X1['Bp_M24'] = np.sqrt( np.abs(M24_squared_x) )*np.sign(M24_squared_x)
+
+        # a1_x = np.sqrt( (x['Bp_ENDVERTEX_X'] - x['D0bar_ENDVERTEX_X'])**2 + (x['Bp_ENDVERTEX_Y'] - x['D0bar_ENDVERTEX_Y'])**2 + (x['Bp_ENDVERTEX_Z'] - x['D0bar_ENDVERTEX_Z'])**2 )
+        # b1_x = np.sqrt( (x['Bp_ENDVERTEX_X'] - x['Dsp_ENDVERTEX_X'])**2 + (x['Bp_ENDVERTEX_Y'] - x['Dsp_ENDVERTEX_Y'])**2 + (x['Bp_ENDVERTEX_Z'] - x['Dsp_ENDVERTEX_Z'])**2 )
+        # c1_x= np.sqrt( (x['D0bar_ENDVERTEX_X'] - x['Dsp_ENDVERTEX_X'])**2 + (x['D0bar_ENDVERTEX_Y'] - x['Dsp_ENDVERTEX_Y'])**2 + (x['D0bar_ENDVERTEX_Z'] - x['Dsp_ENDVERTEX_Z'])**2 )
+        # s1_x = (a1_x+b1_x+c1_x)*0.5
+        # X1['log10_A_BV_DV1_DV2'] = np.log10( np.sqrt(s1_x*(s1_x-a1_x)*(s1_x-b1_x)*(s1_x-c1_x)) )
+
+        X1['Bp_VTXISODCHI2ONETRACK_D_max'] = np.maximum( x['Bp_VTXISODCHI2ONETRACK_D0bar'], x['Bp_VTXISODCHI2ONETRACK_Dsp'] )
+        X1['Bp_VTXISODCHI2ONETRACK_D_min'] = np.minimum( x['Bp_VTXISODCHI2ONETRACK_D0bar'], x['Bp_VTXISODCHI2ONETRACK_Dsp'] )
+        X1['Bp_VTXISODCHI2TWOTRACK_D_max'] = np.maximum( x['Bp_VTXISODCHI2TWOTRACK_D0bar'], x['Bp_VTXISODCHI2TWOTRACK_Dsp'] )
+        X1['Bp_VTXISODCHI2TWOTRACK_D_min'] = np.minimum( x['Bp_VTXISODCHI2TWOTRACK_D0bar'], x['Bp_VTXISODCHI2TWOTRACK_Dsp'] )
         X1['Bp_VTXISODCHI2ONETRACK_B'] = x['Bp_VTXISODCHI2ONETRACK_B']
-        X1['tau_iso_second_value_max'] = np.maximum( x['Bp_Bstautau_ISOBDTSECONDVALUE_taup'], x['Bp_Bstautau_ISOBDTSECONDVALUE_taum'] )
-        X1['tau_iso_third_value_max'] = np.maximum( x['Bp_Bstautau_ISOBDTTHIRDVALUE_taup'], x['Bp_Bstautau_ISOBDTTHIRDVALUE_taum'] )
-        X1['Bp_NC_05_IT_B'] = x['Bp_NC_05_IT_B']
-
-        # M15_squared_x = mkaon**2 + mpion**2 + 2*x['D0bar_K_PE']*x['Dsp_pi_PE'] - 2*( x['D0bar_K_PX']*x['Dsp_pi_PX'] + x['D0bar_K_PY']*x['Dsp_pi_PY'] + x['D0bar_K_PZ']*x['Dsp_pi_PZ'] )
-        # M23_squared_x = mkaon**2 + mpion**2 + 2*x['D0bar_pi_PE']*x['Dsp_K1_PE'] - 2*( x['D0bar_pi_PX']*x['Dsp_K1_PX'] + x['D0bar_pi_PY']*x['Dsp_K1_PY'] + x['D0bar_pi_PZ']*x['Dsp_K1_PZ'] )
-        # M24_squared_x = mkaon**2 + mpion**2 + 2*x['D0bar_pi_PE']*x['Dsp_K2_PE'] - 2*( x['D0bar_pi_PX']*x['Dsp_K2_PX'] + x['D0bar_pi_PY']*x['Dsp_K2_PY'] + x['D0bar_pi_PZ']*x['Dsp_K2_PZ'] )
-
-        # X1['Bp_M15'] = np.sqrt( np.abs(M15_squared_x) )*np.sign(M15_squared_x)
-        # X1['Bp_M23'] = np.sqrt( np.abs(M23_squared_x) )*np.sign(M23_squared_x)
-        # X1['Bp_M24'] = np.sqrt( np.abs(M24_squared_x) )*np.sign(M24_squared_x)
-
-        a1_x = np.sqrt( (x['Bp_ENDVERTEX_X'] - x['D0bar_ENDVERTEX_X'])**2 + (x['Bp_ENDVERTEX_Y'] - x['D0bar_ENDVERTEX_Y'])**2 + (x['Bp_ENDVERTEX_Z'] - x['D0bar_ENDVERTEX_Z'])**2 )
-        b1_x = np.sqrt( (x['Bp_ENDVERTEX_X'] - x['Dsp_ENDVERTEX_X'])**2 + (x['Bp_ENDVERTEX_Y'] - x['Dsp_ENDVERTEX_Y'])**2 + (x['Bp_ENDVERTEX_Z'] - x['Dsp_ENDVERTEX_Z'])**2 )
-        c1_x= np.sqrt( (x['D0bar_ENDVERTEX_X'] - x['Dsp_ENDVERTEX_X'])**2 + (x['D0bar_ENDVERTEX_Y'] - x['Dsp_ENDVERTEX_Y'])**2 + (x['D0bar_ENDVERTEX_Z'] - x['Dsp_ENDVERTEX_Z'])**2 )
-        s1_x = (a1_x+b1_x+c1_x)*0.5
-        X1['log10_A_BV_DV1_DV2'] = np.log10( np.sqrt(s1_x*(s1_x-a1_x)*(s1_x-b1_x)*(s1_x-c1_x)) )
+        X1['Bp_VTXISODCHI2TWOTRACK_B'] = x['Bp_VTXISODCHI2TWOTRACK_B']
+        X1['Bp_CCNC_05_IT_B'] = x['Bp_CCNC_05_IT_B']
+        X1['Bp_NC_05_PTASYM_D_max'] = np.maximum( x['Bp_NC_05_PTASYM_D0bar'], x['Bp_NC_05_PTASYM_Dsp'] )
+        X1['Bp_NC_05_PTASYM_D_min'] = np.minimum( x['Bp_NC_05_PTASYM_D0bar'], x['Bp_NC_05_PTASYM_Dsp'] )
 
     ############################################################################ BDT2 #####################################################################
     if((isKtautau == True) or (is_cocktailMC == True)):
@@ -218,25 +228,39 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
 
 
     else:
+        # X2['log10_1_minus_D_DIRA_BV_min'] = np.minimum( np.log10(1 - np.abs(x['D0bar_DIRA_ORIVX'] ))*np.sign( x['D0bar_DIRA_ORIVX']),  np.log10(1 - np.abs(x['Dsp_DIRA_ORIVX'] ))*np.sign( x['Dsp_DIRA_ORIVX'] ) )
+        # X2['log10_1_minus_D_DIRA_BV_max'] = np.maximum( np.log10(1 - np.abs(x['D0bar_DIRA_ORIVX'] ))*np.sign( x['D0bar_DIRA_ORIVX']),  np.log10(1 - np.abs(x['Dsp_DIRA_ORIVX'] ))*np.sign( x['Dsp_DIRA_ORIVX'] ) )
+
+        # # dtf_chi2_x = x['Bp_dtf_chi2']
+        # # for i in range(len(dtf_chi2_x)):
+        # #     if np.isnan( np.log10( dtf_chi2_x[i][0])  ):
+        # #         dtf_chi2_x[i] = -99999
+        # #     else:
+        # #         dtf_chi2_x[i] = np.log10( dtf_chi2_x[i][0]) 
+        # # X2['log10_DTF_chi2'] = dtf_chi2_x.astype(float)
+
+        # if((species == 7) or (species == 71) or (species == 72)):
+        #     X2['D_prod_K_min'] = np.minimum(x['D0bar_K_ProbNNk_pidgen_default'], x['Dsp_K1_ProbNNk_pidgen_default']*x['Dsp_K2_ProbNNk_pidgen_default'])
+        #     X2['D_prod_pi_min'] = np.minimum(x['D0bar_pi_ProbNNpi_pidgen_default'], x['Dsp_pi_ProbNNpi_pidgen_default'])
+        # else:
+        #     X2['D_prod_K_min'] = np.minimum(x['D0bar_K_ProbNNk'], x['Dsp_K1_ProbNNk']*x['Dsp_K2_ProbNNk'])
+        #     X2['D_prod_pi_min'] = np.minimum(x['D0bar_pi_ProbNNpi'], x['Dsp_pi_ProbNNpi'])
+
+        # X2['log10_Bp_FD_PV'] = np.log10( np.sqrt( (x['Bp_ENDVERTEX_X'] - x['Bp_OWNPV_X'])**2 + (x['Bp_ENDVERTEX_Y'] - x['Bp_OWNPV_Y'])**2 + (x['Bp_ENDVERTEX_Z'] - x['Bp_OWNPV_Z'])**2 ) )
+        # X2['log10_D_FD_BV_min'] = np.log10( np.minimum( np.sqrt( (x['D0bar_ENDVERTEX_X'] - x['Bp_ENDVERTEX_X'])**2 + (x['D0bar_ENDVERTEX_Y'] - x['Bp_ENDVERTEX_Y'])**2 + (x['D0bar_ENDVERTEX_Z'] - x['Bp_ENDVERTEX_Z'])**2), np.sqrt( (x['Dsp_ENDVERTEX_X'] - x['Bp_ENDVERTEX_X'])**2 + (x['Dsp_ENDVERTEX_Y'] - x['Bp_ENDVERTEX_Y'])**2 + (x['Dsp_ENDVERTEX_Z'] - x['Bp_ENDVERTEX_Z'])**2) ) )
+        # X2['log10_D_ENDVERTEX_chi2_max'] = np.log10( np.maximum( x['D0bar_ENDVERTEX_CHI2'], x['Dsp_ENDVERTEX_CHI2'] ) )
+
+        # a_x = np.sqrt( (x['Bp_OWNPV_X'] - x['D0bar_ENDVERTEX_X'])**2 + (x['Bp_OWNPV_Y'] - x['D0bar_ENDVERTEX_Y'])**2 + (x['Bp_OWNPV_Z'] - x['D0bar_ENDVERTEX_Z'])**2 )
+        # b_x = np.sqrt( (x['Bp_OWNPV_X'] - x['Dsp_ENDVERTEX_X'])**2 + (x['Bp_OWNPV_Y'] - x['Dsp_ENDVERTEX_Y'])**2 + (x['Bp_OWNPV_Z'] - x['Dsp_ENDVERTEX_Z'])**2 )
+        # c_x= np.sqrt( (x['D0bar_ENDVERTEX_X'] - x['Dsp_ENDVERTEX_X'])**2 + (x['D0bar_ENDVERTEX_Y'] - x['Dsp_ENDVERTEX_Y'])**2 + (x['D0bar_ENDVERTEX_Z'] - x['Dsp_ENDVERTEX_Z'])**2 )
+        # s_x = (a_x+b_x+c_x)*0.5
+        # X2['log10_A_PV_DV1_DV2'] = np.log10( np.sqrt(s_x*(s_x-a_x)*(s_x-b_x)*(s_x-c_x)) )
+
         X2['log10_1_minus_D_DIRA_BV_min'] = np.minimum( np.log10(1 - np.abs(x['D0bar_DIRA_ORIVX'] ))*np.sign( x['D0bar_DIRA_ORIVX']),  np.log10(1 - np.abs(x['Dsp_DIRA_ORIVX'] ))*np.sign( x['Dsp_DIRA_ORIVX'] ) )
         X2['log10_1_minus_D_DIRA_BV_max'] = np.maximum( np.log10(1 - np.abs(x['D0bar_DIRA_ORIVX'] ))*np.sign( x['D0bar_DIRA_ORIVX']),  np.log10(1 - np.abs(x['Dsp_DIRA_ORIVX'] ))*np.sign( x['Dsp_DIRA_ORIVX'] ) )
-
-        # dtf_chi2_x = x['Bp_dtf_chi2']
-        # for i in range(len(dtf_chi2_x)):
-        #     if np.isnan( np.log10( dtf_chi2_x[i][0])  ):
-        #         dtf_chi2_x[i] = -99999
-        #     else:
-        #         dtf_chi2_x[i] = np.log10( dtf_chi2_x[i][0]) 
-        # X2['log10_DTF_chi2'] = dtf_chi2_x.astype(float)
-
-        if((species == 7) or (species == 71) or (species == 72)):
-            X2['D_prod_K_min'] = np.minimum(x['D0bar_K_ProbNNk_pidgen_default'], x['Dsp_K1_ProbNNk_pidgen_default']*x['Dsp_K2_ProbNNk_pidgen_default'])
-            X2['D_prod_pi_min'] = np.minimum(x['D0bar_pi_ProbNNpi_pidgen_default'], x['Dsp_pi_ProbNNpi_pidgen_default'])
-        else:
-            X2['D_prod_K_min'] = np.minimum(x['D0bar_K_ProbNNk'], x['Dsp_K1_ProbNNk']*x['Dsp_K2_ProbNNk'])
-            X2['D_prod_pi_min'] = np.minimum(x['D0bar_pi_ProbNNpi'], x['Dsp_pi_ProbNNpi'])
-
-        X2['log10_Bp_FD_PV'] = np.log10( np.sqrt( (x['Bp_ENDVERTEX_X'] - x['Bp_OWNPV_X'])**2 + (x['Bp_ENDVERTEX_Y'] - x['Bp_OWNPV_Y'])**2 + (x['Bp_ENDVERTEX_Z'] - x['Bp_OWNPV_Z'])**2 ) )
+        dtf_chi2_x = x['Bp_dtf_chi2']
+        for i in range(len(dtf_chi2_x)):
+            dtf_chi2_x[i] = np.log10( dtf_chi2_x[i][0] )
         X2['log10_D_FD_BV_min'] = np.log10( np.minimum( np.sqrt( (x['D0bar_ENDVERTEX_X'] - x['Bp_ENDVERTEX_X'])**2 + (x['D0bar_ENDVERTEX_Y'] - x['Bp_ENDVERTEX_Y'])**2 + (x['D0bar_ENDVERTEX_Z'] - x['Bp_ENDVERTEX_Z'])**2), np.sqrt( (x['Dsp_ENDVERTEX_X'] - x['Bp_ENDVERTEX_X'])**2 + (x['Dsp_ENDVERTEX_Y'] - x['Bp_ENDVERTEX_Y'])**2 + (x['Dsp_ENDVERTEX_Z'] - x['Bp_ENDVERTEX_Z'])**2) ) )
         X2['log10_D_ENDVERTEX_chi2_max'] = np.log10( np.maximum( x['D0bar_ENDVERTEX_CHI2'], x['Dsp_ENDVERTEX_CHI2'] ) )
 
@@ -245,7 +269,8 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
         c_x= np.sqrt( (x['D0bar_ENDVERTEX_X'] - x['Dsp_ENDVERTEX_X'])**2 + (x['D0bar_ENDVERTEX_Y'] - x['Dsp_ENDVERTEX_Y'])**2 + (x['D0bar_ENDVERTEX_Z'] - x['Dsp_ENDVERTEX_Z'])**2 )
         s_x = (a_x+b_x+c_x)*0.5
         X2['log10_A_PV_DV1_DV2'] = np.log10( np.sqrt(s_x*(s_x-a_x)*(s_x-b_x)*(s_x-c_x)) )
-    
+
+   
     ############################################################################ BDT3 #####################################################################
     if(name == "response_merged"):
         if((isKtautau == True) or (is_cocktailMC == True)):
@@ -255,6 +280,17 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
             else:
                 X3['Kp_ProbNNk'] = x['Kp_ProbNNk']
                 X3['tau_prod_pi_min'] = np.minimum(x['taum_pi1_ProbNNpi']*x['taum_pi2_ProbNNpi']*x['taum_pi3_ProbNNpi'], x['taup_pi1_ProbNNpi']*x['taup_pi2_ProbNNpi']*x['taup_pi3_ProbNNpi'])
+
+            X3['BDT1'] = x['BDT1']
+            X3['BDT2'] = x['BDT2']
+    
+        else:
+            if((species == 7) or (species == 71) or (species == 72)):
+                X3['D_prod_K_min'] = np.minimum(x['D0bar_K_ProbNNk_pidgen_default'], x['Dsp_K1_ProbNNk_pidgen_default']*x['Dsp_K2_ProbNNk_pidgen_default'])
+                X3['D_prod_pi_min'] = np.minimum(x['D0bar_pi_ProbNNpi_pidgen_default'], x['Dsp_pi_ProbNNpi_pidgen_default'])
+            else:
+                X3['D_prod_K_min'] = np.minimum(x['D0bar_K_ProbNNk'], x['Dsp_K1_ProbNNk']*x['Dsp_K2_ProbNNk'])
+                X3['D_prod_pi_min'] = np.minimum(x['D0bar_pi_ProbNNpi'], x['Dsp_pi_ProbNNpi'])
 
             X3['BDT1'] = x['BDT1']
             X3['BDT2'] = x['BDT2']
@@ -272,6 +308,15 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
                         classifiers_merged.append(pickle.load(f))
                     except EOFError:
                         break
+        
+        else:
+            with open('/panfs/felician/B2Ktautau/workflow/sklearn_training/DDs/clf_merged.pkl', 'rb') as f:
+                while True:
+                    try:
+                        classifiers_merged.append(pickle.load(f))
+                    except EOFError:
+                        break
+        
 
     else:
         if((isKtautau == True) or (is_cocktailMC == True)):
@@ -336,7 +381,10 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC, na
 
 
     for evt in range(N):
-        index = (x['runNumber'][evt] + x['eventNumber'][evt] + x['nCandidate'][evt]) % len(classifiers_iso)
+        if(name == "response_merged"):
+            index = (x['runNumber'][evt] + x['eventNumber'][evt] + x['nCandidate'][evt]) % len(classifiers_merged)
+        else:
+            index = (x['runNumber'][evt] + x['eventNumber'][evt] + x['nCandidate'][evt]) % len(classifiers_iso)
 
         if(name == "response_merged"):
             merged_bdt[0] = decisions_merged[index][evt]
@@ -387,11 +435,6 @@ def main(argv):
         t2 = ROOT.TChain("DecayTree")
         t2.AddFileInfoList(fc2.GetList())
 
-        if(name == "response_merged"):
-            fc3 = ROOT.TFileCollection("fc3", "fc3", "/panfs/felician/B2Ktautau/workflow/sklearn_response/201{0}/Species_{1}/bdt_output.txt".format(year,species), 1, line)
-            t3 = ROOT.TChain("DecayTree")
-            t3.AddFileInfoList(fc3.GetList())
-
         N = t.GetEntries()
         N1 = t1.GetEntries()
         N2 = t2.GetEntries()
@@ -399,18 +442,21 @@ def main(argv):
         print(N1)
         print(N2)
 
-        if(name == "response_merged"):
-            N3 = t3.GetEntries()
-            print(N3)
-
         if((N != N1) or (N != N2)):
             print("Wrong number of entries")
             quit()
 
         t.AddFriend(t1)
         t.AddFriend(t2)
-        if(name == "response_merged"):
-            t.AddFriend(t3)
+
+    if(name == "response_merged"):
+        fc3 = ROOT.TFileCollection("fc3", "fc3", "/panfs/felician/B2Ktautau/workflow/sklearn_response/201{0}/Species_{1}/bdt_output.txt".format(year,species), 1, line)
+        t3 = ROOT.TChain("DecayTree")
+        t3.AddFileInfoList(fc3.GetList())
+
+        N3 = t3.GetEntries()
+        print(N3)
+        t.AddFriend(t3)
 
     df = ROOT.RDataFrame(t)
 
