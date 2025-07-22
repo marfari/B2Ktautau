@@ -292,6 +292,7 @@ def truthMatch_cocktailMC(name):
 
 def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, trigger, rectangular_cuts_names, rectangular_cuts, pass_mass_fit, fit_range, mass_vetoes, mass_vetoes_cuts, best_cand):
     # Acceptance efficiency
+    print("Acceptance efficiency")
     if(species == 100):
         acc_columns = ["All years (average MagUp MagDown) (\\%)"]
         acc_rows = ["$B^+ \\to D D K^+$", "$B^0 \\to D D K^+$", "$B^0_s \\to D D K^+$", "$B^+ \\to D D K^0$", "$B^+ \\to D D$"]
@@ -333,6 +334,7 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         fout_acc.write(acc_table.to_latex())
 
     # Stripping filter efficiencies (for Ktautau only)
+    print("Stripping efficiency")
     if(species == 100):
         strip_columns = ["All years (average MagUp MagDown) (\\%)"]
         strip_rows = ["$B^+ \\to D D K^+$", "$B^0 \\to D D K^+$", "$B^0_s \\to D D K^+$", "$B^+ \\to D D K^0$", "$B^+ \\to D D$"]
@@ -370,9 +372,9 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         with open(f'/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/stripping_filter_table.tex', 'w') as fout_strip:
             fout_strip.write(strip_table.to_latex())
 
-    np.save(f"/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/acceptance_efficiency.py", eps_acc)
+    np.save(f"/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/acceptance_efficiency.npy", eps_acc)
     if(species == 1):
-        np.save(f"/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/stripping_efficiency.py", eps_strip)
+        np.save(f"/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/stripping_efficiency.npy", eps_strip)
 
 
     if(species == 100):
@@ -395,7 +397,7 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
             fout_reco1.write(reco1_table.to_latex())
 
     # Reconstruction efficiency (truth-match reconstructed / accepted)
-    # Acceptance tree
+    print("Reconstruction efficiency")
     if(species == 1):
         fc_2016 = ROOT.TFileCollection("fc_2016", "fc_2016", "Files_on_grid/MC_2016.txt")
         fc_2017 = ROOT.TFileCollection("fc_2017", "fc_2017", "Files_on_grid/MC_2017.txt")
@@ -486,7 +488,7 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
 
         N_gen = [n_BuDDKp, n_BdDDKp, n_BsDDKp, n_BuDDK0, n_BuDD]
 
-    np.save(f"/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/N_gen.py", N_gen)
+    np.save(f"/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/N_gen.npy", N_gen)
 
     # Reconstructed w/ PIDGen vars tree
     fc_reco_pid_2016 = ROOT.TFileCollection("fc_reco_pid_2016", "fc_reco_pid_2016", f"/panfs/felician/B2Ktautau/workflow/PIDCalib/2016/Species_{species}/pid_corr.txt") 
@@ -693,6 +695,7 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
 
 
     # Trigger efficiencies
+    print("Trigger efficiency")
     if(species == 100):
         N_L0_BuDDKp = t_reco_pid_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_1+" && "+L0_trigger) + t_reco_pid_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_1+" && "+L0_trigger) + t_reco_pid_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_1+" && "+L0_trigger) + t_reco_pid_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_2+" && "+L0_trigger) + t_reco_pid_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_2+" && "+L0_trigger) + t_reco_pid_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_2+" && "+L0_trigger) + t_reco_pid_BuDDKp_2016.GetEntries(truthMatch_BuDDKp_3+" && "+L0_trigger) + t_reco_pid_BuDDKp_2017.GetEntries(truthMatch_BuDDKp_3+" && "+L0_trigger) + t_reco_pid_BuDDKp_2018.GetEntries(truthMatch_BuDDKp_3+" && "+L0_trigger)
         N_L0_BdDDKp = t_reco_pid_BdDDKp_2016.GetEntries(truthMatch_BdDDKp+" && "+L0_trigger) + t_reco_pid_BdDDKp_2017.GetEntries(truthMatch_BdDDKp+" && "+L0_trigger) + t_reco_pid_BdDDKp_2018.GetEntries(truthMatch_BdDDKp+" && "+L0_trigger)
@@ -942,6 +945,7 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
 
 
     # Rectangular cuts
+    print("Rectangular cuts efficiency")
     eps_rect_cuts_3pi3pi = []
     eps_rect_cuts_3pi3pipi0 = []
     eps_rect_cuts_3pi3pi2pi0 = []
@@ -1446,6 +1450,7 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
             fout_rect_cuts_2.write(rect_cut_table_2.to_latex())
 
     # Pass fitter
+    print("Pass mass fit efficiency")
     if(species == 100):
         N_pass_fit_BuDDKp = t_reco_BuDDKp_2016.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit) + t_reco_BuDDKp_2017.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit) + t_reco_BuDDKp_2018.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit) 
         N_pass_fit_BdDDKp = t_reco_BdDDKp_2016.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit) + t_reco_BdDDKp_2017.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit) + t_reco_BdDDKp_2018.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit)
@@ -1717,21 +1722,35 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
             t_reco_rs_2018.AddFriend(t_best_cand_rs_2018)
 
 
-        N_pass_fitter_MC = t_reco_mc_2016.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit) + t_reco_mc_2017.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit) + t_reco_mc_2018.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit)
-        N_cuts_MC = t_reco_mc_2016.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC) + t_reco_mc_2017.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC) + t_reco_mc_2018.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC)
+        if(species == 1):
+            N_pass_fitter_MC = t_reco_mc_2016.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit) + t_reco_mc_2017.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit) + t_reco_mc_2018.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit)
+            N_cuts_MC = t_reco_mc_2016.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC) + t_reco_mc_2017.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC) + t_reco_mc_2018.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC)
+        
+            N_pass_fitter_RS = t_reco_rs_2016.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit) + t_reco_rs_2017.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit) + t_reco_rs_2018.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit)
+            N_cuts_RS = t_reco_rs_2016.GetEntries(trigger+" && "+all_rectangular_cuts_data) + t_reco_rs_2017.GetEntries(trigger+" && "+all_rectangular_cuts_data) + t_reco_rs_2018.GetEntries(trigger+" && "+all_rectangular_cuts_data)
 
-        N_pass_fitter_RS = t_reco_rs_2016.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit) + t_reco_rs_2017.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit) + t_reco_rs_2018.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit)
-        N_cuts_RS = t_reco_rs_2016.GetEntries(trigger+" && "+all_rectangular_cuts_data) + t_reco_rs_2017.GetEntries(trigger+" && "+all_rectangular_cuts_data) + t_reco_rs_2018.GetEntries(trigger+" && "+all_rectangular_cuts_data)
+            up_pass_fit_MC = ROOT.TEfficiency.Wilson(N_cuts_MC, N_pass_fitter_MC, 0.68, True)
+            down_pass_fit_MC = ROOT.TEfficiency.Wilson(N_cuts_MC, N_pass_fitter_MC, 0.68, False)
+            eps_pass_fit_MC_err = 0.5*(up_pass_fit_MC - down_pass_fit_MC)
+            eps_pass_fit_MC = ufloat(N_pass_fitter_MC/N_cuts_MC, eps_pass_fit_MC_err)
 
-        up_pass_fit_MC = ROOT.TEfficiency.Wilson(N_cuts_MC, N_pass_fitter_MC, 0.68, True)
-        down_pass_fit_MC = ROOT.TEfficiency.Wilson(N_cuts_MC, N_pass_fitter_MC, 0.68, False)
-        eps_pass_fit_MC_err = 0.5*(up_pass_fit_MC - down_pass_fit_MC)
-        eps_pass_fit_MC = ufloat(N_pass_fitter_MC/N_cuts_MC, eps_pass_fit_MC_err)
+            up_pass_fit_RS = ROOT.TEfficiency.Wilson(N_cuts_RS, N_pass_fitter_RS, 0.68, True)
+            down_pass_fit_RS = ROOT.TEfficiency.Wilson(N_cuts_RS, N_pass_fitter_RS, 0.68, False)
+            eps_pass_fit_RS_err = 0.5*(up_pass_fit_RS - down_pass_fit_RS)
+            eps_pass_fit_RS = ufloat(N_pass_fitter_RS/N_cuts_RS, eps_pass_fit_RS_err)
+        else:
+            N_pass_fitter_MC = t_reco_pid_2016.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit) + t_reco_pid_2017.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit) + t_reco_pid_2018.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit)
+            N_pass_fitter_RS = t_rs_data_2016_noRectCuts.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit) + t_rs_data_2017_noRectCuts.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit) + t_rs_data_2018_noRectCuts.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit)
 
-        up_pass_fit_RS = ROOT.TEfficiency.Wilson(N_cuts_RS, N_pass_fitter_RS, 0.68, True)
-        down_pass_fit_RS = ROOT.TEfficiency.Wilson(N_cuts_RS, N_pass_fitter_RS, 0.68, False)
-        eps_pass_fit_RS_err = 0.5*(up_pass_fit_RS - down_pass_fit_RS)
-        eps_pass_fit_RS = ufloat(N_pass_fitter_RS/N_cuts_RS, eps_pass_fit_RS_err)
+            up_pass_fit_MC = ROOT.TEfficiency.Wilson(N_rect_cuts_MC_all, N_pass_fitter_MC, 0.68, True)
+            down_pass_fit_MC = ROOT.TEfficiency.Wilson(N_rect_cuts_MC_all, N_pass_fitter_MC, 0.68, False)
+            eps_pass_fit_MC_err = 0.5*(up_pass_fit_MC - down_pass_fit_MC)
+            eps_pass_fit_MC = ufloat(N_pass_fitter_MC/N_rect_cuts_MC_all, eps_pass_fit_MC_err)
+
+            up_pass_fit_RS = ROOT.TEfficiency.Wilson(N_rect_cuts_RS_data_all, N_pass_fitter_RS, 0.68, True)
+            down_pass_fit_RS = ROOT.TEfficiency.Wilson(N_rect_cuts_RS_data_all, N_pass_fitter_RS, 0.68, False)
+            eps_pass_fit_RS_err = 0.5*(up_pass_fit_RS - down_pass_fit_RS)
+            eps_pass_fit_RS = ufloat(N_pass_fitter_RS/N_rect_cuts_RS_data_all, eps_pass_fit_RS_err)
 
         print("N_pass_fit MC:", N_pass_fitter_MC)
         print("N_pass_fit RS:", N_pass_fitter_RS)
@@ -1751,7 +1770,7 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
             pass_fit_table.loc["RS data"] = f"${eps_pass_fit_RS.nominal_value*100:.2f} \\pm {eps_pass_fit_RS.std_dev*100:.2f}$"
             pass_fit_table.loc["WS data"] = f"${eps_pass_fit_WS.nominal_value*100:.2f} \\pm {eps_pass_fit_WS.std_dev*100:.2f}$"
         else:
-            pass_fit_table.loc["MC", "Efficiency (\\%)"] = f"${eps_pass_fit_MC.nominal_value*100:.3f} \\pm {eps_pass_fit_MC.std_dev*100:.3f}$"
+            pass_fit_table.loc["MC", "Efficiency (\\%)"] = f"${eps_pass_fit_MC.nominal_value*100:.2f} \\pm {eps_pass_fit_MC.std_dev*100:.2f}$"
             pass_fit_table.loc["Data", "Efficiency (\\%)"] = f"${eps_pass_fit_RS.nominal_value*100:.2f} \\pm {eps_pass_fit_RS.std_dev*100:.2f}$"
 
     with open(f'/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/pass_mass_fit_efficiency_table.tex', 'w') as fout_pass_fit:
@@ -1759,6 +1778,7 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
 
 
     # Fit region
+    print("Fit region efficiency")
     if(species == 100):
         N_fit_region_BuDDKp = t_reco_BuDDKp_2016.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BuDDKp_2017.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BuDDKp_2018.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range) 
         N_fit_region_BdDDKp = t_reco_BdDDKp_2016.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BdDDKp_2017.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range) + t_reco_BdDDKp_2018.GetEntries(trigger+" && "+all_rectangular_cuts+" && "+pass_mass_fit+" && "+fit_range)
@@ -1831,14 +1851,18 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
             eps_fit_region_WS_err = 0.5*(up_fit_region_WS - down_fit_region_WS)
             eps_fit_region_WS = ufloat(N_fit_region_WS/N_pass_fitter_WS, eps_fit_region_WS_err)
         
-        N_fit_region_MC = t_reco_mc_2016.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range) + t_reco_mc_2017.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range) + t_reco_mc_2018.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range)
+
+        if(species == 1):
+            N_fit_region_MC = t_reco_mc_2016.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range) + t_reco_mc_2017.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range) + t_reco_mc_2018.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range)
+            N_fit_region_RS = t_reco_rs_2016.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit+" && "+fit_range) + t_reco_rs_2017.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit+" && "+fit_range) + t_reco_rs_2018.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit+" && "+fit_range)
+        else:
+            N_fit_region_MC = t_reco_pid_2016.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range) + t_reco_pid_2017.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range) + t_reco_pid_2018.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range)
+            N_fit_region_RS = t_rs_data_2016_noRectCuts.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit+" && "+fit_range) + t_rs_data_2017_noRectCuts.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit+" && "+fit_range) + t_rs_data_2018_noRectCuts.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit+" && "+fit_range)
 
         up_fit_region_MC = ROOT.TEfficiency.Wilson(N_pass_fitter_MC, N_fit_region_MC, 0.68, True)
         down_fit_region_MC = ROOT.TEfficiency.Wilson(N_pass_fitter_MC, N_fit_region_MC, 0.68, False)
         eps_fit_region_MC_err = 0.5*(up_fit_region_MC - down_fit_region_MC)
         eps_fit_region_MC = ufloat(N_fit_region_MC/N_pass_fitter_MC, eps_fit_region_MC_err)
-
-        N_fit_region_RS = t_reco_rs_2016.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit+" && "+fit_range) + t_reco_rs_2017.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit+" && "+fit_range) + t_reco_rs_2018.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit+" && "+fit_range)
 
         up_fit_region_RS = ROOT.TEfficiency.Wilson(N_pass_fitter_RS, N_fit_region_RS, 0.68, True)
         down_fit_region_RS = ROOT.TEfficiency.Wilson(N_pass_fitter_RS, N_fit_region_RS, 0.68, False)
@@ -1860,7 +1884,7 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
             fit_region_table.loc["RS data"] = f"${eps_fit_region_RS.nominal_value*100:.2f} \\pm {eps_fit_region_RS.std_dev*100:.2f}$"
             fit_region_table.loc["WS data"] = f"${eps_fit_region_WS.nominal_value*100:.2f} \\pm {eps_fit_region_WS.std_dev*100:.2f}$"
         else:
-            fit_region_table.loc["MC", "Efficiency (\\%)"] = f"${eps_fit_region_MC.nominal_value*100:.3f} \\pm {eps_fit_region_MC.std_dev*100:.3f}$"
+            fit_region_table.loc["MC", "Efficiency (\\%)"] = f"${eps_fit_region_MC.nominal_value*100:.2f} \\pm {eps_fit_region_MC.std_dev*100:.2f}$"
             fit_region_table.loc["Data", "Efficiency (\\%)"] = f"${eps_fit_region_RS.nominal_value*100:.2f} \\pm {eps_fit_region_RS.std_dev*100:.2f}$"
 
     with open(f'/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/fit_region_efficiency_table.tex', 'w') as fout_fit_region:
@@ -1868,6 +1892,7 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
 
 
     # Mass vetoes
+    print("Mass vetoes efficiency")
     eps_mass_vetoes_3pi3pi = []
     eps_mass_vetoes_3pi3pipi0 = []
     eps_mass_vetoes_3pi3pi2pi0 = []
@@ -2052,6 +2077,52 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
     if((species == 100) or (species == 1)):
         with open(f'/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/mass_vetoes_efficiency_table.tex', 'w') as fout_mass_vetoes:
             fout_mass_vetoes.write(mass_vetoes_table.to_latex())
+
+
+    # Best candidate
+    print("Best candidate efficiency")
+    if(species == 7):
+        N_best_cand_MC = t_reco_mc_2016.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && "+best_cand) + t_reco_mc_2017.GetEntries(trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && "+best_cand) + t_reco_mc_2018.GetEntries(trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && "+best_cand)
+
+        up_best_cand_MC = ROOT.TEfficiency.Wilson(N_fit_region_MC, N_best_cand_MC, 0.68, True)
+        down_best_cand_MC = ROOT.TEfficiency.Wilson(N_fit_region_MC, N_best_cand_MC, 0.68, False)
+        eps_best_cand_MC_err = 0.5*(up_best_cand_MC - down_best_cand_MC)
+        eps_best_cand_MC = ufloat(N_best_cand_MC/N_fit_region_MC, eps_best_cand_MC_err)
+
+        best_cand_columns = ["Best candidate efficiency (\\%)"]
+        best_cand_rows  = ["MC"]
+
+        best_cand_table = pd.DataFrame(index=best_cand_rows, columns=best_cand_columns)
+        best_cand_table.loc["MC", "Best candidate efficiency (\\%)"] = f"${eps_best_cand_MC.nominal_value*100:.2f} \\pm {eps_best_cand_MC.std_dev*100:.2f}$"
+
+        with open(f'/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/best_candidate_efficiency_table.tex', 'w') as fout_best_cand:
+            fout_best_cand.write(best_cand_table.to_latex())
+
+    # Overall efficiency
+    print("Overall efficiency")
+
+    if(species == 7):
+        up_overall_MC = ROOT.TEfficiency.Wilson(N_gen, N_best_cand_MC, 0.68, True)
+        down_overall_MC = ROOT.TEfficiency.Wilson(N_gen, N_best_cand_MC, 0.68, False)
+        eps_overall_MC_err = 0.5*(up_overall_MC - down_overall_MC)
+        eps_overall_MC = ufloat(N_best_cand_MC/N_gen, eps_overall_MC_err)
+
+        eps_overall_MC *= eps_acc
+
+        overall_columns = ["Efficiency (\\%)"]
+        overall_rows  = ["Acceptance", "Reconstruction", "Trigger", "Rectangular cuts", "Pass mass fit", "Fit range", "Overall"]
+
+        overall_table = pd.DataFrame(index=overall_rows, columns=overall_columns)
+        overall_table.loc["Acceptance", "Efficiency (\\%)"] = f"${eps_acc.nominal_value*100:.2f} \\pm {eps_acc.std_dev*100:.2f}$"
+        overall_table.loc["Reconstruction", "Efficiency (\\%)"] = f"${eps_reco.nominal_value*100:.2f} \\pm {eps_reco.std_dev*100:.2f}$"
+        overall_table.loc["Trigger", "Efficiency (\\%)"] = f"${eps_trigger.nominal_value*100:.2f} \\pm {eps_trigger.std_dev*100:.2f}$"
+        overall_table.loc["Rectangular cuts", "Efficiency (\\%)"] = f"${eps_rect_cuts_MC_all.nominal_value*100:.2f} \\pm {eps_rect_cuts_MC_all.std_dev*100:.2f}$"
+        overall_table.loc["Pass mass fit", "Efficiency (\\%)"] = f"${eps_pass_fit_MC.nominal_value*100:.2f} \\pm {eps_pass_fit_MC.std_dev*100:.2f}$"
+        overall_table.loc["Fit range", "Efficiency (\\%)"] = f"${eps_fit_region_MC.nominal_value*100:.2f} \\pm {eps_fit_region_MC.std_dev*100:.2f}$"
+        overall_table.loc["Overall", "Efficiency (\\%)"] = f"${eps_overall_MC.nominal_value*100:.2f} \\pm {eps_overall_MC.std_dev*100:.2f}$"
+
+        with open(f'/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/overall_efficiency_table.tex', 'w') as fout_overall:
+            fout_overall.write(overall_table.to_latex())
 
 
 def main(argv):

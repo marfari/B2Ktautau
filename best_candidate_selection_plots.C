@@ -259,6 +259,10 @@ void best_candidate_selection_plots()
     h_dds_data->GetYaxis()->SetTitle("Normalized entries / (1.2 MeV)");
     h_dds_data->SetTitle("DDs data");
 
+    h_dds_data_best->GetXaxis()->SetTitle("m_{B} (MeV)");
+    h_dds_data_best->GetYaxis()->SetTitle("Normalized entries / (1.2 MeV)");
+    h_dds_data_best->SetTitle("DDs data");
+
     h_dds_data->SetLineColor(kRed);
     h_dds_data->SetFillColorAlpha(kRed, 0.25);
 
