@@ -135,11 +135,11 @@ void create_pre_sel_tree(int year, int species, int line)
     }
     else if(species == 7) // DDs MC
     {
-        pre_selections = truthMatch+trigger+rectangular_cuts+pass_mass_fit;
+        pre_selections = truthMatch+trigger+rectangular_cuts+pass_mass_fit+fit_range;
     }
     else if((species == 8) || (species == 72)) // DDs data and DDs MC w/o TM cuts
     {
-        pre_selections = trigger+rectangular_cuts+pass_mass_fit;
+        pre_selections = trigger+rectangular_cuts+pass_mass_fit+fit_range;
     }
     else if(species == 71) // D0bar Ds+ MC without rectangular cuts for the MVA validation
     {
