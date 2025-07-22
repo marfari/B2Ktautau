@@ -4,7 +4,7 @@ using namespace RooStats;
 void store_vars_in_workspace(RooWorkspace* w, TTree* t, Int_t n_vars, TString variables[n_vars]);
 
 // D0bar D+s variables
-TString variables[] = {"mass", "BDT1", "BDT2",
+TString variables[] = {"mass", "BDT1", "BDT2", "BDT",
                     "Bp_FD_OWNPV", "D0bar_FD_ORIVX", "Dsp_FD_ORIVX", 
                     "Bp_P", "Bp_PT", "Bp_ETA", "D0bar_PT", "Dsp_PT",
                     "D0bar_PX", "D0bar_PY", "D0bar_PZ", "Dsp_PX", "Dsp_PY", "Dsp_PZ", "Bp_PX", "Bp_PY", "Bp_PZ",
@@ -40,7 +40,7 @@ void createDataset(int species)
 {
     cout << "Opening .root files" << endl;
 
-    TFile* f = new TFile(Form("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_%i/post_sel_tree_bdt1_0_bdt2_0.root",species));
+    TFile* f = new TFile(Form("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_%i/post_sel_tree_bdt_0.0.root",species));
     TTree* t = (TChain*)f->Get("DecayTree");
 
     TFile* fout = new TFile( Form("/panfs/felician/B2Ktautau/workflow/create_dataset/Species_%i/mass_dataset.root",species), "RECREATE"); 
@@ -99,7 +99,8 @@ void createDataset(int species)
     
     // Add variables to a RooDataSet
     cout << "Creating RooDataSet from TTree" << endl;
-    RooDataSet* data = new RooDataSet("data","data",t_cut,arg_list);
+    // RooDataSet* data = new RooDataSet("data","data",t_cut,arg_list, "");
+    RooDataSet* data = new RooDataSet("data", "data", arg_list, RooFit::Import(*t_cut));
     w->import(*data);
     w->Print();
 
