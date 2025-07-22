@@ -193,10 +193,6 @@ void make_sPlot_histos(Int_t species)
             x_min = -0.5;
             x_max = 0.5;
         }
-        else if(var_name == "BDT2")
-        {
-            x_min = 0.8;
-        }
         else
         {
             x_min = var->getMin();
@@ -429,10 +425,6 @@ void make_sPlot_histos(Int_t species)
         {
             x_min = -0.5;
             x_max = 0.5;
-        }
-        else if(var_name == "BDT2")
-        {
-            x_min = 0.8;
         }
         else
         {

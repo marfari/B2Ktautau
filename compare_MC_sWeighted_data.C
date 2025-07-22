@@ -216,10 +216,6 @@ void compare_MC_sWeighted_data(Int_t species, Bool_t applyWeight)
             var_min = -0.5;
             var_max = 0.5;
         }
-        else if(name == "BDT2")
-        {
-            var_min = 0.8;
-        }
         else
         {
             var_min = var->getMin();
