@@ -2116,12 +2116,12 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
 
         overall_table = pd.DataFrame(index=overall_rows, columns=overall_columns)
         overall_table.loc["Acceptance", "Efficiency (\\%)"] = f"${eps_acc.nominal_value*100:.2f} \\pm {eps_acc.std_dev*100:.2f}$"
-        overall_table.loc["Reconstruction", "Efficiency (\\%)"] = f"${eps_reco.nominal_value*100:.2f} \\pm {eps_reco.std_dev*100:.2f}$"
+        overall_table.loc["Reconstruction", "Efficiency (\\%)"] = f"${eps_reco.nominal_value*100:.3f} \\pm {eps_reco.std_dev*100:.3f}$"
         overall_table.loc["Trigger", "Efficiency (\\%)"] = f"${eps_trigger.nominal_value*100:.2f} \\pm {eps_trigger.std_dev*100:.2f}$"
-        overall_table.loc["Rectangular cuts", "Efficiency (\\%)"] = f"${eps_rect_cuts_MC_all.nominal_value*100:.2f} \\pm {eps_rect_cuts_MC_all.std_dev*100:.2f}$"
+        overall_table.loc["Rectangular cuts", "Efficiency (\\%)"] = f"${eps_rect_cuts_MC_all.nominal_value*100:.1f} \\pm {eps_rect_cuts_MC_all.std_dev*100:.1f}$"
         overall_table.loc["Pass mass fit", "Efficiency (\\%)"] = f"${eps_pass_fit_MC.nominal_value*100:.2f} \\pm {eps_pass_fit_MC.std_dev*100:.2f}$"
         overall_table.loc["Fit range", "Efficiency (\\%)"] = f"${eps_fit_region_MC.nominal_value*100:.2f} \\pm {eps_fit_region_MC.std_dev*100:.2f}$"
-        overall_table.loc["Overall", "Efficiency (\\%)"] = f"${eps_overall_MC.nominal_value*100:.2f} \\pm {eps_overall_MC.std_dev*100:.2f}$"
+        overall_table.loc["Overall", "Efficiency (\\%)"] = f"${eps_overall_MC.nominal_value*100:.4f} \\pm {eps_overall_MC.std_dev*100:.4f}$"
 
         with open(f'/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/overall_efficiency_table.tex', 'w') as fout_overall:
             fout_overall.write(overall_table.to_latex())
