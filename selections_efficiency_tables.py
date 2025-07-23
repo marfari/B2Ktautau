@@ -462,19 +462,21 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         print("Ngen = ", N_gen)
 
     elif(species == 7):
-        fc_2016 = ROOT.TFileCollection("fc_2016", "fc_2016", "Files_on_grid/MC_D0Dps_2016.txt")
-        fc_2017 = ROOT.TFileCollection("fc_2017", "fc_2017", "Files_on_grid/MC_D0Dps_2017.txt")
-        fc_2018 = ROOT.TFileCollection("fc_2018", "fc_2018", "Files_on_grid/MC_D0Dps_2018.txt")
+        # fc_2016 = ROOT.TFileCollection("fc_2016", "fc_2016", "Files_on_grid/MC_D0Dps_2016.txt")
+        # fc_2017 = ROOT.TFileCollection("fc_2017", "fc_2017", "Files_on_grid/MC_D0Dps_2017.txt")
+        # fc_2018 = ROOT.TFileCollection("fc_2018", "fc_2018", "Files_on_grid/MC_D0Dps_2018.txt")
 
-        t_gen_2016 = ROOT.TChain("mc_ntuple/MCDecayTree")
-        t_gen_2017 = ROOT.TChain("mc_ntuple/MCDecayTree")
-        t_gen_2018 = ROOT.TChain("mc_ntuple/MCDecayTree")
+        # t_gen_2016 = ROOT.TChain("mc_ntuple/MCDecayTree")
+        # t_gen_2017 = ROOT.TChain("mc_ntuple/MCDecayTree")
+        # t_gen_2018 = ROOT.TChain("mc_ntuple/MCDecayTree")
 
-        t_gen_2016.AddFileInfoList(fc_2016.GetList())
-        t_gen_2017.AddFileInfoList(fc_2017.GetList())
-        t_gen_2018.AddFileInfoList(fc_2018.GetList())
+        # t_gen_2016.AddFileInfoList(fc_2016.GetList())
+        # t_gen_2017.AddFileInfoList(fc_2017.GetList())
+        # t_gen_2018.AddFileInfoList(fc_2018.GetList())
 
-        N_gen = t_gen_2016.GetEntries() + t_gen_2017.GetEntries() + t_gen_2018.GetEntries()
+        # N_gen = t_gen_2016.GetEntries() + t_gen_2017.GetEntries() + t_gen_2018.GetEntries()
+
+        N_gen = 5350785+5782016+5763580
 
         print("N_gen = ", N_gen)
     elif(species == 100):
