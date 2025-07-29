@@ -16,9 +16,9 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 from itertools import chain
 
 # Global flags
-add_statistical_error = False
+add_statistical_error = True
 toy_based_limit = False
-validate_fit = False
+validate_fit = True
 if(validate_fit):
     n_toys = 1000
 
@@ -35,6 +35,7 @@ def save_dummy(validate_fit, fit_type, fit_name, BF_sig, bdt):
         np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/ncomb_error.npy', 0)    
     else:
         np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit.npy', np.inf)
+        np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_obs_limit.npy', np.inf)
         f, ax = plt.subplots()
         f.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_plot.pdf')
         f1, ax1 = plt.subplots()
@@ -475,10 +476,6 @@ def build_model(fit_name, fit_type, BF_sig, nominal_templates, error_templates, 
         # if(int(sum(data_values_3)) >= 10):
         #     channels.append({"name": "Channel_3", "samples": channel_samples[2]})
         #     observations.append({"name": "Channel_3", "data": data_values_3})
-        
-        print("Channel 1: ", sum(data_values_1))
-        print("Channel 2: ", sum(data_values_2))
-        print("Channel 3: ", sum(data_values_3))
 
         channels = [{"name": "Channel_1", "samples": channel_samples[0]}, {"name": "Channel_2", "samples": channel_samples[1]}, {"name": "Channel_3", "samples": channel_samples[2]}]
         observations = [{"name": "Channel_1", "data": data_values_1}, {"name": "Channel_2", "data": data_values_2}, {"name": "Channel_3", "data": data_values_3}]
@@ -956,7 +953,7 @@ def run_cls_limit(fit_poi, fit_poi_error, data, model, fit_name, fit_type, BF_si
     fig.savefig(f"/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit.pdf")
     plt.clf()
 
-    return exp_limits[2]
+    return exp_limits[2], obs_limit
 
 
 def do_fit(fit_name, fit_type, BF_sig, bdt, spec, h_templates, save_plot, i_min, i_max, add_efficiencies, seed=-1):        
@@ -997,7 +994,7 @@ def do_fit(fit_name, fit_type, BF_sig, bdt, spec, h_templates, save_plot, i_min,
         fit_poi = fit_pars[sig_index]
         fit_poi_error = fit_errors[sig_index]
 
-        exp_limit = run_cls_limit(fit_poi, fit_poi_error, data, model, fit_name, fit_type, BF_sig, bdt)
+        exp_limit, obs_limit = run_cls_limit(fit_poi, fit_poi_error, data, model, fit_name, fit_type, BF_sig, bdt)
 
     if(fit_type == "RSDataSidebands"):
         comb_index = model.config.par_names.index("N_comb_0")
@@ -1010,7 +1007,8 @@ def do_fit(fit_name, fit_type, BF_sig, bdt, spec, h_templates, save_plot, i_min,
         if(validate_fit):
             return fit_pars, fit_errors
         else:
-            return exp_limit
+            print(obs_limit)
+            return exp_limit, obs_limit
 
 
 def toy_studies(fit_name, fit_type, BF_sig, bdt, model, N_fail, toy_fit_values, toy_fit_errors, nbins=30):
@@ -1069,6 +1067,8 @@ def toy_studies(fit_name, fit_type, BF_sig, bdt, model, N_fail, toy_fit_values, 
         Nbkg_toys = [Nbkg_toys_1, Nbkg_toys_2, Nbkg_toys_3]
         Nbkg_toys_err = [Nbkg_toys_err_1, Nbkg_toys_err_2, Nbkg_toys_err_3]
 
+    np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_poi_mean.npy', np.mean(BF_toys))
+    np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_poi_mean_error.npy', np.sqrt(np.sum(BF_toys_err**2)) / len(BF_toys))
 
     for i in range(len(expected_values)):
         param_values = [toy_fit_values[j][i] for j in range(N)]
@@ -1241,6 +1241,8 @@ def main(argv):
     add_efficiencies = True
     if((fit_name == "AllEvents") and ((fit_type == "ToyData") or (fit_type == "RSData"))):
         add_efficiencies = False
+    if((fit_name == "RSDataSidebands")):
+        add_statistical_error = False
     
     start = time.time()
 
@@ -1391,8 +1393,10 @@ def main(argv):
             spec = build_model(fit_name, fit_type, BF_sig, nominal_templates, error_templates, norm_parameters, norm_parameters_errors, h_data, i_min, i_max, add_efficiencies)
 
             try:
-                exp_limit = do_fit(fit_name, fit_type, BF_sig, bdt, spec, nominal_templates, True, i_min, i_max, add_efficiencies)
+                exp_limit, obs_limit = do_fit(fit_name, fit_type, BF_sig, bdt, spec, nominal_templates, True, i_min, i_max, add_efficiencies)
+                print(obs_limit)
                 np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit.npy', exp_limit)
+                np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_obs_limit.npy', obs_limit)
             except:
                 print("CLs calculation failed")
                 save_dummy(validate_fit, fit_type, fit_name, BF_sig, bdt)
