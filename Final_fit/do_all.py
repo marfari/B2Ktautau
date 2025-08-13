@@ -16,16 +16,17 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 from itertools import chain
 
 # Global flags
-add_statistical_error = True
+add_statistical_error = False
 toy_based_limit = False
-validate_fit = True
+validate_fit = False
+comb_variation_for_limit = 0
 if(validate_fit):
-    n_toys = 1000
+    n_toys = 5000
 
 # Functions
 def save_dummy(validate_fit, fit_type, fit_name, BF_sig, bdt):
     print("Fit failed. Saving dummy results.")
-    if(validate_fit and fit_type == "RSDataSidebands"):
+    if(validate_fit and not fit_type == "RSDataSidebands"):
         f, ax = plt.subplots()
         f.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/pulls/BF_sig.pdf')
         f1, ax1 = plt.subplots()
@@ -36,16 +37,32 @@ def save_dummy(validate_fit, fit_type, fit_name, BF_sig, bdt):
     else:
         np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit.npy', np.inf)
         np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_obs_limit.npy', np.inf)
+        np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit_up_comb_yield_syst.npy', np.inf)
+        np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_obs_limit_up_comb_yield_syst.npy', np.inf)
+        np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit_down_comb_yield_syst.npy', np.inf)
+        np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_obs_limit_down_comb_yield_syst.npy', np.inf)
         f, ax = plt.subplots()
         f.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_plot.pdf')
         f1, ax1 = plt.subplots()
         f1.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit.pdf')
 
+        f2, a2 = plt.subplots()
+        f2.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_plot_up_comb_yield_syst.pdf')
+        f3, ax3 = plt.subplots()
+        f3.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit_up_comb_yield_syst.pdf')
 
-def retrieve_histograms(f, f1, ch):
+        f4, a4 = plt.subplots()
+        f4.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_plot_down_comb_yield_syst.pdf')
+        f5, ax5 = plt.subplots()
+        f5.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit_down_comb_yield_syst.pdf')
+
+
+def retrieve_histograms(fit_type, f, f1, ch):
     h_sig = f.Get(f"Channel_{ch}/h_sig_{ch}")
-    h_comb = f.Get(f"Channel_{ch}/h_comb_{ch}")
+    h_comb = f.Get(f"Channel_{ch}/h_comb_{ch}") # I am using WS*R as the nominal (testing)
     h_BDDKp = f.Get(f"Channel_{ch}/h_BDDKp_{ch}")
+    h_upward = f.Get(f"Channel_{ch}/h_upward_{ch}") # These variations are not used in the test
+    h_downward = f.Get(f"Channel_{ch}/h_downward_{ch}")
 
     h_sig_err = f1.Get(f"Channel_{ch}/h_sig_err_{ch}")
     h_comb_err = f1.Get(f"Channel_{ch}/h_comb_err_{ch}")
@@ -53,8 +70,13 @@ def retrieve_histograms(f, f1, ch):
 
     histograms = [h_sig, h_comb, h_BDDKp]
     histogram_errors = [h_sig_err, h_comb_err, h_BDDKp_err]
-
-    return histograms, histogram_errors
+    
+    if((fit_type == "RSDataSidebands") or (fit_type == "RSData")):
+        h_data = f.Get(f"Channel_{ch}/h_data_{ch}")
+    
+        return histograms, histogram_errors, h_upward, h_downward, h_data
+    else:
+        return histograms, histogram_errors, h_upward, h_downward
 
 
 def error_category_efficiency(epsilon, epsilon_error, ch):
@@ -111,16 +133,21 @@ def convert_histogram_to_array(histograms, histogram_errors):
     return data, data_err
 
 
-def generate_cls_data(fit_name, fit_type, BF_sig, nominal_templates, norm_parameters, norm_parameters_errors, add_efficiencies):
-    N_comb = norm_parameters['N_comb']
+def generate_cls_data(fit_name, fit_type, BF_sig, nominal_templates, h_upward, h_downward, norm_parameters, norm_parameters_errors, add_efficiencies, comb_yield_syst):
+    # This is the data we fit to when fit_type == ToyData or fit_type == ToyDataSidebands
+    # It simply scales the fit templates to the expected yields in RS data and adds them to build h_data
+    # This is used to compute the expected 90% CL upper limit on the branching fraction 
+
+    if((fit_type != "ToyData") and (fit_type != "ToyDataSidebands")):
+        print("Wrong fit type for generate_cls_data. Try 'ToyData' or 'ToyDataSidebands'")
+
     a = norm_parameters['a']
     b = norm_parameters['b']
     C_BDDKp = norm_parameters['C_BDDKp']
     eps_sig = norm_parameters['eps_sig']
-    eps_comb = norm_parameters['eps_comb']
     eps_BDDKp = norm_parameters['eps_BDDKp']
 
-    N_comb_nominal = N_comb
+    N_comb_nominal = ufloat(norm_parameters['N_comb'], norm_parameters_errors['N_comb'])
     N_sig_nominal = BF_sig*a*b
     N_BDDKp_nominal = C_BDDKp*b
 
@@ -139,6 +166,8 @@ def generate_cls_data(fit_name, fit_type, BF_sig, nominal_templates, norm_parame
         h_sig = nominal_templates[i][0]  
         h_comb = nominal_templates[i][1]  
         h_BDDKp = nominal_templates[i][2]
+        upward_variation = h_upward[i]
+        downward_variation = h_downward[i]
         nbins = h_sig.GetNbinsX()
 
         # data
@@ -147,22 +176,64 @@ def generate_cls_data(fit_name, fit_type, BF_sig, nominal_templates, norm_parame
         h_data_sig = ROOT.TH1D(f"h_data_sig_{ch}", f"h_data_sig_{ch}", nbins, 4000, 9000)
         h_data_BDDKp = ROOT.TH1D(f"h_data_BDDKp_{ch}", f"h_data_BDDKp_{ch}", nbins, 4000, 9000)
 
+        eps_comb_ch = ufloat( norm_parameters['eps_comb'][ch], norm_parameters_errors['eps_comb'][ch] )
+
         if(add_efficiencies):
-            N_comb_ch = N_comb_nominal*eps_comb[ch]
-            N_sig_ch =  N_sig_nominal*eps_sig[ch]
-            N_BDDKp_ch = N_BDDKp_nominal*eps_BDDKp[ch]
+            N_comb_ch = N_comb_nominal*eps_comb
+            N_sig_ch =  N_sig_nominal*eps_sig
+            N_BDDKp_ch = N_BDDKp_nominal*eps_BDDKp
         else:
             N_comb_ch = N_comb_nominal
             N_sig_ch = N_sig_nominal
             N_BDDKp_ch = N_BDDKp_nominal
 
-        h_data_comb = h_comb.Clone("h_data_comb")
-        h_data_comb.Scale(N_comb_ch)
+        if(comb_yield_syst == 0):
+            N_comb_ch = N_comb_ch.nominal_value
+        elif(comb_yield_syst == 1):
+            N_comb_ch = N_comb_ch.nominal_value + N_comb_ch.std_dev
+        elif(comb_yield_syst == -1):
+            if(N_comb_ch.std_dev > N_comb_ch.nominal_value):
+                N_comb_ch = 0
+            else:
+                N_comb_ch = N_comb_ch.nominal_value - N_comb_ch.std_dev
 
-        h_data_sig = h_sig.Clone("h_data_sig")
+        print("Ncomb (fit) = ", N_comb_ch)
+
+        if(comb_variation_for_limit == 0):
+            h_data_comb = h_comb.Clone(f"h_data_comb_{ch}")
+            h_data_comb.Scale(N_comb_ch)
+        else:
+            h_comb_interpolation = ROOT.TH1D(f"h_comb_interpolation_{ch}", f"h_comb_interpolation_{ch}", nbins, 4000, 9000)
+
+            if(comb_variation_for_limit == 1):
+                histosys_alpha = 1
+            elif(comb_variation_for_limit == 2):
+                histosys_alpha = -1
+
+            if(histosys_alpha >= 0):
+                h_comb_interpolation = upward_variation.Clone(f"h_comb_interpolation_{ch}")
+                h_comb_interpolation.SetTitle(f"h_comb_interpolation_{ch}")
+                h_comb_interpolation.Sumw2()
+
+                h_comb_interpolation.Add(h_comb, -1)
+            else:
+                h_comb_interpolation = h_comb.Clone(f"h_comb_interpolation_{ch}")
+                h_comb_interpolation.SetTitle(f"h_comb_interpolation_{ch}")
+                h_comb_interpolation.Sumw2()
+
+                h_comb_interpolation.Add(downward_variation, -1)
+
+            h_data_comb = h_comb.Clone(f"h_data_comb_{ch}")
+            h_data_comb.SetTitle(f"h_data_comb_{ch}")
+            h_data_comb.Sumw2()
+            h_data_comb.Add(h_comb_interpolation, histosys_alpha)
+
+            h_data_comb.Scale(N_comb_ch)
+
+        h_data_sig = h_sig.Clone(f"h_data_sig_{ch}")
         h_data_sig.Scale(N_sig_ch)
 
-        h_data_BDDKp = h_BDDKp.Clone("h_data_BDDKp")
+        h_data_BDDKp = h_BDDKp.Clone(f"h_data_BDDKp_{ch}")
         h_data_BDDKp.Scale(N_BDDKp_ch)
 
         h_data.Sumw2()
@@ -175,7 +246,7 @@ def generate_cls_data(fit_name, fit_type, BF_sig, nominal_templates, norm_parame
     return histo_data
 
 
-def generate_toy_data(fit_name, BF_sig, seed, nominal_templates, norm_parameters, norm_parameters_errors, add_efficiencies):
+def generate_toy_data(fit_name, BF_sig, seed, nominal_templates, h_upward, h_downward, norm_parameters, norm_parameters_errors, add_efficiencies):
     N_comb = norm_parameters['N_comb']
     a = norm_parameters['a']
     b = norm_parameters['b']
@@ -216,11 +287,37 @@ def generate_toy_data(fit_name, BF_sig, seed, nominal_templates, norm_parameters
         h_comb = nominal_templates[i][1]  
         h_BDDKp = nominal_templates[i][2]
         nbins = h_sig.GetNbinsX()
+        upward_variation = h_upward[i]
+        downward_variation = h_downward[i]
 
         # varied templates
+        # shapesys variation
         h_comb_varied = ROOT.TH1D(f"h_comb_varied_{seed}_{ch}", f"h_comb_varied_{seed}_{ch}", nbins, 4000, 9000)
         h_sig_varied = ROOT.TH1D(f"h_sig_varied_{seed}_{ch}", f"h_sig_varied_{seed}_{ch}", nbins, 4000, 9000)
         h_BDDKp_varied = ROOT.TH1D(f"h_BDDKp_varied_{seed}_{ch}", f"h_BDDKp_varied_{seed}_{ch}", nbins, 4000, 9000)
+
+        # # histosys variation
+        # h_comb_histosys_varied = ROOT.TH1D(f"h_comb_histosys_varied_{seed}_{ch}", f"h_comb_histosys_varied_{seed}_{ch}", nbins, 4000, 9000)
+        # h_comb_interpolation = ROOT.TH1D(f"h_comb_interpolation_{seed}_{ch}", f"h_comb_interpolation_{seed}_{ch}", nbins, 4000, 9000)
+
+        # histosys_alpha = np.random.normal(0, 1)
+        # if(histosys_alpha >= 0):
+        #     h_comb_interpolation = upward_variation.Clone(f"h_comb_interpolation_{seed}_{ch}")
+        #     h_comb_interpolation.SetTitle(f"h_comb_interpolation_{seed}_{ch}")
+        #     h_comb_interpolation.Sumw2()
+
+        #     h_comb_interpolation.Add(h_comb, -1)
+        # else:
+        #     h_comb_interpolation = h_comb.Clone(f"h_comb_interpolation_{seed}_{ch}")
+        #     h_comb_interpolation.SetTitle(f"h_comb_interpolation_{seed}_{ch}")
+        #     h_comb_interpolation.Sumw2()
+
+        #     h_comb_interpolation.Add(downward_variation, -1)
+
+        # h_comb_histosys_varied = h_comb.Clone(f"h_comb_histosys_varied_{seed}_{ch}")
+        # h_comb_histosys_varied.SetTitle(f"h_comb_histosys_varied_{seed}_{ch}")
+        # h_comb_histosys_varied.Sumw2()
+        # h_comb_histosys_varied.Add(h_comb_interpolation, histosys_alpha)
 
         # data
         h_data = ROOT.TH1D(f"h_data_{seed}_{ch}", f"h_data_{seed}_{ch}", nbins, 4000, 9000)
@@ -246,7 +343,7 @@ def generate_toy_data(fit_name, BF_sig, seed, nominal_templates, norm_parameters
         if(add_statistical_error):
             # Vary the templates within their statistical uncertainties:
             # Combinatorial
-            toy_counts = np.array([np.random.poisson( h_comb.GetBinContent(i+1)*h_comb.GetEntries() ) for i in range(nbins)])
+            toy_counts = np.array([np.random.poisson( max(0, h_comb.GetBinContent(i+1)*h_comb.GetEntries() ) ) for i in range(nbins)])
             for i, count in enumerate(toy_counts):
                 h_comb_varied.SetBinContent(i+1, count)
             h_comb_varied.Sumw2()
@@ -262,7 +359,7 @@ def generate_toy_data(fit_name, BF_sig, seed, nominal_templates, norm_parameters
             for i, count in enumerate(toy_counts_BDDKp):
                 h_BDDKp_varied.SetBinContent(i+1, count)
             h_BDDKp_varied.Sumw2()
-            
+
             # Sample from the varied templates:
             # Combinatorial
             toy_counts_1 = np.array([np.random.poisson( h_comb_varied.GetBinContent(i+1)*(N_comb_ch/h_comb_varied.Integral()) ) for i in range(nbins)])
@@ -277,14 +374,14 @@ def generate_toy_data(fit_name, BF_sig, seed, nominal_templates, norm_parameters
             h_data_sig.Sumw2()
 
             # B -> DD K+
-            toy_counts_BDDKp_1 = np.array([np.random.poisson( h_BDDKp_varied.GetBinContent(i+1)*(N_BDDKp_ch/h_BDDKp_varied.Integral())) for i in range(nbins)])
+            toy_counts_BDDKp_1 = np.array([np.random.poisson( h_BDDKp_varied.GetBinContent(i+1)*(N_BDDKp_ch/h_BDDKp_varied.Integral()) ) for i in range(nbins)])
             for i, count in enumerate(toy_counts_BDDKp_1):
                 h_data_BDDKp.SetBinContent(i+1, count)
             h_data_BDDKp.Sumw2()
 
         else:
             # Combinatorial
-            toy_counts = np.array([np.random.poisson( h_comb.GetBinContent(i+1)*N_comb_ch ) for i in range(nbins)])
+            toy_counts = np.array([np.random.poisson( max(0, h_comb.GetBinContent(i+1)*N_comb_ch ) ) for i in range(nbins)])
             for i, count in enumerate(toy_counts):
                 h_data_comb.SetBinContent(i+1, count)
             h_data_comb.Sumw2()
@@ -311,7 +408,7 @@ def generate_toy_data(fit_name, BF_sig, seed, nominal_templates, norm_parameters
     return histo_data
 
 
-def build_model(fit_name, fit_type, BF_sig, nominal_templates, error_templates, norm_parameters, norm_parameters_errors, h_data, i_min, i_max, add_efficiencies):
+def build_model(fit_name, fit_type, BF_sig, nominal_templates, error_templates, norm_parameters, norm_parameters_errors, h_data, h_upward, h_downward, i_min, i_max, add_efficiencies):
     ### NormFactor expected values
     N_comb = norm_parameters['N_comb']
     a = norm_parameters['a']
@@ -395,6 +492,9 @@ def build_model(fit_name, fit_type, BF_sig, nominal_templates, error_templates, 
                 upward_eps_BDDKp = 1+(eps_BDDKp_err[ch]/eps_BDDKp[ch])
                 downward_eps_BDDKp = 1-(eps_BDDKp_err[ch]/eps_BDDKp[ch])
 
+
+        data_comb_upward = [h_upward[ch].GetBinContent(i+1) for i in range(len(data_comb))]
+        data_comb_downward = [h_downward[ch].GetBinContent(i+1) for i in range(len(data_comb))]
         if((fit_type == "ToyDataSidebands") or (fit_type == "RSDataSidebands")):
             data_sig = [data_sig[k] for k in chain(range(0, i_min[ch]-1), range(i_max[ch], len(data_sig)) )]
             data_comb = [data_comb[k] for k in chain(range(0, i_min[ch]-1), range(i_max[ch], len(data_comb)) )]
@@ -403,6 +503,9 @@ def build_model(fit_name, fit_type, BF_sig, nominal_templates, error_templates, 
             data_sig_err = [data_sig_err[k] for k in chain(range(0, i_min[ch]-1), range(i_max[ch], len(data_sig_err)) )]
             data_comb_err = [data_comb_err[k] for k in chain(range(0, i_min[ch]-1), range(i_max[ch], len(data_comb_err)) )]
             data_BDDKp_err = [data_BDDKp_err[k] for k in chain(range(0, i_min[ch]-1), range(i_max[ch], len(data_BDDKp_err)))]
+
+            data_comb_upward = [data_comb_upward[k] for k in chain(range(0, i_min[ch]-1), range(i_max[ch], len(data_comb_upward)))]
+            data_comb_downward = [data_comb_downward[k] for k in chain(range(0, i_min[ch]-1), range(i_max[ch], len(data_comb_downward)))]
 
         # Modifiers 
         sig_modifiers = [{"data": None, "name": "BF_sig", "type": "normfactor"}, {"data": None, "name": "a", "type": "normfactor"}, {"data": None, "name": "b", "type": "normfactor"}]
@@ -428,6 +531,9 @@ def build_model(fit_name, fit_type, BF_sig, nominal_templates, error_templates, 
             comb_modifiers.append({"name": f"shapesys_comb_{ch}", "data": data_comb_err, "type": "shapesys"})
             BDDKp_modifiers.append({"name": f"shapesys_BDDKp_{ch}", "data": data_BDDKp_err, "type": "shapesys"})
 
+        # histosys: shape differences between RS and WS data
+        comb_modifiers.append({"name": f"histosys_comb_{ch}", "data": {"hi_data": data_comb_upward, "lo_data": data_comb_downward}, "type": "histosys"})
+
         samples = [{"name": "Signal", "data": data_sig, "modifiers": sig_modifiers}]
         samples.append({"name": "Combinatorial", "data": data_comb, "modifiers": comb_modifiers})
         samples.append({"name": "BDDKp", "data": data_BDDKp, "modifiers": BDDKp_modifiers})   
@@ -439,7 +545,7 @@ def build_model(fit_name, fit_type, BF_sig, nominal_templates, error_templates, 
             parameters.append({"name": f"eps_sig_{ch}", "bounds": [[0.0,2.0]], "fixed": True, "inits": [eps_sig[ch]]})
             parameters.append({"name": f"eps_BDDKp_{ch}", "bounds": [[0.0,2.0]], "fixed": True, "inits": [eps_BDDKp[ch]]})
 
-        parameters.append({"name": f"N_comb_{ch}", "bounds": [[-2*(N_comb*eps_comb[ch]+5),2*(N_comb*eps_comb[ch]+5)]], "inits": [N_comb*eps_comb[ch]]})
+        parameters.append({"name": f"N_comb_{ch}", "bounds": [[-2*(N_comb*eps_comb[ch]+1), 2*(N_comb*eps_comb[ch]+1)]], "inits": [N_comb*eps_comb[ch]]})
 
     # Build spec
     if(fit_name == "AllEvents"):
@@ -465,18 +571,6 @@ def build_model(fit_name, fit_type, BF_sig, nominal_templates, error_templates, 
             data_values_2 = [data_values_2[k] for k in chain(range(0, i_min[2]-1), range(i_max[2], len(data_values_2)) )]
             data_values_3 = [data_values_3[k] for k in chain(range(0, i_min[3]-1), range(i_max[3], len(data_values_3)) )]
 
-        # channels = []
-        # observations = []
-        # if(int(sum(data_values_1)) >= 10):
-        #     channels.append({"name": "Channel_1", "samples": channel_samples[0]})
-        #     observations.append({"name": "Channel_1", "data": data_values_1})
-        # if(int(sum(data_values_2)) >= 10):
-        #     channels.append({"name": "Channel_2", "samples": channel_samples[1]})
-        #     observations.append({"name": "Channel_2", "data": data_values_2})
-        # if(int(sum(data_values_3)) >= 10):
-        #     channels.append({"name": "Channel_3", "samples": channel_samples[2]})
-        #     observations.append({"name": "Channel_3", "data": data_values_3})
-
         channels = [{"name": "Channel_1", "samples": channel_samples[0]}, {"name": "Channel_2", "samples": channel_samples[1]}, {"name": "Channel_3", "samples": channel_samples[2]}]
         observations = [{"name": "Channel_1", "data": data_values_1}, {"name": "Channel_2", "data": data_values_2}, {"name": "Channel_3", "data": data_values_3}]
 
@@ -497,7 +591,7 @@ def build_model(fit_name, fit_type, BF_sig, nominal_templates, error_templates, 
     return spec
 
 
-def plot(fit_name, fit_type, h_data, workspace, fit_pars, fit_errors, BF_sig, bdt, i_min, i_max, add_efficiencies, seed=-1):
+def plot(fit_name, fit_type, h_data, workspace, fit_pars, fit_errors, BF_sig, bdt, i_min, i_max, add_efficiencies, comb_yield_syst, seed=-1):
     model = workspace.model()
 
     if(fit_name == "AllEvents"):
@@ -680,10 +774,10 @@ def plot(fit_name, fit_type, h_data, workspace, fit_pars, fit_errors, BF_sig, bd
             plt.step(edges, full_data_BDDKp, where='post', color='green', label='$B \\to D D K^+$')
 
             plt.errorbar(mass, the_full_data, the_full_data_err, c="k", marker='.', linestyle='', zorder=99, label="Toy data")
-            plt.title(f'All events \n BDT = {bdt:.4g} | seed = {seed}')
+            plt.title(f'All events \n BDT = {bdt} | seed = {seed}')
             plt.xlabel('m_B (MeV)')
             plt.ylabel('Entries / ({0} MeV)'.format( round((9000-4000)/nbins, 1) ))
-            ax.set_yscale("symlog")
+            # ax.set_yscale("symlog")
             plt.xlim(4000,9000)
         
         else:
@@ -694,7 +788,7 @@ def plot(fit_name, fit_type, h_data, workspace, fit_pars, fit_errors, BF_sig, bd
             plt.step(edges, data_BDDKp, where='post', color='green', label='$B \\to D D K^+$')
 
             plt.errorbar(mass, the_data, the_data_err, c="k", marker='.', linestyle='', zorder=99, label="Toy data")
-            plt.title(f'All events \n BDT = {bdt:.4g} | seed = {seed}')
+            plt.title(f'All events \n BDT = {bdt} | seed = {seed}')
             plt.xlabel('m_B (MeV)')
             plt.ylabel('Entries / ({0} MeV)'.format( round((9000-4000)/nbins, 1) ))
             ax.set_yscale("symlog")
@@ -922,14 +1016,19 @@ def plot(fit_name, fit_type, h_data, workspace, fit_pars, fit_errors, BF_sig, bd
         ax3.legend()
 
     plt.tight_layout()
-    if(validate_fit):
+    if(validate_fit and not fit_type == "RSDataSidebands"):
         plt.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_plot_seed_{seed}.pdf')
     else:
-        plt.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_plot.pdf') 
+        if(comb_yield_syst == 0):
+            plt.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_plot.pdf') 
+        elif(comb_yield_syst == 1):
+            plt.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_plot_up_comb_yield_syst.pdf') 
+        elif(comb_yield_syst == -1):
+            plt.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_plot_down_comb_yield_syst.pdf') 
     plt.clf()
 
 
-def run_cls_limit(fit_poi, fit_poi_error, data, model, fit_name, fit_type, BF_sig, bdt):
+def run_cls_limit(fit_poi, fit_poi_error, data, model, fit_name, fit_type, BF_sig, bdt, comb_yield_syst):
     print("### CLS LIMIT CALCULATION")
     # CLs limit: evaluate upper limit on parameter of interest
     if(toy_based_limit): # low stats
@@ -950,13 +1049,18 @@ def run_cls_limit(fit_poi, fit_poi_error, data, model, fit_name, fit_type, BF_si
     brazil.plot_results(scan, results, test_size=0.1, ax=ax)
     textstr1 = f"Upper limit (exp): = {exp_limits[2]:.6f}"
     plt.text(0.6, 0.6, textstr1, fontsize=15, transform=ax.transAxes)
-    fig.savefig(f"/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit.pdf")
+    if(comb_yield_syst == 0):
+        fig.savefig(f"/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit.pdf")
+    elif(comb_yield_syst == 1):
+        fig.savefig(f"/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit_up_comb_yield_syst.pdf")
+    elif(comb_yield_syst == -1):
+        fig.savefig(f"/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit_down_comb_yield_syst.pdf")
     plt.clf()
 
     return exp_limits[2], obs_limit
 
 
-def do_fit(fit_name, fit_type, BF_sig, bdt, spec, h_templates, save_plot, i_min, i_max, add_efficiencies, seed=-1):        
+def do_fit(fit_name, fit_type, BF_sig, bdt, spec, h_templates, save_plot, i_min, i_max, add_efficiencies, comb_yield_syst, seed=-1):        
     workspace = pyhf.Workspace(spec)
     model = workspace.model()
     data = workspace.data(model)
@@ -987,14 +1091,14 @@ def do_fit(fit_name, fit_type, BF_sig, bdt, spec, h_templates, save_plot, i_min,
 
     if(save_plot and not fit_type == "RSDataSidebands"):
         print(res_obj)
-        plot(fit_name, fit_type, h_templates, workspace, fit_pars, fit_errors, BF_sig, bdt, i_min, i_max, add_efficiencies, seed)
-    
+        plot(fit_name, fit_type, h_templates, workspace, fit_pars, fit_errors, BF_sig, bdt, i_min, i_max, add_efficiencies, comb_yield_syst, seed)
+
     if(not validate_fit and not fit_type == "RSDataSidebands"):
         sig_index = model.config.par_names.index("BF_sig")
         fit_poi = fit_pars[sig_index]
         fit_poi_error = fit_errors[sig_index]
 
-        exp_limit, obs_limit = run_cls_limit(fit_poi, fit_poi_error, data, model, fit_name, fit_type, BF_sig, bdt)
+        exp_limit, obs_limit = run_cls_limit(fit_poi, fit_poi_error, data, model, fit_name, fit_type, BF_sig, bdt, comb_yield_syst)
 
     if(fit_type == "RSDataSidebands"):
         comb_index = model.config.par_names.index("N_comb_0")
@@ -1007,7 +1111,6 @@ def do_fit(fit_name, fit_type, BF_sig, bdt, spec, h_templates, save_plot, i_min,
         if(validate_fit):
             return fit_pars, fit_errors
         else:
-            print(obs_limit)
             return exp_limit, obs_limit
 
 
@@ -1285,7 +1388,7 @@ def main(argv):
     C_err = np.load(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT_{bdt}/C_err.npy')
     C_BDDKp_ufloat = ufloat( C[0], C_err[0] )
 
-    # N_comb (this changes depending on the fit_configuration) CHANGE ME
+    # N_comb (this changes depending on the fit_configuration) 
     combinatoria_yield = np.load(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT_{bdt}/N_comb.npy')
     N_comb_ufloat = ufloat( combinatoria_yield[0], combinatoria_yield[1] )
 
@@ -1299,45 +1402,61 @@ def main(argv):
 
     # Retrieve template histograms
     if(fit_name == "AllEvents"):
-        histograms, histogram_errors = retrieve_histograms(f,f1,0)
+        if((fit_type == "RSDataSidebands") or (fit_type == "RSData")):
+            histograms, histogram_errors, h_upward, h_downward, h_data = retrieve_histograms(fit_type, f,f1,0)
+            h_data = [h_data]
+        else:
+            histograms, histogram_errors, h_upward, h_downward = retrieve_histograms(fit_type, f,f1,0)
+
         nominal_templates  = [histograms]
         error_templates    = [histogram_errors]
+        h_upward = [h_upward]
+        h_downward = [h_downward]
     else:
-        histograms_1, histogram_errors_1 = retrieve_histograms(f,f1,1)
-        histograms_2, histogram_errors_2 = retrieve_histograms(f,f1,2)
-        histograms_3, histogram_errors_3 = retrieve_histograms(f,f1,3)
+        if((fit_type == "RSDataSidebands") or (fit_type == "RSData")):
+            histograms_1, histogram_errors_1, h_upward_1, h_downward_1, h_data_1 = retrieve_histograms(fit_type, f,f1,1)
+            histograms_2, histogram_errors_2, h_upward_2, h_downward_2, h_data_2 = retrieve_histograms(fit_type, f,f1,2)
+            histograms_3, histogram_errors_3, h_upward_3, h_downward_3, h_data_3 = retrieve_histograms(fit_type, f,f1,3)
+
+            h_data = [h_data_1, h_data_2, h_data_3]
+        else:
+            histograms_1, histogram_errors_1, h_upward_1, h_downward_1 = retrieve_histograms(fit_type, f,f1,1)
+            histograms_2, histogram_errors_2, h_upward_2, h_downward_2 = retrieve_histograms(fit_type, f,f1,2)
+            histograms_3, histogram_errors_3, h_upward_3, h_downward_3 = retrieve_histograms(fit_type, f,f1,3)
 
         nominal_templates = [histograms_1, histograms_2, histograms_3]
         error_templates = [histogram_errors_1, histogram_errors_2, histogram_errors_3]
+        h_upward = [h_upward_1, h_upward_2, h_upward_3]
+        h_downward = [h_downward_1, h_downward_2, h_downward_3]
 
     end = time.time()
     print(f"Elapsed time (retrieving files): {end - start:.2f} seconds")
 
     ### Do not run the fit in the signal efficiency is 0 (no signal passes the BDT selections)
     if(fit_name == "AllEvents"):
-        n_sig = BF_sig*a_ufloat*b_ufloat*norm_parameters['eps_sig'][0]
-        n_BDDKp = C_BDDKp_ufloat*b_ufloat*norm_parameters['eps_BDDKp'][0]
-        n_comb = norm_parameters['N_comb']*norm_parameters['eps_comb'][0]
+        n_sig = BF_sig*a_ufloat*b_ufloat*ufloat( norm_parameters['eps_sig'][0], norm_parameters_errors['eps_sig'][0])
+        n_BDDKp = C_BDDKp_ufloat*b_ufloat*ufloat(norm_parameters['eps_BDDKp'][0], norm_parameters_errors['eps_BDDKp'][0])
+        n_comb = ufloat(norm_parameters['N_comb'], norm_parameters_errors['N_comb'])*ufloat(norm_parameters['eps_comb'][0], norm_parameters_errors['eps_comb'][0])
     else:
         n_sig = 0
-        n_BDDKp = 0
-        n_comb = 0
+        n_BDDKp = ufloat(0, 0)
+        n_comb = ufloat(0, 0)
 
         for i in range(len(norm_parameters['eps_sig'])-1):
-            n_sig += BF_sig*a_ufloat*b_ufloat*norm_parameters['eps_sig'][i+1]
-            n_BDDKp +=  C_BDDKp_ufloat*b_ufloat*norm_parameters['eps_BDDKp'][i+1]
-            n_comb += norm_parameters['N_comb']*norm_parameters['eps_comb'][i+1]
+            n_sig += BF_sig*a_ufloat*b_ufloat*ufloat( norm_parameters['eps_sig'][i+1], norm_parameters_errors['eps_sig'][i+1])
+            n_BDDKp +=  C_BDDKp_ufloat*b_ufloat*ufloat( norm_parameters['eps_BDDKp'][i+1], norm_parameters_errors['eps_BDDKp'][i+1] )
+            n_comb += ufloat( norm_parameters['N_comb'], norm_parameters_errors['N_comb'])*ufloat( norm_parameters['eps_comb'][i+1], norm_parameters_errors['eps_comb'][i+1] )
 
     print("Yields generated (all events) : ")
-    print("N_sig = ", n_sig.nominal_value)
-    print("N_comb = ", n_comb)
-    print("N_BDDKp = ", n_BDDKp.nominal_value)
+    print("N_sig = ", n_sig.nominal_value, " +/- ", n_sig.std_dev)
+    print("N_comb = ", n_comb.nominal_value, " +/- ", n_comb.std_dev)
+    print("N_BDDKp = ", n_BDDKp.nominal_value, " +/- ", n_BDDKp.std_dev)
     n_total = n_sig+n_BDDKp+n_comb
 
-    print("N_total = ", n_total.nominal_value)
-    if(int(n_total.nominal_value) < 10):
-        print("Not running the fit because there are less < 10 events in data")
-        run_fit = False
+    print("N_total = ", n_total.nominal_value, " +/- ", n_total.std_dev)
+    # if(int(n_total.nominal_value) < 10):
+    #     print("Not running the fit because there are less < 10 events in data")
+    #     run_fit = False
     
     if(run_fit):
         ############################################################# Fit validation ########################################################################
@@ -1351,9 +1470,9 @@ def main(argv):
                     if seed % (n_toys // 10) == 0:
                         print(f"Progress: {100 * seed // n_toys}% (seed={seed})")
 
-                h_data = generate_toy_data(fit_name, BF_sig, seed, nominal_templates, norm_parameters, norm_parameters_errors, add_efficiencies)
+                h_data = generate_toy_data(fit_name, BF_sig, seed, nominal_templates, h_upward, h_downward, norm_parameters, norm_parameters_errors, add_efficiencies)
                 
-                spec = build_model(fit_name, fit_type, BF_sig, nominal_templates, error_templates, norm_parameters, norm_parameters_errors, h_data, i_min, i_max, add_efficiencies)
+                spec = build_model(fit_name, fit_type, BF_sig, nominal_templates, error_templates, norm_parameters, norm_parameters_errors, h_data, h_upward, h_downward, i_min, i_max, add_efficiencies)
 
                 if(seed == 0):
                     save_plot = True
@@ -1361,7 +1480,7 @@ def main(argv):
                     save_plot = False
 
                 try:
-                    fit_pars, fit_errors = do_fit(fit_name, fit_type, BF_sig, bdt, spec, nominal_templates, save_plot, i_min, i_max, add_efficiencies, seed)
+                    fit_pars, fit_errors = do_fit(fit_name, fit_type, BF_sig, bdt, spec, nominal_templates, save_plot, i_min, i_max, add_efficiencies, 0, seed)
 
                     toy_fit_values.append(fit_pars)
                     toy_fit_errors.append(fit_errors)
@@ -1376,10 +1495,9 @@ def main(argv):
 
         ############################################################# Extract Ncomb ########################################################################
         elif(fit_type == "RSDataSidebands"):
-            h_data = generate_cls_data(fit_name, fit_type, BF_sig, nominal_templates, norm_parameters, norm_parameters_errors, add_efficiencies)
-            spec = build_model(fit_name, fit_type, BF_sig, nominal_templates, error_templates, norm_parameters, norm_parameters_errors, h_data, i_min, i_max, add_efficiencies)
+            spec = build_model(fit_name, fit_type, BF_sig, nominal_templates, error_templates, norm_parameters, norm_parameters_errors, h_data, h_upward, h_downward, i_min, i_max, add_efficiencies)
             try:
-                ncomb = do_fit(fit_name, fit_type, BF_sig, bdt, spec, nominal_templates, True, i_min, i_max, add_efficiencies)
+                ncomb = do_fit(fit_name, fit_type, BF_sig, bdt, spec, nominal_templates, True, i_min, i_max, add_efficiencies, 0)
                 np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/ncomb_value.npy', ncomb.nominal_value)
                 np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/ncomb_error.npy', ncomb.std_dev)
             except:
@@ -1388,21 +1506,38 @@ def main(argv):
         
         ############################################################# CLs calculation ########################################################################
         else:
-            h_data = generate_cls_data(fit_name, fit_type, BF_sig, nominal_templates, norm_parameters, norm_parameters_errors, add_efficiencies)
+            h_data_nominal = generate_cls_data(fit_name, fit_type, BF_sig, nominal_templates, h_upward, h_downward, norm_parameters, norm_parameters_errors, add_efficiencies, 0)
+            h_data_upward = generate_cls_data(fit_name, fit_type, BF_sig, nominal_templates, h_upward, h_downward, norm_parameters, norm_parameters_errors, add_efficiencies, 1)
+            h_data_downward = generate_cls_data(fit_name, fit_type, BF_sig, nominal_templates, h_upward, h_downward, norm_parameters, norm_parameters_errors, add_efficiencies, -1)
 
-            spec = build_model(fit_name, fit_type, BF_sig, nominal_templates, error_templates, norm_parameters, norm_parameters_errors, h_data, i_min, i_max, add_efficiencies)
+            spec_nominal = build_model(fit_name, fit_type, BF_sig, nominal_templates, error_templates, norm_parameters, norm_parameters_errors, h_data_nominal, h_upward, h_downward, i_min, i_max, add_efficiencies)
+            spec_upward = build_model(fit_name, fit_type, BF_sig, nominal_templates, error_templates, norm_parameters, norm_parameters_errors, h_data_upward, h_upward, h_downward, i_min, i_max, add_efficiencies)
+            spec_downward = build_model(fit_name, fit_type, BF_sig, nominal_templates, error_templates, norm_parameters, norm_parameters_errors, h_data_downward, h_upward, h_downward, i_min, i_max, add_efficiencies)
 
-            try:
-                exp_limit, obs_limit = do_fit(fit_name, fit_type, BF_sig, bdt, spec, nominal_templates, True, i_min, i_max, add_efficiencies)
-                print(obs_limit)
-                np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit.npy', exp_limit)
-                np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_obs_limit.npy', obs_limit)
-            except:
-                print("CLs calculation failed")
-                save_dummy(validate_fit, fit_type, fit_name, BF_sig, bdt)
+            # try:
+            print("NOMINAL")
+            exp_limit_nominal, obs_limit_nominal = do_fit(fit_name, fit_type, BF_sig, bdt, spec_nominal, nominal_templates, True, i_min, i_max, add_efficiencies, 0)
+            print("NOMINAL + ERROR")
+            exp_limit_upward, obs_limit_upward = do_fit(fit_name, fit_type, BF_sig, bdt, spec_upward, nominal_templates, True, i_min, i_max, add_efficiencies, 1)
+            print("NOMINAL - ERROR")
+            exp_limit_downward, obs_limit_downward = do_fit(fit_name, fit_type, BF_sig, bdt, spec_downward, nominal_templates, True, i_min, i_max, add_efficiencies, -1)
+
+            np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit.npy', exp_limit_nominal)
+            np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_obs_limit.npy', obs_limit_nominal)
+        
+            np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit_up_comb_yield_syst.npy', exp_limit_upward)
+            np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_obs_limit_up_comb_yield_syst.npy', obs_limit_upward)
+
+            np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit_down_comb_yield_syst.npy', exp_limit_downward)
+            np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_obs_limit_down_comb_yield_syst.npy', obs_limit_downward)
+        
+            # except:
+            #     print("CLs calculation failed")
+            #     save_dummy(validate_fit, fit_type, fit_name, BF_sig, bdt)
 
     else:
         save_dummy(validate_fit, fit_type, fit_name, BF_sig, bdt)
+
     ############################################################################################################################################################
 
     end1 = time.time()
