@@ -190,6 +190,10 @@ def create_histograms(fit_type, t_sig, t_rs_data, t_comb, t_BuDDKp, t_BdDDKp, t_
     # Subtract BDDKp from RS data (to leave only combinatorial background)
     h_weight_sideband.Add(h_BDDKp_sideband, -1)
 
+    for i in range(nbins):
+        if(h_weight_sideband.GetBinContent(i+1) < 0):
+            h_weight_sideband.SetBinContent(i+1, 0)
+
     # Normalise histograms before dividing
     h_weight_sideband.Scale(1.0/h_weight_sideband.Integral())
     h_comb_sideband.Scale(1.0/h_comb_sideband.Integral())
@@ -340,7 +344,7 @@ def create_histogram_errors(h_sig, h_comb, h_BDDKp, ch):
 
 def combinatorial_background_yield(fit_type, t_rs_data, t_comb, bdt):
 
-    if((fit_type == "ToyDataSidebands") or (fit_type == "RSDataSidebands")): # WS data scaling
+    if((fit_type == "ToyDataSidebands") or (fit_type == "RSDataSidebands") or (fit_type == "ToyData")): # WS data scaling
         eps_ws_den = t_comb.GetEntries()
         eps_rs_den = t_rs_data.GetEntries()
 
@@ -381,25 +385,25 @@ def combinatorial_background_yield(fit_type, t_rs_data, t_comb, bdt):
         N_comb = n_rs_prebdt*eps_ws_bdt*r
 
     
-    elif(fit_type == "ToyData"): # from fit to RS data sidebands divided by the WS data sideband efficiency
-        N_comb_sidebands = np.load(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/RSDataSidebands_AllEvents/BF_sig_0/BDT_{bdt}/ncomb_value.npy')
-        N_comb_sidebands_err = np.load(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/RSDataSidebands_AllEvents/BF_sig_0/BDT_{bdt}/ncomb_error.npy')
-        N_comb_sidebands = ufloat(N_comb_sidebands, N_comb_sidebands_err)
+    # elif(fit_type == "ToyData"): # from fit to RS data sidebands divided by the WS data sideband efficiency
+    #     N_comb_sidebands = np.load(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/RSDataSidebands_AllEvents/BF_sig_0/BDT_{bdt}/ncomb_value.npy')
+    #     N_comb_sidebands_err = np.load(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/RSDataSidebands_AllEvents/BF_sig_0/BDT_{bdt}/ncomb_error.npy')
+    #     N_comb_sidebands = ufloat(N_comb_sidebands, N_comb_sidebands_err)
 
-        if(t_comb.GetEntries(f"BDT > {bdt}") != 0):
-            eps_comb_num = t_comb.GetEntries(f"(BDT > {bdt}) && ((df_Bp_M < {xmin[0]}) || (df_Bp_M > {xmax[0]}))")
-            eps_comb_den = t_comb.GetEntries(f"BDT > {bdt}")
+    #     if(t_comb.GetEntries(f"BDT > {bdt}") != 0):
+    #         eps_comb_num = t_comb.GetEntries(f"(BDT > {bdt}) && ((df_Bp_M < {xmin[0]}) || (df_Bp_M > {xmax[0]}))")
+    #         eps_comb_den = t_comb.GetEntries(f"BDT > {bdt}")
 
-            eps_comb = eps_comb_num/eps_comb_den
-            eps_comb_up = ROOT.TEfficiency.Wilson(eps_comb_den, eps_comb_num, 0.68, True)
-            eps_comb_down = ROOT.TEfficiency.Wilson(eps_comb_den, eps_comb_num, 0.68, False)
-            eps_comb_err = 0.5*(eps_comb_up-eps_comb_down)
-            eps_comb_up = ufloat(eps_comb_up, eps_comb_err)
+    #         eps_comb = eps_comb_num/eps_comb_den
+    #         eps_comb_up = ROOT.TEfficiency.Wilson(eps_comb_den, eps_comb_num, 0.68, True)
+    #         eps_comb_down = ROOT.TEfficiency.Wilson(eps_comb_den, eps_comb_num, 0.68, False)
+    #         eps_comb_err = 0.5*(eps_comb_up-eps_comb_down)
+    #         eps_comb_up = ufloat(eps_comb_up, eps_comb_err)
 
-            N_comb = N_comb_sidebands/eps_comb
+    #         N_comb = N_comb_sidebands/eps_comb
 
-        else:
-            N_comb = ufloat(0,0)
+    #     else:
+    #         N_comb = ufloat(0,0)
 
     return N_comb.nominal_value, N_comb.std_dev
 
@@ -604,7 +608,7 @@ def main(argv):
 
     ### Combinatorial background yield
     B = np.load('/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/B.npy')
-    N_comb, N_comb_err = combinatorial_background_yield(fit_type, t_rs_data, t_comb, bdtB)
+    N_comb, N_comb_err = combinatorial_background_yield(fit_type, t_rs_data, t_comb, bdt)
     if(fit_type != "RSDataSidebands"):
         print("N_comb = ", N_comb, " +/- ", N_comb_err)
     np.save(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT_{bdt}/N_comb.npy', [N_comb, N_comb_err])
