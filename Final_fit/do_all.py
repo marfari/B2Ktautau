@@ -18,10 +18,11 @@ from itertools import chain
 # Global flags
 add_statistical_error = False
 toy_based_limit = False
-validate_fit = False
-comb_shape_syst = -1
+validate_fit = True
+comb_shape_syst = 0
 if(validate_fit):
     n_toys = 5000
+    comb_shape_syst = 0
 
 # Functions
 def save_dummy(validate_fit, fit_type, fit_name, BF_sig, bdt):
@@ -182,11 +183,13 @@ def generate_cls_data(fit_name, fit_type, BF_sig, nominal_templates, h_upward, h
         h_data_BDDKp = ROOT.TH1D(f"h_data_BDDKp_{ch}", f"h_data_BDDKp_{ch}", nbins, 4000, 9000)
 
         eps_comb_ch = ufloat( norm_parameters['eps_comb'][ch], norm_parameters_errors['eps_comb'][ch] )
+        eps_sig_ch   = eps_sig[ch]
+        eps_BDDKp_ch = eps_BDDKp[ch]
 
         if(add_efficiencies):
-            N_comb_ch = N_comb_nominal*eps_comb
-            N_sig_ch =  N_sig_nominal*eps_sig
-            N_BDDKp_ch = N_BDDKp_nominal*eps_BDDKp
+            N_comb_ch = N_comb_nominal*eps_comb_ch
+            N_sig_ch =  N_sig_nominal*eps_sig_ch
+            N_BDDKp_ch = N_BDDKp_nominal*eps_BDDKp_ch
         else:
             N_comb_ch = N_comb_nominal
             N_sig_ch = N_sig_nominal
@@ -194,16 +197,13 @@ def generate_cls_data(fit_name, fit_type, BF_sig, nominal_templates, h_upward, h
 
         if(comb_yield_syst == 0):
             N_comb_ch = N_comb_ch.nominal_value
-            print("Ncomb (yield syst 0) = ", N_comb_ch)
         elif(comb_yield_syst == 1):
             N_comb_ch = N_comb_ch.nominal_value + N_comb_ch.std_dev
-            print("Ncomb (yield syst +) = ", N_comb_ch)
         elif(comb_yield_syst == -1):
             if(N_comb_ch.std_dev > N_comb_ch.nominal_value):
                 N_comb_ch = 0
             else:
                 N_comb_ch = N_comb_ch.nominal_value - N_comb_ch.std_dev
-            print("Ncomb (yield syst -) = ", N_comb_ch)
 
         h_data_comb = h_comb.Clone(f"h_data_comb_{ch}")
         h_data_comb.Scale(N_comb_ch)
@@ -240,6 +240,7 @@ def generate_toy_data(fit_name, BF_sig, seed, nominal_templates, h_upward, h_dow
     eps_comb_err = norm_parameters_errors['eps_comb']
     eps_BDDKp_err = norm_parameters_errors['eps_BDDKp']
 
+    # Gaussian constraint variations
     np.random.seed(seed)
     a = max(0, np.random.normal(a, a_err))
     b = max(0, np.random.normal(b, b_err))
@@ -250,6 +251,7 @@ def generate_toy_data(fit_name, BF_sig, seed, nominal_templates, h_upward, h_dow
     else:
         n_channels = 3
 
+    # Expected yields
     N_comb_nominal = N_comb
     N_BDDKp_nominal = C_BDDKp*b
     N_sig_nominal = BF_sig*a*b
@@ -261,121 +263,80 @@ def generate_toy_data(fit_name, BF_sig, seed, nominal_templates, h_upward, h_dow
         else:
             ch = i+1
 
-        h_sig = nominal_templates[i][0]  
-        h_comb = nominal_templates[i][1]  
-        h_BDDKp = nominal_templates[i][2]
-        nbins = h_sig.GetNbinsX()
-        upward_variation = h_upward[i]
-        downward_variation = h_downward[i]
-
-        # varied templates
-        # shapesys variation
-        h_comb_varied = ROOT.TH1D(f"h_comb_varied_{seed}_{ch}", f"h_comb_varied_{seed}_{ch}", nbins, 4000, 9000)
-        h_sig_varied = ROOT.TH1D(f"h_sig_varied_{seed}_{ch}", f"h_sig_varied_{seed}_{ch}", nbins, 4000, 9000)
-        h_BDDKp_varied = ROOT.TH1D(f"h_BDDKp_varied_{seed}_{ch}", f"h_BDDKp_varied_{seed}_{ch}", nbins, 4000, 9000)
-
-        # # histosys variation
-        # h_comb_histosys_varied = ROOT.TH1D(f"h_comb_histosys_varied_{seed}_{ch}", f"h_comb_histosys_varied_{seed}_{ch}", nbins, 4000, 9000)
-        # h_comb_interpolation = ROOT.TH1D(f"h_comb_interpolation_{seed}_{ch}", f"h_comb_interpolation_{seed}_{ch}", nbins, 4000, 9000)
-
-        # histosys_alpha = np.random.normal(0, 1)
-        # if(histosys_alpha >= 0):
-        #     h_comb_interpolation = upward_variation.Clone(f"h_comb_interpolation_{seed}_{ch}")
-        #     h_comb_interpolation.SetTitle(f"h_comb_interpolation_{seed}_{ch}")
-        #     h_comb_interpolation.Sumw2()
-
-        #     h_comb_interpolation.Add(h_comb, -1)
-        # else:
-        #     h_comb_interpolation = h_comb.Clone(f"h_comb_interpolation_{seed}_{ch}")
-        #     h_comb_interpolation.SetTitle(f"h_comb_interpolation_{seed}_{ch}")
-        #     h_comb_interpolation.Sumw2()
-
-        #     h_comb_interpolation.Add(downward_variation, -1)
-
-        # h_comb_histosys_varied = h_comb.Clone(f"h_comb_histosys_varied_{seed}_{ch}")
-        # h_comb_histosys_varied.SetTitle(f"h_comb_histosys_varied_{seed}_{ch}")
-        # h_comb_histosys_varied.Sumw2()
-        # h_comb_histosys_varied.Add(h_comb_interpolation, histosys_alpha)
-
-        # data
-        h_data = ROOT.TH1D(f"h_data_{seed}_{ch}", f"h_data_{seed}_{ch}", nbins, 4000, 9000)
-        h_data_comb = ROOT.TH1D(f"h_data_comb_{seed}_{ch}", f"h_data_comb_{seed}_{ch}", nbins, 4000, 9000)
-        h_data_sig = ROOT.TH1D(f"h_data_sig_{seed}_{ch}", f"h_data_sig_{seed}_{ch}", nbins, 4000, 9000)
-        h_data_BDDKp = ROOT.TH1D(f"h_data_BDDKp_{seed}_{ch}", f"h_data_BDDKp_{seed}_{ch}", nbins, 4000, 9000)
-
-        # Generate toy data from the varied templates
-        # Yields
         if(add_efficiencies):
-            N_comb_ch = N_comb_nominal*eps_comb[ch]
-
             sig_eff = max(0, np.random.normal(eps_sig[ch], eps_sig_err[ch]))
             BDDKp_eff = max(0, np.random.normal(eps_BDDKp[ch], eps_BDDKp_err[ch]))
 
+            N_comb_ch = N_comb_nominal*eps_comb[ch]
             N_sig_ch = N_sig_nominal*sig_eff
             N_BDDKp_ch = N_BDDKp_nominal*BDDKp_eff
         else:
             N_comb_ch = N_comb_nominal
             N_sig_ch = N_sig_nominal
             N_BDDKp_ch = N_BDDKp_nominal
-                
+
+        # Templates
+        h_sig = nominal_templates[i][0]  
+        h_comb = nominal_templates[i][1]  
+        h_BDDKp = nominal_templates[i][2]
+        upward_variation = h_upward[i]
+        downward_variation = h_downward[i]
+        nbins = h_sig.GetNbinsX()
+
+        # Generate toy data 
+        h_data = ROOT.TH1D(f"h_data_{seed}_{ch}", f"h_data_{seed}_{ch}", nbins, 4000, 9000)
+        h_data_comb = ROOT.TH1D(f"h_data_comb_{seed}_{ch}", f"h_data_comb_{seed}_{ch}", nbins, 4000, 9000)
+        h_data_sig = ROOT.TH1D(f"h_data_sig_{seed}_{ch}", f"h_data_sig_{seed}_{ch}", nbins, 4000, 9000)
+        h_data_BDDKp = ROOT.TH1D(f"h_data_BDDKp_{seed}_{ch}", f"h_data_BDDKp_{seed}_{ch}", nbins, 4000, 9000)
+
         if(add_statistical_error):
-            # Vary the templates within their statistical uncertainties:
-            # Combinatorial
-            toy_counts = np.array([np.random.poisson( max(0, h_comb.GetBinContent(i+1)*h_comb.GetEntries() ) ) for i in range(nbins)])
+            gaussian_counts_comb = np.zeros(nbins)
+            for i in range(nbins):
+                gaussian_counts_comb[i] = np.random.normal(h_comb.GetBinContent(i+1), h_comb.GetBinError(i+1))
+                if(gaussian_counts_comb[i] < 0):
+                    gaussian_counts_comb[i] = h_comb.GetBinContent(i+1)
+            toy_counts = np.array([np.random.poisson( gaussian_counts_comb[i]*(N_comb_ch/h_comb.Integral()) ) for i in range(nbins)])
             for i, count in enumerate(toy_counts):
-                h_comb_varied.SetBinContent(i+1, count)
-            h_comb_varied.Sumw2()
-
-            # Signal
-            toy_counts_sig = np.array([np.random.poisson( h_sig.GetBinContent(i+1)*h_sig.GetEntries() ) for i in range(nbins)])
-            for i, count in enumerate(toy_counts_sig):
-                h_sig_varied.SetBinContent(i+1, count)
-            h_sig_varied.Sumw2()
-
-            # B -> DD K+
-            toy_counts_BDDKp = np.array([np.random.poisson( h_BDDKp.GetBinContent(i+1)*h_BDDKp.GetEntries() ) for i in range(nbins)])
-            for i, count in enumerate(toy_counts_BDDKp):
-                h_BDDKp_varied.SetBinContent(i+1, count)
-            h_BDDKp_varied.Sumw2()
-
-            # Sample from the varied templates:
-            # Combinatorial
-            toy_counts_1 = np.array([np.random.poisson( h_comb_varied.GetBinContent(i+1)*(N_comb_ch/h_comb_varied.Integral()) ) for i in range(nbins)])
-            for i, count in enumerate(toy_counts_1):
                 h_data_comb.SetBinContent(i+1, count)
             h_data_comb.Sumw2()
 
-            # Signal
-            toy_counts_sig_1 = np.array([np.random.poisson( h_sig_varied.GetBinContent(i+1)*(N_sig_ch/h_sig_varied.Integral()) ) for i in range(nbins)])
-            for i, count in enumerate(toy_counts_sig_1):
+            gaussian_counts_sig = np.zeros(nbins)
+            for i in range(nbins):
+                gaussian_counts_sig[i] = np.random.normal(h_sig.GetBinContent(i+1), h_sig.GetBinError(i+1))
+                if(gaussian_counts_sig[i] < 0):
+                    gaussian_counts_sig[i] = h_sig.GetBinContent(i+1)
+            toy_counts_sig = np.array([np.random.poisson( gaussian_counts_sig[i]*(N_sig_ch/h_sig.Integral()) ) for i in range(nbins)])
+            for i, count in enumerate(toy_counts_sig):
                 h_data_sig.SetBinContent(i+1, count)
             h_data_sig.Sumw2()
 
-            # B -> DD K+
-            toy_counts_BDDKp_1 = np.array([np.random.poisson( h_BDDKp_varied.GetBinContent(i+1)*(N_BDDKp_ch/h_BDDKp_varied.Integral()) ) for i in range(nbins)])
-            for i, count in enumerate(toy_counts_BDDKp_1):
+            gaussian_counts_BDDKp = np.zeros(nbins)
+            for i in range(nbins):
+                gaussian_counts_BDDKp[i] = np.random.normal(h_BDDKp.GetBinContent(i+1), h_BDDKp.GetBinError(i+1))
+                if(gaussian_counts_BDDKp[i] < 0):
+                    gaussian_counts_BDDKp[i] = h_BDDKp.GetBinContent(i+1)
+            toy_counts_BDDKp = np.array([np.random.poisson( gaussian_counts_BDDKp[i]*(N_BDDKp_ch/h_BDDKp.Integral()) ) for i in range(nbins)])
+            for i, count in enumerate(toy_counts_BDDKp):
                 h_data_BDDKp.SetBinContent(i+1, count)
             h_data_BDDKp.Sumw2()
 
         else:
-            # Combinatorial
-            toy_counts = np.array([np.random.poisson( max(0, h_comb.GetBinContent(i+1)*N_comb_ch ) ) for i in range(nbins)])
+            toy_counts = np.array([np.random.poisson( h_comb.GetBinContent(i+1)*(N_comb_ch/h_comb.Integral()) ) for i in range(nbins)])
             for i, count in enumerate(toy_counts):
                 h_data_comb.SetBinContent(i+1, count)
             h_data_comb.Sumw2()
 
-            # Signal
-            toy_counts_sig = np.array([np.random.poisson( h_sig.GetBinContent(i+1)*N_sig_ch ) for i in range(nbins)])
+            toy_counts_sig = np.array([np.random.poisson( h_sig.GetBinContent(i+1)*(N_sig_ch/h_sig.Integral()) ) for i in range(nbins)])
             for i, count in enumerate(toy_counts_sig):
                 h_data_sig.SetBinContent(i+1, count)
             h_data_sig.Sumw2()
 
-            # B -> DD K+
-            toy_counts_BDDKp = np.array([np.random.poisson( h_BDDKp.GetBinContent(i+1)*N_BDDKp_ch ) for i in range(nbins)])
+            toy_counts_BDDKp = np.array([np.random.poisson( h_BDDKp.GetBinContent(i+1)*(N_BDDKp_ch/h_BDDKp.Integral()) ) for i in range(nbins)])
             for i, count in enumerate(toy_counts_BDDKp):
                 h_data_BDDKp.SetBinContent(i+1, count)
             h_data_BDDKp.Sumw2()
 
+        # Add everything
         h_data.Sumw2()
         h_data.Add(h_data_sig)
         h_data.Add(h_data_comb)
@@ -483,8 +444,8 @@ def build_model(fit_name, fit_type, BF_sig, nominal_templates, error_templates, 
                 downward_eps_BDDKp = 1-(eps_BDDKp_err[ch]/eps_BDDKp[ch])
 
 
-        data_comb_upward = [h_upward[ch].GetBinContent(i+1) for i in range(len(data_comb))]
-        data_comb_downward = [h_downward[ch].GetBinContent(i+1) for i in range(len(data_comb))]
+        data_comb_upward = [h_upward[i].GetBinContent(k+1) for k in range(len(data_comb))]
+        data_comb_downward = [h_downward[i].GetBinContent(k+1) for k in range(len(data_comb))]
         if((fit_type == "ToyDataSidebands") or (fit_type == "RSDataSidebands")):
             data_sig = [data_sig[k] for k in chain(range(0, i_min[ch]-1), range(i_max[ch], len(data_sig)) )]
             data_comb = [data_comb[k] for k in chain(range(0, i_min[ch]-1), range(i_max[ch], len(data_comb)) )]

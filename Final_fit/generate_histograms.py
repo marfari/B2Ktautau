@@ -86,9 +86,9 @@ def create_histograms(fit_type, t_sig, t_rs_data, t_comb, t_BuDDKp, t_BdDDKp, t_
     h_BdD0DmKp = ROOT.TH1D(f"h_BdD0DmKp_{ch}", f"h_BdD0DmKp_{ch}", nbins, 4000, 9000)
     h_BsD0DsKp = ROOT.TH1D(f"h_BsD0DsKp_{ch}", f"h_BsD0DsKp_{ch}", nbins, 4000, 9000)
     # Combinatorial background
-    h_comb = ROOT.TH1D(f"h_comb_{ch}", f"h_comb_{ch}", nbins, 4000, 9000) # WS data
-    h_upward = ROOT.TH1D(f"h_upward_{ch}", f"h_upward_{ch}", nbins, 4000, 9000) # WS data * R (nominal combinatorial shape)
-    h_downward = ROOT.TH1D(f"h_downward_{ch}", f"h_downward_{ch}", nbins, 4000, 9000) # WS data / R
+    h_comb = ROOT.TH1D(f"h_comb_{ch}", f"h_comb_{ch}", nbins, 4000, 9000) # nominal shape = WS data * R
+    h_upward = ROOT.TH1D(f"h_upward_{ch}", f"h_upward_{ch}", nbins, 4000, 9000)  # upward shape = WS data * R^2
+    h_downward = ROOT.TH1D(f"h_downward_{ch}", f"h_downward_{ch}", nbins, 4000, 9000)  # downward shape = WS data
     # RS data
     h_data = ROOT.TH1D(f"h_data_{ch}", f"h_data_{ch}", nbins, 4000, 9000)
     
@@ -100,16 +100,13 @@ def create_histograms(fit_type, t_sig, t_rs_data, t_comb, t_BuDDKp, t_BdDDKp, t_
         print("Wrong fit type. Try: 'ToyDataSidebands': validation of signal region definition \n 'RSDataSidebands': extraction of Ncomb \n 'ToyData': calculation of expected upper limit (blinded) \n 'RSData': calculation of observed upper limit (unblinded) ")
         quit()
 
+    # Signal shape = Ktautau MC (no shape uncertainty)
     if(bdt >= bdt_fix_sig):
         t_sig.Draw(f"df_Bp_M >> h_sig_{ch}", f"(BDT > {bdt_fix_sig})"+cut_string)
     else:
         t_sig.Draw(f"df_Bp_M >> h_sig_{ch}", f"(BDT > {bdt})"+cut_string)
 
-    if(bdt >= bdt_fix_comb):
-        t_comb.Draw(f"df_Bp_M >> h_comb_{ch}", f"(BDT > {bdt_fix_comb})"+cut_string)
-    else:
-        t_comb.Draw(f"df_Bp_M >> h_comb_{ch}", f"(BDT > {bdt})"+cut_string)
-
+    # B -> DD K+ background shape = cocktail MC (no shape uncertainty)
     if(bdt >= bdt_fix_phys):
         t_BuDDKp.Draw(f"df_Bp_M >> h_BuD0D0Kp_{ch}", f"(BDT > {bdt_fix_phys}) && (species == 100) "+cut_string)
         t_BuDDKp.Draw(f"df_Bp_M >> h_BuDpDmKp_{ch}", f"(BDT > {bdt_fix_phys}) && (species == 101) "+cut_string)
@@ -123,7 +120,20 @@ def create_histograms(fit_type, t_sig, t_rs_data, t_comb, t_BuDDKp, t_BdDDKp, t_
         t_BdDDKp.Draw(f"df_Bp_M >> h_BdD0DmKp_{ch}", f"(BDT > {bdt}) "+cut_string)
         t_BsDDKp.Draw(f"df_Bp_M >> h_BsD0DsKp_{ch}", f"(BDT > {bdt}) "+cut_string)
 
-    # Combinatorial shape
+    h_BDDKp.Sumw2()
+    h_BDDKp.Add(h_BuD0D0Kp)
+    h_BDDKp.Add(h_BuDpDmKp)
+    h_BDDKp.Add(h_BuDsDsKp)
+    h_BDDKp.Add(h_BdD0DmKp)
+    h_BDDKp.Add(h_BsD0DsKp)
+
+    # Combinatorial downward shape = WS data (shape uncertainty)
+    if(bdt >= bdt_fix_comb):
+        t_comb.Draw(f"df_Bp_M >> h_downward_{ch}", f"(BDT > {bdt_fix_comb})"+cut_string)
+    else:
+        t_comb.Draw(f"df_Bp_M >> h_downward_{ch}", f"(BDT > {bdt})"+cut_string)
+
+    ############################## (RS-BDDK)/WS ratio R in the sidebands, fitted and extrapolated to the signal region ###################################
     h_weight_sideband = ROOT.TH1D(f"h_weight_sideband_{ch}", f"h_weight_sideband_{ch}", nbins, 4000, 9000)
     h_comb_sideband = ROOT.TH1D(f"h_comb_sideband_{ch}", f"h_comb_sideband_{ch}", nbins, 4000, 9000)
     h_BDDKp_sideband = ROOT.TH1D(f"h_BDDKp_sideband_{ch}", f"h_BDDKp_sideband_{ch}", nbins, 4000, 9000)
@@ -165,18 +175,22 @@ def create_histograms(fit_type, t_sig, t_rs_data, t_comb, t_BuDDKp, t_BdDDKp, t_
     # h_BDDKp_weight.Add(h_BdDDKp_weight)
     # h_BDDKp_weight.Add(h_BsDDKp_weight)
     # h_BDDKp_weight.Scale( (N_BDDKp*(h_BDDKp_weight.GetEntries()/( t_BuDDKp.GetEntries(f"(BDT > {bdt})") + t_BdDDKp.GetEntries(f"(BDT > {bdt})") + t_BsDDKp.GetEntries(f"(BDT > {bdt})") ))) /h_BDDKp_weight.Integral())
+    # h_rs_data_all = h_weight.Clone("h_weight_all{ch}")
+    # h_weight_all = h_weight.Clone("h_weight_all{ch}")
     # h_weight.Add(h_BDDKp_weight, -1)
     # h_weight.Scale(1.0/h_weight_sideband.Integral())
     # h_comb_weight.Scale(1.0/h_comb_sideband.Integral())
     # h_weight.Divide(h_comb_weight)
+    # h_weight_all.Scale(1.0/h_weight_sideband.Integral())
+    # h_weight_all.Divide(h_comb_weight)
 
     bin_min = h_weight_sideband.GetXaxis().FindBin(xmin[ch])
     bin_max = h_weight_sideband.GetXaxis().FindBin(xmax[ch])
 
     # Avoid divisions by 0 (TH1::Divide sets the bin to 0 by default)
-    for i in range(nbins):
-        if( ((i < bin_min) or (i > bin_max)) and (h_comb_sideband.GetBinContent(i+1) == 0) ):
-            h_comb_sideband.SetBinContent(i+1, 0.1)
+    # for i in range(nbins):
+    #     if( ((i < bin_min) or (i > bin_max)) and (h_comb_sideband.GetBinContent(i+1) == 0) ):
+    #         h_comb_sideband.SetBinContent(i+1, 0.1)
 
     h_BDDKp_sideband.Add(h_BuDDKp_sideband)
     h_BDDKp_sideband.Add(h_BdDDKp_sideband)
@@ -186,88 +200,83 @@ def create_histograms(fit_type, t_sig, t_rs_data, t_comb, t_BuDDKp, t_BdDDKp, t_
         eps_BDDKp = (h_BDDKp_sideband.GetEntries()/( t_BuDDKp.GetEntries(f"(BDT > {bdt})") + t_BdDDKp.GetEntries(f"(BDT > {bdt})") + t_BsDDKp.GetEntries(f"(BDT > {bdt})") ))
         n_BDDKp = N_BDDKp*eps_BDDKp
         h_BDDKp_sideband.Scale(n_BDDKp/h_BDDKp_sideband.Integral()) # B -> DD K+ shape scaled to expected yield in RS data (yield in the sidebands)
-
-    # Subtract BDDKp from RS data (to leave only combinatorial background)
     h_weight_sideband.Add(h_BDDKp_sideband, -1)
-
-    for i in range(nbins):
-        if(h_weight_sideband.GetBinContent(i+1) < 0):
-            h_weight_sideband.SetBinContent(i+1, 0)
 
     # Normalise histograms before dividing
     h_weight_sideband.Scale(1.0/h_weight_sideband.Integral())
     h_comb_sideband.Scale(1.0/h_comb_sideband.Integral())
     h_weight_sideband.Divide(h_comb_sideband) # R = RS / WS
 
-    if((fit_type == "RSDataSidebands") or (fit_type == "ToyDataSidebands")):
-        # Use the actual ratio in the sidebands to defined WS*R (upward) and WS/R (downward)
-        h_upward = h_comb_sideband.Clone(f"h_upward_{ch}")
-        h_upward.SetTitle(f"h_upward_{ch}")
-        h_upward.Multiply(h_weight_sideband)
+    # Fit the RS/WS ratio in the sidebands and extrapolate fit function to the signal region
+    # In the signal region the fitted ratio values are used to build the upward and downward variations
+    fit_result = h_weight_sideband.Fit("pol3", "RS", "", 4000, 9000)
 
-        h_downward = h_comb_sideband.Clone(f"h_downward_{ch}")
-        h_downward.SetTitle(f"h_downward_{ch}")
-        h_downward.Divide(h_weight_sideband)
-
-        weights = [h_weight_sideband.GetBinContent(i+1) for i in range(nbins)]
+    print("Fit status:", fit_result.Status())
+    if(fit_result.Ndf() == 0):
+        chi2 = fit_result.Chi2()
     else:
-        # Fit the RS/WS ratio in the sidebands and extrapolate fit function to the signal region
-        # In the signal region the fitted ratio values are used to build the upward and downward variations
-        fit_result = h_weight_sideband.Fit("pol3", "RS", "", 4000, 9000)
+        chi2 = fit_result.Chi2()/fit_result.Ndf()
+    pdf = h_weight_sideband.GetFunction("pol3")
 
-        print("Fit status:", fit_result.Status())
-        if(fit_result.Ndf() == 0):
-            chi2 = fit_result.Chi2()
-        else:
-            chi2 = fit_result.Chi2()/fit_result.Ndf()
-        pdf = h_weight_sideband.GetFunction("pol3")
+    ROOT.gStyle.SetOptStat(0)
+    c = ROOT.TCanvas("c", "c")
+    c.cd()
+    h_weight_sideband.GetXaxis().SetTitle("m_{B} (MeV)")
+    h_weight_sideband.GetYaxis().SetTitle("RS/WS (normalised) ratio")
+    h_weight_sideband.SetTitle(f"BDT > {bdt} | #chi^{{2}}/ndf = {chi2:.2f}")
+    h_weight_sideband.Draw()
+    # h_weight.GetXaxis().SetTitle("m_{B} (MeV)")
+    # h_weight.GetYaxis().SetTitle("RS/WS (normalised) ratio")
+    # h_weight.SetTitle(f"BDT > {bdt} | #chi^{{2}}/ndf = {chi2:.2f}")
+    # h_weight.SetLineColor(4)
+    # h_weight_all.SetLineColor(1)
+    # h_weight.Draw()
+    # h_weight_all.Draw("same")
+    pdf.Draw("same")
+    c.SaveAs(f"/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT_{bdt}/fit_result_{ch}.pdf")
 
-        ROOT.gStyle.SetOptStat(0)
-        c = ROOT.TCanvas("c", "c")
-        c.cd()
-        h_weight_sideband.GetXaxis().SetTitle("m_{B} (MeV)")
-        h_weight_sideband.GetYaxis().SetTitle("RS/WS (normalised) ratio")
-        h_weight_sideband.SetTitle(f"BDT > {bdt} | #chi^{{2}}/ndf = {chi2:.2f}")
-        h_weight_sideband.Draw()
-        # h_weight.GetXaxis().SetTitle("m_{B} (MeV)")
-        # h_weight.GetYaxis().SetTitle("RS/WS (normalised) ratio")
-        # h_weight.SetTitle(f"BDT > {bdt} | #chi^{{2}}/ndf = {chi2:.2f}")
-        # h_weight.Draw()
-        pdf.Draw("same")
-        c.SaveAs(f"/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT_{bdt}/fit_result_{ch}.pdf")
+    # c1 = ROOT.TCanvas("c1", "c1")
+    # c1.cd()
+    # h_rs_data_all.Scale(1.0/h_rs_data_all.Integral())
+    # h_comb_weight.Scale(1.0/h_comb_weight.Integral())
+    # h_rs_data_all.GetXaxis().SetTitle("m_{B} (MeV)")
+    # h_rs_data_all.GetYaxis().SetTitle("Normalized entries")
+    # h_rs_data_all.SetTitle(f"BDT > {bdt} | #chi^{{2}}/ndf = {chi2:.2f}")
+    # h_rs_data_all.SetLineColor(1)
+    # h_comb_weight.SetLineColor(2)
+    # # h_rs_data_all.Draw()
+    # # h_comb_weight.Draw("same")
+    # rp = ROOT.TRatioPlot(h_rs_data_all, h_comb_weight)
+    # rp.SetH1DrawOpt("E")
+    # rp.Draw()
+    # c1.SaveAs(f"/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT_{bdt}/rs_vs_ws_data_{ch}.pdf")
 
-        h_weight_all = ROOT.TH1D(f"h_weight_all_{ch}", f"h_weight_all_{ch}", nbins, 4000, 9000)
+    h_weight_all = ROOT.TH1D(f"h_weight_all_{ch}", f"h_weight_all_{ch}", nbins, 4000, 9000)
+    for i in range(nbins):
+        bin_center = h_weight_all.GetXaxis().GetBinCenter(i+1)
+        h_weight_all.SetBinContent(i+1, pdf.Eval(bin_center) )
 
-        for i in range(nbins):
-            if( (i < bin_min) or (i > bin_max)):
-                h_weight_all.SetBinContent(i+1, h_weight_sideband.GetBinContent(i+1))
-            else:
-                bin_center = h_weight_sideband.GetXaxis().GetBinCenter(i+1)
-                h_weight_all.SetBinContent(i+1, pdf.Eval(bin_center) )
-        
-        h_upward = h_comb.Clone(f"h_upward_{ch}")
-        h_upward.SetTitle(f"h_upward_{ch}")
-        h_upward.Multiply(h_weight_all)
+    for i in range(nbins):
+        if(h_weight_all.GetBinContent(i+1) < 0):
+            h_weight_all.SetBinContent(i+1, np.abs(h_weight_all.GetBinContent(i+1)))
+    ###########################################################################################################################################
+    
+    h_upward = h_downward.Clone(f"h_upward_{ch}")
+    h_upward.SetTitle(f"h_upward_{ch}")
+    h_upward.Multiply(h_weight_all)
+    h_upward.Multiply(h_weight_all)
 
-        h_downward = h_comb.Clone(f"h_downward_{ch}")
-        h_downward.SetTitle(f"h_downward_{ch}")
-        h_downward.Divide(h_weight_all)
+    h_comb = h_downward.Clone(f"h_comb_{ch}")
+    h_comb.SetTitle(f"h_comb_{ch}")
+    h_comb.Multiply(h_weight_all)
 
-        weights = [h_weight_all.GetBinContent(i+1) for i in range(nbins)]
-
+    weights = [h_weight_all.GetBinContent(i+1) for i in range(nbins)]
     upward_values = [h_upward.GetBinContent(i+1) for i in range(nbins)]
     downward_values = [h_downward.GetBinContent(i+1) for i in range(nbins)]
+    nominal_values = [h_comb.GetBinContent(i+1) for i in range(nbins)]
 
-    print("WEIGHTS")
-    print(weights)
-
-    # B -> DD K+ shape
-    h_BDDKp.Sumw2()
-    h_BDDKp.Add(h_BuD0D0Kp)
-    h_BDDKp.Add(h_BuDpDmKp)
-    h_BDDKp.Add(h_BuDsDsKp)
-    h_BDDKp.Add(h_BdD0DmKp)
-    h_BDDKp.Add(h_BsD0DsKp)
+    # print("WEIGHTS")
+    # print(weights)
 
     # RS data shape (used in the fit to the RS data sidebands and in the fit to the RS data)
     if((fit_type == "RSDataSidebands") or (fit_type == "RSData")):
@@ -283,6 +292,15 @@ def create_histograms(fit_type, t_sig, t_rs_data, t_comb, t_BuDDKp, t_BdDDKp, t_
         h_upward.Scale(1/h_upward.Integral())
     if(h_downward.Integral() != 0):
         h_downward.Scale(1/h_downward.Integral())
+
+    print("NOMINAL")
+    print(nominal_values)
+
+    print("UPWARD")
+    print(upward_values)
+
+    print("DOWNWARD")
+    print(downward_values)
 
     if((fit_type == "ToyDataSidebands") or (fit_type == "RSDataSidebands")):
         excluded_bins = []
@@ -342,20 +360,33 @@ def create_histogram_errors(h_sig, h_comb, h_BDDKp, ch):
     return [h_sig_err, h_comb_err, h_BDDKp_err]
 
 
-def combinatorial_background_yield(fit_type, t_rs_data, t_comb, bdt):
+def combinatorial_background_yield(fit_type, t_rs_data, t_comb, bdt, B, B_err, c, c_err):
 
     if((fit_type == "ToyDataSidebands") or (fit_type == "RSDataSidebands") or (fit_type == "ToyData")): # WS data scaling
+        C_values_0 = np.load(f'/panfs/felician/B2Ktautau/workflow/fit_inputs/BDT_0.0/C.npy')
+        C_errors_0 = np.load(f'/panfs/felician/B2Ktautau/workflow/fit_inputs/BDT_0.0/C_err.npy')
+        c_0, c_err_0 = physics_backgrounds_yields(C_values_0, C_errors_0)
+        c_0 = ufloat(c_0[0], c_err_0[0])
+        B = ufloat(B, B_err)
+        n_BDDKp_0 = c_0/B
+    
+        C_values_09 = np.load(f'/panfs/felician/B2Ktautau/workflow/fit_inputs/BDT_0.9/C.npy')
+        C_errors_09 = np.load(f'/panfs/felician/B2Ktautau/workflow/fit_inputs/BDT_0.9/C_err.npy')
+        c_09, c_err_09 = physics_backgrounds_yields(C_values_09, C_errors_09)
+        c_09 = ufloat(c_09[0], c_err_09[0])
+        n_BDDKp_09 = c_09/B
+
         eps_ws_den = t_comb.GetEntries()
-        eps_rs_den = t_rs_data.GetEntries()
+        eps_rs_den = t_rs_data.GetEntries() - n_BDDKp_0.nominal_value
 
         eps_num_bdt = t_comb.GetEntries(f"BDT > {bdt}")
 
         if(bdt <= 0.9):
             eps_ws_num = t_comb.GetEntries(f"BDT > {bdt}")
-            eps_rs_num = t_rs_data.GetEntries(f"BDT > {bdt}")
+            eps_rs_num = t_rs_data.GetEntries(f"BDT > {bdt}") - c/B.nominal_value
         else:
             eps_ws_num = t_comb.GetEntries(f"BDT > {0.9}")
-            eps_rs_num = t_rs_data.GetEntries(f"BDT > {0.9}")
+            eps_rs_num = t_rs_data.GetEntries(f"BDT > {0.9}") - n_BDDKp_09.nominal_value
 
         eps_ws = eps_ws_num/eps_ws_den
         eps_ws_up = ROOT.TEfficiency.Wilson(eps_ws_den, eps_ws_num, 0.68, True)
@@ -378,13 +409,11 @@ def combinatorial_background_yield(fit_type, t_rs_data, t_comb, bdt):
         eps_ws_bdt_err = 0.5*(eps_ws_bdt_up-eps_ws_bdt_down)
         eps_ws_bdt = ufloat(eps_ws_bdt, eps_ws_bdt_err)
 
-        n_rs_prebdt_value = t_rs_data.GetEntries()
-
-        n_rs_prebdt = ufloat(n_rs_prebdt_value, np.sqrt(n_rs_prebdt_value))
+        n_rs_data_entries_pre_bdt = t_rs_data.GetEntries()
+        n_rs_prebdt = ufloat( n_rs_data_entries_pre_bdt, np.sqrt(n_rs_data_entries_pre_bdt) ) - n_BDDKp_0
 
         N_comb = n_rs_prebdt*eps_ws_bdt*r
 
-    
     # elif(fit_type == "ToyData"): # from fit to RS data sidebands divided by the WS data sideband efficiency
     #     N_comb_sidebands = np.load(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/RSDataSidebands_AllEvents/BF_sig_0/BDT_{bdt}/ncomb_value.npy')
     #     N_comb_sidebands_err = np.load(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/RSDataSidebands_AllEvents/BF_sig_0/BDT_{bdt}/ncomb_error.npy')
@@ -600,7 +629,6 @@ def main(argv):
     ### Physics backgrounds C values
     C_values = np.load(f'/panfs/felician/B2Ktautau/workflow/fit_inputs/BDT_{bdt}/C.npy')
     C_errors = np.load(f'/panfs/felician/B2Ktautau/workflow/fit_inputs/BDT_{bdt}/C_err.npy')
-
     c, c_err = physics_backgrounds_yields(C_values, C_errors)
 
     np.save(f"/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT_{bdt}/C.npy", c)
@@ -608,9 +636,8 @@ def main(argv):
 
     ### Combinatorial background yield
     B = np.load('/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/B.npy')
-    N_comb, N_comb_err = combinatorial_background_yield(fit_type, t_rs_data, t_comb, bdt)
-    if(fit_type != "RSDataSidebands"):
-        print("N_comb = ", N_comb, " +/- ", N_comb_err)
+    B_err = np.load('/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/B_err.npy')
+    N_comb, N_comb_err = combinatorial_background_yield(fit_type, t_rs_data, t_comb, bdt, B, B_err, c[0], c_err[0])
     np.save(f'/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT_{bdt}/N_comb.npy', [N_comb, N_comb_err])
 
     ### Channel efficiency
@@ -702,6 +729,10 @@ def main(argv):
     h_BDDKp_err_3.Write()
     f1.Close()
     #######################################################################################################################################################33
+
+    n_BDDKp = ufloat(c[0], c_err[0])/B
+    print("N_BDDKp = ", n_BDDKp.nominal_value, " +/- ", n_BDDKp.std_dev)
+    print("N_comb = ", N_comb, " +/- ", N_comb_err)
 
     end = time.time()
     print(f"Elapsed time: {end - start:.2f} seconds")
