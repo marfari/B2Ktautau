@@ -29,8 +29,36 @@ BuD0barDsp_data_lines = {"6": 1880, "7": 1959, "8": 2484}
 
 rule all:  
     input:
-        expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/RSDataSidebands_AllEvents/BF_sig_0/BDT_{BDT}/ncomb_value.npy', BDT=0.999)
-        # expand('/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig}/BDT_{BDT}/cls_limit.npy', fit_type="ToyData", fit_name="ErrorCategories", BF_sig=0, BDT=0.999)
+        expand('/panfs/felician/B2Ktautau/workflow/sklearn_plots/ktautau_mc_components.pdf')
+
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=6, species=10, line=range(1, BuKtautau_MC_lines['6'])),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=7, species=10, line=range(1, BuKtautau_MC_lines['7'])),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=8, species=10, line=range(1, BuKtautau_MC_lines['8'])),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=6, species=1, line=range(1, BuKtautau_MC_lines['6'])),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=7, species=1, line=range(1, BuKtautau_MC_lines['7'])),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=8, species=1, line=range(1, BuKtautau_MC_lines['8'])),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=6, species=2, line=range(1, 101)),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=7, species=2, line=range(1, 101)),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=8, species=2, line=range(1, 101)),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=6, species=3, line=range(1, 101)),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=7, species=3, line=range(1, 101)),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=8, species=3, line=range(1, 101)),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=6, species=100, line=range(1, BuDDKp_cocktail_MC_lines['6'])),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=7, species=100, line=range(1, BuDDKp_cocktail_MC_lines['7'])),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=8, species=100, line=range(1, BuDDKp_cocktail_MC_lines['8'])),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=6, species=110, line=range(1, BdDDKp_cocktail_MC_lines['6'])),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=7, species=110, line=range(1, BdDDKp_cocktail_MC_lines['7'])),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=8, species=110, line=range(1, BdDDKp_cocktail_MC_lines['8'])),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=6, species=120, line=range(1, BsDDKp_cocktail_MC_lines['6'])),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=7, species=120, line=range(1, BsDDKp_cocktail_MC_lines['7'])),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=8, species=120, line=range(1, BsDDKp_cocktail_MC_lines['8'])),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=6, species=130, line=range(1, BuDDK0_cocktail_MC_lines['6'])),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=7, species=130, line=range(1, BuDDK0_cocktail_MC_lines['7'])),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=8, species=130, line=range(1, BuDDK0_cocktail_MC_lines['8'])),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=6, species=150, line=range(1, BuDD_cocktail_MC_lines['6'])),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=7, species=150, line=range(1, BuDD_cocktail_MC_lines['7'])),
+        # expand('/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root', year=8, species=150, line=range(1, BuDD_cocktail_MC_lines['8']))
+
 
 # Every time grid files are updated need to:
 # - run pidgen for ktautau / DDs over the pre-selection files (signal + normalisation channel)
@@ -434,22 +462,21 @@ rule sklearn_response:
     ''' Compute sklearn response '''
     input:
         'Sklearn/compute_sklearn_response.py',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/clf_isolation.pkl',
-        '/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/clf_topology.pkl'
+        '/panfs/felician/B2Ktautau/workflow/sklearn_training/Ktautau/clf_big_combinatorial.pkl'
     output:
-        '/panfs/felician/B2Ktautau/workflow/sklearn_{name}/201{year}/Species_{species}/{line}.root'
+        '/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.root'
     log:
-        '/panfs/felician/B2Ktautau/workflow/sklearn_{name}/201{year}/Species_{species}/{line}.log'
+        '/panfs/felician/B2Ktautau/workflow/sklearn_response/201{year}/Species_{species}/{line}.log'
     shell:
-        'python -u Sklearn/compute_sklearn_response.py {wildcards.year} {wildcards.species} {wildcards.line} {wildcards.name} &> {log};'
-        'ls /panfs/felician/B2Ktautau/workflow/sklearn_{wildcards.name}/201{wildcards.year}/Species_{wildcards.species}/*.root | sort -V > /panfs/felician/B2Ktautau/workflow/sklearn_{wildcards.name}/201{wildcards.year}/Species_{wildcards.species}/bdt_output.txt'
+        'python -u Sklearn/compute_sklearn_response.py {wildcards.year} {wildcards.species} {wildcards.line} &> {log};'
+        'ls /panfs/felician/B2Ktautau/workflow/sklearn_response/201{wildcards.year}/Species_{wildcards.species}/*.root | sort -V > /panfs/felician/B2Ktautau/workflow/sklearn_response/201{wildcards.year}/Species_{wildcards.species}/bdt_output.txt'
 
 rule sklearn_plots:
     ''' Plots to check if MVA output is correlated with B+ mass '''
     input:
         'Sklearn/sklearn_plots.py'
     output:
-        '/panfs/felician/B2Ktautau/workflow/sklearn_plots/iso_ktautau_mc_components.pdf'
+        '/panfs/felician/B2Ktautau/workflow/sklearn_plots/ktautau_mc_components.pdf'
     log:
         '/panfs/felician/B2Ktautau/workflow/sklearn_plots/out.log'
     shell:
@@ -765,19 +792,19 @@ rule generate_histograms:
             - relative error threshold (= 0): relative error below which we want to ignore the statistical error on a bin in the fit
     '''
     input:
-        # get_inputs
-        'Final_fit/generate_histograms.py',
-        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_10/post_sel_tree_bdt_0.0.root',
-        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_3/post_sel_tree_bdt_0.0.root',
-        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_2/post_sel_tree_bdt_0.0.root',
-        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_100/post_sel_tree_bdt_0.0.root',
-        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_110/post_sel_tree_bdt_0.0.root',
-        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_120/post_sel_tree_bdt_0.0.root',
-        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_130/post_sel_tree_bdt_0.0.root',
-        '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_150/post_sel_tree_bdt_0.0.root',
-        '/panfs/felician/B2Ktautau/workflow/fit_inputs/BDT_{BDT}/C.npy',
-        '/panfs/felician/B2Ktautau/workflow/fit_inputs/BDT_{BDT}/C_err.npy',
-        '/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/B.npy'
+        get_inputs
+        # 'Final_fit/generate_histograms.py',
+        # '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_10/post_sel_tree_bdt_0.0.root',
+        # '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_3/post_sel_tree_bdt_0.0.root',
+        # '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_2/post_sel_tree_bdt_0.0.root',
+        # '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_100/post_sel_tree_bdt_0.0.root',
+        # '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_110/post_sel_tree_bdt_0.0.root',
+        # '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_120/post_sel_tree_bdt_0.0.root',
+        # '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_130/post_sel_tree_bdt_0.0.root',
+        # '/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_150/post_sel_tree_bdt_0.0.root',
+        # '/panfs/felician/B2Ktautau/workflow/fit_inputs/BDT_{BDT}/C.npy',
+        # '/panfs/felician/B2Ktautau/workflow/fit_inputs/BDT_{BDT}/C_err.npy',
+        # '/panfs/felician/B2Ktautau/workflow/branching_fraction_inputs/B.npy'
     output:
         '/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT_{BDT}/histograms.root',
         '/panfs/felician/B2Ktautau/workflow/generate_histograms/{fit_type}/BDT_{BDT}/histogram_errors.root',
