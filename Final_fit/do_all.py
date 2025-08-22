@@ -18,7 +18,7 @@ from itertools import chain
 # Global flags
 add_statistical_error = False
 toy_based_limit = False
-validate_fit = True
+validate_fit = False
 comb_shape_syst = 0
 if(validate_fit):
     n_toys = 5000
@@ -290,32 +290,17 @@ def generate_toy_data(fit_name, BF_sig, seed, nominal_templates, h_upward, h_dow
         h_data_BDDKp = ROOT.TH1D(f"h_data_BDDKp_{seed}_{ch}", f"h_data_BDDKp_{seed}_{ch}", nbins, 4000, 9000)
 
         if(add_statistical_error):
-            gaussian_counts_comb = np.zeros(nbins)
-            for i in range(nbins):
-                gaussian_counts_comb[i] = np.random.normal(h_comb.GetBinContent(i+1), h_comb.GetBinError(i+1))
-                if(gaussian_counts_comb[i] < 0):
-                    gaussian_counts_comb[i] = h_comb.GetBinContent(i+1)
-            toy_counts = np.array([np.random.poisson( gaussian_counts_comb[i]*(N_comb_ch/h_comb.Integral()) ) for i in range(nbins)])
+            toy_counts = np.array([np.random.poisson( max(0, np.random.normal(h_comb.GetBinContent(i+1), h_comb.GetBinError(i+1)))*(N_comb_ch/h_comb.Integral())  )  for i in range(nbins)])
             for i, count in enumerate(toy_counts):
                 h_data_comb.SetBinContent(i+1, count)
             h_data_comb.Sumw2()
 
-            gaussian_counts_sig = np.zeros(nbins)
-            for i in range(nbins):
-                gaussian_counts_sig[i] = np.random.normal(h_sig.GetBinContent(i+1), h_sig.GetBinError(i+1))
-                if(gaussian_counts_sig[i] < 0):
-                    gaussian_counts_sig[i] = h_sig.GetBinContent(i+1)
-            toy_counts_sig = np.array([np.random.poisson( gaussian_counts_sig[i]*(N_sig_ch/h_sig.Integral()) ) for i in range(nbins)])
+            toy_counts_sig = np.array([np.random.poisson( max(0, np.random.normal(h_sig.GetBinContent(i+1), h_sig.GetBinError(i+1)))*(N_sig_ch/h_sig.Integral()) )  for i in range(nbins)])
             for i, count in enumerate(toy_counts_sig):
                 h_data_sig.SetBinContent(i+1, count)
             h_data_sig.Sumw2()
 
-            gaussian_counts_BDDKp = np.zeros(nbins)
-            for i in range(nbins):
-                gaussian_counts_BDDKp[i] = np.random.normal(h_BDDKp.GetBinContent(i+1), h_BDDKp.GetBinError(i+1))
-                if(gaussian_counts_BDDKp[i] < 0):
-                    gaussian_counts_BDDKp[i] = h_BDDKp.GetBinContent(i+1)
-            toy_counts_BDDKp = np.array([np.random.poisson( gaussian_counts_BDDKp[i]*(N_BDDKp_ch/h_BDDKp.Integral()) ) for i in range(nbins)])
+            toy_counts_BDDKp = np.array([np.random.poisson( max(0, np.random.normal(h_BDDKp.GetBinContent(i+1), h_BDDKp.GetBinError(i+1)))*(N_BDDKp_ch/h_BDDKp.Integral()) ) for i in range(nbins)])
             for i, count in enumerate(toy_counts_BDDKp):
                 h_data_BDDKp.SetBinContent(i+1, count)
             h_data_BDDKp.Sumw2()
@@ -442,7 +427,6 @@ def build_model(fit_name, fit_type, BF_sig, nominal_templates, error_templates, 
             else:
                 upward_eps_BDDKp = 1+(eps_BDDKp_err[ch]/eps_BDDKp[ch])
                 downward_eps_BDDKp = 1-(eps_BDDKp_err[ch]/eps_BDDKp[ch])
-
 
         data_comb_upward = [h_upward[i].GetBinContent(k+1) for k in range(len(data_comb))]
         data_comb_downward = [h_downward[i].GetBinContent(k+1) for k in range(len(data_comb))]
@@ -1448,13 +1432,14 @@ def main(argv):
         ############################################################# Extract Ncomb ########################################################################
         elif(fit_type == "RSDataSidebands"):
             spec = build_model(fit_name, fit_type, BF_sig, nominal_templates, error_templates, norm_parameters, norm_parameters_errors, h_data, h_upward, h_downward, i_min, i_max, add_efficiencies, 0)
-            try:
-                ncomb = do_fit(fit_name, fit_type, BF_sig, bdt, spec, nominal_templates, True, i_min, i_max, add_efficiencies, 0)
-                np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/ncomb_value.npy', ncomb.nominal_value)
-                np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/ncomb_error.npy', ncomb.std_dev)
-            except:
-                print("CLs calculation failed")
-                save_dummy(validate_fit, fit_type, fit_name, BF_sig, bdt)
+            # try:
+            ncomb = do_fit(fit_name, fit_type, BF_sig, bdt, spec, nominal_templates, True, i_min, i_max, add_efficiencies, 0)
+            np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/ncomb_value.npy', ncomb.nominal_value)
+            np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{fit_name}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/ncomb_error.npy', ncomb.std_dev)
+
+            # except:
+            #     print("CLs calculation failed")
+            #     save_dummy(validate_fit, fit_type, fit_name, BF_sig, bdt)
         
         ############################################################# CLs calculation ########################################################################
         else:

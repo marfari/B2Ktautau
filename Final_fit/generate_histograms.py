@@ -187,11 +187,6 @@ def create_histograms(fit_type, t_sig, t_rs_data, t_comb, t_BuDDKp, t_BdDDKp, t_
     bin_min = h_weight_sideband.GetXaxis().FindBin(xmin[ch])
     bin_max = h_weight_sideband.GetXaxis().FindBin(xmax[ch])
 
-    # Avoid divisions by 0 (TH1::Divide sets the bin to 0 by default)
-    # for i in range(nbins):
-    #     if( ((i < bin_min) or (i > bin_max)) and (h_comb_sideband.GetBinContent(i+1) == 0) ):
-    #         h_comb_sideband.SetBinContent(i+1, 0.1)
-
     h_BDDKp_sideband.Add(h_BuDDKp_sideband)
     h_BDDKp_sideband.Add(h_BdDDKp_sideband)
     h_BDDKp_sideband.Add(h_BsDDKp_sideband)
@@ -201,6 +196,13 @@ def create_histograms(fit_type, t_sig, t_rs_data, t_comb, t_BuDDKp, t_BdDDKp, t_
         n_BDDKp = N_BDDKp*eps_BDDKp
         h_BDDKp_sideband.Scale(n_BDDKp/h_BDDKp_sideband.Integral()) # B -> DD K+ shape scaled to expected yield in RS data (yield in the sidebands)
     h_weight_sideband.Add(h_BDDKp_sideband, -1)
+
+    # Avoid empty bins
+    # for i in range(nbins):
+    #     if( ((i < bin_min) or (i > bin_max)) and (h_comb_sideband.GetBinContent(i+1) == 0) ):
+    #         h_comb_sideband.SetBinContent(i+1, 10**(-6))
+    #     if( ((i < bin_min) or (i > bin_max)) and (h_weight_sideband.GetBinContent(i+1) == 0) ):
+    #         h_weight_sideband.SetBinContent(i+1, 10**(-6))
 
     # Normalise histograms before dividing
     h_weight_sideband.Scale(1.0/h_weight_sideband.Integral())
@@ -282,6 +284,14 @@ def create_histograms(fit_type, t_sig, t_rs_data, t_comb, t_BuDDKp, t_BdDDKp, t_
     if((fit_type == "RSDataSidebands") or (fit_type == "RSData")):
         t_rs_data.Draw(f"df_Bp_M >> h_data_{ch}", f"(BDT > {bdt}) "+cut_string)
 
+    # for i in range(nbins):
+    #     # if(h_sig.GetBinContent(i+1) == 0):
+    #     #     h_sig.SetBinContent(i+1, 1)
+    #     if(h_comb.GetBinContent(i+1) == 0):
+    #         h_comb.SetBinContent(i+1, 1)
+    #     # if(h_BDDKp.GetBinContent(i+1) == 0):
+    #     #     h_BDDKp.SetBinContent(i+1, 1)
+
     if(h_sig.Integral() != 0):
         h_sig.Scale(1/h_sig.Integral())
     if(h_comb.Integral() != 0):
@@ -362,7 +372,15 @@ def create_histogram_errors(h_sig, h_comb, h_BDDKp, ch):
 
 def combinatorial_background_yield(fit_type, t_rs_data, t_comb, bdt, B, B_err, c, c_err):
 
-    if((fit_type == "ToyDataSidebands") or (fit_type == "RSDataSidebands") or (fit_type == "ToyData")): # WS data scaling
+    if(fit_type == "RSDataSidebands"):
+        n_rs_entries = t_rs_data.GetEntries(f"(BDT > {bdt})")
+        n_rs_entries = ufloat(n_rs_entries, np.sqrt(n_rs_entries))
+    
+        n_BDDKp = ufloat(c, c_err)/ufloat(B, B_err)
+
+        N_comb = n_rs_entries - n_BDDKp
+
+    elif((fit_type == "ToyDataSidebands") or (fit_type == "ToyData")): # WS data scaling
         C_values_0 = np.load(f'/panfs/felician/B2Ktautau/workflow/fit_inputs/BDT_0.0/C.npy')
         C_errors_0 = np.load(f'/panfs/felician/B2Ktautau/workflow/fit_inputs/BDT_0.0/C_err.npy')
         c_0, c_err_0 = physics_backgrounds_yields(C_values_0, C_errors_0)
@@ -732,7 +750,8 @@ def main(argv):
 
     n_BDDKp = ufloat(c[0], c_err[0])/B
     print("N_BDDKp = ", n_BDDKp.nominal_value, " +/- ", n_BDDKp.std_dev)
-    print("N_comb = ", N_comb, " +/- ", N_comb_err)
+    if(fit_type != "RSDataEntries"):
+        print("N_comb = ", N_comb, " +/- ", N_comb_err)
 
     end = time.time()
     print(f"Elapsed time: {end - start:.2f} seconds")
