@@ -46,7 +46,6 @@ void create_post_selection_tree(Int_t species, Double_t BDT)
         all_selections += best_cand;
     }
 
-    // TCut bdt_cuts = Form("(BDT1 > %f) && (BDT2 > %f)",BDT1,BDT2);
     TCut bdt_cuts = Form("BDT > %f",BDT);
     if(isKtautau || is_cocktailMC)
     {
@@ -123,7 +122,7 @@ void create_post_selection_tree(Int_t species, Double_t BDT)
         t1_2016->AddFriend(t5_2016, "mass");
     }
 
-    // BDT response (isolation + topology)
+    // BDT response
     TFileCollection *fc3_2016 = new TFileCollection("fc3_2016", "fc3_2016", Form("/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_%i/bdt_output.txt",species));
     TFileCollection *fc3_2017 = new TFileCollection("fc3_2017", "fc3_2017", Form("/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_%i/bdt_output.txt",species));
     TFileCollection *fc3_2018 = new TFileCollection("fc3_2018", "fc3_2018", Form("/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_%i/bdt_output.txt",species));
@@ -145,29 +144,6 @@ void create_post_selection_tree(Int_t species, Double_t BDT)
     t3_2016->Add(t3_2018);
 
     t1_2016->AddFriend(t3_2016, "bdt");
-
-    // BDT response (merged)
-    TFileCollection *fc4_2016 = new TFileCollection("fc4_2016", "fc4_2016", Form("/panfs/felician/B2Ktautau/workflow/sklearn_response_merged/2016/Species_%i/bdt_output.txt",species));
-    TFileCollection *fc4_2017 = new TFileCollection("fc4_2017", "fc4_2017", Form("/panfs/felician/B2Ktautau/workflow/sklearn_response_merged/2017/Species_%i/bdt_output.txt",species));
-    TFileCollection *fc4_2018 = new TFileCollection("fc4_2018", "fc4_2018", Form("/panfs/felician/B2Ktautau/workflow/sklearn_response_merged/2018/Species_%i/bdt_output.txt",species));
-
-    TChain* t4_2016 = new TChain("DecayTree");
-    TChain* t4_2017 = new TChain("DecayTree");
-    TChain* t4_2018 = new TChain("DecayTree");
-
-    t4_2016->AddFileInfoList((TCollection*)fc4_2016->GetList());
-    t4_2017->AddFileInfoList((TCollection*)fc4_2017->GetList());
-    t4_2018->AddFileInfoList((TCollection*)fc4_2018->GetList());
-
-    cout << "BDT response" << endl;
-    cout << t4_2016->GetEntries() << endl;
-    cout << t4_2017->GetEntries() << endl;
-    cout << t4_2018->GetEntries() << endl;
-
-    t4_2016->Add(t4_2017);
-    t4_2016->Add(t4_2018);
-
-    t1_2016->AddFriend(t4_2016, "bdt_merged");
 
     if((species == 72) || (species == 8)) 
     {
