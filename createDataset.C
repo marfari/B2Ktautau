@@ -4,7 +4,7 @@ using namespace RooStats;
 void store_vars_in_workspace(RooWorkspace* w, TTree* t, Int_t n_vars, TString variables[n_vars]);
 
 // D0bar D+s variables
-TString variables[] = {"mass", "BDT1", "BDT2", "BDT",
+TString variables[] = {"mass", "BDT",
                     "Bp_FD_OWNPV", "D0bar_FD_ORIVX", "Dsp_FD_ORIVX", 
                     "Bp_P", "Bp_PT", "Bp_ETA", "D0bar_PT", "Dsp_PT",
                     "D0bar_PX", "D0bar_PY", "D0bar_PZ", "Dsp_PX", "Dsp_PY", "Dsp_PZ", "Bp_PX", "Bp_PY", "Bp_PZ",
