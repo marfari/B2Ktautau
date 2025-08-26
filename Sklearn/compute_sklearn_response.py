@@ -115,7 +115,22 @@ def compute_response(year, species, line, df, fout, isKtautau, is_cocktailMC):
         X['Bp_CCNC_05_IT_B'] = x['Bp_CCNC_05_IT_B']
         X['Bp_NC_05_PTASYM_D_max'] = np.maximum( x['Bp_NC_05_PTASYM_D0bar'], x['Bp_NC_05_PTASYM_Dsp'] )
         X['Bp_NC_05_PTASYM_D_min'] = np.minimum( x['Bp_NC_05_PTASYM_D0bar'], x['Bp_NC_05_PTASYM_Dsp'] )
-
+        X['log10_1_minus_D_DIRA_BV_min'] = np.minimum( np.log10(1 - np.abs(x['D0bar_DIRA_ORIVX'] ))*np.sign( x['D0bar_DIRA_ORIVX']),  np.log10(1 - np.abs(x['Dsp_DIRA_ORIVX'] ))*np.sign( x['Dsp_DIRA_ORIVX'] ) )
+        X['log10_1_minus_D_DIRA_BV_max'] = np.maximum( np.log10(1 - np.abs(x['D0bar_DIRA_ORIVX'] ))*np.sign( x['D0bar_DIRA_ORIVX']),  np.log10(1 - np.abs(x['Dsp_DIRA_ORIVX'] ))*np.sign( x['Dsp_DIRA_ORIVX'] ) )
+        X['log10_D_FD_BV_min'] = np.log10( np.minimum( np.sqrt( (x['D0bar_ENDVERTEX_X'] - x['Bp_ENDVERTEX_X'])**2 + (x['D0bar_ENDVERTEX_Y'] - x['Bp_ENDVERTEX_Y'])**2 + (x['D0bar_ENDVERTEX_Z'] - x['Bp_ENDVERTEX_Z'])**2), np.sqrt( (x['Dsp_ENDVERTEX_X'] - x['Bp_ENDVERTEX_X'])**2 + (x['Dsp_ENDVERTEX_Y'] - x['Bp_ENDVERTEX_Y'])**2 + (x['Dsp_ENDVERTEX_Z'] - x['Bp_ENDVERTEX_Z'])**2) ) )
+        X['log10_D_ENDVERTEX_chi2_max'] = np.log10( np.maximum( x['D0bar_ENDVERTEX_CHI2'], x['Dsp_ENDVERTEX_CHI2'] ) )
+        
+        a_x = np.sqrt( (x['Bp_OWNPV_X'] - x['D0bar_ENDVERTEX_X'])**2 + (x['Bp_OWNPV_Y'] - x['D0bar_ENDVERTEX_Y'])**2 + (x['Bp_OWNPV_Z'] - x['D0bar_ENDVERTEX_Z'])**2 )
+        b_x = np.sqrt( (x['Bp_OWNPV_X'] - x['Dsp_ENDVERTEX_X'])**2 + (x['Bp_OWNPV_Y'] - x['Dsp_ENDVERTEX_Y'])**2 + (x['Bp_OWNPV_Z'] - x['Dsp_ENDVERTEX_Z'])**2 )
+        c_x= np.sqrt( (x['D0bar_ENDVERTEX_X'] - x['Dsp_ENDVERTEX_X'])**2 + (x['D0bar_ENDVERTEX_Y'] - x['Dsp_ENDVERTEX_Y'])**2 + (x['D0bar_ENDVERTEX_Z'] - x['Dsp_ENDVERTEX_Z'])**2 )
+        s_x = (a_x+b_x+c_x)*0.5
+        X['log10_A_PV_DV1_DV2'] = np.log10( np.sqrt(s_x*(s_x-a_x)*(s_x-b_x)*(s_x-c_x)) )
+        if((species == 7) or (species == 71) or (species == 72)):
+            X['D_prod_K_min'] = np.minimum(x['D0bar_K_ProbNNk_pidgen_default'], x['Dsp_K1_ProbNNk_pidgen_default']*x['Dsp_K2_ProbNNk_pidgen_default'])
+            X['D_prod_pi_min'] = np.minimum(x['D0bar_pi_ProbNNpi_pidgen_default'], x['Dsp_pi_ProbNNpi_pidgen_default'])
+        else:
+            X['D_prod_K_min'] = np.minimum(x['D0bar_K_ProbNNk'], x['Dsp_K1_ProbNNk']*x['Dsp_K2_ProbNNk'])
+            X['D_prod_pi_min'] = np.minimum(x['D0bar_pi_ProbNNpi'], x['Dsp_pi_ProbNNpi'])
 
     classifiers = []
     if((isKtautau == True) or (is_cocktailMC == True)):

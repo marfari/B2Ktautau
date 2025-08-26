@@ -573,74 +573,74 @@ def main(argv):
     ######################################################################################################################################################
 
     ###################################################### Normalisation mode MC (w/o rectangular cuts) #####################################################################    
-    # # pre-sel tree
-    # fc_norm_mc_no_rect_cuts_2016 = ROOT.TFileCollection("fc_norm_mc_no_rect_cuts_2016", "fc_norm_mc_no_rect_cuts_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_71/pre_sel_tree.txt")
-    # fc_norm_mc_no_rect_cuts_2017 = ROOT.TFileCollection("fc_norm_mc_no_rect_cuts_2017", "fc_norm_mc_no_rect_cuts_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_71/pre_sel_tree.txt")
-    # fc_norm_mc_no_rect_cuts_2018 = ROOT.TFileCollection("fc_norm_mc_no_rect_cuts_2018", "fc_norm_mc_no_rect_cuts_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_71/pre_sel_tree.txt")
+    # pre-sel tree
+    fc_norm_mc_no_rect_cuts_2016 = ROOT.TFileCollection("fc_norm_mc_no_rect_cuts_2016", "fc_norm_mc_no_rect_cuts_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_71/pre_sel_tree.txt")
+    fc_norm_mc_no_rect_cuts_2017 = ROOT.TFileCollection("fc_norm_mc_no_rect_cuts_2017", "fc_norm_mc_no_rect_cuts_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_71/pre_sel_tree.txt")
+    fc_norm_mc_no_rect_cuts_2018 = ROOT.TFileCollection("fc_norm_mc_no_rect_cuts_2018", "fc_norm_mc_no_rect_cuts_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_71/pre_sel_tree.txt")
 
-    # t_norm_mc_no_rect_cuts_2016 = ROOT.TChain("DecayTree")
-    # t_norm_mc_no_rect_cuts_2017 = ROOT.TChain("DecayTree")
-    # t_norm_mc_no_rect_cuts_2018 = ROOT.TChain("DecayTree")
+    t_norm_mc_no_rect_cuts_2016 = ROOT.TChain("DecayTree")
+    t_norm_mc_no_rect_cuts_2017 = ROOT.TChain("DecayTree")
+    t_norm_mc_no_rect_cuts_2018 = ROOT.TChain("DecayTree")
 
-    # t_norm_mc_no_rect_cuts_2016.AddFileInfoList(fc_norm_mc_no_rect_cuts_2016.GetList())
-    # t_norm_mc_no_rect_cuts_2017.AddFileInfoList(fc_norm_mc_no_rect_cuts_2017.GetList())
-    # t_norm_mc_no_rect_cuts_2018.AddFileInfoList(fc_norm_mc_no_rect_cuts_2018.GetList())
+    t_norm_mc_no_rect_cuts_2016.AddFileInfoList(fc_norm_mc_no_rect_cuts_2016.GetList())
+    t_norm_mc_no_rect_cuts_2017.AddFileInfoList(fc_norm_mc_no_rect_cuts_2017.GetList())
+    t_norm_mc_no_rect_cuts_2018.AddFileInfoList(fc_norm_mc_no_rect_cuts_2018.GetList())
 
-    # t_norm_mc_no_rect_cuts_2016.Add(t_norm_mc_no_rect_cuts_2017)
-    # t_norm_mc_no_rect_cuts_2016.Add(t_norm_mc_no_rect_cuts_2018)
+    t_norm_mc_no_rect_cuts_2016.Add(t_norm_mc_no_rect_cuts_2017)
+    t_norm_mc_no_rect_cuts_2016.Add(t_norm_mc_no_rect_cuts_2018)
 
-    # # sklearn
-    # fc2_norm_mc_no_rect_cuts_2016 = ROOT.TFileCollection("fc2_norm_mc_no_rect_cuts_2016", "fc2_norm_mc_no_rect_cuts_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_71/bdt_output.txt")
-    # fc2_norm_mc_no_rect_cuts_2017 = ROOT.TFileCollection("fc2_norm_mc_no_rect_cuts_2017", "fc2_norm_mc_no_rect_cuts_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_71/bdt_output.txt")
-    # fc2_norm_mc_no_rect_cuts_2018 = ROOT.TFileCollection("fc2_norm_mc_no_rect_cuts_2018", "fc2_norm_mc_no_rect_cuts_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_71/bdt_output.txt")
+    # sklearn
+    fc2_norm_mc_no_rect_cuts_2016 = ROOT.TFileCollection("fc2_norm_mc_no_rect_cuts_2016", "fc2_norm_mc_no_rect_cuts_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_71/bdt_output.txt")
+    fc2_norm_mc_no_rect_cuts_2017 = ROOT.TFileCollection("fc2_norm_mc_no_rect_cuts_2017", "fc2_norm_mc_no_rect_cuts_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_71/bdt_output.txt")
+    fc2_norm_mc_no_rect_cuts_2018 = ROOT.TFileCollection("fc2_norm_mc_no_rect_cuts_2018", "fc2_norm_mc_no_rect_cuts_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_71/bdt_output.txt")
 
-    # t2_norm_mc_no_rect_cuts_2016 = ROOT.TChain("DecayTree")
-    # t2_norm_mc_no_rect_cuts_2017 = ROOT.TChain("DecayTree")
-    # t2_norm_mc_no_rect_cuts_2018 = ROOT.TChain("DecayTree")
+    t2_norm_mc_no_rect_cuts_2016 = ROOT.TChain("DecayTree")
+    t2_norm_mc_no_rect_cuts_2017 = ROOT.TChain("DecayTree")
+    t2_norm_mc_no_rect_cuts_2018 = ROOT.TChain("DecayTree")
 
-    # t2_norm_mc_no_rect_cuts_2016.AddFileInfoList(fc2_norm_mc_no_rect_cuts_2016.GetList())
-    # t2_norm_mc_no_rect_cuts_2017.AddFileInfoList(fc2_norm_mc_no_rect_cuts_2017.GetList())
-    # t2_norm_mc_no_rect_cuts_2018.AddFileInfoList(fc2_norm_mc_no_rect_cuts_2018.GetList())
+    t2_norm_mc_no_rect_cuts_2016.AddFileInfoList(fc2_norm_mc_no_rect_cuts_2016.GetList())
+    t2_norm_mc_no_rect_cuts_2017.AddFileInfoList(fc2_norm_mc_no_rect_cuts_2017.GetList())
+    t2_norm_mc_no_rect_cuts_2018.AddFileInfoList(fc2_norm_mc_no_rect_cuts_2018.GetList())
 
-    # t2_norm_mc_no_rect_cuts_2016.Add(t2_norm_mc_no_rect_cuts_2017)
-    # t2_norm_mc_no_rect_cuts_2016.Add(t2_norm_mc_no_rect_cuts_2018)
-    # t_norm_mc_no_rect_cuts_2016.AddFriend(t2_norm_mc_no_rect_cuts_2016)
+    t2_norm_mc_no_rect_cuts_2016.Add(t2_norm_mc_no_rect_cuts_2017)
+    t2_norm_mc_no_rect_cuts_2016.Add(t2_norm_mc_no_rect_cuts_2018)
+    t_norm_mc_no_rect_cuts_2016.AddFriend(t2_norm_mc_no_rect_cuts_2016)
 
     ######################################################################################################################################################
     
     ###################################################### Normalisation mode data (w/o rectangular cuts) #####################################################################    
-    # # pre-sel tree
-    # fc_norm_data_no_rect_cuts_2016 = ROOT.TFileCollection("fc_norm_data_no_rect_cuts_2016", "fc_norm_data_no_rect_cuts_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_81/pre_sel_tree.txt", 500)
-    # fc_norm_data_no_rect_cuts_2017 = ROOT.TFileCollection("fc_norm_data_no_rect_cuts_2017", "fc_norm_data_no_rect_cuts_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_81/pre_sel_tree.txt", 500)
-    # fc_norm_data_no_rect_cuts_2018 = ROOT.TFileCollection("fc_norm_data_no_rect_cuts_2018", "fc_norm_data_no_rect_cuts_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_81/pre_sel_tree.txt", 500)
+    # pre-sel tree
+    fc_norm_data_no_rect_cuts_2016 = ROOT.TFileCollection("fc_norm_data_no_rect_cuts_2016", "fc_norm_data_no_rect_cuts_2016", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2016/Species_81/pre_sel_tree.txt", 500)
+    fc_norm_data_no_rect_cuts_2017 = ROOT.TFileCollection("fc_norm_data_no_rect_cuts_2017", "fc_norm_data_no_rect_cuts_2017", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2017/Species_81/pre_sel_tree.txt", 500)
+    fc_norm_data_no_rect_cuts_2018 = ROOT.TFileCollection("fc_norm_data_no_rect_cuts_2018", "fc_norm_data_no_rect_cuts_2018", "/panfs/felician/B2Ktautau/workflow/create_pre_selection_tree/2018/Species_81/pre_sel_tree.txt", 500)
 
-    # t_norm_data_no_rect_cuts_2016 = ROOT.TChain("DecayTree")
-    # t_norm_data_no_rect_cuts_2017 = ROOT.TChain("DecayTree")
-    # t_norm_data_no_rect_cuts_2018 = ROOT.TChain("DecayTree")
+    t_norm_data_no_rect_cuts_2016 = ROOT.TChain("DecayTree")
+    t_norm_data_no_rect_cuts_2017 = ROOT.TChain("DecayTree")
+    t_norm_data_no_rect_cuts_2018 = ROOT.TChain("DecayTree")
 
-    # t_norm_data_no_rect_cuts_2016.AddFileInfoList(fc_norm_data_no_rect_cuts_2016.GetList())
-    # t_norm_data_no_rect_cuts_2017.AddFileInfoList(fc_norm_data_no_rect_cuts_2017.GetList())
-    # t_norm_data_no_rect_cuts_2018.AddFileInfoList(fc_norm_data_no_rect_cuts_2018.GetList())
+    t_norm_data_no_rect_cuts_2016.AddFileInfoList(fc_norm_data_no_rect_cuts_2016.GetList())
+    t_norm_data_no_rect_cuts_2017.AddFileInfoList(fc_norm_data_no_rect_cuts_2017.GetList())
+    t_norm_data_no_rect_cuts_2018.AddFileInfoList(fc_norm_data_no_rect_cuts_2018.GetList())
 
-    # t_norm_data_no_rect_cuts_2016.Add(t_norm_data_no_rect_cuts_2017)
-    # t_norm_data_no_rect_cuts_2016.Add(t_norm_data_no_rect_cuts_2018)
+    t_norm_data_no_rect_cuts_2016.Add(t_norm_data_no_rect_cuts_2017)
+    t_norm_data_no_rect_cuts_2016.Add(t_norm_data_no_rect_cuts_2018)
 
-    # # sklearn
-    # fc2_norm_data_no_rect_cuts_2016 = ROOT.TFileCollection("fc2_norm_data_no_rect_cuts_2016", "fc2_norm_data_no_rect_cuts_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_81/bdt_output.txt", 500)
-    # fc2_norm_data_no_rect_cuts_2017 = ROOT.TFileCollection("fc2_norm_data_no_rect_cuts_2017", "fc2_norm_data_no_rect_cuts_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_81/bdt_output.txt", 500)
-    # fc2_norm_data_no_rect_cuts_2018 = ROOT.TFileCollection("fc2_norm_data_no_rect_cuts_2018", "fc2_norm_data_no_rect_cuts_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_81/bdt_output.txt", 500)
+    # sklearn
+    fc2_norm_data_no_rect_cuts_2016 = ROOT.TFileCollection("fc2_norm_data_no_rect_cuts_2016", "fc2_norm_data_no_rect_cuts_2016", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2016/Species_81/bdt_output.txt", 500)
+    fc2_norm_data_no_rect_cuts_2017 = ROOT.TFileCollection("fc2_norm_data_no_rect_cuts_2017", "fc2_norm_data_no_rect_cuts_2017", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2017/Species_81/bdt_output.txt", 500)
+    fc2_norm_data_no_rect_cuts_2018 = ROOT.TFileCollection("fc2_norm_data_no_rect_cuts_2018", "fc2_norm_data_no_rect_cuts_2018", "/panfs/felician/B2Ktautau/workflow/sklearn_response/2018/Species_81/bdt_output.txt", 500)
 
-    # t2_norm_data_no_rect_cuts_2016 = ROOT.TChain("DecayTree")
-    # t2_norm_data_no_rect_cuts_2017 = ROOT.TChain("DecayTree")
-    # t2_norm_data_no_rect_cuts_2018 = ROOT.TChain("DecayTree")
+    t2_norm_data_no_rect_cuts_2016 = ROOT.TChain("DecayTree")
+    t2_norm_data_no_rect_cuts_2017 = ROOT.TChain("DecayTree")
+    t2_norm_data_no_rect_cuts_2018 = ROOT.TChain("DecayTree")
 
-    # t2_norm_data_no_rect_cuts_2016.AddFileInfoList(fc2_norm_data_no_rect_cuts_2016.GetList())
-    # t2_norm_data_no_rect_cuts_2017.AddFileInfoList(fc2_norm_data_no_rect_cuts_2017.GetList())
-    # t2_norm_data_no_rect_cuts_2018.AddFileInfoList(fc2_norm_data_no_rect_cuts_2018.GetList())
+    t2_norm_data_no_rect_cuts_2016.AddFileInfoList(fc2_norm_data_no_rect_cuts_2016.GetList())
+    t2_norm_data_no_rect_cuts_2017.AddFileInfoList(fc2_norm_data_no_rect_cuts_2017.GetList())
+    t2_norm_data_no_rect_cuts_2018.AddFileInfoList(fc2_norm_data_no_rect_cuts_2018.GetList())
 
-    # t2_norm_data_no_rect_cuts_2016.Add(t2_norm_data_no_rect_cuts_2017)
-    # t2_norm_data_no_rect_cuts_2016.Add(t2_norm_data_no_rect_cuts_2018)
-    # t_norm_data_no_rect_cuts_2016.AddFriend(t2_norm_data_no_rect_cuts_2016)
+    t2_norm_data_no_rect_cuts_2016.Add(t2_norm_data_no_rect_cuts_2017)
+    t2_norm_data_no_rect_cuts_2016.Add(t2_norm_data_no_rect_cuts_2018)
+    t_norm_data_no_rect_cuts_2016.AddFriend(t2_norm_data_no_rect_cuts_2016)
 
     ######################################################################################################################################################
 
@@ -962,80 +962,80 @@ def main(argv):
     c12.SaveAs("/panfs/felician/B2Ktautau/workflow/sklearn_plots/rs_vs_ws_data_mass_BDT_0.95.pdf") 
 
 
-    # # PLOTS: Signal vs background (norm mode)
-    # h_norm_mc = ROOT.TH1D("h_norm_mc", "h_norm_mc", 30, 0, 1)
-    # t_norm_mc_no_rect_cuts_2016.Draw("BDT >> h_norm_mc", "(Bp_dtf_M[0] > 5235) && (Bp_dtf_M[0] < 5355)")
+    # PLOTS: Signal vs background (norm mode)
+    h_norm_mc = ROOT.TH1D("h_norm_mc", "h_norm_mc", 30, 0, 1)
+    t_norm_mc_no_rect_cuts_2016.Draw("BDT >> h_norm_mc", "(Bp_dtf_M[0] > 5235) && (Bp_dtf_M[0] < 5355)")
 
-    # h_norm_data = ROOT.TH1D("h_norm_data", "h_norm_data", 30, 0, 1)
-    # t_norm_data_no_rect_cuts_2016.Draw("BDT >> h_norm_data", "(Bp_dtf_M[0] > 5320)")
+    h_norm_data = ROOT.TH1D("h_norm_data", "h_norm_data", 30, 0, 1)
+    t_norm_data_no_rect_cuts_2016.Draw("BDT >> h_norm_data", "(Bp_dtf_M[0] > 5320)")
 
-    # c13 = ROOT.TCanvas()
-    # c13.cd()
-    # h_norm_data.GetXaxis().SetTitle("BDT2")
-    # h_norm_data.GetYaxis().SetTitle("Normalized entries / (0.03)")
-    # h_norm_data.SetTitle("")
-    # h_norm_data.SetLineColor(2)
-    # h_norm_mc.SetLineColor(4)
-    # h_norm_data.DrawNormalized("hist")
-    # h_norm_mc.DrawNormalized("same")
-    # leg13 = ROOT.TLegend(0.4, 0.8, 0.7, 0.89)
-    # leg13.AddEntry(h_norm_mc, "Signal", "lp")
-    # leg13.AddEntry(h_norm_data, "Background", "lp")
-    # leg13.SetBorderSize(0)
-    # leg13.SetBorderSize(0)
-    # leg13.Draw("same")
-    # c13.SaveAs(f"/panfs/felician/B2Ktautau/workflow/sklearn_plots/sig_vs_bkg_norm.pdf")
+    c13 = ROOT.TCanvas()
+    c13.cd()
+    h_norm_data.GetXaxis().SetTitle("BDT2")
+    h_norm_data.GetYaxis().SetTitle("Normalized entries / (0.03)")
+    h_norm_data.SetTitle("")
+    h_norm_data.SetLineColor(2)
+    h_norm_mc.SetLineColor(4)
+    h_norm_data.DrawNormalized("hist")
+    h_norm_mc.DrawNormalized("same")
+    leg13 = ROOT.TLegend(0.4, 0.8, 0.7, 0.89)
+    leg13.AddEntry(h_norm_mc, "Signal", "lp")
+    leg13.AddEntry(h_norm_data, "Background", "lp")
+    leg13.SetBorderSize(0)
+    leg13.SetBorderSize(0)
+    leg13.Draw("same")
+    c13.SaveAs(f"/panfs/felician/B2Ktautau/workflow/sklearn_plots/sig_vs_bkg_norm.pdf")
 
-    # ### PLTOS: B+ mass evolution w/ BDT cut (norm mode)
-    # histos_norm_mc = []
-    # histos_norm_data = []
+    ### PLTOS: B+ mass evolution w/ BDT cut (norm mode)
+    histos_norm_mc = []
+    histos_norm_data = []
 
-    # for i in range(N):
-    #     h_mass_corr_norm_mc = ROOT.TH1D(f"h_mass_corr_norm_mc_{i}", f"h_mass_corr_norm_mc_{i}", 100, 5235, 5355)
-    #     h_mass_corr_norm_data = ROOT.TH1D(f"h_mass_corr_norm_data_{i}", f"h_mass_corr_norm_data_{i}", 100, 5235, 5355)
+    for i in range(N):
+        h_mass_corr_norm_mc = ROOT.TH1D(f"h_mass_corr_norm_mc_{i}", f"h_mass_corr_norm_mc_{i}", 100, 5235, 5355)
+        h_mass_corr_norm_data = ROOT.TH1D(f"h_mass_corr_norm_data_{i}", f"h_mass_corr_norm_data_{i}", 100, 5235, 5355)
 
-    #     t_norm_mc_no_rect_cuts_2016.Draw(f"Bp_dtf_M[0] >> h_mass_corr_norm_mc_{i}", f"(BDT > {bdt_cuts[i]})")
-    #     t_norm_data_no_rect_cuts_2016.Draw(f"Bp_dtf_M[0] >> h_mass_corr_norm_data_{i}", f"(BDT > {bdt_cuts[i]})")
+        t_norm_mc_no_rect_cuts_2016.Draw(f"Bp_dtf_M[0] >> h_mass_corr_norm_mc_{i}", f"(BDT > {bdt_cuts[i]})")
+        t_norm_data_no_rect_cuts_2016.Draw(f"Bp_dtf_M[0] >> h_mass_corr_norm_data_{i}", f"(BDT > {bdt_cuts[i]})")
 
-    #     h_mass_corr_norm_mc.SetLineColor(colors[i])
-    #     h_mass_corr_norm_data.SetLineColor(colors[i])
+        h_mass_corr_norm_mc.SetLineColor(colors[i])
+        h_mass_corr_norm_data.SetLineColor(colors[i])
 
-    #     histos_norm_mc.append(h_mass_corr_norm_mc)
-    #     histos_norm_data.append(h_mass_corr_norm_data)
+        histos_norm_mc.append(h_mass_corr_norm_mc)
+        histos_norm_data.append(h_mass_corr_norm_data)
 
-    # c14 = ROOT.TCanvas()
-    # c14.cd()
-    # leg14 = ROOT.TLegend(0.7, 0.5, 0.89, 0.89)
-    # for i in range(N):
-    #     j = N-i-1
-    #     histos_norm_mc[j].GetXaxis().SetTitle("m_{B} (MeV)")
-    #     histos_norm_mc[j].GetYaxis().SetTitle("Normalized entries / (40 MeV)")
-    #     histos_norm_mc[j].SetTitle("Norm MC: B mass vs BDT cut")
-    #     leg14.AddEntry(histos_norm_mc[j], f"BDT > {bdt_cuts[j]}")
-    #     if(i == 0):
-    #         histos_norm_mc[j].DrawNormalized()
-    #     else:
-    #         histos_norm_mc[j].DrawNormalized("same")
-    # leg14.SetBorderSize(0)
-    # leg14.Draw("same")
-    # c14.SaveAs("/panfs/felician/B2Ktautau/workflow/sklearn_plots/bmass_corr_norm_mc.pdf")
+    c14 = ROOT.TCanvas()
+    c14.cd()
+    leg14 = ROOT.TLegend(0.7, 0.5, 0.89, 0.89)
+    for i in range(N):
+        j = N-i-1
+        histos_norm_mc[j].GetXaxis().SetTitle("m_{B} (MeV)")
+        histos_norm_mc[j].GetYaxis().SetTitle("Normalized entries / (40 MeV)")
+        histos_norm_mc[j].SetTitle("Norm MC: B mass vs BDT cut")
+        leg14.AddEntry(histos_norm_mc[j], f"BDT > {bdt_cuts[j]}")
+        if(i == 0):
+            histos_norm_mc[j].DrawNormalized()
+        else:
+            histos_norm_mc[j].DrawNormalized("same")
+    leg14.SetBorderSize(0)
+    leg14.Draw("same")
+    c14.SaveAs("/panfs/felician/B2Ktautau/workflow/sklearn_plots/bmass_corr_norm_mc.pdf")
 
-    # c15 = ROOT.TCanvas()
-    # c15.cd()
-    # leg15 = ROOT.TLegend(0.7, 0.5, 0.89, 0.89)
-    # for i in range(N):
-    #     j = N-i-1
-    #     histos_norm_data[j].GetXaxis().SetTitle("m_{B} (MeV)")
-    #     histos_norm_data[j].GetYaxis().SetTitle("Normalized entries / (40 MeV)")
-    #     histos_norm_data[j].SetTitle("Norm data: B mass vs BDT cut")
-    #     leg15.AddEntry(histos_norm_data[j], f"BDT > {bdt_cuts[j]}")
-    #     if(i == 0):
-    #         histos_norm_data[j].DrawNormalized()
-    #     else:
-    #         histos_norm_data[j].DrawNormalized("same")
-    # leg15.SetBorderSize(0)
-    # leg15.Draw("same")
-    # c15.SaveAs("/panfs/felician/B2Ktautau/workflow/sklearn_plots/bmass_corr_norm_data.pdf")
+    c15 = ROOT.TCanvas()
+    c15.cd()
+    leg15 = ROOT.TLegend(0.7, 0.5, 0.89, 0.89)
+    for i in range(N):
+        j = N-i-1
+        histos_norm_data[j].GetXaxis().SetTitle("m_{B} (MeV)")
+        histos_norm_data[j].GetYaxis().SetTitle("Normalized entries / (40 MeV)")
+        histos_norm_data[j].SetTitle("Norm data: B mass vs BDT cut")
+        leg15.AddEntry(histos_norm_data[j], f"BDT > {bdt_cuts[j]}")
+        if(i == 0):
+            histos_norm_data[j].DrawNormalized()
+        else:
+            histos_norm_data[j].DrawNormalized("same")
+    leg15.SetBorderSize(0)
+    leg15.Draw("same")
+    c15.SaveAs("/panfs/felician/B2Ktautau/workflow/sklearn_plots/bmass_corr_norm_data.pdf")
 
 
 if __name__ == "__main__":
