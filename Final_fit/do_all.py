@@ -971,7 +971,7 @@ def run_cls_limit(fit_poi, fit_poi_error, data, model, fit_name, fit_type, BF_si
         poi_values = np.linspace(0, np.abs(fit_poi)+4*fit_poi_error, 10)
         obs_limit, exp_limits, (scan, results) = pyhf.infer.intervals.upper_limits.upper_limit(data, model, poi_values, level=0.1, return_results=True, test_stat="q", calctype="toybased", ntoys=100)
     else: # high stats
-        poi_values = np.linspace(0, np.abs(fit_poi)+4*fit_poi_error, 50)
+        poi_values = np.linspace(0, np.abs(fit_poi)+5*fit_poi_error, 50)
         obs_limit, exp_limits, (scan, results) = pyhf.infer.intervals.upper_limits.upper_limit(data, model, poi_values, level=0.1, return_results=True, test_stat="q")
 
     print(f"Upper limit (obs): μ = {obs_limit:.6f}")
@@ -1006,7 +1006,7 @@ def do_fit(fit_name, fit_type, BF_sig, bdt, spec, h_templates, save_plot, i_min,
     # print(ll)
 
     # Fitting
-    optimizer = pyhf.optimize.minuit_optimizer(verbose=0, maxiter=500000)
+    optimizer = pyhf.optimize.minuit_optimizer(verbose=2, maxiter=500000)
     pyhf.set_backend('numpy', optimizer) # minuit returns errors and correlation matrix; we ned the errors to make pulls
 
     fit_result, res_obj = pyhf.infer.mle.fit(data, model, return_uncertainties=True, return_result_obj=True)
@@ -1390,9 +1390,9 @@ def main(argv):
     n_total = n_sig+n_BDDKp+n_comb
 
     print("N_total = ", n_total.nominal_value, " +/- ", n_total.std_dev)
-    # if(int(n_total.nominal_value) < 10):
-    #     print("Not running the fit because there are less < 10 events in data")
-    #     run_fit = False
+    if(int(n_total.nominal_value) < 10):
+        print("Not running the fit because there are less < 10 events in data")
+        run_fit = False
     
     if(run_fit):
         ############################################################# Fit validation ########################################################################
