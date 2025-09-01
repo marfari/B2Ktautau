@@ -829,7 +829,7 @@ def main(argv):
         histos_bdt_rs_data[j].GetXaxis().SetTitle("m_{B} (MeV)")
         histos_bdt_rs_data[j].GetYaxis().SetTitle("Normalized entries / (50 MeV)")
         histos_bdt_rs_data[j].SetTitle("RS data: B mass vs BDT")
-        leg6.AddEntry(histos_bdt_rs_data[i], f"BDT > {bdt_cuts[j]}", "fp")
+        leg6.AddEntry(histos_bdt_rs_data[j], f"BDT > {bdt_cuts[j]}", "fp")
         if(i == 0):
             histos_bdt_rs_data[j].DrawNormalized()
         else:
