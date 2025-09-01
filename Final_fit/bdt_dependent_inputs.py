@@ -13,8 +13,8 @@ xmax = [6500, 6000, 6500, 7500]
 channel_cut = {0: "", 1: " && (df_Bp_MERR >= 0) && (df_Bp_MERR <= 100)", 2: " && (df_Bp_MERR > 100) && (df_Bp_MERR <= 240)", 3: " && (df_Bp_MERR > 240)"}
 
 # Points from which the shape is taken at higher BDT cuts
-bdt_fix_sig = 1.0
-bdt_fix_phys = 1.0
+bdt_fix_sig = 0.999
+bdt_fix_phys = 0.995
 bdt_fix_comb = 0.995
 bdt_fix_data = 0.995
 
