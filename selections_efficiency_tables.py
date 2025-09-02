@@ -376,7 +376,6 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
     if(species == 1):
         np.save(f"/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/stripping_efficiency.npy", eps_strip)
 
-
     if(species == 100):
         reco1_columns = ["Reconstruction efficiency I (\\%)"]
         reco1_rows = ["$B^+ \\to D D K^+$", "$B^0 \\to D D K^+$", "$B^0_s \\to D D K^+$", "$B^+ \\to D D K^0$", "$B^+ \\to D D$"]
@@ -479,6 +478,7 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         N_gen = 5350785+5782016+5763580
 
         print("N_gen = ", N_gen)
+    
     elif(species == 100):
         N_gen_all = np.load('/panfs/felician/B2Ktautau/workflow/yield_estimates_inputs/eps_bkg_den.npy')
 
@@ -654,6 +654,7 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
 
         eps_reco = [eps_reco_BuDDKp, eps_reco_BdDDKp, eps_reco_BsDDKp, eps_reco_BuDDK0, eps_reco_BuDD]
                    
+    
     else:
         N_reco = t_reco_pid_2016.GetEntries(truthMatch) + t_reco_pid_2017.GetEntries(truthMatch) + t_reco_pid_2018.GetEntries(truthMatch)
         print("N_reco = ", N_reco)
@@ -2075,73 +2076,110 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         mass_vetoes_table.loc["All", "RS data"] = f"${eps_all_mass_vetoes_RS.nominal_value*100:.2f} \\pm {eps_all_mass_vetoes_RS.std_dev*100:.2f}$"
         mass_vetoes_table.loc["All", "WS data"] = f"${eps_all_mass_vetoes_WS.nominal_value*100:.2f} \\pm {eps_all_mass_vetoes_WS.std_dev*100:.2f}$"
 
-
     if((species == 100) or (species == 1)):
         with open(f'/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/mass_vetoes_efficiency_table.tex', 'w') as fout_mass_vetoes:
             fout_mass_vetoes.write(mass_vetoes_table.to_latex())
 
-    # BDT efficiency (BDT > 0.999)
+    
+    # BDT efficiency (BDT > 0.998)
+    bdt_working_point = 0.998
     if(species == 1):
+        f_mc_tm_post_sel = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_1/post_sel_tree_bdt_0.0.root")
+        t_mc_tm_post_sel = f_mc_tm_post_sel.Get("DecayTree")
+        N_3pi3pi_TM = t_mc_tm_post_sel.GetEntries("component==0")
+        N_3pi3pipi0_TM = t_mc_tm_post_sel.GetEntries("component==1")
+        N_3pi3pi2pi0_TM = t_mc_tm_post_sel.GetEntries("component==2")
+        N_MC_TM = t_mc_tm_post_sel.GetEntries()
+
         f_mc_post_sel = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_10/post_sel_tree_bdt_0.0.root")
         t_mc_post_sel = f_mc_post_sel.Get("DecayTree")
-        f_mc_best_cand = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/candidate_selection/Species_10/candidate_bdt_0.999.root")
-        t_mc_best_cand = f_mc_best_cand.Get("DecayTree")
+        N_3pi3pi_MC = t_mc_post_sel.GetEntries("component==0")
+        N_3pi3pipi0_MC = t_mc_post_sel.GetEntries("component==1")
+        N_3pi3pi2pi0_MC = t_mc_post_sel.GetEntries("component==2")
+        N_MC = t_mc_post_sel.GetEntries()
 
         f_rs_post_sel = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_2/post_sel_tree_bdt_0.0.root")
         t_rs_post_sel = f_rs_post_sel.Get("DecayTree")
-        f_rs_best_cand = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/candidate_selection/Species_2/candidate_bdt_0.999.root")
-        t_rs_best_cand = f_rs_best_cand.Get("DecayTree")
+        N_RS = t_rs_post_sel.GetEntries()
 
         f_ws_post_sel = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_3/post_sel_tree_bdt_0.0.root")
         t_ws_post_sel = f_ws_post_sel.Get("DecayTree")
-        f_ws_best_cand = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/candidate_selection/Species_3/candidate_bdt_0.999.root")
-        t_ws_best_cand = f_ws_best_cand.Get("DecayTree")
+        N_WS = t_ws_post_sel.GetEntries()
 
-        N_bdt_3pi3pi = t_mc_post_sel.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && (component == 0)"+" && "+mass_vetoes+" && (BDT > 0.999)")
-        N_bdt_3pi3pipi0 = t_mc_post_sel.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && (component == 1)"+" && "+mass_vetoes+" && (BDT > 0.999)")
-        N_bdt_3pi3pi2pi0 = t_mc_post_sel.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && (component == 2)"+" && "+mass_vetoes+" && (BDT > 0.999)")
-        N_bdt_MC = t_mc_post_sel.GetEntries(trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && (BDT > 0.999)")
-        N_bdt_RS = t_rs_post_sel.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && (BDT > 0.999)")
-        N_bdt_WS = t_ws_post_sel.GetEntries(trigger+" && "+all_rectangular_cuts_data+" && "+pass_mass_fit+" && "+fit_range+" && "+mass_vetoes+" && (BDT > 0.999)")
+        N_bdt_tm_3pi3pi = t_mc_tm_post_sel.GetEntries(f" (BDT > {bdt_working_point}) && (component==0)")
+        N_bdt_tm_3pi3pipi0 = t_mc_tm_post_sel.GetEntries(f" (BDT > {bdt_working_point}) && (component==1)")
+        N_bdt_tm_3pi3pi2pi0 = t_mc_tm_post_sel.GetEntries(f" (BDT > {bdt_working_point}) && component==2")
+        N_bdt_tm_MC = t_mc_tm_post_sel.GetEntries(f" (BDT > {bdt_working_point})")
+        N_bdt_3pi3pi = t_mc_post_sel.GetEntries(f" (BDT > {bdt_working_point}) && (component==0)")
+        N_bdt_3pi3pipi0 = t_mc_post_sel.GetEntries(f" (BDT > {bdt_working_point}) && (component==1)")
+        N_bdt_3pi3pi2pi0 = t_mc_post_sel.GetEntries(f" (BDT > {bdt_working_point}) && component==2")
+        N_bdt_MC = t_mc_post_sel.GetEntries(f" (BDT > {bdt_working_point})")
+        N_bdt_RS = 0
+        N_bdt_WS = t_ws_post_sel.GetEntries(f" (BDT > {bdt_working_point})")
 
-        up_bdt_3pi3pi = ROOT.TEfficiency.Wilson(N_all_mass_vetoes_3pi3pi, N_bdt_3pi3pi, 0.68, True)
-        down_bdt_3pi3pi = ROOT.TEfficiency.Wilson(N_all_mass_vetoes_3pi3pi, N_bdt_3pi3pi, 0.68, False)
-        eps_bdt_3pi3pi_err = 0.5*(up_bdt_3pi3pi - down_bdt_3pi3pi)
-        eps_bdt_3pi3pi =  ufloat(N_bdt_3pi3pi/N_all_mass_vetoes_3pi3pi, eps_bdt_3pi3pi_err) 
+        up_bdt_tm_3pi3pi = ROOT.TEfficiency.Wilson(N_3pi3pi_TM, N_bdt_tm_3pi3pi, 0.68, True)
+        down_bdt_tm_3pi3pi = ROOT.TEfficiency.Wilson(N_3pi3pi_TM, N_bdt_tm_3pi3pi, 0.68, False)
+        eps_bdt_tm_3pi3pi_err = 0.5*(up_bdt_tm_3pi3pi - down_bdt_tm_3pi3pi)
+        eps_bdt_tm_3pi3pi =  ufloat(N_bdt_tm_3pi3pi/N_3pi3pi_TM, eps_bdt_tm_3pi3pi_err) 
 
-        up_bdt_3pi3pipi0 = ROOT.TEfficiency.Wilson(N_all_mass_vetoes_3pi3pipi0, N_bdt_3pi3pipi0, 0.68, True)
-        down_bdt_3pi3pipi0 = ROOT.TEfficiency.Wilson(N_all_mass_vetoes_3pi3pipi0, N_bdt_3pi3pipi0, 0.68, False)
-        eps_bdt_3pi3pipi0_err = 0.5*(up_bdt_3pi3pipi0 - down_bdt_3pi3pipi0)
-        eps_bdt_3pi3pipi0 =  ufloat(N_bdt_3pi3pipi0/N_all_mass_vetoes_3pi3pipi0, eps_bdt_3pi3pipi0_err) 
+        up_bdt_tm_3pi3pipi0 = ROOT.TEfficiency.Wilson(N_3pi3pipi0_TM, N_bdt_tm_3pi3pipi0, 0.68, True)
+        down_bdt_tm_3pi3pipi0 = ROOT.TEfficiency.Wilson(N_3pi3pipi0_TM, N_bdt_tm_3pi3pipi0, 0.68, False)
+        eps_bdt_tm_3pi3pipi0_err = 0.5*(up_bdt_tm_3pi3pipi0 - down_bdt_tm_3pi3pipi0)
+        eps_bdt_tm_3pi3pipi0 =  ufloat(N_bdt_tm_3pi3pipi0/N_3pi3pipi0_TM, eps_bdt_tm_3pi3pipi0_err) 
 
-        up_bdt_3pi3pi2pi0 = ROOT.TEfficiency.Wilson(N_all_mass_vetoes_3pi3pi2pi0, N_bdt_3pi3pi2pi0, 0.68, True)
-        down_bdt_3pi3pi2pi0 = ROOT.TEfficiency.Wilson(N_all_mass_vetoes_3pi3pi2pi0, N_bdt_3pi3pi2pi0, 0.68, False)
-        eps_bdt_3pi3pi2pi0_err = 0.5*(up_bdt_3pi3pi2pi0 - down_bdt_3pi3pi2pi0)
-        eps_bdt_3pi3pi2pi0 =  ufloat(N_bdt_3pi3pi2pi0/N_all_mass_vetoes_3pi3pi2pi0, eps_bdt_3pi3pi2pi0_err) 
+        up_bdt_tm_3pi3pi2pi0 = ROOT.TEfficiency.Wilson(N_3pi3pi2pi0_TM, N_bdt_tm_3pi3pi2pi0, 0.68, True)
+        down_bdt_tm_3pi3pi2pi0 = ROOT.TEfficiency.Wilson(N_3pi3pi2pi0_TM, N_bdt_tm_3pi3pi2pi0, 0.68, False)
+        eps_bdt_tm_3pi3pi2pi0_err = 0.5*(up_bdt_tm_3pi3pi2pi0 - down_bdt_tm_3pi3pi2pi0)
+        eps_bdt_tm_3pi3pi2pi0 =  ufloat(N_bdt_tm_3pi3pi2pi0/N_3pi3pi2pi0_TM, eps_bdt_tm_3pi3pi2pi0_err) 
 
-        up_bdt_MC = ROOT.TEfficiency.Wilson(N_all_mass_vetoes_MC, N_bdt_MC, 0.68, True)
-        down_bdt_MC = ROOT.TEfficiency.Wilson(N_all_mass_vetoes_MC, N_bdt_MC, 0.68, False)
-        eps_bdt_MC_err = 0.5*(up_bdt_MC - down_bdt_MC)
-        eps_bdt_MC =  ufloat(N_bdt_MC/N_all_mass_vetoes_MC, eps_bdt_MC_err) 
+        up_bdt_tm_MC = ROOT.TEfficiency.Wilson(N_MC_TM, N_bdt_tm_MC, 0.68, True)
+        down_bdt_tm_MC = ROOT.TEfficiency.Wilson(N_MC_TM, N_bdt_tm_MC, 0.68, False)
+        eps_bdt_tm_MC_err = 0.5*(up_bdt_tm_MC - down_bdt_tm_MC)
+        eps_bdt_tm_MC =  ufloat(N_bdt_tm_MC/N_MC_TM, eps_bdt_tm_MC_err) 
     
-        up_bdt_RS = ROOT.TEfficiency.Wilson(N_all_mass_vetoes_RS, N_bdt_RS, 0.68, True)
-        down_bdt_RS = ROOT.TEfficiency.Wilson(N_all_mass_vetoes_RS, N_bdt_RS, 0.68, False)
+        up_bdt_RS = ROOT.TEfficiency.Wilson(N_RS, N_bdt_RS, 0.68, True)
+        down_bdt_RS = ROOT.TEfficiency.Wilson(N_RS, N_bdt_RS, 0.68, False)
         eps_bdt_RS_err = 0.5*(up_bdt_RS - down_bdt_RS)
-        eps_bdt_RS =  ufloat(N_bdt_RS/N_all_mass_vetoes_RS, eps_bdt_RS_err) 
+        eps_bdt_RS =  ufloat(N_bdt_RS/N_RS, eps_bdt_RS_err) 
 
-        up_bdt_WS = ROOT.TEfficiency.Wilson(N_all_mass_vetoes_WS, N_bdt_WS, 0.68, True)
-        down_bdt_WS = ROOT.TEfficiency.Wilson(N_all_mass_vetoes_WS, N_bdt_WS, 0.68, False)
+        up_bdt_WS = ROOT.TEfficiency.Wilson(N_WS, N_bdt_WS, 0.68, True)
+        down_bdt_WS = ROOT.TEfficiency.Wilson(N_WS, N_bdt_WS, 0.68, False)
         eps_bdt_WS_err = 0.5*(up_bdt_WS - down_bdt_WS)
-        eps_bdt_WS =  ufloat(N_bdt_WS/N_all_mass_vetoes_WS, eps_bdt_WS_err) 
+        eps_bdt_WS =  ufloat(N_bdt_WS/N_WS, eps_bdt_WS_err) 
+
+        up_bdt_3pi3pi = ROOT.TEfficiency.Wilson(N_3pi3pi_MC, N_bdt_3pi3pi, 0.68, True)
+        down_bdt_3pi3pi = ROOT.TEfficiency.Wilson(N_3pi3pi_MC, N_bdt_3pi3pi, 0.68, False)
+        eps_bdt_3pi3pi_err = 0.5*(up_bdt_3pi3pi - down_bdt_3pi3pi)
+        eps_bdt_3pi3pi =  ufloat(N_bdt_3pi3pi/N_3pi3pi_MC, eps_bdt_3pi3pi_err) 
+
+        up_bdt_3pi3pipi0 = ROOT.TEfficiency.Wilson(N_3pi3pipi0_MC, N_bdt_3pi3pipi0, 0.68, True)
+        down_bdt_3pi3pipi0 = ROOT.TEfficiency.Wilson(N_3pi3pipi0_MC, N_bdt_3pi3pipi0, 0.68, False)
+        eps_bdt_3pi3pipi0_err = 0.5*(up_bdt_3pi3pipi0 - down_bdt_3pi3pipi0)
+        eps_bdt_3pi3pipi0 =  ufloat(N_bdt_3pi3pipi0/N_3pi3pipi0_MC, eps_bdt_3pi3pipi0_err) 
+
+        up_bdt_3pi3pi2pi0 = ROOT.TEfficiency.Wilson(N_3pi3pi2pi0_MC, N_bdt_3pi3pi2pi0, 0.68, True)
+        down_bdt_3pi3pi2pi0 = ROOT.TEfficiency.Wilson(N_3pi3pi2pi0_MC, N_bdt_3pi3pi2pi0, 0.68, False)
+        eps_bdt_3pi3pi2pi0_err = 0.5*(up_bdt_3pi3pi2pi0 - down_bdt_3pi3pi2pi0)
+        eps_bdt_3pi3pi2pi0 =  ufloat(N_bdt_3pi3pi2pi0/N_3pi3pi2pi0_MC, eps_bdt_3pi3pi2pi0_err) 
+
+        up_bdt_MC = ROOT.TEfficiency.Wilson(N_MC, N_bdt_MC, 0.68, True)
+        down_bdt_MC = ROOT.TEfficiency.Wilson(N_MC, N_bdt_MC, 0.68, False)
+        eps_bdt_MC_err = 0.5*(up_bdt_MC - down_bdt_MC)
+        eps_bdt_MC =  ufloat(N_bdt_MC/N_MC, eps_bdt_MC_err) 
 
         bdt_columns = ["BDT efficiency"]
-        bdt_rows = ["$3\\pi 3\\pi$", "$3\\pi 3\\pi \\pi^0$", "$3\\pi 3\\pi 2\\pi^0$", "All MC", "RS data", "WS data"]
+        bdt_rows = ["$3\\pi 3\\pi$ MC (TM)", "$3\\pi 3\\pi \\pi^0$ (TM)", "$3\\pi 3\\pi 2\\pi^0$ (TM)", "All MC (TM)", "$3\\pi 3\\pi$ MC (not TM)", "$3\\pi 3\\pi \\pi^0$ (not TM)", "$3\\pi 3\\pi 2\\pi^0$ (not TM)", "All MC (not TM)", "RS data", "WS data"]
 
         bdt_table = pd.DataFrame(index=bdt_rows, columns=bdt_columns)
-        bdt_table.loc["$3\\pi 3\\pi$", "BDT efficiency"] = f"${eps_bdt_3pi3pi.nominal_value*100:.2f} \\pm {eps_bdt_3pi3pi.std_dev*100:.2f}$"
-        bdt_table.loc["$3\\pi 3\\pi \\pi^0$", "BDT efficiency"] = f"${eps_bdt_3pi3pipi0.nominal_value*100:.2f} \\pm {eps_bdt_3pi3pipi0.std_dev*100:.2f}$"
-        bdt_table.loc["$3\\pi 3\\pi 2\\pi^0$", "BDT efficiency"] = f"${eps_bdt_3pi3pi2pi0.nominal_value*100:.2f} \\pm {eps_bdt_3pi3pi2pi0.std_dev*100:.2f}$"
-        bdt_table.loc["All MC", "BDT efficiency"] = f"${eps_bdt_MC.nominal_value*100:.2f} \\pm {eps_bdt_MC.std_dev*100:.2f}$"
+        bdt_table.loc["$3\\pi 3\\pi$ MC (TM)", "BDT efficiency"] = f"${eps_bdt_tm_3pi3pi.nominal_value*100:.2f} \\pm {eps_bdt_tm_3pi3pi.std_dev*100:.2f}$"
+        bdt_table.loc["$3\\pi 3\\pi \\pi^0$ (TM)", "BDT efficiency"] = f"${eps_bdt_tm_3pi3pipi0.nominal_value*100:.2f} \\pm {eps_bdt_tm_3pi3pipi0.std_dev*100:.2f}$"
+        bdt_table.loc["$3\\pi 3\\pi 2\\pi^0$ (TM)", "BDT efficiency"] = f"${eps_bdt_tm_3pi3pi2pi0.nominal_value*100:.2f} \\pm {eps_bdt_tm_3pi3pi2pi0.std_dev*100:.2f}$"
+        bdt_table.loc["All MC (TM)", "BDT efficiency"] = f"${eps_bdt_tm_MC.nominal_value*100:.2f} \\pm {eps_bdt_tm_MC.std_dev*100:.2f}$"
+
+        bdt_table.loc["$3\\pi 3\\pi$ MC (not TM)", "BDT efficiency"] = f"${eps_bdt_3pi3pi.nominal_value*100:.2f} \\pm {eps_bdt_3pi3pi.std_dev*100:.2f}$"
+        bdt_table.loc["$3\\pi 3\\pi \\pi^0$ (not TM)", "BDT efficiency"] = f"${eps_bdt_3pi3pipi0.nominal_value*100:.2f} \\pm {eps_bdt_3pi3pipi0.std_dev*100:.2f}$"
+        bdt_table.loc["$3\\pi 3\\pi 2\\pi^0$ (not TM)", "BDT efficiency"] = f"${eps_bdt_3pi3pi2pi0.nominal_value*100:.2f} \\pm {eps_bdt_3pi3pi2pi0.std_dev*100:.2f}$"
+        bdt_table.loc["All MC (not TM)", "BDT efficiency"] = f"${eps_bdt_MC.nominal_value*100:.2f} \\pm {eps_bdt_MC.std_dev*100:.2f}$"
         # bdt_table.loc["RS data", "BDT efficiency"] = f"${eps_bdt_RS.nominal_value*100:.2f} \\pm {eps_bdt_RS.std_dev*100:.2f}$"
         bdt_table.loc["RS data", "BDT efficiency"] = f"${-1} \\pm {-1}$"
         bdt_table.loc["WS data", "BDT efficiency"] = f"${eps_bdt_WS.nominal_value*100:.2f} \\pm {eps_bdt_WS.std_dev*100:.2f}$"
@@ -2218,87 +2256,87 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
             fout_bdt.write(bdt_table.to_latex())
 
 
-    # Best candidate
-    print("Best candidate efficiency")
-    if(species == 7):
-        N_best_cand_MC = t_reco_mc_2016.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && "+best_cand) + t_reco_mc_2017.GetEntries(trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && "+best_cand) + t_reco_mc_2018.GetEntries(trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && "+best_cand)
+    # # Best candidate
+    # print("Best candidate efficiency")
+    # if(species == 7):
+    #     N_best_cand_MC = t_reco_mc_2016.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && "+best_cand) + t_reco_mc_2017.GetEntries(trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && "+best_cand) + t_reco_mc_2018.GetEntries(trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && "+best_cand)
 
-        up_best_cand_MC = ROOT.TEfficiency.Wilson(N_fit_region_MC, N_best_cand_MC, 0.68, True)
-        down_best_cand_MC = ROOT.TEfficiency.Wilson(N_fit_region_MC, N_best_cand_MC, 0.68, False)
-        eps_best_cand_MC_err = 0.5*(up_best_cand_MC - down_best_cand_MC)
-        eps_best_cand_MC = ufloat(N_best_cand_MC/N_fit_region_MC, eps_best_cand_MC_err)
+    #     up_best_cand_MC = ROOT.TEfficiency.Wilson(N_fit_region_MC, N_best_cand_MC, 0.68, True)
+    #     down_best_cand_MC = ROOT.TEfficiency.Wilson(N_fit_region_MC, N_best_cand_MC, 0.68, False)
+    #     eps_best_cand_MC_err = 0.5*(up_best_cand_MC - down_best_cand_MC)
+    #     eps_best_cand_MC = ufloat(N_best_cand_MC/N_fit_region_MC, eps_best_cand_MC_err)
 
-        best_cand_columns = ["Best candidate efficiency (\\%)"]
-        best_cand_rows  = ["MC"]
+    #     best_cand_columns = ["Best candidate efficiency (\\%)"]
+    #     best_cand_rows  = ["MC"]
 
-        best_cand_table = pd.DataFrame(index=best_cand_rows, columns=best_cand_columns)
-        best_cand_table.loc["MC", "Best candidate efficiency (\\%)"] = f"${eps_best_cand_MC.nominal_value*100:.2f} \\pm {eps_best_cand_MC.std_dev*100:.2f}$"
+    #     best_cand_table = pd.DataFrame(index=best_cand_rows, columns=best_cand_columns)
+    #     best_cand_table.loc["MC", "Best candidate efficiency (\\%)"] = f"${eps_best_cand_MC.nominal_value*100:.2f} \\pm {eps_best_cand_MC.std_dev*100:.2f}$"
 
-        with open(f'/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/best_candidate_efficiency_table.tex', 'w') as fout_best_cand:
-            fout_best_cand.write(best_cand_table.to_latex())
+    #     with open(f'/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/best_candidate_efficiency_table.tex', 'w') as fout_best_cand:
+    #         fout_best_cand.write(best_cand_table.to_latex())
 
-    elif(species == 1):
-        N_best_cand_MC = t_mc_best_cand.GetEntries("(is_best_cand == 1)")
+    # elif(species == 1):
+    #     N_best_cand_MC = t_mc_best_cand.GetEntries("(is_best_cand == 1)")
 
-        up_best_cand_MC = ROOT.TEfficiency.Wilson(N_bdt_MC, N_best_cand_MC, 0.68, True)
-        down_best_cand_MC = ROOT.TEfficiency.Wilson(N_bdt_MC, N_best_cand_MC, 0.68, False)
-        eps_best_cand_MC_err = 0.5*(up_best_cand_MC - down_best_cand_MC)
-        eps_best_cand_MC =  ufloat(N_best_cand_MC/N_bdt_MC, eps_best_cand_MC_err) 
+    #     up_best_cand_MC = ROOT.TEfficiency.Wilson(N_bdt_MC, N_best_cand_MC, 0.68, True)
+    #     down_best_cand_MC = ROOT.TEfficiency.Wilson(N_bdt_MC, N_best_cand_MC, 0.68, False)
+    #     eps_best_cand_MC_err = 0.5*(up_best_cand_MC - down_best_cand_MC)
+    #     eps_best_cand_MC =  ufloat(N_best_cand_MC/N_bdt_MC, eps_best_cand_MC_err) 
 
-        best_cand_columns = ["Candidate selection efficiency"]
-        best_cand_rows = ["All MC"]
+    #     best_cand_columns = ["Candidate selection efficiency"]
+    #     best_cand_rows = ["All MC"]
 
-        best_cand_table = pd.DataFrame(index=best_cand_rows, columns=best_cand_columns)
-        best_cand_table.loc["All MC", "Candidate selection efficiency"] = f"${eps_best_cand_MC.nominal_value*100:.2f} \\pm {eps_best_cand_MC.std_dev*100:.2f}$"
+    #     best_cand_table = pd.DataFrame(index=best_cand_rows, columns=best_cand_columns)
+    #     best_cand_table.loc["All MC", "Candidate selection efficiency"] = f"${eps_best_cand_MC.nominal_value*100:.2f} \\pm {eps_best_cand_MC.std_dev*100:.2f}$"
 
-    elif(species == 100):
-        N_best_cand_BuDDKp = t_BuDDKp_best_cand.GetEntries("(is_best_cand == 1)") 
-        N_best_cand_BdDDKp = t_BdDDKp_best_cand.GetEntries("(is_best_cand == 1)") 
-        N_best_cand_BsDDKp = t_BsDDKp_best_cand.GetEntries("(is_best_cand == 1)") 
-        N_best_cand_BuDDK0 = t_BuDDK0_best_cand.GetEntries("(is_best_cand == 1)") 
-        N_best_cand_BuDD = t_BuDD_best_cand.GetEntries("(is_best_cand == 1)") 
+    # elif(species == 100):
+    #     N_best_cand_BuDDKp = t_BuDDKp_best_cand.GetEntries("(is_best_cand == 1)") 
+    #     N_best_cand_BdDDKp = t_BdDDKp_best_cand.GetEntries("(is_best_cand == 1)") 
+    #     N_best_cand_BsDDKp = t_BsDDKp_best_cand.GetEntries("(is_best_cand == 1)") 
+    #     N_best_cand_BuDDK0 = t_BuDDK0_best_cand.GetEntries("(is_best_cand == 1)") 
+    #     N_best_cand_BuDD = t_BuDD_best_cand.GetEntries("(is_best_cand == 1)") 
 
-        up_best_cand_BuDDKp = ROOT.TEfficiency.Wilson(N_bdt_BuDDKp, N_best_cand_BuDDKp, 0.68, True)
-        down_best_cand_BuDDKp = ROOT.TEfficiency.Wilson(N_bdt_BuDDKp, N_best_cand_BuDDKp, 0.68, False)
-        eps_best_cand_BuDDKp_err = 0.5*(up_best_cand_BuDDKp - down_best_cand_BuDDKp)
-        eps_best_cand_BuDDKp = ufloat(N_best_cand_BuDDKp/N_bdt_BuDDKp, eps_best_cand_BuDDKp_err)
+    #     up_best_cand_BuDDKp = ROOT.TEfficiency.Wilson(N_bdt_BuDDKp, N_best_cand_BuDDKp, 0.68, True)
+    #     down_best_cand_BuDDKp = ROOT.TEfficiency.Wilson(N_bdt_BuDDKp, N_best_cand_BuDDKp, 0.68, False)
+    #     eps_best_cand_BuDDKp_err = 0.5*(up_best_cand_BuDDKp - down_best_cand_BuDDKp)
+    #     eps_best_cand_BuDDKp = ufloat(N_best_cand_BuDDKp/N_bdt_BuDDKp, eps_best_cand_BuDDKp_err)
 
-        up_best_cand_BdDDKp = ROOT.TEfficiency.Wilson(N_bdt_BdDDKp, N_best_cand_BdDDKp, 0.68, True)
-        down_best_cand_BdDDKp = ROOT.TEfficiency.Wilson(N_bdt_BdDDKp, N_best_cand_BdDDKp, 0.68, False)
-        eps_best_cand_BdDDKp_err = 0.5*(up_best_cand_BdDDKp - down_best_cand_BdDDKp)
-        eps_best_cand_BdDDKp = ufloat(N_best_cand_BdDDKp/N_bdt_BdDDKp, eps_best_cand_BdDDKp_err)
+    #     up_best_cand_BdDDKp = ROOT.TEfficiency.Wilson(N_bdt_BdDDKp, N_best_cand_BdDDKp, 0.68, True)
+    #     down_best_cand_BdDDKp = ROOT.TEfficiency.Wilson(N_bdt_BdDDKp, N_best_cand_BdDDKp, 0.68, False)
+    #     eps_best_cand_BdDDKp_err = 0.5*(up_best_cand_BdDDKp - down_best_cand_BdDDKp)
+    #     eps_best_cand_BdDDKp = ufloat(N_best_cand_BdDDKp/N_bdt_BdDDKp, eps_best_cand_BdDDKp_err)
 
-        up_best_cand_BsDDKp = ROOT.TEfficiency.Wilson(N_bdt_BsDDKp, N_best_cand_BsDDKp, 0.68, True)
-        down_best_cand_BsDDKp = ROOT.TEfficiency.Wilson(N_bdt_BsDDKp, N_best_cand_BsDDKp, 0.68, False)
-        eps_best_cand_BsDDKp_err = 0.5*(up_best_cand_BsDDKp - down_best_cand_BsDDKp)
-        eps_best_cand_BsDDKp = ufloat(N_best_cand_BsDDKp/N_bdt_BsDDKp, eps_best_cand_BsDDKp_err)
+    #     up_best_cand_BsDDKp = ROOT.TEfficiency.Wilson(N_bdt_BsDDKp, N_best_cand_BsDDKp, 0.68, True)
+    #     down_best_cand_BsDDKp = ROOT.TEfficiency.Wilson(N_bdt_BsDDKp, N_best_cand_BsDDKp, 0.68, False)
+    #     eps_best_cand_BsDDKp_err = 0.5*(up_best_cand_BsDDKp - down_best_cand_BsDDKp)
+    #     eps_best_cand_BsDDKp = ufloat(N_best_cand_BsDDKp/N_bdt_BsDDKp, eps_best_cand_BsDDKp_err)
 
-        up_best_cand_BuDDK0 = ROOT.TEfficiency.Wilson(N_bdt_BuDDK0, N_best_cand_BuDDK0, 0.68, True)
-        down_best_cand_BuDDK0 = ROOT.TEfficiency.Wilson(N_bdt_BuDDK0, N_best_cand_BuDDK0, 0.68, False)
-        eps_best_cand_BuDDK0_err = 0.5*(up_best_cand_BuDDK0 - down_best_cand_BuDDK0)
-        if(N_bdt_BuDDK0 == 0):
-            eps_best_cand_BuDDK0 = ufloat(0, eps_best_cand_BuDDK0_err)
-        else:
-            eps_best_cand_BuDDK0 = ufloat(N_best_cand_BuDDK0/N_bdt_BuDDK0, eps_best_cand_BuDDK0_err)
+    #     up_best_cand_BuDDK0 = ROOT.TEfficiency.Wilson(N_bdt_BuDDK0, N_best_cand_BuDDK0, 0.68, True)
+    #     down_best_cand_BuDDK0 = ROOT.TEfficiency.Wilson(N_bdt_BuDDK0, N_best_cand_BuDDK0, 0.68, False)
+    #     eps_best_cand_BuDDK0_err = 0.5*(up_best_cand_BuDDK0 - down_best_cand_BuDDK0)
+    #     if(N_bdt_BuDDK0 == 0):
+    #         eps_best_cand_BuDDK0 = ufloat(0, eps_best_cand_BuDDK0_err)
+    #     else:
+    #         eps_best_cand_BuDDK0 = ufloat(N_best_cand_BuDDK0/N_bdt_BuDDK0, eps_best_cand_BuDDK0_err)
 
-        up_best_cand_BuDD = ROOT.TEfficiency.Wilson(N_bdt_BuDD, N_best_cand_BuDD, 0.68, True)
-        down_best_cand_BuDD = ROOT.TEfficiency.Wilson(N_bdt_BuDD, N_best_cand_BuDD, 0.68, False)
-        eps_best_cand_BuDD_err = 0.5*(up_best_cand_BuDD - down_best_cand_BuDD)
-        eps_best_cand_BuDD = ufloat(N_best_cand_BuDD/N_bdt_BuDD, eps_best_cand_BuDD_err)
+    #     up_best_cand_BuDD = ROOT.TEfficiency.Wilson(N_bdt_BuDD, N_best_cand_BuDD, 0.68, True)
+    #     down_best_cand_BuDD = ROOT.TEfficiency.Wilson(N_bdt_BuDD, N_best_cand_BuDD, 0.68, False)
+    #     eps_best_cand_BuDD_err = 0.5*(up_best_cand_BuDD - down_best_cand_BuDD)
+    #     eps_best_cand_BuDD = ufloat(N_best_cand_BuDD/N_bdt_BuDD, eps_best_cand_BuDD_err)
 
-        best_cand_columns = ["Candidate efficiency"]
-        best_cand_rows = ["$B^+ \\to D D K^+$", "$B^0 \\to D D K^+$", "$B^0_s \\to D D K^+$", "$B^+ \\to D D K^0$", "$B^+ \\to D D$"]
+    #     best_cand_columns = ["Candidate efficiency"]
+    #     best_cand_rows = ["$B^+ \\to D D K^+$", "$B^0 \\to D D K^+$", "$B^0_s \\to D D K^+$", "$B^+ \\to D D K^0$", "$B^+ \\to D D$"]
 
-        best_cand_table = pd.DataFrame(index=best_cand_rows, columns=best_cand_columns)
-        best_cand_table.loc["$B^+ \\to D D K^+$", "Candidate efficiency"] = f"${eps_best_cand_BuDDKp.nominal_value*100:.2f} \\pm {eps_best_cand_BuDDKp.std_dev*100:.2f}$"
-        best_cand_table.loc["$B^0 \\to D D K^+$", "Candidate efficiency"] = f"${eps_best_cand_BdDDKp.nominal_value*100:.2f} \\pm {eps_best_cand_BdDDKp.std_dev*100:.2f}$"
-        best_cand_table.loc["$B^0_s \\to D D K^+$", "Candidate efficiency"] = f"${eps_best_cand_BsDDKp.nominal_value*100:.2f} \\pm {eps_best_cand_BsDDKp.std_dev*100:.2f}$"
-        best_cand_table.loc["$B^+ \\to D D K^0$", "Candidate efficiency"] = f"${eps_best_cand_BuDDK0.nominal_value*100:.2f} \\pm {eps_best_cand_BuDDK0.std_dev*100:.2f}$"
-        best_cand_table.loc["$B^+ \\to D D$", "Candidate efficiency"] = f"${eps_best_cand_BuDD.nominal_value*100:.2f} \\pm {eps_best_cand_BuDD.std_dev*100:.2f}$"
+    #     best_cand_table = pd.DataFrame(index=best_cand_rows, columns=best_cand_columns)
+    #     best_cand_table.loc["$B^+ \\to D D K^+$", "Candidate efficiency"] = f"${eps_best_cand_BuDDKp.nominal_value*100:.2f} \\pm {eps_best_cand_BuDDKp.std_dev*100:.2f}$"
+    #     best_cand_table.loc["$B^0 \\to D D K^+$", "Candidate efficiency"] = f"${eps_best_cand_BdDDKp.nominal_value*100:.2f} \\pm {eps_best_cand_BdDDKp.std_dev*100:.2f}$"
+    #     best_cand_table.loc["$B^0_s \\to D D K^+$", "Candidate efficiency"] = f"${eps_best_cand_BsDDKp.nominal_value*100:.2f} \\pm {eps_best_cand_BsDDKp.std_dev*100:.2f}$"
+    #     best_cand_table.loc["$B^+ \\to D D K^0$", "Candidate efficiency"] = f"${eps_best_cand_BuDDK0.nominal_value*100:.2f} \\pm {eps_best_cand_BuDDK0.std_dev*100:.2f}$"
+    #     best_cand_table.loc["$B^+ \\to D D$", "Candidate efficiency"] = f"${eps_best_cand_BuDD.nominal_value*100:.2f} \\pm {eps_best_cand_BuDD.std_dev*100:.2f}$"
 
-    if((species == 100) or (species == 1)):
-        with open(f'/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/best_cand_efficiency_table.tex', 'w') as fout_best_cand:
-            fout_best_cand.write(best_cand_table.to_latex())        
+    # if((species == 100) or (species == 1)):
+    #     with open(f'/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/best_cand_efficiency_table.tex', 'w') as fout_best_cand:
+    #         fout_best_cand.write(best_cand_table.to_latex())        
 
 
     # Overall efficiency
@@ -2325,28 +2363,36 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         overall_table.loc["Overall", "Efficiency (\\%)"] = f"${eps_overall_MC.nominal_value*100:.4f} \\pm {eps_overall_MC.std_dev*100:.4f}$"
 
     elif(species == 1):
-        up_overall_MC = ROOT.TEfficiency.Wilson(N_gen, N_best_cand_MC, 0.68, True)
-        down_overall_MC = ROOT.TEfficiency.Wilson(N_gen, N_best_cand_MC, 0.68, False)
-        eps_overall_MC_err = 0.5*(up_overall_MC - down_overall_MC)
-        eps_overall_MC = ufloat(N_best_cand_MC/N_gen, eps_overall_MC_err)
+        up_overall_MC_TM = ROOT.TEfficiency.Wilson(N_gen, N_bdt_tm_MC, 0.68, True)
+        down_overall_MC_TM = ROOT.TEfficiency.Wilson(N_gen, N_bdt_tm_MC, 0.68, False)
+        eps_overall_MC_TM_err = 0.5*(up_overall_MC_TM - down_overall_MC_TM)
+        eps_overall_MC_TM = ufloat(N_bdt_tm_MC/N_gen, eps_overall_MC_TM_err)
 
+        up_overall_MC = ROOT.TEfficiency.Wilson(N_gen, N_bdt_MC, 0.68, True)
+        down_overall_MC = ROOT.TEfficiency.Wilson(N_gen, N_bdt_MC, 0.68, False)
+        eps_overall_MC_err = 0.5*(up_overall_MC - down_overall_MC)
+        eps_overall_MC = ufloat(N_bdt_MC/N_gen, eps_overall_MC_err)
+
+        eps_overall_MC_TM *= eps_acc*eps_strip
         eps_overall_MC *= eps_acc*eps_strip
 
         overall_columns = ["Efficiency (\\%)"]
-        overall_rows  = ["Acceptance", "Stripping", "Reconstruction", "Trigger", "Rectangular cuts", "Pass mass fit", "Fit range", "Mass vetoes", "BDT", "Overall"]
+        overall_rows  = ["Acceptance", "Stripping", "Reconstruction (TM)", "Trigger (TM)", "Rectangular cuts (TM)", "Pass mass fit (TM)", "Fit range (TM)", "Mass vetoes (TM)", "BDT (TM)", "BDT (not TM)", "Overall (TM)", "Overall (not TM)"]
 
         overall_table = pd.DataFrame(index=overall_rows, columns=overall_columns)
         overall_table.loc["Acceptance", "Efficiency (\\%)"] = f"${eps_acc.nominal_value*100:.5f} \\pm {eps_acc.std_dev*100:.5f}$"
         overall_table.loc["Stripping", "Efficiency (\\%)"] = f"${eps_strip.nominal_value*100:.5f} \\pm {eps_strip.std_dev*100:.5f}$"
-        overall_table.loc["Reconstruction", "Efficiency (\\%)"] = f"${eps_reco.nominal_value*100:.3f} \\pm {eps_reco.std_dev*100:.3f}$"
-        overall_table.loc["Trigger", "Efficiency (\\%)"] = f"${eps_trigger.nominal_value*100:.2f} \\pm {eps_trigger.std_dev*100:.2f}$"
-        overall_table.loc["Rectangular cuts", "Efficiency (\\%)"] = f"${eps_rect_cuts_MC_all.nominal_value*100:.1f} \\pm {eps_rect_cuts_MC_all.std_dev*100:.1f}$"
-        overall_table.loc["Pass mass fit", "Efficiency (\\%)"] = f"${eps_pass_fit_MC.nominal_value*100:.2f} \\pm {eps_pass_fit_MC.std_dev*100:.2f}$"
-        overall_table.loc["Fit range", "Efficiency (\\%)"] = f"${eps_fit_region_MC.nominal_value*100:.2f} \\pm {eps_fit_region_MC.std_dev*100:.2f}$"
-        overall_table.loc["Mass vetoes", "Efficiency (\\%)"] = f"${eps_all_mass_vetoes_MC.nominal_value*100:.2f} \\pm {eps_all_mass_vetoes_MC.std_dev*100:.2f}$"
-        overall_table.loc["BDT", "Efficiency (\\%)"] = f"${eps_bdt_MC.nominal_value*100:.2f} \\pm {eps_bdt_MC.std_dev*100:.2f}$"
-        overall_table.loc["Overall", "Efficiency (\\%)"] = f"${eps_overall_MC.nominal_value*100:.6f} \\pm {eps_overall_MC.std_dev*100:.6f}$"
-   
+        overall_table.loc["Reconstruction (TM)", "Efficiency (\\%)"] = f"${eps_reco.nominal_value*100:.3f} \\pm {eps_reco.std_dev*100:.3f}$"
+        overall_table.loc["Trigger (TM)", "Efficiency (\\%)"] = f"${eps_trigger.nominal_value*100:.2f} \\pm {eps_trigger.std_dev*100:.2f}$"
+        overall_table.loc["Rectangular cuts (TM)", "Efficiency (\\%)"] = f"${eps_rect_cuts_MC_all.nominal_value*100:.1f} \\pm {eps_rect_cuts_MC_all.std_dev*100:.1f}$"
+        overall_table.loc["Pass mass fit (TM)", "Efficiency (\\%)"] = f"${eps_pass_fit_MC.nominal_value*100:.2f} \\pm {eps_pass_fit_MC.std_dev*100:.2f}$"
+        overall_table.loc["Fit range (TM)", "Efficiency (\\%)"] = f"${eps_fit_region_MC.nominal_value*100:.2f} \\pm {eps_fit_region_MC.std_dev*100:.2f}$"
+        overall_table.loc["Mass vetoes (TM)", "Efficiency (\\%)"] = f"${eps_all_mass_vetoes_MC.nominal_value*100:.2f} \\pm {eps_all_mass_vetoes_MC.std_dev*100:.2f}$"
+        overall_table.loc["BDT (TM)", "Efficiency (\\%)"] = f"${eps_bdt_tm_MC.nominal_value*100:.2f} \\pm {eps_bdt_tm_MC.std_dev*100:.2f}$"
+        overall_table.loc["Overall (TM)", "Efficiency (\\%)"] = f"${eps_overall_MC_TM.nominal_value*100:.6f} \\pm {eps_overall_MC_TM.std_dev*100:.6f}$"
+        overall_table.loc["BDT (not TM)", "Efficiency (\\%)"] = f"${eps_bdt_MC.nominal_value*100:.2f} \\pm {eps_bdt_MC.std_dev*100:.2f}$"
+        overall_table.loc["Overall (not TM)", "Efficiency (\\%)"] = f"${eps_overall_MC.nominal_value*100:.6f} \\pm {eps_overall_MC.std_dev*100:.6f}$"
+
     elif(species == 100):
         up_overall_BuDDKp = ROOT.TEfficiency.Wilson(N_gen[0], N_best_cand_BuDDKp, 0.68, True)
         down_overall_BuDDKp = ROOT.TEfficiency.Wilson(N_gen[0], N_best_cand_BuDDKp, 0.68, False)
