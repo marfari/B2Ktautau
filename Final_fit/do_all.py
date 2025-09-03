@@ -444,6 +444,7 @@ def plot(fit_type, channel_type, results_type, BF_sig, bdt, spec, h_data, fit_pa
     par_names = model.config.par_names
     table_data = []
     column_names = ["Parameter", "Value ± Error"]
+    a = 0
     for name, val, err in zip(par_names, fit_pars, fit_errors):
         if err is not None:
             if(val == 0):
@@ -455,6 +456,11 @@ def plot(fit_type, channel_type, results_type, BF_sig, bdt, spec, h_data, fit_pa
             table_data.append([name, f"{val:.{decimals}f} ± {err:.{decimals}f}"])
         else:
             table_data.append([name, f"{val:.1g}"])
+
+        if(a > 20):
+            table_data.append(["...", "..."])
+            break
+        a += 1
 
     # Get counts from fit
     def get_mc_counts(pars):
@@ -550,7 +556,7 @@ def plot(fit_type, channel_type, results_type, BF_sig, bdt, spec, h_data, fit_pa
         ax1.legend()
 
         ax2.axis("off")
-        ax2.table(cellText=table_data, colLabels=column_names, loc="center", cellLoc="left", colWidths=[1.0]*len(table_data), edges='closed')
+        ax2.table(cellText=table_data, colLabels=column_names, loc="center", cellLoc="left", colWidths=[0.8]*len(table_data), edges='closed')
 
     else:
         channel_nbins = model.config.channel_nbins

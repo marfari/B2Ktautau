@@ -5,21 +5,21 @@ void mass_vetoes_plots()
 {
     // Input files
     // 3pi3pi MC
-    TFile* f1 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_1/post_sel_tree_bdt1_0.6_bdt2_0.8.root");
+    TFile* f1 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_1/post_sel_tree_bdt_0.998.root");
     TTree* t1 = (TTree*)f1->Get("DecayTree");  
 
     cout << "3pi3pi MC" << endl;
     cout << t1->GetEntries() << endl;
 
     // RS data
-    TFile* f2 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_2/post_sel_tree_bdt1_0.6_bdt2_0.8.root");
+    TFile* f2 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_2/post_sel_tree_bdt_0.998.root");
     TTree* t2 = (TTree*)f2->Get("DecayTree");  
 
     cout << "RS data" << endl;
     cout << t2->GetEntries() << endl;
 
     // WS data
-    TFile* f3 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_3/post_sel_tree_bdt1_0.6_bdt2_0.8.root");
+    TFile* f3 = new TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_3/post_sel_tree_bdt_0.998.root");
     TTree* t3 = (TTree*)f3->Get("DecayTree");      
 
     cout << "WS data" << endl;
@@ -584,6 +584,7 @@ void draw_mass_plot(Int_t entry, TTree* t1, TTree* t2, TTree* t3, TString name, 
             nbins = 50;
         }
     }
+    nbins = 50;
 
     TH1D* h_mc = new TH1D(Form("h_%i_mc_%i_%i",Npar,entry,isWrong), Form("h_%i_mc_%i_%i",Npar,entry,isWrong), nbins, x_min, x_max);
     TH1D* h_rs_data = new TH1D(Form("h_%i_rs_data_%i_%i",Npar,entry,isWrong), Form("h_%i_rs_data_%i_%i",Npar,entry,isWrong), nbins, x_min, x_max);
@@ -656,10 +657,10 @@ void draw_mass_plot(Int_t entry, TTree* t1, TTree* t2, TTree* t3, TString name, 
         h_mc->GetYaxis()->SetRangeUser(0, 1.1*(h_mc->GetMaximum()));
     }
 
-    h_mc->Draw("HIST");
-    h1_mc->Draw("HIST same");
-    h_rs_data->Draw("HIST same");
-    h1_rs_data->Draw("HIST same");
+    h_mc->Draw("E HIST");
+    h1_mc->Draw("E HIST same");
+    h_rs_data->Draw("E HIST same");
+    h1_rs_data->Draw("E HIST same");
     // h_ws_data->Draw("HIST same");
 
     TLegend* leg = new TLegend(0.7, 0.7, 0.9, 0.9);

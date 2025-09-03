@@ -172,6 +172,6 @@ void create_post_selection_tree(Int_t species, Double_t BDT)
     }
 
     ROOT::RDataFrame df(*t1_2016);
-    df.Filter(all_selections.GetTitle()).Snapshot("DecayTree", Form("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_%i/post_sel_tree_bdt_%.1f.root",species,BDT));
+    df.Filter(all_selections.GetTitle()).Snapshot("DecayTree", Form("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_%i/post_sel_tree_bdt_%.4f.root",species,BDT));
     
 }

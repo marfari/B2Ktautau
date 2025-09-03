@@ -2081,8 +2081,8 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
             fout_mass_vetoes.write(mass_vetoes_table.to_latex())
 
     
-    # BDT efficiency (BDT > 0.998)
-    bdt_working_point = 0.998
+    # BDT efficiency 
+    bdt_working_point = 0.9986
     if(species == 1):
         f_mc_tm_post_sel = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_1/post_sel_tree_bdt_0.0.root")
         t_mc_tm_post_sel = f_mc_tm_post_sel.Get("DecayTree")

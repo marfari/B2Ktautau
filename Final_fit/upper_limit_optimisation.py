@@ -20,18 +20,21 @@ def main(argv):
     t_BDDKp.Add("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_110/post_sel_tree_bdt_0.0.root")
     t_BDDKp.Add("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_120/post_sel_tree_bdt_0.0.root")
 
-    bdt_cuts = np.round( np.linspace(0.99,1,100), 4)
+    bdt_cuts = np.round( np.linspace(0.99,1,200), 4)
     N = len(bdt_cuts)
     branching_fraction_values = np.zeros(N)
     branching_fraction_values_up = np.zeros(N)
     branching_fraction_values_down = np.zeros(N)
     eps_sig = np.zeros(N)
     eps_sig_err = np.zeros(N)
+    eps_sig_tm = np.zeros(N)
+    eps_sig_tm_err = np.zeros(N)
     eps_ws = np.zeros(N)
     eps_ws_err = np.zeros(N)
     eps_BDDKp = np.zeros(N)
     eps_BDDKp_err = np.zeros(N)
     n_sig_mc = t_sig.GetEntries()
+    n_sig_mc_tm = t_sig.GetEntries("(abs(Kp_TRUEID) == 321) && (abs(taup_pi1_TRUEID) == 211) && (abs(taup_pi2_TRUEID) == 211) && (abs(taup_pi3_TRUEID) == 211) && (abs(taum_pi1_TRUEID) == 211) && (abs(taum_pi2_TRUEID) == 211) && (abs(taum_pi3_TRUEID) == 211) && (abs(taup_TRUEID) == 15) && (abs(taum_TRUEID) == 15) && (abs(Bp_TRUEID) == 521)")
     n_ws = t_ws.GetEntries()
     n_BDDKp_mc = t_BDDKp.GetEntries()
 
@@ -67,6 +70,12 @@ def main(argv):
         eps_BDDKp[i] = (eps_BDDKp_num/n_BDDKp_mc)*100
         eps_BDDKp_err[i] = 0.5*(eps_BDDKp_up - eps_BDDKp_down)*100
 
+        eps_sig_tm_num = t_sig.GetEntries(f"(abs(Kp_TRUEID) == 321) && (abs(taup_pi1_TRUEID) == 211) && (abs(taup_pi2_TRUEID) == 211) && (abs(taup_pi3_TRUEID) == 211) && (abs(taum_pi1_TRUEID) == 211) && (abs(taum_pi2_TRUEID) == 211) && (abs(taum_pi3_TRUEID) == 211) && (abs(taup_TRUEID) == 15) && (abs(taum_TRUEID) == 15) && (abs(Bp_TRUEID) == 521) && (BDT > {bdt})")
+        eps_sig_tm_up = ROOT.TEfficiency.Wilson(n_sig_mc_tm, eps_sig_tm_num, 0.68, True)
+        eps_sig_tm_down = ROOT.TEfficiency.Wilson(n_sig_mc_tm, eps_sig_tm_num, 0.68, False)
+        eps_sig_tm[i] = (eps_sig_tm_num/n_sig_mc_tm)*100
+        eps_sig_tm_err[i] = 0.5*(eps_sig_tm_up - eps_sig_tm_down)*100
+
         A = np.load(f'/panfs/felician/B2Ktautau/workflow/bdt_dependent_inputs/BDT_{bdt}/A.npy')[0]
         A_err = np.load(f'/panfs/felician/B2Ktautau/workflow/bdt_dependent_inputs/BDT_{bdt}/A_err.npy')[0]
         C = np.load(f'/panfs/felician/B2Ktautau/workflow/bdt_dependent_inputs/BDT_{bdt}/C.npy')[0]
@@ -100,13 +109,14 @@ def main(argv):
         N_BDDKp[i] = (c*b).nominal_value
         N_BDDKp_err[i] = (c*b).std_dev
 
-        print(f"BDT = {bdt} | BF = {branching_fraction_values[i]} | eps_sig = {eps_sig[i]} | eps_comb = {eps_ws[i]} | eps_BDDKp = {eps_BDDKp[i]}")     
+        print(f"BDT = {bdt} | BF = {branching_fraction_values[i]} | eps_sig = {eps_sig[i]} | eps_sig_tm = {eps_sig_tm[i]} | eps_comb = {eps_ws[i]} | eps_BDDKp = {eps_BDDKp[i]}")     
     
     min_index = np.argmin(branching_fraction_values)
 
     print(f"The BDT cut, BDT > {bdt_cuts[min_index]}, minimise the 90% C.L. upper limit to be \n B(B -> K tau tau ) < {branching_fraction_values[min_index]} ")
     print(f"At the minimum: N_sig = {N_sig[min_index]} +/- {N_sig_err[min_index]} | N_comb = {N_comb[min_index]} +/- {N_comb_err[min_index]} | N_BDDKp = {N_BDDKp[min_index]} +/- {N_BDDKp_err[min_index]}")
     print(f"At the minimum: eps_sig = {eps_sig[min_index]} +/- {eps_sig_err[min_index]} | eps_ws = {eps_ws[min_index]} +/- {eps_ws_err[min_index]} | eps_BDDKp = {eps_BDDKp[min_index]} +/- {eps_BDDKp_err[min_index]}")
+    print(f"At the minimum: eps_sig_tm = {eps_sig_tm[min_index]} +/- {eps_sig_tm_err[min_index]}")
 
     up_err_comb_yield_syst = np.abs( branching_fraction_values - branching_fraction_values_up )
     down_err_comb_yield_syst = np.abs( branching_fraction_values - branching_fraction_values_down )
@@ -128,6 +138,8 @@ def main(argv):
     # Signal and background efficiencies
     plt.errorbar(bdt_cuts, eps_sig, yerr=eps_sig_err, fmt='.', linestyle='none', c="blue", label="Signal MC")
     plt.plot(bdt_cuts[min_index], eps_sig[min_index], marker="*", color="blue", markersize=15)  
+    plt.errorbar(bdt_cuts, eps_sig_tm, yerr=eps_sig_tm_err, fmt='.', linestyle='none', c="cyan", label="Signal MC (TM)")
+    plt.plot(bdt_cuts[min_index], eps_sig_tm[min_index], marker="*", color="cyan", markersize=15)  
     plt.errorbar(bdt_cuts, eps_ws, yerr=eps_ws_err, fmt='.', linestyle='none', c="red", label="WS data")
     plt.plot(bdt_cuts[min_index], eps_ws[min_index], marker="*", color="red", markersize=15)  
     plt.errorbar(bdt_cuts, eps_BDDKp, yerr=eps_BDDKp_err, fmt='.', linestyle='none', c="green", label="$BDDK^{+}$ MC")
@@ -160,6 +172,7 @@ def main(argv):
     plt.legend()
     plt.tight_layout()
     plt.grid()
+    plt.yscale('log')
     plt.savefig(f"/panfs/felician/B2Ktautau/workflow/upper_limit_optimisation/{fit_type}_{channel_type}/BF_sig_{BF_sig}/sig_vs_bkg_yield.pdf")
     plt.clf()
 
