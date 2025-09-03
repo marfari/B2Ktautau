@@ -16,33 +16,36 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 import math
 
 # Global flags
-add_statistical_error = False
+add_statistical_error = True
 toy_based_limit = False
+comb_shape_sys = 0
+validate_fit = True
+n_toys = 100
 
-def save_dummy(fit_type, channel_type, results_type, BF_sig, bdt, comb_yield_syst):
+def save_dummy(fit_type, channel_type, BF_sig, bdt, comb_yield_syst):
     print("Fit failed. Saving dummy results.")
-    if(results_type == "Fit_validation"):
+    if(validate_fit):
         f, ax = plt.subplots()
-        f.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/{results_type}/fit_plot_seed_0.pdf')  
+        f.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_plot_seed_0.pdf')  
     else:
         if(comb_yield_syst == 0):
             f, ax = plt.subplots()
-            f.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/{results_type}/fit_plot.pdf')  
+            f.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_plot.pdf')  
 
             f3, ax3 = plt.subplots()
-            f3.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/{results_type}/cls_limit.pdf')  
+            f3.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit.pdf')  
         elif(comb_yield_syst == 1):
             f1, ax1 = plt.subplots()
-            f1.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/{results_type}/fit_plot_up.pdf')  
+            f1.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_plot_up.pdf')  
 
             f4, ax4 = plt.subplots()
-            f4.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/{results_type}/cls_limit_up.pdf')  
+            f4.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit_up.pdf')  
         elif(comb_yield_syst == -1):
             f2, ax2 = plt.subplots()
-            f2.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/{results_type}/fit_plot_down.pdf')  
+            f2.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_plot_down.pdf')  
 
             f5, ax5 = plt.subplots()
-            f5.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/{results_type}/cls_limit_down.pdf')  
+            f5.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit_down.pdf')  
 
 
 def retrieve_histograms(fit_type, f, f1, ch):
@@ -105,7 +108,7 @@ def retrieve_normalisations(fit_type, bdt):
     return norm_values, norm_errors
 
 
-def generate_toy_data(fit_type, channel_type, BF_sig, seed, histograms, histograms_errors, norm_values, norm_errors, comb_yield_syst):
+def generate_toy_data(fit_type, channel_type, BF_sig, seed, histograms, histograms_errors, norm_values, norm_errors):
     if((fit_type == "RSData") or (fit_type == "RSDataSidebands")):
         print("Wrong fit type for generating toy data")
         quit()
@@ -148,6 +151,10 @@ def generate_toy_data(fit_type, channel_type, BF_sig, seed, histograms, histogra
         h_downward = histograms[k][4]
         nbins = h_sig.GetNbinsX()
 
+        h_sig_err = histograms_errors[k][0]
+        h_comb_err = histograms_errors[k][1]
+        h_BDDKp_err = histograms_errors[k][2]
+
         a = max(0, np.random.normal(A[ch], A_err[ch]))
         c = max(0, np.random.normal(C[ch], C_err[ch]))
 
@@ -158,19 +165,36 @@ def generate_toy_data(fit_type, channel_type, BF_sig, seed, histograms, histogra
         h_data_sig = ROOT.TH1D(f"h_data_sig_{seed}_{ch}", f"h_data_sig_{seed}_{ch}", nbins, 4000, 9000)
         h_data_comb = ROOT.TH1D(f"h_data_comb_{seed}_{ch}", f"h_data_comb_{seed}_{ch}", nbins, 4000, 9000)
         h_data_BDDKp = ROOT.TH1D(f"h_data_BDDKp_{seed}_{ch}", f"h_data_BDDKp_{seed}_{ch}", nbins, 4000, 9000)
+        h_comb_varied = ROOT.TH1D(f"h_comb_varied_{seed}_{ch}", f"h_comb_varied_{seed}_{ch}", nbins, 4000, 9000)
+        
+        # Effect of HistoSys
+        # theta = np.random.normal(0, 1)
+        # for i in range(nbins):
+        #     positive_variation = h_comb.GetBinContent(i+1) + theta*( h_upward.GetBinContent(i+1) - h_comb.GetBinContent(i+1) )
+        #     negative_variation = h_comb.GetBinContent(i+1) + theta*( h_comb.GetBinContent(i+1) - h_downward.GetBinContent(i+1) )
+        #     if(positive_variation < 0):
+        #         positive_variation = 0
+        #     if(negative_variation < 0):
+        #         negative_variation = 0
+
+        #     if(theta >= 0):
+        #         h_comb_varied.SetBinContent(i+1, positive_variation)
+        #     else:
+        #         h_comb_varied.SetBinContent(i+1, negative_variation)
+        # h_comb_varied.Sumw2()
 
         if(add_statistical_error):
-            toy_counts_comb = np.array([np.random.poisson( max(0, np.random.normal(h_comb.GetBinContent(i+1), h_comb.GetBinError(i+1)))*(N_comb[ch]/h_comb.Integral())  )  for i in range(nbins)])
+            toy_counts_comb = np.array([np.random.poisson( max(0, np.random.normal( h_comb.GetBinContent(i+1), h_comb.GetBinError(i+1) ) )*(N_comb[ch]/h_comb.Integral())  )  for i in range(nbins)])
             for i, count in enumerate(toy_counts_comb):
                 h_data_comb.SetBinContent(i+1, count)
             h_data_comb.Sumw2()
 
-            toy_counts_sig = np.array([np.random.poisson( max(0, np.random.normal(h_sig.GetBinContent(i+1), h_sig.GetBinError(i+1)))*(N_sig/h_sig.Integral()) )  for i in range(nbins)])
+            toy_counts_sig = np.array([np.random.poisson( max(0, np.random.normal( h_sig.GetBinContent(i+1), h_sig.GetBinError(i+1) ) )*(N_sig/h_sig.Integral()) )  for i in range(nbins)])
             for i, count in enumerate(toy_counts_sig):
                 h_data_sig.SetBinContent(i+1, count)
             h_data_sig.Sumw2()
 
-            toy_counts_BDDKp = np.array([np.random.poisson( max(0, np.random.normal(h_BDDKp.GetBinContent(i+1), h_BDDKp.GetBinError(i+1)))*(N_BDDKp/h_BDDKp.Integral()) ) for i in range(nbins)])
+            toy_counts_BDDKp = np.array([np.random.poisson( max(0, np.random.normal( h_BDDKp.GetBinContent(i+1), h_BDDKp.GetBinError(i+1) ) )*(N_BDDKp/h_BDDKp.Integral()) ) for i in range(nbins)])
             for i, count in enumerate(toy_counts_BDDKp):
                 h_data_BDDKp.SetBinContent(i+1, count)
             h_data_BDDKp.Sumw2()
@@ -362,7 +386,8 @@ def build_model(fit_type, channel_type, BF_sig, h_data, histograms, histograms_e
             comb_modifiers.append({"name": f"gamma_comb_{ch}", "data": data_comb_err, "type": "shapesys"})
             BDDKp_modifiers.append({"name": f"gamma_BDDKp_{ch}", "data": data_BDDKp_err, "type": "shapesys"})
 
-        comb_modifiers.append({"name": f"beta_{ch}", "data": {"hi_data": data_upward, "lo_data": data_downward}, "type": "histosys"})
+        if(comb_shape_sys == 0):
+            comb_modifiers.append({"name": f"beta_{ch}", "data": {"hi_data": data_upward, "lo_data": data_downward}, "type": "histosys"})
 
         samples = [{"name": "Signal", "data": data_sig, "modifiers": sig_modifiers}]
         samples.append({"name": "Combinatorial", "data": data_comb, "modifiers": comb_modifiers})
@@ -415,7 +440,7 @@ def build_model(fit_type, channel_type, BF_sig, h_data, histograms, histograms_e
     return spec
 
 
-def plot(fit_type, channel_type, results_type, BF_sig, bdt, spec, h_data, fit_pars, fit_errors, i_min, i_max, comb_yield_syst, log_scale=True, seed=-1):
+def plot(fit_type, channel_type, BF_sig, bdt, spec, h_data, fit_pars, fit_errors, i_min, i_max, comb_yield_syst=0, log_scale=True, seed=-1):
     workspace = pyhf.Workspace(spec)
     model = workspace.model()
 
@@ -544,7 +569,7 @@ def plot(fit_type, channel_type, results_type, BF_sig, bdt, spec, h_data, fit_pa
         ax1.step(edges, data_comb, where='post', color='red', label='Combinatorial')
         ax1.step(edges, data_BDDKp, where='post', color='green', label='$B \\to D D K^+$')
         ax1.errorbar(mass, the_data, the_data_err, c="k", marker='.', linestyle='', zorder=99, label="Toy data")
-        if(results_type == "Fit_validation"):
+        if(validate_fit):
             ax1.set_title(f'BDT = {bdt} | seed = {seed}')
         else:
             ax1.set_title(f'BDT = {bdt}')
@@ -740,7 +765,7 @@ def plot(fit_type, channel_type, results_type, BF_sig, bdt, spec, h_data, fit_pa
             ax.step(edges[i], data_comb[i], where='post', color='red', label='Combinatorial')
             ax.step(edges[i], data_BDDKp[i], where='post', color='green', label='$B \\to D D K^+$')
             ax.errorbar(mass[i], the_data[i], the_data_err[i], c="k", marker='.', linestyle='', zorder=99, label="Toy data")
-            if(results_type == "Fit_validation"):
+            if(validate_fit):
                 ax.set_title(f'Channel {i+1} | BDT = {bdt:.4g} | seed = {seed}')
             else:
                 ax.set_title(f'Channel {i+1} | BDT = {bdt:.4g}')
@@ -756,19 +781,19 @@ def plot(fit_type, channel_type, results_type, BF_sig, bdt, spec, h_data, fit_pa
         ax_table.table(cellText=table_data, colLabels=["Parameter", "Value ± Error"], loc="center", cellLoc="left", colWidths=[0.8]*len(table_data))
 
     plt.tight_layout()
-    if(results_type == "Fit_validation"):
-        fig.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/{results_type}/fit_plot_seed_{seed}.pdf')
+    if(validate_fit):
+        fig.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_plot_seed_{seed}.pdf')
     else:
         if(comb_yield_syst == 0):
-            fig.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/{results_type}/fit_plot.pdf')
+            fig.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_plot.pdf')
         elif(comb_yield_syst == 1):
-            fig.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/{results_type}/fit_plot_up.pdf')
+            fig.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_plot_up.pdf')
         elif(comb_yield_syst == -1):
-            fig.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/{results_type}/fit_plot_down.pdf')
+            fig.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_plot_down.pdf')
     plt.clf()
 
 
-def run_cls_limit(fit_type, channel_type, results_type, BF_sig, bdt, fit_poi, fit_poi_error, data, model, comb_yield_syst):
+def run_cls_limit(fit_type, channel_type, BF_sig, bdt, fit_poi, fit_poi_error, data, model, comb_yield_syst):
     if(toy_based_limit): # low stats
         poi_values = np.linspace(0, np.abs(fit_poi)+4*fit_poi_error, 10)
         obs_limit, exp_limits, (scan, results) = pyhf.infer.intervals.upper_limits.upper_limit(data, model, poi_values, level=0.1, return_results=True, test_stat="q", calctype="toybased", ntoys=100)
@@ -791,17 +816,17 @@ def run_cls_limit(fit_type, channel_type, results_type, BF_sig, bdt, fit_poi, fi
     textstr1 = f"Upper limit (exp): = {exp_limits[2]:.6f}"
     plt.text(0.6, 0.6, textstr1, fontsize=15, transform=ax.transAxes)
     if(comb_yield_syst == 0):
-        fig.savefig(f"/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/{results_type}/cls_limit.pdf")
+        fig.savefig(f"/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit.pdf")
     elif(comb_yield_syst == 1):
-        fig.savefig(f"/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/{results_type}/cls_limit_up.pdf")
+        fig.savefig(f"/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit_up.pdf")
     elif(comb_yield_syst == -1):
-        fig.savefig(f"/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/{results_type}/cls_limit_down.pdf")
+        fig.savefig(f"/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit_down.pdf")
     plt.clf()
 
     return exp_limits[2], obs_limit
 
 
-def do_fit(fit_type, channel_type, results_type, BF_sig, bdt, i_min, i_max, spec, h_data, save_plot, comb_yield_syst, seed=-1):
+def do_fit(fit_type, channel_type, BF_sig, bdt, i_min, i_max, spec, h_data, save_plot, comb_yield_syst=0, seed=-1):
     workspace = pyhf.Workspace(spec)
     model = workspace.model()
     data = workspace.data(model)
@@ -816,25 +841,243 @@ def do_fit(fit_type, channel_type, results_type, BF_sig, bdt, i_min, i_max, spec
 
     if(save_plot):
         print(res_obj)
-        plot(fit_type, channel_type, results_type, BF_sig, bdt, spec, h_data, fit_pars, fit_errors, i_min, i_max, comb_yield_syst, False, seed)
+        plot(fit_type, channel_type, BF_sig, bdt, spec, h_data, fit_pars, fit_errors, i_min, i_max, comb_yield_syst, False, seed)
 
-    if(results_type == "Fit_validation"):
+    if(validate_fit):
         return fit_pars, fit_errors
     else:
         sig_index = model.config.par_names.index("BF_sig")
         fit_poi = fit_pars[sig_index]
         fit_poi_error = fit_errors[sig_index]
 
-        exp_limit, obs_limit = run_cls_limit(fit_type, channel_type, results_type, BF_sig, bdt, fit_poi, fit_poi_error, data, model, comb_yield_syst)
+        exp_limit, obs_limit = run_cls_limit(fit_type, channel_type, BF_sig, bdt, fit_poi, fit_poi_error, data, model, comb_yield_syst)
         return exp_limit, obs_limit
+
+
+def toy_studies(fit_type, channel_type, BF_sig, bdt, spec, N_fail, toy_fit_values, toy_fit_errors, n_toys, nbins=30):
+    workspace = pyhf.Workspace(spec)
+    model = workspace.model()
+    expected_values =  model.config.suggested_init()
+    toy_labels = model.config.par_names
+
+    sig_index = model.config.par_names.index("BF_sig")
+    if(channel_type == "AllEvents"):
+        comb_index = model.config.par_names.index("N_comb_0")
+
+        N_comb = expected_values[comb_index]
+        N_comb = [N_comb]
+    else:
+        comb_index_1 = model.config.par_names.index("N_comb_1")
+        N_comb_1 = expected_values[comb_index_1]
+
+        comb_index_2 = model.config.par_names.index("N_comb_2")
+        N_comb_2 = expected_values[comb_index_2] 
+
+        comb_index_3 = model.config.par_names.index("N_comb_3")
+        N_comb_3 = expected_values[comb_index_3]
+        
+        N_comb = [N_comb_1, N_comb_2, N_comb_3]
+    
+    N = len(toy_fit_values)
+    BF_toys = np.zeros(N)
+    BF_toys_err = np.zeros(N)
+    Nbkg_toys = np.zeros(N)
+    Nbkg_toys_err = np.zeros(N)
+    Nbkg_toys_1 = np.zeros(N)
+    Nbkg_toys_2 = np.zeros(N)
+    Nbkg_toys_3 = np.zeros(N)
+    Nbkg_toys_err_1 = np.zeros(N)
+    Nbkg_toys_err_2 = np.zeros(N)
+    Nbkg_toys_err_3 = np.zeros(N)
+
+    for i in range(N):
+        BF_toys[i] = toy_fit_values[i][sig_index]
+        BF_toys_err[i] = toy_fit_errors[i][sig_index]
+        if(channel_type == "AllEvents"):
+            Nbkg_toys[i] = toy_fit_values[i][comb_index]
+            Nbkg_toys_err[i] = toy_fit_errors[i][comb_index]
+        else:
+            Nbkg_toys_1[i] = toy_fit_values[i][comb_index_1]
+            Nbkg_toys_2[i] = toy_fit_values[i][comb_index_2]
+            Nbkg_toys_3[i] = toy_fit_values[i][comb_index_3]
+
+            Nbkg_toys_err_1[i] = toy_fit_errors[i][comb_index_1]
+            Nbkg_toys_err_2[i] = toy_fit_errors[i][comb_index_2]
+            Nbkg_toys_err_3[i] = toy_fit_errors[i][comb_index_3]
+
+    if(channel_type == "AllEvents"):
+        Nbkg_toys = [Nbkg_toys]
+        Nbkg_toys_err = [Nbkg_toys_err]
+    else:
+        Nbkg_toys = [Nbkg_toys_1, Nbkg_toys_2, Nbkg_toys_3]
+        Nbkg_toys_err = [Nbkg_toys_err_1, Nbkg_toys_err_2, Nbkg_toys_err_3]
+
+    np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_poi_mean.npy', np.mean(BF_toys))
+    np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_poi_mean_error.npy', np.sqrt(np.sum(BF_toys_err**2)) / len(BF_toys))
+
+    for i in range(len(expected_values)):
+        param_values = [toy_fit_values[j][i] for j in range(N)]
+        param_errors = [toy_fit_errors[j][i] for j in range(N)]
+
+        if(0 in param_errors):
+            param_pulls = [param_values[j] - expected_values[i] for j in range(N)]
+        else:
+            param_pulls = [(param_values[j] - expected_values[i])/param_errors[j] for j in range(N)]
+
+        fig1, ax1 = plt.subplots()
+        (mu, sigma) = norm.fit(param_pulls)
+        nn, bb, ptches = ax1.hist(param_pulls, bins=nbins)
+        x = (bb[:-1] + bb[1:]) / 2
+        ax1.errorbar(x, nn, yerr=np.sqrt(nn), ecolor='black', fmt='k.')
+        y = sum(nn)*(bb[1] - bb[0])*norm.pdf( x, mu, sigma)
+        ax1.plot(x, y, 'r-', linewidth=2)
+        if(0 in param_errors):
+            ax1.set_xlabel(f"Bias of {toy_labels[i]}")
+        else:
+            ax1.set_xlabel(f"Pull of {toy_labels[i]}")
+        ax1.set_ylabel(f"Entries / {nbins}")
+        ax1.set_title(f"Fit to all events ({N_fail}/{n_toys} toy fits fail) \n BDT = {bdt}")
+        ax1.axvline(0, color='black', linestyle='--', linewidth=2)
+        ax1.text(0.05, 0.95, "From fit \n $\mu$ = {:.4f} $\pm$ {:.4f} \n $\sigma$ = {:.4f} $\pm$ {:.4f}".format( mu, sigma/np.sqrt(N), sigma, sigma/np.sqrt(2*N)),
+            transform=ax1.transAxes,
+            fontsize=12,
+            verticalalignment='top',
+            horizontalalignment='left',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
+        fig1.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/pulls/{toy_labels[i]}.pdf')
+        plt.clf()
+        
+    n_vars = len(Nbkg_toys)+1
+
+    fig, ax = plt.subplots(n_vars, 3, figsize=(15, 5*n_vars))
+
+    # BF pull
+    if(fit_type == "ToyDataSidebands"):
+        pull = (BF_toys - 0)/BF_toys_err
+    else:
+        pull = (BF_toys - BF_sig)/BF_toys_err
+    (mu_pull, sigma_pull) = norm.fit(pull)
+    n, bins, patches = ax[0,0].hist(pull, bins=nbins)
+    xcenters = (bins[:-1] + bins[1:]) / 2
+    ax[0,0].errorbar(xcenters, n, yerr=np.sqrt(n), ecolor='black', fmt='k.')
+    y_pull = sum(n)*(bins[1] - bins[0])*norm.pdf(xcenters, mu_pull, sigma_pull)
+    ax[0,0].plot(xcenters, y_pull, 'r-', linewidth=2)
+    if(fit_type == "ToyDataSidebands"):
+        ax[0,0].set_xlabel("Pull: ($BF_{sig}$ - 0)/error")
+    else:
+        ax[0,0].set_xlabel("Pull: ($BF_{sig} - BF_{sig}^{expected}$)/error")
+    ax[0,0].set_ylabel(f"Entries / {nbins} bins")
+    chi2 = np.sum( ((n - y_pull)**2) / y_pull) / (nbins - 2)
+    ax[0,0].axvline(0, color='black', linestyle='--', linewidth=2)
+    ax[0,0].text(0.05, 0.95, "From fit \n $\mu$ = {:.4f} $\pm$ {:.4f} \n $\sigma$ = {:.4f} $\pm$ {:.4f}".format( mu_pull, sigma_pull/np.sqrt(N), sigma_pull, sigma_pull/np.sqrt(2*N)),
+            transform=ax[0,0].transAxes,
+            fontsize=12,
+            verticalalignment='top',
+            horizontalalignment='left',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
+    ax[0,0].set_title(f"Branching fraction pull: $\chi^2$/ndf = {chi2:.3g}")
+
+    # BF
+    ax[0,1].hist(BF_toys, bins=nbins)
+    ax[0,1].set_xlabel("$BF_{sig}$")
+    ax[0,1].set_ylabel(f"Entries / {nbins} bins")
+    ax[0,1].set_title("Branching fraction")
+    if(fit_type == "ToyDataSidebands"):
+        ax[0,1].axvline(0, color='black', linestyle='--', linewidth=2)
+    else:
+        ax[0,1].axvline(BF_sig, color='black', linestyle='--', linewidth=2)
+    ax[0,1].text(0.05, 0.95, "From histogram \n $\mu$ = {:.1e} \n $\sigma$ = {:.1e}".format( np.mean(BF_toys), np.std(BF_toys) ),
+            transform=ax[0,1].transAxes,
+            fontsize=12,
+            verticalalignment='top',
+            horizontalalignment='left',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
+
+    # BF error
+    ax[0,2].hist(BF_toys_err, bins=nbins)
+    ax[0,2].set_xlabel("$BF_{sig}$ error")
+    ax[0,2].set_ylabel(f"Entries / {nbins} bins")
+    ax[0,2].set_title("Branching fraction error")
+    ax[0,2].text(0.05, 0.95, "From histogram \n $\mu$ = {:.1e} \n $\sigma$ = {:.1e}".format( np.mean(BF_toys_err), np.std(BF_toys_err) ),
+            transform=ax[0,2].transAxes,
+            fontsize=12,
+            verticalalignment='top',
+            horizontalalignment='left',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
+
+    for ch in range(n_vars-1):
+        if(channel_type == "AllEvents"):
+            channel_number = ch
+        else:
+            channel_number = ch+1
+
+        # N_comb pull
+        if(0 in Nbkg_toys_err[ch]):
+            pull_2 = Nbkg_toys[ch] - N_comb[ch]
+        else:
+            pull_2 = (Nbkg_toys[ch] - N_comb[ch])/Nbkg_toys_err[ch]
+        (mu_pull_2, sigma_pull_2) = norm.fit(pull_2)
+        n_2, bins_2, patches_2 = ax[ch+1,0].hist( pull_2, bins=nbins)
+        xcenters_2 = (bins_2[:-1] + bins_2[1:]) / 2
+        ax[ch+1,0].errorbar(xcenters_2, n_2, yerr=np.sqrt(n_2), ecolor='black', fmt='k.')
+        y_pull_2 = sum(n_2)*(bins_2[1] - bins_2[0])*norm.pdf( xcenters_2, mu_pull_2, sigma_pull_2)
+        ax[ch+1,0].plot(xcenters_2, y_pull_2, 'r-', linewidth=2)
+        chi2_2 = np.sum( ((n_2 - y_pull_2)**2) / y_pull_2) / (nbins - 2)
+        if(0 in Nbkg_toys_err[ch]):
+            ax[ch+1,0].set_xlabel("Bias: $N_{bkg} - N_{bkg}^{expected}$")
+            ax[ch+1,0].set_title(f"Background yield bias {channel_number}: $\chi^2$/ndf = {chi2_2:.3g}")
+        else:
+            ax[ch+1,0].set_xlabel("Pull: ($N_{bkg} - N_{bkg}^{expected}$)/error")
+            ax[ch+1,0].set_title(f"Background yield pull {channel_number}: $\chi^2$/ndf = {chi2_2:.3g}")
+        ax[ch+1,0].set_ylabel(f"Entries / {nbins} bins")
+        ax[ch+1,0].axvline(0, color='black', linestyle='--', linewidth=2)
+        ax[ch+1,0].text(0.05, 0.95, "From fit \n $\mu$ = {:.4f} $\pm$ {:.4f} \n $\sigma$ = {:.4f} $\pm$ {:.4f}".format( mu_pull_2, sigma_pull_2/np.sqrt(N), sigma_pull_2, sigma_pull_2/np.sqrt(2*N)),
+                transform=ax[ch+1,0].transAxes,
+                fontsize=12,
+                verticalalignment='top',
+                horizontalalignment='left',
+                bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
+
+        # N_comb
+        ax[ch+1,1].hist(Nbkg_toys[ch], bins=nbins)
+        ax[ch+1,1].set_xlabel("$N_{bkg}$")
+        ax[ch+1,1].set_ylabel(f"Entries / {nbins} bins")
+        ax[ch+1,1].set_title(f"Background yield {channel_number}")
+        ax[ch+1,1].axvline(N_comb[ch], color='black', linestyle='--', linewidth=2)
+        ax[ch+1,1].text(0.05, 0.95, "From histogram \n $\mu$ = {:.1e} \n $\sigma$ = {:.1e}".format( np.mean(Nbkg_toys[ch]), np.std(Nbkg_toys[ch]) ),
+                transform=ax[ch+1,1].transAxes,
+                fontsize=12,
+                verticalalignment='top',
+                horizontalalignment='left',
+                bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
+
+        # N_comb error
+        ax[ch+1,2].hist(Nbkg_toys_err[ch], bins=nbins)
+        ax[ch+1,2].set_xlabel("$N_{bkg}$ error")
+        ax[ch+1,2].set_ylabel(f"Entries / {nbins} bins")
+        ax[ch+1,2].set_title(f"Background yield error {channel_number}")
+        ax[ch+1,2].text(0.05, 0.95, "From histogram \n $\mu$ = {:.1e} \n $\sigma$ = {:.1e}".format( np.mean(Nbkg_toys_err[ch]), np.std(Nbkg_toys_err[ch]) ),
+                transform=ax[ch+1,2].transAxes,
+                fontsize=12,
+                verticalalignment='top',
+                horizontalalignment='left',
+                bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))        
+
+    if(channel_type == "AllEvents"):
+        fig.suptitle(f"Fit to all events ({N_fail}/{n_toys} toy fits fail) \n BDT = {bdt}", fontsize=24)
+    else:
+        fig.suptitle(f"Fit in error categories ({N_fail}/{n_toys} toy fits fail) \n BDT = {bdt}", fontsize=24)
+ 
+    plt.tight_layout()
+    fig.savefig(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/fit_validation_plot.pdf')
+    plt.clf()
 
 
 def main(argv):
     fit_type = argv[1]
     channel_type = argv[2]
-    results_type = argv[3]
-    BF_sig = argv[4]
-    bdt = argv[5]
+    BF_sig = argv[3]
+    bdt = argv[4]
 
     BF_sig = float(BF_sig)
     bdt = float(bdt)
@@ -846,15 +1089,6 @@ def main(argv):
     if((channel_type != "AllEvents") and (channel_type != "ErrorCategories")):
         print("Wrong channel type. Try: 'AllEvents' or 'ErrorCategories' ")
         quit()
-
-    if((results_type != "Fit_validation") and (results_type != "CLs_limit")):
-        print("Wrong results type. Try: 'Fit_validation' or 'CLs_limit' ")
-        quit()
-
-    validate_fit = False
-    if(results_type == "Fit_validation"):
-        validate_fit = True
-        n_toys = 1
 
     # Fit templates + fit templates errors
     if((fit_type == "ToyData") or (fit_type == "RSData")):
@@ -903,19 +1137,17 @@ def main(argv):
                 else:
                     save_plot = False
                 
-                # try:
-                fit_pars, fit_errors = do_fit(fit_type, channel_type, results_type, BF_sig, bdt, i_min, i_max, spec, h_data, save_plot, 0, seed)
+                try:
+                    fit_pars, fit_errors = do_fit(fit_type, channel_type, BF_sig, bdt, i_min, i_max, spec, h_data, save_plot, 0, seed)
 
-            #     toy_fit_values.append(fit_pars)
-            #     toy_fit_errors.append(fit_errors)
-            #     # except:
-            #     #     N_fail += 1
-            #     #     continue
+                    toy_fit_values.append(fit_pars)
+                    toy_fit_errors.append(fit_errors)
+                except:
+                    N_fail += 1
+                    continue
 
-            # workspace = pyhf.Workspace(spec)
-            # model = workspace.model()
-            # toy_studies(fit_name, fit_type, BF_sig, bdt, model, N_fail, toy_fit_values, toy_fit_errors)
-            # print(f"{N_fail}/{n_toys} toys fail")
+            toy_studies(fit_type, channel_type, BF_sig, bdt, spec, N_fail, toy_fit_values, toy_fit_errors, n_toys)
+            print(f"{N_fail}/{n_toys} toys fail")
 
         else:
             h_data_nominal = generate_cls_data(fit_type, channel_type, BF_sig, histograms, norm_values, norm_errors, 0)
@@ -928,40 +1160,38 @@ def main(argv):
 
             try:
                 print("CLs calculation: nominal")
-                exp_limit_nominal, obs_limit_nominal = do_fit(fit_type, channel_type, results_type, BF_sig, bdt, i_min, i_max, spec_nominal, h_data_nominal, True, 0)
+                exp_limit_nominal, obs_limit_nominal = do_fit(fit_type, channel_type, BF_sig, bdt, i_min, i_max, spec_nominal, h_data_nominal, True, 0)
             except:
-                save_dummy(fit_type, channel_type, results_type, BF_sig, bdt, 0)
+                save_dummy(fit_type, channel_type, BF_sig, bdt, 0)
                 exp_limit_nominal = np.inf
                 obs_limit_nominal = np.inf
-            np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/{results_type}/cls_limit.npy', exp_limit_nominal)
-            np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/{results_type}/cls_obs_limit.npy', obs_limit_nominal)
+            np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit.npy', exp_limit_nominal)
+            np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_obs_limit.npy', obs_limit_nominal)
 
             try:
                 print("CLs calculation: nominal + error")
-                exp_limit_up, obs_limit_up = do_fit(fit_type, channel_type, results_type, BF_sig, bdt, i_min, i_max, spec_up, h_data_up, True, 1)
+                exp_limit_up, obs_limit_up = do_fit(fit_type, channel_type, BF_sig, bdt, i_min, i_max, spec_up, h_data_up, True, 1)
             except:
-                save_dummy(fit_type, channel_type, results_type, BF_sig, bdt, 1)
+                save_dummy(fit_type, channel_type, BF_sig, bdt, 1)
                 exp_limit_up = np.inf
                 obs_limit_up = np.inf
-            np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/{results_type}/cls_limit_up.npy', exp_limit_up)
-            np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/{results_type}/cls_obs_limit_up.npy', obs_limit_up)
+            np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit_up.npy', exp_limit_up)
+            np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_obs_limit_up.npy', obs_limit_up)
 
             try:
                 print("CLs calculation: nominal - error")
-                exp_limit_down, obs_limit_down = do_fit(fit_type, channel_type, results_type, BF_sig, bdt, i_min, i_max, spec_down, h_data_down, True, -1)
+                exp_limit_down, obs_limit_down = do_fit(fit_type, channel_type, BF_sig, bdt, i_min, i_max, spec_down, h_data_down, True, -1)
             except:
-                save_dummy(fit_type, channel_type, results_type, BF_sig, bdt, -1)
+                save_dummy(fit_type, channel_type, BF_sig, bdt, -1)
                 exp_limit_down = np.inf
                 obs_limit_down = np.inf
-            np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/{results_type}/cls_limit_down.npy', exp_limit_down)
-            np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/{results_type}/cls_obs_limit_down.npy', obs_limit_down)
+            np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_limit_down.npy', exp_limit_down)
+            np.save(f'/panfs/felician/B2Ktautau/workflow/pyhf_fit/{fit_type}_{channel_type}/BF_sig_{BF_sig:.5g}/BDT_{bdt}/cls_obs_limit_down.npy', obs_limit_down)
         
     elif((fit_type == "RSDataSidebands") or (fit_type == "RSData")):
         if((fit_type == "RSData") and (bdt != 0)):
             print("Cannot unblind RS data")
             quit()
-
-
 
 
 if __name__ == "__main__":
