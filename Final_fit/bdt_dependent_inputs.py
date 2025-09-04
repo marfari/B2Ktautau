@@ -56,7 +56,7 @@ def number_of_bins(t_sig, ch, bdt):
     return nbins
 
 
-def create_histograms(t_sig, t_rs, t_ws, t_BDDKp, bdt, ch, A, B, C, A_sideband, C_sideband):
+def create_histograms(t_sig, t_rs, t_ws, t_BDDKp, bdt, ch, A, B, C, A_sideband, C_sideband, unblind_rs_data):
     # bin width ~half of signal mass resolution
     nbins = number_of_bins(t_sig, ch, bdt)
 
@@ -336,6 +336,10 @@ def main(argv):
     bdt = float(bdt)
     n_channels = len(xmin)
 
+    if(bdt == 0.0):
+        global unblind_rs_data
+        unblind_rs_data = True
+
     ########################################################### A = [A0, A1, A2, A3], A_sideband #####################################################
     A_fix_value = np.load('/panfs/felician/B2Ktautau/workflow/bdt_independent_inputs/A_fix_value.npy')
     A_fix_error = np.load('/panfs/felician/B2Ktautau/workflow/bdt_independent_inputs/A_fix_error.npy')
@@ -592,10 +596,10 @@ def main(argv):
 
     ################################################### Fit templates #################################################################
 
-    [h_sig, h_comb, h_BDDKp, h_upward, h_downward, h_data], [h_sig_sideband, h_comb_sideband, h_BDDKp_sideband, h_upward_sideband, h_downward_sideband, h_data_sideband], i_min, i_max = create_histograms(t_sig, t_rs, t_ws, t_BDDKp, bdt, 0, A, B.nominal_value, C, A_sideband, C_sideband)  
-    [h_sig_1, h_comb_1, h_BDDKp_1, h_upward_1, h_downward_1, h_data_1], [h_sig_sideband_1, h_comb_sideband_1, h_BDDKp_sideband_1, h_upward_sideband_1, h_downward_sideband_1, h_data_sideband_1], i_min_1, i_max_1 = create_histograms(t_sig, t_rs, t_ws, t_BDDKp, bdt, 1, A, B.nominal_value, C, A_sideband, C_sideband)  
-    [h_sig_2, h_comb_2, h_BDDKp_2, h_upward_2, h_downward_2, h_data_2], [h_sig_sideband_2, h_comb_sideband_2, h_BDDKp_sideband_2, h_upward_sideband_2, h_downward_sideband_2, h_data_sideband_2], i_min_2, i_max_2 = create_histograms(t_sig, t_rs, t_ws, t_BDDKp, bdt, 2, A, B.nominal_value, C, A_sideband, C_sideband)  
-    [h_sig_3, h_comb_3, h_BDDKp_3, h_upward_3, h_downward_3, h_data_3], [h_sig_sideband_3, h_comb_sideband_3, h_BDDKp_sideband_3, h_upward_sideband_3, h_downward_sideband_3, h_data_sideband_3], i_min_3, i_max_3 = create_histograms(t_sig, t_rs, t_ws, t_BDDKp, bdt, 3, A, B.nominal_value, C, A_sideband, C_sideband)  
+    [h_sig, h_comb, h_BDDKp, h_upward, h_downward, h_data], [h_sig_sideband, h_comb_sideband, h_BDDKp_sideband, h_upward_sideband, h_downward_sideband, h_data_sideband], i_min, i_max = create_histograms(t_sig, t_rs, t_ws, t_BDDKp, bdt, 0, A, B.nominal_value, C, A_sideband, C_sideband, unblind_rs_data)  
+    [h_sig_1, h_comb_1, h_BDDKp_1, h_upward_1, h_downward_1, h_data_1], [h_sig_sideband_1, h_comb_sideband_1, h_BDDKp_sideband_1, h_upward_sideband_1, h_downward_sideband_1, h_data_sideband_1], i_min_1, i_max_1 = create_histograms(t_sig, t_rs, t_ws, t_BDDKp, bdt, 1, A, B.nominal_value, C, A_sideband, C_sideband, unblind_rs_data)  
+    [h_sig_2, h_comb_2, h_BDDKp_2, h_upward_2, h_downward_2, h_data_2], [h_sig_sideband_2, h_comb_sideband_2, h_BDDKp_sideband_2, h_upward_sideband_2, h_downward_sideband_2, h_data_sideband_2], i_min_2, i_max_2 = create_histograms(t_sig, t_rs, t_ws, t_BDDKp, bdt, 2, A, B.nominal_value, C, A_sideband, C_sideband, unblind_rs_data)  
+    [h_sig_3, h_comb_3, h_BDDKp_3, h_upward_3, h_downward_3, h_data_3], [h_sig_sideband_3, h_comb_sideband_3, h_BDDKp_sideband_3, h_upward_sideband_3, h_downward_sideband_3, h_data_sideband_3], i_min_3, i_max_3 = create_histograms(t_sig, t_rs, t_ws, t_BDDKp, bdt, 3, A, B.nominal_value, C, A_sideband, C_sideband, unblind_rs_data)  
 
     f = ROOT.TFile(f"/panfs/felician/B2Ktautau/workflow/bdt_dependent_inputs/BDT_{bdt}/histograms.root", "RECREATE")
     f.cd()
