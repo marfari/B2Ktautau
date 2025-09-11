@@ -2080,7 +2080,6 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         with open(f'/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/mass_vetoes_efficiency_table.tex', 'w') as fout_mass_vetoes:
             fout_mass_vetoes.write(mass_vetoes_table.to_latex())
 
-    
     # BDT efficiency 
     bdt_working_point = 0.9986
     if(species == 1):
@@ -2180,9 +2179,9 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         bdt_table.loc["$3\\pi 3\\pi \\pi^0$ (not TM)", "BDT efficiency"] = f"${eps_bdt_3pi3pipi0.nominal_value*100:.2f} \\pm {eps_bdt_3pi3pipi0.std_dev*100:.2f}$"
         bdt_table.loc["$3\\pi 3\\pi 2\\pi^0$ (not TM)", "BDT efficiency"] = f"${eps_bdt_3pi3pi2pi0.nominal_value*100:.2f} \\pm {eps_bdt_3pi3pi2pi0.std_dev*100:.2f}$"
         bdt_table.loc["All MC (not TM)", "BDT efficiency"] = f"${eps_bdt_MC.nominal_value*100:.2f} \\pm {eps_bdt_MC.std_dev*100:.2f}$"
-        # bdt_table.loc["RS data", "BDT efficiency"] = f"${eps_bdt_RS.nominal_value*100:.2f} \\pm {eps_bdt_RS.std_dev*100:.2f}$"
+        # bdt_table.loc["RS data", "BDT efficiency"] = f"${eps_bdt_RS.nominal_value*100:.5f} \\pm {eps_bdt_RS.std_dev*100:.5f}$"
         bdt_table.loc["RS data", "BDT efficiency"] = f"${-1} \\pm {-1}$"
-        bdt_table.loc["WS data", "BDT efficiency"] = f"${eps_bdt_WS.nominal_value*100:.2f} \\pm {eps_bdt_WS.std_dev*100:.2f}$"
+        bdt_table.loc["WS data", "BDT efficiency"] = f"${eps_bdt_WS.nominal_value*100:.5f} \\pm {eps_bdt_WS.std_dev*100:.5f}$"
     
     elif(species == 100):
         f_BuDDKp_post_sel = ROOT.TFile("/panfs/felician/B2Ktautau/workflow/create_post_selection_tree/Species_100/post_sel_tree_bdt_0.0.root")
@@ -2256,87 +2255,93 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
             fout_bdt.write(bdt_table.to_latex())
 
 
-    # # Best candidate
-    # print("Best candidate efficiency")
-    # if(species == 7):
-    #     N_best_cand_MC = t_reco_mc_2016.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && "+best_cand) + t_reco_mc_2017.GetEntries(trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && "+best_cand) + t_reco_mc_2018.GetEntries(trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && "+best_cand)
+    # Best candidate
+    print("Best candidate efficiency")
+    if(species == 7):
+        N_best_cand_MC = t_reco_mc_2016.GetEntries(truthMatch+" && "+trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && "+best_cand) + t_reco_mc_2017.GetEntries(trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && "+best_cand) + t_reco_mc_2018.GetEntries(trigger+" && "+all_rectangular_cuts_MC+" && "+pass_mass_fit+" && "+fit_range+" && "+best_cand)
 
-    #     up_best_cand_MC = ROOT.TEfficiency.Wilson(N_fit_region_MC, N_best_cand_MC, 0.68, True)
-    #     down_best_cand_MC = ROOT.TEfficiency.Wilson(N_fit_region_MC, N_best_cand_MC, 0.68, False)
-    #     eps_best_cand_MC_err = 0.5*(up_best_cand_MC - down_best_cand_MC)
-    #     eps_best_cand_MC = ufloat(N_best_cand_MC/N_fit_region_MC, eps_best_cand_MC_err)
+        up_best_cand_MC = ROOT.TEfficiency.Wilson(N_fit_region_MC, N_best_cand_MC, 0.68, True)
+        down_best_cand_MC = ROOT.TEfficiency.Wilson(N_fit_region_MC, N_best_cand_MC, 0.68, False)
+        eps_best_cand_MC_err = 0.5*(up_best_cand_MC - down_best_cand_MC)
+        eps_best_cand_MC = ufloat(N_best_cand_MC/N_fit_region_MC, eps_best_cand_MC_err)
 
-    #     best_cand_columns = ["Best candidate efficiency (\\%)"]
-    #     best_cand_rows  = ["MC"]
+        best_cand_columns = ["Best candidate efficiency (\\%)"]
+        best_cand_rows  = ["MC"]
 
-    #     best_cand_table = pd.DataFrame(index=best_cand_rows, columns=best_cand_columns)
-    #     best_cand_table.loc["MC", "Best candidate efficiency (\\%)"] = f"${eps_best_cand_MC.nominal_value*100:.2f} \\pm {eps_best_cand_MC.std_dev*100:.2f}$"
+        best_cand_table = pd.DataFrame(index=best_cand_rows, columns=best_cand_columns)
+        best_cand_table.loc["MC", "Best candidate efficiency (\\%)"] = f"${eps_best_cand_MC.nominal_value*100:.2f} \\pm {eps_best_cand_MC.std_dev*100:.2f}$"
 
-    #     with open(f'/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/best_candidate_efficiency_table.tex', 'w') as fout_best_cand:
-    #         fout_best_cand.write(best_cand_table.to_latex())
+        with open(f'/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/best_candidate_efficiency_table.tex', 'w') as fout_best_cand:
+            fout_best_cand.write(best_cand_table.to_latex())
 
-    # elif(species == 1):
-    #     N_best_cand_MC = t_mc_best_cand.GetEntries("(is_best_cand == 1)")
+    elif(species == 1):
+        f_mc_best_cand = ROOT.TFile(f"/panfs/felician/B2Ktautau/workflow/candidate_selection/Species_10/candidate_bdt_{bdt_working_point}.root")
+        t_mc_best_cand = f_mc_best_cand.Get("DecayTree")
 
-    #     up_best_cand_MC = ROOT.TEfficiency.Wilson(N_bdt_MC, N_best_cand_MC, 0.68, True)
-    #     down_best_cand_MC = ROOT.TEfficiency.Wilson(N_bdt_MC, N_best_cand_MC, 0.68, False)
-    #     eps_best_cand_MC_err = 0.5*(up_best_cand_MC - down_best_cand_MC)
-    #     eps_best_cand_MC =  ufloat(N_best_cand_MC/N_bdt_MC, eps_best_cand_MC_err) 
+        t_mc_post_sel.AddFriend(t_mc_best_cand, "best_cand")
 
-    #     best_cand_columns = ["Candidate selection efficiency"]
-    #     best_cand_rows = ["All MC"]
+        N_num_best_cand = t_mc_post_sel.GetEntries(truthMatch+f" && (BDT > {bdt_working_point}) && (is_best_cand == 1)")
+        N_den_best_cand = t_mc_post_sel.GetEntries(truthMatch+f" && (BDT > {bdt_working_point})")
 
-    #     best_cand_table = pd.DataFrame(index=best_cand_rows, columns=best_cand_columns)
-    #     best_cand_table.loc["All MC", "Candidate selection efficiency"] = f"${eps_best_cand_MC.nominal_value*100:.2f} \\pm {eps_best_cand_MC.std_dev*100:.2f}$"
+        up_best_cand_MC = ROOT.TEfficiency.Wilson(N_den_best_cand, N_num_best_cand, 0.68, True)
+        down_best_cand_MC = ROOT.TEfficiency.Wilson(N_den_best_cand, N_num_best_cand, 0.68, False)
+        eps_best_cand_MC_err = 0.5*(up_best_cand_MC - down_best_cand_MC)
+        eps_best_cand_MC =  ufloat(N_num_best_cand/N_den_best_cand, eps_best_cand_MC_err) 
 
-    # elif(species == 100):
-    #     N_best_cand_BuDDKp = t_BuDDKp_best_cand.GetEntries("(is_best_cand == 1)") 
-    #     N_best_cand_BdDDKp = t_BdDDKp_best_cand.GetEntries("(is_best_cand == 1)") 
-    #     N_best_cand_BsDDKp = t_BsDDKp_best_cand.GetEntries("(is_best_cand == 1)") 
-    #     N_best_cand_BuDDK0 = t_BuDDK0_best_cand.GetEntries("(is_best_cand == 1)") 
-    #     N_best_cand_BuDD = t_BuDD_best_cand.GetEntries("(is_best_cand == 1)") 
+        best_cand_columns = ["Candidate selection efficiency"]
+        best_cand_rows = ["All MC"]
 
-    #     up_best_cand_BuDDKp = ROOT.TEfficiency.Wilson(N_bdt_BuDDKp, N_best_cand_BuDDKp, 0.68, True)
-    #     down_best_cand_BuDDKp = ROOT.TEfficiency.Wilson(N_bdt_BuDDKp, N_best_cand_BuDDKp, 0.68, False)
-    #     eps_best_cand_BuDDKp_err = 0.5*(up_best_cand_BuDDKp - down_best_cand_BuDDKp)
-    #     eps_best_cand_BuDDKp = ufloat(N_best_cand_BuDDKp/N_bdt_BuDDKp, eps_best_cand_BuDDKp_err)
+        best_cand_table = pd.DataFrame(index=best_cand_rows, columns=best_cand_columns)
+        best_cand_table.loc["All MC", "Candidate selection efficiency"] = f"${eps_best_cand_MC.nominal_value*100:.2f} \\pm {eps_best_cand_MC.std_dev*100:.2f}$"
 
-    #     up_best_cand_BdDDKp = ROOT.TEfficiency.Wilson(N_bdt_BdDDKp, N_best_cand_BdDDKp, 0.68, True)
-    #     down_best_cand_BdDDKp = ROOT.TEfficiency.Wilson(N_bdt_BdDDKp, N_best_cand_BdDDKp, 0.68, False)
-    #     eps_best_cand_BdDDKp_err = 0.5*(up_best_cand_BdDDKp - down_best_cand_BdDDKp)
-    #     eps_best_cand_BdDDKp = ufloat(N_best_cand_BdDDKp/N_bdt_BdDDKp, eps_best_cand_BdDDKp_err)
+    elif(species == 100):
+        N_best_cand_BuDDKp = t_BuDDKp_best_cand.GetEntries("(is_best_cand == 1)") 
+        N_best_cand_BdDDKp = t_BdDDKp_best_cand.GetEntries("(is_best_cand == 1)") 
+        N_best_cand_BsDDKp = t_BsDDKp_best_cand.GetEntries("(is_best_cand == 1)") 
+        N_best_cand_BuDDK0 = t_BuDDK0_best_cand.GetEntries("(is_best_cand == 1)") 
+        N_best_cand_BuDD = t_BuDD_best_cand.GetEntries("(is_best_cand == 1)") 
 
-    #     up_best_cand_BsDDKp = ROOT.TEfficiency.Wilson(N_bdt_BsDDKp, N_best_cand_BsDDKp, 0.68, True)
-    #     down_best_cand_BsDDKp = ROOT.TEfficiency.Wilson(N_bdt_BsDDKp, N_best_cand_BsDDKp, 0.68, False)
-    #     eps_best_cand_BsDDKp_err = 0.5*(up_best_cand_BsDDKp - down_best_cand_BsDDKp)
-    #     eps_best_cand_BsDDKp = ufloat(N_best_cand_BsDDKp/N_bdt_BsDDKp, eps_best_cand_BsDDKp_err)
+        up_best_cand_BuDDKp = ROOT.TEfficiency.Wilson(N_bdt_BuDDKp, N_best_cand_BuDDKp, 0.68, True)
+        down_best_cand_BuDDKp = ROOT.TEfficiency.Wilson(N_bdt_BuDDKp, N_best_cand_BuDDKp, 0.68, False)
+        eps_best_cand_BuDDKp_err = 0.5*(up_best_cand_BuDDKp - down_best_cand_BuDDKp)
+        eps_best_cand_BuDDKp = ufloat(N_best_cand_BuDDKp/N_bdt_BuDDKp, eps_best_cand_BuDDKp_err)
 
-    #     up_best_cand_BuDDK0 = ROOT.TEfficiency.Wilson(N_bdt_BuDDK0, N_best_cand_BuDDK0, 0.68, True)
-    #     down_best_cand_BuDDK0 = ROOT.TEfficiency.Wilson(N_bdt_BuDDK0, N_best_cand_BuDDK0, 0.68, False)
-    #     eps_best_cand_BuDDK0_err = 0.5*(up_best_cand_BuDDK0 - down_best_cand_BuDDK0)
-    #     if(N_bdt_BuDDK0 == 0):
-    #         eps_best_cand_BuDDK0 = ufloat(0, eps_best_cand_BuDDK0_err)
-    #     else:
-    #         eps_best_cand_BuDDK0 = ufloat(N_best_cand_BuDDK0/N_bdt_BuDDK0, eps_best_cand_BuDDK0_err)
+        up_best_cand_BdDDKp = ROOT.TEfficiency.Wilson(N_bdt_BdDDKp, N_best_cand_BdDDKp, 0.68, True)
+        down_best_cand_BdDDKp = ROOT.TEfficiency.Wilson(N_bdt_BdDDKp, N_best_cand_BdDDKp, 0.68, False)
+        eps_best_cand_BdDDKp_err = 0.5*(up_best_cand_BdDDKp - down_best_cand_BdDDKp)
+        eps_best_cand_BdDDKp = ufloat(N_best_cand_BdDDKp/N_bdt_BdDDKp, eps_best_cand_BdDDKp_err)
 
-    #     up_best_cand_BuDD = ROOT.TEfficiency.Wilson(N_bdt_BuDD, N_best_cand_BuDD, 0.68, True)
-    #     down_best_cand_BuDD = ROOT.TEfficiency.Wilson(N_bdt_BuDD, N_best_cand_BuDD, 0.68, False)
-    #     eps_best_cand_BuDD_err = 0.5*(up_best_cand_BuDD - down_best_cand_BuDD)
-    #     eps_best_cand_BuDD = ufloat(N_best_cand_BuDD/N_bdt_BuDD, eps_best_cand_BuDD_err)
+        up_best_cand_BsDDKp = ROOT.TEfficiency.Wilson(N_bdt_BsDDKp, N_best_cand_BsDDKp, 0.68, True)
+        down_best_cand_BsDDKp = ROOT.TEfficiency.Wilson(N_bdt_BsDDKp, N_best_cand_BsDDKp, 0.68, False)
+        eps_best_cand_BsDDKp_err = 0.5*(up_best_cand_BsDDKp - down_best_cand_BsDDKp)
+        eps_best_cand_BsDDKp = ufloat(N_best_cand_BsDDKp/N_bdt_BsDDKp, eps_best_cand_BsDDKp_err)
 
-    #     best_cand_columns = ["Candidate efficiency"]
-    #     best_cand_rows = ["$B^+ \\to D D K^+$", "$B^0 \\to D D K^+$", "$B^0_s \\to D D K^+$", "$B^+ \\to D D K^0$", "$B^+ \\to D D$"]
+        up_best_cand_BuDDK0 = ROOT.TEfficiency.Wilson(N_bdt_BuDDK0, N_best_cand_BuDDK0, 0.68, True)
+        down_best_cand_BuDDK0 = ROOT.TEfficiency.Wilson(N_bdt_BuDDK0, N_best_cand_BuDDK0, 0.68, False)
+        eps_best_cand_BuDDK0_err = 0.5*(up_best_cand_BuDDK0 - down_best_cand_BuDDK0)
+        if(N_bdt_BuDDK0 == 0):
+            eps_best_cand_BuDDK0 = ufloat(0, eps_best_cand_BuDDK0_err)
+        else:
+            eps_best_cand_BuDDK0 = ufloat(N_best_cand_BuDDK0/N_bdt_BuDDK0, eps_best_cand_BuDDK0_err)
 
-    #     best_cand_table = pd.DataFrame(index=best_cand_rows, columns=best_cand_columns)
-    #     best_cand_table.loc["$B^+ \\to D D K^+$", "Candidate efficiency"] = f"${eps_best_cand_BuDDKp.nominal_value*100:.2f} \\pm {eps_best_cand_BuDDKp.std_dev*100:.2f}$"
-    #     best_cand_table.loc["$B^0 \\to D D K^+$", "Candidate efficiency"] = f"${eps_best_cand_BdDDKp.nominal_value*100:.2f} \\pm {eps_best_cand_BdDDKp.std_dev*100:.2f}$"
-    #     best_cand_table.loc["$B^0_s \\to D D K^+$", "Candidate efficiency"] = f"${eps_best_cand_BsDDKp.nominal_value*100:.2f} \\pm {eps_best_cand_BsDDKp.std_dev*100:.2f}$"
-    #     best_cand_table.loc["$B^+ \\to D D K^0$", "Candidate efficiency"] = f"${eps_best_cand_BuDDK0.nominal_value*100:.2f} \\pm {eps_best_cand_BuDDK0.std_dev*100:.2f}$"
-    #     best_cand_table.loc["$B^+ \\to D D$", "Candidate efficiency"] = f"${eps_best_cand_BuDD.nominal_value*100:.2f} \\pm {eps_best_cand_BuDD.std_dev*100:.2f}$"
+        up_best_cand_BuDD = ROOT.TEfficiency.Wilson(N_bdt_BuDD, N_best_cand_BuDD, 0.68, True)
+        down_best_cand_BuDD = ROOT.TEfficiency.Wilson(N_bdt_BuDD, N_best_cand_BuDD, 0.68, False)
+        eps_best_cand_BuDD_err = 0.5*(up_best_cand_BuDD - down_best_cand_BuDD)
+        eps_best_cand_BuDD = ufloat(N_best_cand_BuDD/N_bdt_BuDD, eps_best_cand_BuDD_err)
 
-    # if((species == 100) or (species == 1)):
-    #     with open(f'/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/best_cand_efficiency_table.tex', 'w') as fout_best_cand:
-    #         fout_best_cand.write(best_cand_table.to_latex())        
+        best_cand_columns = ["Candidate efficiency"]
+        best_cand_rows = ["$B^+ \\to D D K^+$", "$B^0 \\to D D K^+$", "$B^0_s \\to D D K^+$", "$B^+ \\to D D K^0$", "$B^+ \\to D D$"]
+
+        best_cand_table = pd.DataFrame(index=best_cand_rows, columns=best_cand_columns)
+        best_cand_table.loc["$B^+ \\to D D K^+$", "Candidate efficiency"] = f"${eps_best_cand_BuDDKp.nominal_value*100:.2f} \\pm {eps_best_cand_BuDDKp.std_dev*100:.2f}$"
+        best_cand_table.loc["$B^0 \\to D D K^+$", "Candidate efficiency"] = f"${eps_best_cand_BdDDKp.nominal_value*100:.2f} \\pm {eps_best_cand_BdDDKp.std_dev*100:.2f}$"
+        best_cand_table.loc["$B^0_s \\to D D K^+$", "Candidate efficiency"] = f"${eps_best_cand_BsDDKp.nominal_value*100:.2f} \\pm {eps_best_cand_BsDDKp.std_dev*100:.2f}$"
+        best_cand_table.loc["$B^+ \\to D D K^0$", "Candidate efficiency"] = f"${eps_best_cand_BuDDK0.nominal_value*100:.2f} \\pm {eps_best_cand_BuDDK0.std_dev*100:.2f}$"
+        best_cand_table.loc["$B^+ \\to D D$", "Candidate efficiency"] = f"${eps_best_cand_BuDD.nominal_value*100:.2f} \\pm {eps_best_cand_BuDD.std_dev*100:.2f}$"
+
+    if((species == 100) or (species == 1)):
+        with open(f'/panfs/felician/B2Ktautau/workflow/selections_efficiency_tables/Species_{species}/best_cand_efficiency_table.tex', 'w') as fout_best_cand:
+            fout_best_cand.write(best_cand_table.to_latex())        
 
 
     # Overall efficiency
@@ -2363,15 +2368,17 @@ def create_tables(species, truthMatch, L0_trigger, HLT1_trigger, HLT2_trigger, t
         overall_table.loc["Overall", "Efficiency (\\%)"] = f"${eps_overall_MC.nominal_value*100:.4f} \\pm {eps_overall_MC.std_dev*100:.4f}$"
 
     elif(species == 1):
-        up_overall_MC_TM = ROOT.TEfficiency.Wilson(N_gen, N_bdt_tm_MC, 0.68, True)
-        down_overall_MC_TM = ROOT.TEfficiency.Wilson(N_gen, N_bdt_tm_MC, 0.68, False)
+        up_overall_MC_TM = ROOT.TEfficiency.Wilson(N_gen, N_num_best_cand, 0.68, True)
+        down_overall_MC_TM = ROOT.TEfficiency.Wilson(N_gen, N_num_best_cand, 0.68, False)
         eps_overall_MC_TM_err = 0.5*(up_overall_MC_TM - down_overall_MC_TM)
-        eps_overall_MC_TM = ufloat(N_bdt_tm_MC/N_gen, eps_overall_MC_TM_err)
+        eps_overall_MC_TM = ufloat(N_num_best_cand/N_gen, eps_overall_MC_TM_err)
 
-        up_overall_MC = ROOT.TEfficiency.Wilson(N_gen, N_bdt_MC, 0.68, True)
-        down_overall_MC = ROOT.TEfficiency.Wilson(N_gen, N_bdt_MC, 0.68, False)
+        N_overall_not_tm = t_mc_post_sel.GetEntries(f" (BDT > {bdt_working_point}) && (is_best_cand == 1)")
+
+        up_overall_MC = ROOT.TEfficiency.Wilson(N_gen, N_overall_not_tm, 0.68, True)
+        down_overall_MC = ROOT.TEfficiency.Wilson(N_gen, N_overall_not_tm, 0.68, False)
         eps_overall_MC_err = 0.5*(up_overall_MC - down_overall_MC)
-        eps_overall_MC = ufloat(N_bdt_MC/N_gen, eps_overall_MC_err)
+        eps_overall_MC = ufloat(N_overall_not_tm/N_gen, eps_overall_MC_err)
 
         eps_overall_MC_TM *= eps_acc*eps_strip
         eps_overall_MC *= eps_acc*eps_strip
